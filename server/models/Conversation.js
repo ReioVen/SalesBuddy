@@ -1,0 +1,123 @@
+const mongoose = require('mongoose');
+
+const messageSchema = new mongoose.Schema({
+  role: {
+    type: String,
+    enum: ['user', 'assistant'],
+    required: true
+  },
+  content: {
+    type: String,
+    required: true
+  },
+  timestamp: {
+    type: Date,
+    default: Date.now
+  },
+  tokens: {
+    type: Number,
+    default: 0
+  }
+});
+
+const conversationSchema = new mongoose.Schema({
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
+  title: {
+    type: String,
+    default: 'New Conversation'
+  },
+  scenario: {
+    type: String,
+    enum: ['general', 'cold_call', 'objection_handling', 'closing', 'follow_up', 'custom'],
+    default: 'general'
+  },
+  industry: String,
+  product: String,
+  customerType: String,
+  messages: [messageSchema],
+  totalTokens: {
+    type: Number,
+    default: 0
+  },
+  duration: {
+    type: Number, // in seconds
+    default: 0
+  },
+  rating: {
+    type: Number,
+    min: 1,
+    max: 5
+  },
+  feedback: String,
+  isActive: {
+    type: Boolean,
+    default: true
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now
+  },
+  updatedAt: {
+    type: Date,
+    default: Date.now
+  }
+}, {
+  timestamps: true
+});
+
+// Index for efficient queries
+conversationSchema.index({ userId: 1, createdAt: -1 });
+conversationSchema.index({ userId: 1, isActive: 1 });
+
+// Virtual for message count
+conversationSchema.virtual('messageCount').get(function() {
+  return this.messages.length;
+});
+
+// Method to add message
+conversationSchema.methods.addMessage = function(role, content, tokens = 0) {
+  this.messages.push({
+    role,
+    content,
+    tokens,
+    timestamp: new Date()
+  });
+  this.totalTokens += tokens;
+  this.updatedAt = new Date();
+  return this.save();
+};
+
+// Method to get conversation summary
+conversationSchema.methods.getSummary = function() {
+  const userMessages = this.messages.filter(m => m.role === 'user').length;
+  const assistantMessages = this.messages.filter(m => m.role === 'assistant').length;
+  
+  return {
+    id: this._id,
+    title: this.title,
+    scenario: this.scenario,
+    messageCount: this.messageCount,
+    userMessages,
+    assistantMessages,
+    totalTokens: this.totalTokens,
+    duration: this.duration,
+    rating: this.rating,
+    createdAt: this.createdAt,
+    updatedAt: this.updatedAt
+  };
+};
+
+// Static method to get user's conversation history
+conversationSchema.statics.getUserHistory = function(userId, limit = 20, skip = 0) {
+  return this.find({ userId, isActive: true })
+    .sort({ updatedAt: -1 })
+    .limit(limit)
+    .skip(skip)
+    .select('title scenario messageCount totalTokens duration rating createdAt updatedAt');
+};
+
+module.exports = mongoose.model('Conversation', conversationSchema); 
