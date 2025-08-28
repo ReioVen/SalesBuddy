@@ -28,9 +28,9 @@ interface User {
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  register: (userData: RegisterData) => Promise<void>;
-  logout: () => void;
+  login: (email: string, password: string) => Promise<{ success: true } | { success: false, message?: string }>;
+  register: (userData: RegisterData) => Promise<{ success: true } | { success: false, message?: string, fieldErrors?: Record<string, string> }>;
+  logout: () => void | Promise<void>;
   updateUser: (userData: Partial<User>) => void;
 }
 
@@ -62,24 +62,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   // Set up axios defaults
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-    }
+    axios.defaults.withCredentials = true;
   }, []);
 
   // Check if user is logged in on app start
   useEffect(() => {
     const checkAuth = async () => {
-      const token = localStorage.getItem('token');
-      if (token) {
-        try {
-          const response = await axios.get('/api/auth/me');
-          setUser(response.data.user);
-        } catch (error) {
-          localStorage.removeItem('token');
-          delete axios.defaults.headers.common['Authorization'];
-        }
+      try {
+        const response = await axios.get('/api/auth/me');
+        setUser(response.data.user);
+      } catch (error) {
+        setUser(null);
       }
       setLoading(false);
     };
@@ -90,40 +83,45 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const login = async (email: string, password: string) => {
     try {
       const response = await axios.post('/api/auth/login', { email, password });
-      const { token, user } = response.data;
-      
-      localStorage.setItem('token', token);
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      const { user } = response.data;
       setUser(user);
       
       toast.success('Login successful!');
+      return { success: true } as const;
     } catch (error: any) {
-      const message = error.response?.data?.error || 'Login failed';
+      const message = error.response?.data?.error || 'Invalid email or password';
       toast.error(message);
-      throw error;
+      return { success: false, message } as const;
     }
   };
 
   const register = async (userData: RegisterData) => {
     try {
       const response = await axios.post('/api/auth/register', userData);
-      const { token, user } = response.data;
-      
-      localStorage.setItem('token', token);
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      const { user } = response.data;
       setUser(user);
       
       toast.success('Registration successful!');
+      return { success: true } as const;
     } catch (error: any) {
-      const message = error.response?.data?.error || 'Registration failed';
-      toast.error(message);
-      throw error;
+      const data = error.response?.data;
+      // Map express-validator errors to field dictionary if present
+      const fieldErrors: Record<string, string> = {};
+      if (Array.isArray(data?.errors)) {
+        for (const err of data.errors) {
+          if (err?.path && err?.msg) fieldErrors[err.path] = err.msg;
+        }
+      }
+      const message = data?.error || data?.message || 'Please fix the highlighted fields';
+      if (message) toast.error(message);
+      return { success: false, message, fieldErrors: Object.keys(fieldErrors).length ? fieldErrors : undefined } as const;
     }
   };
 
-  const logout = () => {
-    localStorage.removeItem('token');
-    delete axios.defaults.headers.common['Authorization'];
+  const logout = async () => {
+    try {
+      await axios.post('/api/auth/logout');
+    } catch {}
     setUser(null);
     toast.success('Logged out successfully');
   };

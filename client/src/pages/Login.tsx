@@ -7,6 +7,7 @@ const Login: React.FC = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({ email: '', password: '' });
+  const [error, setError] = useState<string | null>(null);
 
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -16,8 +17,13 @@ const Login: React.FC = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      await login(form.email, form.password);
-      navigate('/');
+      setError(null);
+      const result = await login(form.email, form.password);
+      if (result.success) {
+        navigate('/');
+      } else {
+        setError(result.message || 'Invalid email or password');
+      }
     } finally {
       setLoading(false);
     }
@@ -30,6 +36,7 @@ const Login: React.FC = () => {
         <form onSubmit={onSubmit} className="space-y-4">
           <input className="input-field" name="email" type="email" placeholder="Email" value={form.email} onChange={onChange} required />
           <input className="input-field" name="password" type="password" placeholder="Password" value={form.password} onChange={onChange} required />
+          {error && <p className="text-sm text-red-600">{error}</p>}
           <button type="submit" disabled={loading} className="btn-primary w-full">{loading ? 'Signing in...' : 'Sign in'}</button>
         </form>
         <p className="text-center text-sm text-gray-600 mt-4">

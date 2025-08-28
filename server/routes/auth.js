@@ -11,12 +11,30 @@ const generateToken = (userId) => {
   return jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: '7d' });
 };
 
+// Helper to set cookie
+const setAuthCookie = (res, token) => {
+  const isProd = process.env.NODE_ENV === 'production';
+  res.cookie('sb_token', token, {
+    httpOnly: true,
+    secure: isProd,
+    sameSite: isProd ? 'none' : 'lax',
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+    path: '/',
+  });
+};
+
 // Register user
 router.post('/register', [
-  body('email').isEmail().normalizeEmail(),
-  body('password').isLength({ min: 6 }),
-  body('firstName').trim().notEmpty(),
-  body('lastName').trim().notEmpty()
+  body('email').isEmail().withMessage('Please enter a valid email').normalizeEmail(),
+  body('password')
+    .isLength({ min: 8, max: 64 }).withMessage('Password must be 8-64 characters long')
+    .matches(/[a-z]/).withMessage('Password must include a lowercase letter')
+    .matches(/[A-Z]/).withMessage('Password must include an uppercase letter')
+    .matches(/[0-9]/).withMessage('Password must include a number')
+    .matches(/[^A-Za-z0-9]/).withMessage('Password must include a special character')
+    .not().matches(/\s/).withMessage('Password cannot contain spaces'),
+  body('firstName').trim().notEmpty().withMessage('First name is required'),
+  body('lastName').trim().notEmpty().withMessage('Last name is required')
 ], async (req, res) => {
   try {
     const errors = validationResult(req);
@@ -45,6 +63,7 @@ router.post('/register', [
 
     // Generate token
     const token = generateToken(user._id);
+    setAuthCookie(res, token);
 
     // Update last login
     user.lastLogin = new Date();
@@ -52,13 +71,13 @@ router.post('/register', [
 
     res.status(201).json({
       message: 'User registered successfully',
-      token,
       user: {
         id: user._id,
         email: user.email,
         firstName: user.firstName,
         lastName: user.lastName,
         company: user.company,
+        companyPermissions: user.companyPermissions,
         role: user.role,
         subscription: user.subscription,
         usage: user.usage
@@ -92,11 +111,12 @@ router.post('/login', [
     // Check password
     const isPasswordValid = await user.comparePassword(password);
     if (!isPasswordValid) {
-      return res.status(401).json({ error: 'Invalid credentials' });
+      return res.status(401).json({ error: 'Incorrect email or password' });
     }
 
     // Generate token
     const token = generateToken(user._id);
+    setAuthCookie(res, token);
 
     // Update last login
     user.lastLogin = new Date();
@@ -104,13 +124,13 @@ router.post('/login', [
 
     res.json({
       message: 'Login successful',
-      token,
       user: {
         id: user._id,
         email: user.email,
         firstName: user.firstName,
         lastName: user.lastName,
         company: user.company,
+        companyPermissions: user.companyPermissions,
         role: user.role,
         subscription: user.subscription,
         usage: user.usage,
@@ -133,6 +153,7 @@ router.get('/me', authenticateToken, async (req, res) => {
         firstName: req.user.firstName,
         lastName: req.user.lastName,
         company: req.user.company,
+        companyPermissions: req.user.companyPermissions,
         role: req.user.role,
         subscription: req.user.subscription,
         usage: req.user.usage,
@@ -145,6 +166,21 @@ router.get('/me', authenticateToken, async (req, res) => {
   } catch (error) {
     console.error('Get user error:', error);
     res.status(500).json({ error: 'Failed to get user data' });
+  }
+});
+
+// Logout
+router.post('/logout', (req, res) => {
+  try {
+    res.clearCookie('sb_token', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+      path: '/',
+    });
+    res.json({ message: 'Logged out' });
+  } catch (error) {
+    res.status(500).json({ error: 'Logout failed' });
   }
 });
 
@@ -201,8 +237,14 @@ router.put('/profile', authenticateToken, [
 
 // Change password
 router.put('/change-password', authenticateToken, [
-  body('currentPassword').notEmpty(),
-  body('newPassword').isLength({ min: 6 })
+  body('currentPassword').notEmpty().withMessage('Current password is required'),
+  body('newPassword')
+    .isLength({ min: 8, max: 64 }).withMessage('Password must be 8-64 characters long')
+    .matches(/[a-z]/).withMessage('Password must include a lowercase letter')
+    .matches(/[A-Z]/).withMessage('Password must include an uppercase letter')
+    .matches(/[0-9]/).withMessage('Password must include a number')
+    .matches(/[^A-Za-z0-9]/).withMessage('Password must include a special character')
+    .not().matches(/\s/).withMessage('Password cannot contain spaces')
 ], async (req, res) => {
   try {
     const errors = validationResult(req);

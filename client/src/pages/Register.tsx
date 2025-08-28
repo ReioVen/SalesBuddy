@@ -15,6 +15,7 @@ const Register: React.FC = () => {
     company: ''
   });
   const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -25,18 +26,24 @@ const Register: React.FC = () => {
     setLoading(true);
     try {
       setError(null);
+      setFieldErrors({});
       if (form.password !== form.confirmPassword) {
         setError('Passwords do not match');
         return;
       }
-      await register({
+      const result = await register({
         firstName: form.firstName,
         lastName: form.lastName,
         email: form.email,
         password: form.password,
         company: form.company || undefined,
       });
-      navigate('/');
+      if (result.success) {
+        navigate('/');
+      } else {
+        if (result.fieldErrors) setFieldErrors(result.fieldErrors);
+        if (result.message) setError(result.message);
+      }
     } finally {
       setLoading(false);
     }
@@ -48,11 +55,23 @@ const Register: React.FC = () => {
         <h1 className="text-2xl font-bold mb-6 text-center">Create your account</h1>
         <form onSubmit={onSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-3">
-            <input className="input-field" name="firstName" placeholder="First name" value={form.firstName} onChange={onChange} required />
-            <input className="input-field" name="lastName" placeholder="Last name" value={form.lastName} onChange={onChange} required />
+            <div>
+              <input className={`input-field ${fieldErrors.firstName ? 'ring-2 ring-red-500' : ''}`} name="firstName" placeholder="First name" value={form.firstName} onChange={onChange} required />
+              {fieldErrors.firstName && <p className="text-xs text-red-600 mt-1">{fieldErrors.firstName}</p>}
+            </div>
+            <div>
+              <input className={`input-field ${fieldErrors.lastName ? 'ring-2 ring-red-500' : ''}`} name="lastName" placeholder="Last name" value={form.lastName} onChange={onChange} required />
+              {fieldErrors.lastName && <p className="text-xs text-red-600 mt-1">{fieldErrors.lastName}</p>}
+            </div>
           </div>
-          <input className="input-field" name="email" type="email" placeholder="Email" value={form.email} onChange={onChange} required />
-          <input className="input-field" name="password" type="password" placeholder="Password" value={form.password} onChange={onChange} required />
+          <div>
+            <input className={`input-field ${fieldErrors.email ? 'ring-2 ring-red-500' : ''}`} name="email" type="email" placeholder="Email" value={form.email} onChange={onChange} required />
+            {fieldErrors.email && <p className="text-xs text-red-600 mt-1">{fieldErrors.email}</p>}
+          </div>
+          <div>
+            <input className={`input-field ${fieldErrors.password ? 'ring-2 ring-red-500' : ''}`} name="password" type="password" placeholder="Password" value={form.password} onChange={onChange} required />
+            {fieldErrors.password && <p className="text-xs text-red-600 mt-1">{fieldErrors.password}</p>}
+          </div>
           <input className="input-field" name="confirmPassword" type="password" placeholder="Confirm password" value={form.confirmPassword} onChange={onChange} required />
           {error && <p className="text-sm text-red-600">{error}</p>}
           <input className="input-field" name="company" placeholder="Company (optional)" value={form.company} onChange={onChange} />

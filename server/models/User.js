@@ -28,6 +28,10 @@ const userSchema = new mongoose.Schema({
     type: String,
     trim: true
   },
+  companyPermissions: {
+    type: Boolean,
+    default: false
+  },
   role: {
     type: String,
     enum: ['individual', 'company_admin', 'company_user'],

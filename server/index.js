@@ -5,6 +5,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 const compression = require('compression');
 const rateLimit = require('express-rate-limit');
+const cookieParser = require('cookie-parser');
 // Load env from server/.env first (if present), then fall back to project root .env
 const dotenv = require('dotenv');
 dotenv.config({ path: path.resolve(__dirname, '.env') });
@@ -18,11 +19,15 @@ const enterpriseRoutes = require('./routes/enterprise');
 const { authenticateToken } = require('./middleware/auth');
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5002;
 
 // Security middleware
 app.use(helmet());
 app.use(compression());
+app.use(cookieParser());
+
+// When behind a proxy (e.g. CRA dev server), trust it so rate limiter gets real IP
+app.set('trust proxy', 1);
 
 // Rate limiting
 const limiter = rateLimit({
@@ -43,17 +48,16 @@ app.use(cors({
 }));
 
 // Database connection (guard missing URI)
-const mongoUri = process.env.MONGODB_URI;
-if (mongoUri && mongoUri.trim() !== '') {
-  mongoose.connect(mongoUri, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
-  .then(() => console.log('Connected to MongoDB Atlas'))
-  .catch(err => console.error('MongoDB connection error:', err));
-} else {
-  console.warn('MONGODB_URI is not set. Server will run without database connectivity.');
-}
+const mongoUri = (process.env.MONGODB_URI && process.env.MONGODB_URI.trim() !== '')
+  ? process.env.MONGODB_URI
+  : 'mongodb://127.0.0.1:27017/salesbuddy';
+
+mongoose.connect(mongoUri, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+})
+.then(() => console.log(`Connected to MongoDB: ${mongoUri.includes('127.0.0.1') ? 'local' : 'remote'}`))
+.catch(err => console.error('MongoDB connection error:', err));
 
 // Routes
 app.use('/api/auth', authRoutes);

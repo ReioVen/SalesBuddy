@@ -4,7 +4,9 @@ const User = require('../models/User');
 const authenticateToken = async (req, res, next) => {
   try {
     const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
+    const bearerToken = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
+    const cookieToken = req.cookies && req.cookies['sb_token'];
+    const token = bearerToken || cookieToken;
 
     if (!token) {
       return res.status(401).json({ error: 'Access token required' });

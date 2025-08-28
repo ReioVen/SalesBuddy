@@ -5,6 +5,9 @@ import Pricing from './pages/Pricing.tsx';
 import Login from './pages/Login.tsx';
 import Register from './pages/Register.tsx';
 import Navbar from './components/Navbar.tsx';
+import Conversations from './pages/Conversations.tsx';
+import Profile from './pages/Profile.tsx';
+import Settings from './pages/Settings.tsx';
 
 const App: React.FC = () => {
   return (
@@ -16,6 +19,9 @@ const App: React.FC = () => {
           <Route path="/pricing" element={<Pricing />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/conversations" element={<Conversations />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/settings" element={<Settings />} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </main>
