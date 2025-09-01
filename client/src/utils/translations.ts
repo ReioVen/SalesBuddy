@@ -30,6 +30,7 @@ export const translations = {
     
     // Profile
     name: 'Name',
+    title: 'Title',
     currentPlan: 'Current plan',
     
     // Settings
@@ -44,6 +45,46 @@ export const translations = {
     // Common
     pleaseLogIn: 'Please log in to view your profile.',
     yourConversationsWillAppearHere: 'Your conversations will appear here.',
+    
+    // Conversations
+    newChat: 'New Chat',
+    startNewConversation: 'Start New Conversation',
+    customizeClient: 'Customize Client',
+    clientName: 'Client Name',
+    clientPersonality: 'Client Personality',
+    clientIndustry: 'Client Industry',
+    clientRole: 'Client Role',
+    customPrompt: 'Custom Prompt',
+    difficulty: 'Difficulty Level',
+    easy: 'Easy',
+    medium: 'Medium',
+    hard: 'Hard',
+    useDefaultClient: 'Use Default Client',
+    startChat: 'Start Chat',
+    cancel: 'Cancel',
+    optional: 'Optional',
+    examplePersonality: 'e.g., skeptical, friendly, analytical, budget-conscious',
+    exampleIndustry: 'e.g., Technology, Healthcare, Finance',
+    exampleRole: 'e.g., CEO, IT Director, Purchasing Manager',
+    examplePrompt: 'e.g., This client is very price-sensitive and always asks for discounts...',
+    difficultyEasy: 'Friendly and open to suggestions',
+    difficultyMedium: 'Somewhat skeptical but willing to listen',
+    difficultyHard: 'Very challenging with strong objections',
+    sendMessage: 'Send Message',
+    typeMessage: 'Type your message...',
+    chatWith: 'Chat with',
+    loading: 'Loading...',
+    endConversation: 'End Conversation',
+    conversationEnded: 'Conversation ended! AI ratings generated.',
+    viewConversation: 'View Conversation',
+    conversationDetails: 'Conversation Details',
+    conversationSummary: 'Conversation Summary',
+    totalScore: 'Total Score',
+    aiFeedback: 'AI Feedback',
+    fullConversation: 'Full Conversation',
+    duration: 'Duration',
+    messages: 'Messages',
+    scenario: 'Scenario',
   },
   et: {
     // Navigation
@@ -74,6 +115,7 @@ export const translations = {
     
     // Profile
     name: 'Nimi',
+    title: 'Pealkiri',
     currentPlan: 'Praegune plaan',
     
     // Settings
@@ -88,6 +130,46 @@ export const translations = {
     // Common
     pleaseLogIn: 'Palun logi sisse, et vaadata oma profiili.',
     yourConversationsWillAppearHere: 'Sinu vestlused ilmuvad siia.',
+    
+    // Conversations
+    newChat: 'Uus Vestlus',
+    startNewConversation: 'Alusta Uut Vestlust',
+    customizeClient: 'Kohanda Klienti',
+    clientName: 'Kliendi Nimi',
+    clientPersonality: 'Kliendi Iseloom',
+    clientIndustry: 'Kliendi Tööstus',
+    clientRole: 'Kliendi Roll',
+    customPrompt: 'Kohandatud Küsimus',
+    difficulty: 'Raskusaste',
+    easy: 'Kerge',
+    medium: 'Keskmine',
+    hard: 'Raske',
+    useDefaultClient: 'Kasuta Vaikimisi Klienti',
+    startChat: 'Alusta Vestlust',
+    cancel: 'Tühista',
+    optional: 'Valikuline',
+    examplePersonality: 'nt. skeptiline, sõbralik, analüütiline, eelarve-teadlik',
+    exampleIndustry: 'nt. Tehnoloogia, Tervishoid, Rahandus',
+    exampleRole: 'nt. Tegevjuht, IT-direktor, Ostujuht',
+    examplePrompt: 'nt. See klient on väga hinnatundlik ja küsib alati allahindlusi...',
+    difficultyEasy: 'Sõbralik ja avatud ettepanekutele',
+    difficultyMedium: 'Mõnevõrra skeptiline, kuid valmis kuulama',
+    difficultyHard: 'Väga väljakutseid pakkuv tugevate vastuväidetega',
+    sendMessage: 'Saada Sõnum',
+    typeMessage: 'Kirjuta oma sõnum...',
+    chatWith: 'Vestle koos',
+    loading: 'Laadimine...',
+    endConversation: 'Lõpeta Vestlus',
+    conversationEnded: 'Vestlus lõpetatud! AI hinnangud genereeritud.',
+    viewConversation: 'Vaata Vestlust',
+    conversationDetails: 'Vestluse Üksikasjad',
+    conversationSummary: 'Vestluse Kokkuvõte',
+    totalScore: 'Kogutulemus',
+    aiFeedback: 'AI Tagasiside',
+    fullConversation: 'Täielik Vestlus',
+    duration: 'Kestus',
+    messages: 'Sõnumid',
+    scenario: 'Stsenaarium',
   },
   es: {
     // Navigation
@@ -118,6 +200,7 @@ export const translations = {
     
     // Profile
     name: 'Nombre',
+    title: 'Título',
     currentPlan: 'Plan actual',
     
     // Settings
@@ -132,6 +215,46 @@ export const translations = {
     // Common
     pleaseLogIn: 'Por favor inicia sesión para ver tu perfil.',
     yourConversationsWillAppearHere: 'Tus conversaciones aparecerán aquí.',
+    
+    // Conversations
+    newChat: 'Nuevo Chat',
+    startNewConversation: 'Iniciar Nueva Conversación',
+    customizeClient: 'Personalizar Cliente',
+    clientName: 'Nombre del Cliente',
+    clientPersonality: 'Personalidad del Cliente',
+    clientIndustry: 'Industria del Cliente',
+    clientRole: 'Rol del Cliente',
+    customPrompt: 'Prompt Personalizado',
+    difficulty: 'Nivel de Dificultad',
+    easy: 'Fácil',
+    medium: 'Medio',
+    hard: 'Difícil',
+    useDefaultClient: 'Usar Cliente Predeterminado',
+    startChat: 'Iniciar Chat',
+    cancel: 'Cancelar',
+    optional: 'Opcional',
+    examplePersonality: 'ej. escéptico, amigable, analítico, consciente del presupuesto',
+    exampleIndustry: 'ej. Tecnología, Salud, Finanzas',
+    exampleRole: 'ej. CEO, Director de TI, Gerente de Compras',
+    examplePrompt: 'ej. Este cliente es muy sensible al precio y siempre pide descuentos...',
+    difficultyEasy: 'Amigable y abierto a sugerencias',
+    difficultyMedium: 'Algo escéptico pero dispuesto a escuchar',
+    difficultyHard: 'Muy desafiante con fuertes objeciones',
+    sendMessage: 'Enviar Mensaje',
+    typeMessage: 'Escribe tu mensaje...',
+    chatWith: 'Chatear con',
+    loading: 'Cargando...',
+    endConversation: 'Terminar Conversación',
+    conversationEnded: '¡Conversación terminada! Calificaciones de IA generadas.',
+    viewConversation: 'Ver Conversación',
+    conversationDetails: 'Detalles de la Conversación',
+    conversationSummary: 'Resumen de la Conversación',
+    totalScore: 'Puntuación Total',
+    aiFeedback: 'Comentarios de IA',
+    fullConversation: 'Conversación Completa',
+    duration: 'Duración',
+    messages: 'Mensajes',
+    scenario: 'Escenario',
   },
   ru: {
     // Navigation
@@ -162,6 +285,7 @@ export const translations = {
     
     // Profile
     name: 'Имя',
+    title: 'Заголовок',
     currentPlan: 'Текущий план',
     
     // Settings
@@ -176,6 +300,46 @@ export const translations = {
     // Common
     pleaseLogIn: 'Пожалуйста, войдите, чтобы просмотреть свой профиль.',
     yourConversationsWillAppearHere: 'Ваши разговоры появятся здесь.',
+    
+    // Conversations
+    newChat: 'Новый Чат',
+    startNewConversation: 'Начать Новый Разговор',
+    customizeClient: 'Настроить Клиента',
+    clientName: 'Имя Клиента',
+    clientPersonality: 'Личность Клиента',
+    clientIndustry: 'Отрасль Клиента',
+    clientRole: 'Роль Клиента',
+    customPrompt: 'Пользовательский Запрос',
+    difficulty: 'Уровень Сложности',
+    easy: 'Легкий',
+    medium: 'Средний',
+    hard: 'Сложный',
+    useDefaultClient: 'Использовать Клиента по Умолчанию',
+    startChat: 'Начать Чат',
+    cancel: 'Отмена',
+    optional: 'Необязательно',
+    examplePersonality: 'напр. скептичный, дружелюбный, аналитичный, бюджетно-сознательный',
+    exampleIndustry: 'напр. Технологии, Здравоохранение, Финансы',
+    exampleRole: 'напр. Генеральный директор, IT-директор, Менеджер по закупкам',
+    examplePrompt: 'напр. Этот клиент очень чувствителен к цене и всегда просит скидки...',
+    difficultyEasy: 'Дружелюбный и открытый к предложениям',
+    difficultyMedium: 'Немного скептичный, но готовый слушать',
+    difficultyHard: 'Очень сложный с сильными возражениями',
+    sendMessage: 'Отправить Сообщение',
+    typeMessage: 'Введите ваше сообщение...',
+    chatWith: 'Чат с',
+    loading: 'Загрузка...',
+    endConversation: 'Завершить Разговор',
+    conversationEnded: 'Разговор завершен! Рейтинги ИИ сгенерированы.',
+    viewConversation: 'Посмотреть Разговор',
+    conversationDetails: 'Детали Разговора',
+    conversationSummary: 'Резюме Разговора',
+    totalScore: 'Общий Балл',
+    aiFeedback: 'Обратная Связь ИИ',
+    fullConversation: 'Полный Разговор',
+    duration: 'Продолжительность',
+    messages: 'Сообщения',
+    scenario: 'Сценарий',
   },
 };
 

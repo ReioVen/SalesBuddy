@@ -38,6 +38,18 @@ const conversationSchema = new mongoose.Schema({
   industry: String,
   product: String,
   customerType: String,
+  clientCustomization: {
+    name: String,
+    personality: String,
+    industry: String,
+    role: String,
+    customPrompt: String,
+    difficulty: {
+      type: String,
+      enum: ['easy', 'medium', 'hard'],
+      default: 'medium'
+    }
+  },
   messages: [messageSchema],
   totalTokens: {
     type: Number,
@@ -53,6 +65,35 @@ const conversationSchema = new mongoose.Schema({
     max: 5
   },
   feedback: String,
+  // Detailed AI ratings for each sales phase
+  aiRatings: {
+    introduction: {
+      type: Number,
+      min: 1,
+      max: 10
+    },
+    mapping: {
+      type: Number,
+      min: 1,
+      max: 10
+    },
+    productPresentation: {
+      type: Number,
+      min: 1,
+      max: 10
+    },
+    objectionHandling: {
+      type: Number,
+      min: 1,
+      max: 10
+    },
+    close: {
+      type: Number,
+      min: 1,
+      max: 10
+    }
+  },
+  aiRatingFeedback: String,
   isActive: {
     type: Boolean,
     default: true
@@ -106,9 +147,17 @@ conversationSchema.methods.getSummary = function() {
     totalTokens: this.totalTokens,
     duration: this.duration,
     rating: this.rating,
+    aiRatings: this.aiRatings,
     createdAt: this.createdAt,
     updatedAt: this.updatedAt
   };
+};
+
+// Method to end conversation and calculate duration
+conversationSchema.methods.endConversation = function() {
+  this.duration = Math.floor((new Date() - this.createdAt) / 1000); // duration in seconds
+  this.updatedAt = new Date();
+  return this.save();
 };
 
 // Static method to get user's conversation history
@@ -117,7 +166,7 @@ conversationSchema.statics.getUserHistory = function(userId, limit = 20, skip = 
     .sort({ updatedAt: -1 })
     .limit(limit)
     .skip(skip)
-    .select('title scenario messageCount totalTokens duration rating createdAt updatedAt');
+    .select('title scenario messages messageCount totalTokens duration rating aiRatings aiRatingFeedback clientCustomization createdAt updatedAt');
 };
 
 module.exports = mongoose.model('Conversation', conversationSchema); 
