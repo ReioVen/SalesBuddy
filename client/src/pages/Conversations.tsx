@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useTranslation } from '../hooks/useTranslation.ts';
 import { useAuth } from '../contexts/AuthContext.tsx';
 import axios from 'axios';
@@ -7,11 +7,18 @@ import { Plus, MessageSquare, User, Building, Briefcase, FileText, Send, X, Star
 
 interface ClientCustomization {
   name: string;
+  scenario: string;
   personality: string;
   industry: string;
   role: string;
   customPrompt: string;
   difficulty: 'easy' | 'medium' | 'hard';
+  familySize?: number;
+  income?: string;
+  incomeRange?: string;
+  priceSensitivity?: string;
+  contentInterest?: string;
+  familyType?: string;
 }
 
 interface Message {
@@ -58,6 +65,7 @@ const Conversations: React.FC = () => {
   
   const [clientCustomization, setClientCustomization] = useState<ClientCustomization>({
     name: '',
+    scenario: 'general',
     personality: '',
     industry: '',
     role: '',
@@ -73,14 +81,7 @@ const Conversations: React.FC = () => {
     scrollToBottom();
   }, [currentConversation?.messages]);
 
-  // Load conversation history on component mount
-  useEffect(() => {
-    if (user) {
-      loadConversationHistory();
-    }
-  }, [user]);
-
-  const loadConversationHistory = async () => {
+  const loadConversationHistory = useCallback(async () => {
     if (!user) return;
     
     setLoadingHistory(true);
@@ -98,7 +99,14 @@ const Conversations: React.FC = () => {
     } finally {
       setLoadingHistory(false);
     }
-  };
+  }, [user]);
+
+  // Load conversation history on component mount
+  useEffect(() => {
+    if (user) {
+      loadConversationHistory();
+    }
+  }, [user, loadConversationHistory]);
 
   const handleStartConversation = async () => {
     if (!user) {
@@ -109,7 +117,7 @@ const Conversations: React.FC = () => {
     setLoading(true);
     try {
       const response = await axios.post('/api/ai/conversation', {
-        scenario: 'general',
+        scenario: clientCustomization.scenario,
         clientName: clientCustomization.name || undefined,
         clientPersonality: clientCustomization.personality || undefined,
         clientIndustry: clientCustomization.industry || undefined,
@@ -125,12 +133,14 @@ const Conversations: React.FC = () => {
       setCurrentConversation({
         id: response.data.conversation.id,
         title: response.data.conversation.title,
+        scenario: response.data.conversation.scenario,
         clientCustomization: response.data.conversation.clientCustomization,
         messages: response.data.conversation.messages || []
       });
       
       setClientCustomization({
         name: '',
+        scenario: 'general',
         personality: '',
         industry: '',
         role: '',
@@ -148,6 +158,7 @@ const Conversations: React.FC = () => {
   const handleUseDefaultClient = () => {
     setClientCustomization({
       name: '',
+      scenario: 'general',
       personality: '',
       industry: '',
       role: '',
@@ -210,16 +221,11 @@ const Conversations: React.FC = () => {
     if (!currentConversation) return;
     
     try {
-      const response = await axios.post(`/api/ai/conversation/${currentConversation.id}/end`);
+      await axios.post(`/api/ai/conversation/${currentConversation.id}/end`);
       toast.success(t('conversationEnded'));
       
-      // Update the conversation with AI ratings
-      setCurrentConversation(prev => prev ? {
-        ...prev,
-        duration: response.data.conversation.duration,
-        aiRatings: response.data.conversation.aiRatings,
-        aiRatingFeedback: response.data.conversation.aiRatingFeedback
-      } : null);
+      // Close the chat window by setting currentConversation to null
+      setCurrentConversation(null);
       
       // Refresh conversation history
       loadConversationHistory();
@@ -278,6 +284,26 @@ const Conversations: React.FC = () => {
     if (rating >= 8) return 'text-green-600';
     if (rating >= 6) return 'text-yellow-600';
     return 'text-red-600';
+  };
+
+  const getPriceSensitivityTranslation = (sensitivity: string) => {
+    switch (sensitivity) {
+      case 'very_high': return t('veryHigh');
+      case 'high': return t('high');
+      case 'medium': return t('medium');
+      case 'low': return t('low');
+      case 'very_low': return t('veryLow');
+      case 'none': return t('none');
+      default: return sensitivity;
+    }
+  };
+
+  const getFamilyTypeTranslation = (familyType: string) => {
+    return t(familyType) || familyType;
+  };
+
+  const getContentInterestTranslation = (contentInterest: string) => {
+    return t(contentInterest) || contentInterest;
   };
 
   if (!user) {
@@ -342,6 +368,37 @@ const Conversations: React.FC = () => {
                       placeholder="e.g., Sarah Johnson"
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <MessageSquare className="w-4 h-4 inline mr-2" />
+                      {t('scenario')}
+                    </label>
+                    <div className="grid grid-cols-2 gap-3">
+                      {([
+                        { value: 'general', label: t('general'), description: t('generalDescription') },
+                        { value: 'cold_call', label: t('coldCall'), description: t('coldCallDescription') },
+                        { value: 'lead_call', label: t('leadCall'), description: t('leadCallDescription') },
+                        { value: 'objection_handling', label: t('objectionHandling'), description: t('objectionHandlingDescription') }
+                      ] as const).map((scenario) => (
+                        <button
+                          key={scenario.value}
+                          type="button"
+                          onClick={() => setClientCustomization(prev => ({ ...prev, scenario: scenario.value }))}
+                          className={`p-3 rounded-lg border-2 text-left transition-all ${
+                            clientCustomization.scenario === scenario.value
+                              ? 'border-blue-500 bg-blue-50 text-blue-700'
+                              : 'border-gray-200 hover:border-gray-300'
+                          }`}
+                        >
+                          <div className="font-medium">{scenario.label}</div>
+                          <div className="text-xs text-gray-500 mt-1">
+                            {scenario.description}
+                          </div>
+                        </button>
+                      ))}
+                    </div>
                   </div>
 
                   <div>
@@ -494,6 +551,43 @@ const Conversations: React.FC = () => {
               </div>
             </div>
 
+            {/* Client Profile Section */}
+            {(currentConversation.clientCustomization.familySize || 
+              currentConversation.clientCustomization.incomeRange || 
+              currentConversation.clientCustomization.priceSensitivity ||
+              currentConversation.clientCustomization.contentInterest ||
+              currentConversation.clientCustomization.familyType) && (
+              <div className="px-4 py-3 bg-gray-50 border-b border-gray-200">
+                <div className="flex flex-wrap gap-3 text-sm">
+                  {currentConversation.clientCustomization.familySize && (
+                    <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full">
+                      👨‍👩‍👧‍👦 {currentConversation.clientCustomization.familySize} family members
+                    </span>
+                  )}
+                  {currentConversation.clientCustomization.incomeRange && (
+                    <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full">
+                      💰 {currentConversation.clientCustomization.incomeRange}
+                    </span>
+                  )}
+                  {currentConversation.clientCustomization.priceSensitivity && (
+                    <span className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full">
+                      💸 {getPriceSensitivityTranslation(currentConversation.clientCustomization.priceSensitivity)} price sensitivity
+                    </span>
+                  )}
+                  {currentConversation.clientCustomization.contentInterest && (
+                    <span className="px-2 py-1 bg-purple-100 text-purple-800 rounded-full">
+                      📺 {getContentInterestTranslation(currentConversation.clientCustomization.contentInterest)} content
+                    </span>
+                  )}
+                  {currentConversation.clientCustomization.familyType && (
+                    <span className="px-2 py-1 bg-pink-100 text-pink-800 rounded-full">
+                      🏠 {getFamilyTypeTranslation(currentConversation.clientCustomization.familyType)}
+                    </span>
+                  )}
+                </div>
+              </div>
+            )}
+
             {/* Messages */}
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
               {currentConversation.messages.length === 0 ? (
@@ -599,6 +693,41 @@ const Conversations: React.FC = () => {
                         <span>• {Math.floor(conversation.duration / 60)}m {conversation.duration % 60}s</span>
                       )}
                     </div>
+                    
+                    {/* Client Profile Tags */}
+                    {(conversation.clientCustomization?.familySize || 
+                      conversation.clientCustomization?.incomeRange || 
+                      conversation.clientCustomization?.priceSensitivity ||
+                      conversation.clientCustomization?.contentInterest ||
+                      conversation.clientCustomization?.familyType) && (
+                      <div className="flex flex-wrap gap-2 mb-3">
+                        {conversation.clientCustomization?.familySize && (
+                          <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">
+                            👨‍👩‍👧‍👦 {conversation.clientCustomization.familySize}
+                          </span>
+                        )}
+                        {conversation.clientCustomization?.incomeRange && (
+                          <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">
+                            💰 {conversation.clientCustomization.incomeRange}
+                          </span>
+                        )}
+                        {conversation.clientCustomization?.priceSensitivity && (
+                          <span className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs">
+                            💸 {getPriceSensitivityTranslation(conversation.clientCustomization.priceSensitivity)}
+                          </span>
+                        )}
+                        {conversation.clientCustomization?.contentInterest && (
+                          <span className="px-2 py-1 bg-purple-100 text-purple-800 rounded-full text-xs">
+                            📺 {getContentInterestTranslation(conversation.clientCustomization.contentInterest)}
+                          </span>
+                        )}
+                        {conversation.clientCustomization?.familyType && (
+                          <span className="px-2 py-1 bg-pink-100 text-pink-800 rounded-full text-xs">
+                            🏠 {getFamilyTypeTranslation(conversation.clientCustomization.familyType)}
+                          </span>
+                        )}
+                      </div>
+                    )}
                     
                     {conversation.aiRatings && (
                       <div className="mb-3">

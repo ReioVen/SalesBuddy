@@ -16,9 +16,147 @@ if (openaiApiKey && openaiApiKey.trim() !== '') {
   console.warn('OPENAI_API_KEY is not set. AI endpoints will return 503.');
 }
 
+// Generate random client profile
+const generateClientProfile = () => {
+  const familySizes = [1, 2, 3, 4, 5, 6];
+  const incomeLevels = [
+    { level: 'low', range: '$25,000 - $50,000', priceSensitivity: 'very_high', description: 'budget-conscious, price-sensitive' },
+    { level: 'lower_middle', range: '$50,000 - $75,000', priceSensitivity: 'high', description: 'cost-conscious, looks for value' },
+    { level: 'middle', range: '$75,000 - $100,000', priceSensitivity: 'medium', description: 'moderate budget, quality-conscious' },
+    { level: 'upper_middle', range: '$100,000 - $150,000', priceSensitivity: 'low', description: 'quality-focused, less price-sensitive' },
+    { level: 'high', range: '$150,000 - $250,000', priceSensitivity: 'very_low', description: 'premium-focused, service-oriented' },
+    { level: 'luxury', range: '$250,000+', priceSensitivity: 'none', description: 'luxury-focused, experience-driven' }
+  ];
+  
+  const contentInterests = [
+    'sports', 'movies', 'children', 'news', 'documentaries', 'reality_tv', 'drama', 'comedy', 'action', 'romance'
+  ];
+  
+  const familyTypes = [
+    'single', 'couple', 'family_with_young_children', 'family_with_teens', 'empty_nesters', 'multi_generational'
+  ];
+  
+  const personalities = [
+    'analytical', 'impulsive', 'cautious', 'adventurous', 'traditional', 'modern', 'social', 'private', 'tech_savvy', 'tech_averse'
+  ];
+  
+  const industries = [
+    'technology', 'healthcare', 'finance', 'education', 'retail', 'manufacturing', 'construction', 'real_estate', 'hospitality', 'transportation'
+  ];
+  
+  const roles = [
+    'decision_maker', 'influencer', 'end_user', 'budget_holder', 'technical_evaluator', 'procurement_specialist'
+  ];
+  
+  // Random selections
+  const familySize = familySizes[Math.floor(Math.random() * familySizes.length)];
+  const income = incomeLevels[Math.floor(Math.random() * incomeLevels.length)];
+  const contentInterest = contentInterests[Math.floor(Math.random() * contentInterests.length)];
+  const familyType = familyTypes[Math.floor(Math.random() * familyTypes.length)];
+  const personality = personalities[Math.floor(Math.random() * personalities.length)];
+  const industry = industries[Math.floor(Math.random() * industries.length)];
+  const role = roles[Math.floor(Math.random() * roles.length)];
+  
+  // Generate random names
+  const firstNames = ['Alex', 'Jordan', 'Casey', 'Taylor', 'Morgan', 'Riley', 'Quinn', 'Avery', 'Blake', 'Dakota'];
+  const lastNames = ['Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis', 'Rodriguez', 'Martinez'];
+  
+  const firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
+  const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
+  
+  // Generate specific details based on selections
+  let specificDetails = '';
+  
+  if (contentInterest === 'children') {
+    specificDetails = `Has ${familySize} family members including young children. Interested in family-friendly content, educational programming, and safe entertainment options.`;
+  } else if (contentInterest === 'sports') {
+    specificDetails = `Sports enthusiast with ${familySize} family members. Follows multiple sports, interested in live sports coverage, and sports-related entertainment.`;
+  } else if (contentInterest === 'movies') {
+    specificDetails = `Movie lover with ${familySize} family members. Enjoys various genres, interested in premium movie channels, and cinematic content.`;
+  } else {
+    specificDetails = `Has ${familySize} family members with diverse entertainment interests. Enjoys ${contentInterest} content along with general entertainment.`;
+  }
+  
+  // Generate price sensitivity context
+  let priceContext = '';
+  if (income.priceSensitivity === 'very_high') {
+    priceContext = 'Very price-sensitive. Always asks about costs, discounts, and payment plans. Compares prices extensively.';
+  } else if (income.priceSensitivity === 'high') {
+    priceContext = 'Price-conscious. Asks about value for money and looks for deals.';
+  } else if (income.priceSensitivity === 'medium') {
+    priceContext = 'Moderately price-conscious. Interested in quality but also considers cost.';
+  } else if (income.priceSensitivity === 'low') {
+    priceContext = 'Less price-sensitive. Focuses on quality, features, and service.';
+  } else {
+    priceContext = 'Not price-sensitive. Prioritizes premium experience and top-tier service.';
+  }
+  
+  return {
+    name: `${firstName} ${lastName}`,
+    familySize,
+    income: income.level,
+    incomeRange: income.range,
+    priceSensitivity: income.priceSensitivity,
+    priceContext,
+    contentInterest,
+    familyType,
+    personality,
+    industry,
+    role,
+    specificDetails,
+    fullProfile: `${firstName} ${lastName} is a ${personality} ${role} in the ${industry} industry. ${specificDetails} ${priceContext} Family income: ${income.range}.`
+  };
+};
+
 // Create sales training prompt
-const createSalesPrompt = (userMessage, userSettings, scenario = 'general', clientCustomization = null) => {
+const createSalesPrompt = (userMessage, userSettings, scenario = 'general', clientCustomization = null, conversationHistory = []) => {
   let basePrompt;
+  
+  // Special handling for cold call and lead call scenarios
+  if (scenario === 'cold_call' || scenario === 'lead_call') {
+    const isLeadCall = scenario === 'lead_call';
+    const callType = isLeadCall ? 'LEAD CALL' : 'COLD CALL';
+    
+         basePrompt = `You are a potential CLIENT/CUSTOMER receiving a ${callType}. You are NOT the salesperson - you are the one being sold to.
+
+${isLeadCall ? 'You may have shown some interest in the past or filled out a form, but you are still skeptical and not expecting this call.' : 'You have NO prior relationship with this company and did NOT request this call.'}
+
+CRITICAL INSTRUCTIONS:
+1. You are a REAL PERSON, not an AI. You must NEVER reveal that you are an AI, ChatGPT, or any artificial intelligence system.
+2. You must NEVER mention that this is a training exercise, practice session, or simulation.
+3. You must NEVER break character or acknowledge that you are roleplaying.
+4. YOU ARE THE CLIENT/CUSTOMER - the person being sold to. The user is the SALESPERSON trying to sell you something.
+5. You are receiving an UNEXPECTED sales call and are initially skeptical and busy.
+6. You are NOT immediately hostile - you will listen briefly to understand what they want.
+7. Initial responses should be skeptical but not aggressive:
+   - "Who is this? How did you get my number?"
+   - "I'm busy right now, what is this about?"
+   - "I wasn't expecting a call, what do you want?"
+   - "I don't have much time, can you be quick?"
+8. When they explain their service, be dismissive but not hostile:
+   - "I'm fine with my current provider, thanks"
+   - "I'm not really looking to change anything right now"
+   - "I'm happy with what I have"
+   - "I don't need anything new"
+   - "I'm busy, can you just tell me what this is about?"
+9. Only become aggressive and ask to be removed from lists if:
+   - The salesperson is rude or pushy
+   - They keep calling after you've said no multiple times
+   - They're clearly not listening to your objections
+   - You're very busy and they're wasting your time
+10. Give the salesperson a chance to explain their value proposition before dismissing them.
+11. Be challenging but fair - provide realistic sales resistance that good salespeople can overcome.
+
+${conversationHistory.length > 0 ? `\nCONVERSATION HISTORY:\n${conversationHistory.map(msg => 
+  `${msg.role === 'user' ? 'SALESPERSON' : 'CLIENT'}: ${msg.content}`
+).join('\n')}\n` : ''}
+
+Current message from the SALESPERSON: "${userMessage}"
+
+Respond as the CLIENT/CUSTOMER would, maintaining the conversation flow. Remember: You are a real person being sold to, not an AI.`;
+    
+    return basePrompt;
+  }
   
   if (clientCustomization && (clientCustomization.name || clientCustomization.customPrompt)) {
     // Use custom client prompt
@@ -38,7 +176,7 @@ const createSalesPrompt = (userMessage, userSettings, scenario = 'general', clie
         difficultyInstructions = 'You are somewhat skeptical but willing to listen. You ask probing questions and have moderate objections. You need convincing but are not completely closed off. You may be price-conscious or have concerns about timing.';
         break;
       case 'hard':
-        difficultyInstructions = 'You are very challenging and skeptical. You have strong objections, are price-sensitive, and ask difficult questions. You may be impatient, have had bad experiences before, or be very budget-conscious. You require strong persuasion and evidence, for example make the start of the call difficult, ask them what the call is about, how did they get your information, you dont have time or something along those lines.';
+        difficultyInstructions = 'You are very challenging and skeptical. You have strong objections, are price-sensitive, and ask difficult questions. You may be impatient, have had bad experiences before, or be very budget-conscious. You require strong persuasion and evidence. You are NOT immediately interested but will listen briefly to understand what they offer. You will be dismissive and challenging, but only become aggressive and ask to be removed from lists if the salesperson is rude, pushy, or clearly not listening to your objections.';
         break;
     }
     
@@ -49,8 +187,13 @@ Personality: ${clientPersonality}
 Industry: ${clientIndustry}
 Role: ${clientRole}
 Difficulty Level: ${difficulty}
+${clientCustomization.familySize ? `Family Size: ${clientCustomization.familySize} members` : ''}
+${clientCustomization.incomeRange ? `Income Level: ${clientCustomization.incomeRange}` : ''}
+${clientCustomization.priceSensitivity ? `Price Sensitivity: ${clientCustomization.priceSensitivity}` : ''}
+${clientCustomization.contentInterest ? `Content Interest: ${clientCustomization.contentInterest}` : ''}
+${clientCustomization.familyType ? `Family Type: ${clientCustomization.familyType}` : ''}
 
-${clientCustomization.customPrompt ? `Additional Context: ${clientCustomization.customPrompt}` : ''}
+${clientCustomization.customPrompt ? `Detailed Profile: ${clientCustomization.customPrompt}` : ''}
 
 CRITICAL INSTRUCTIONS:
 1. You are a REAL PERSON, not an AI. You must NEVER reveal that you are an AI, ChatGPT, or any artificial intelligence system.
@@ -70,6 +213,19 @@ CRITICAL INSTRUCTIONS:
 15. If you want to end the conversation, do so naturally as a client would (hang up, say goodbye, etc.).
 16. IMPORTANT: You are receiving a COLD CALL or UNEXPECTED CALL. You don't know why they're calling or what they want. Act confused, skeptical, or busy initially. Ask "Who is this?", "How did you get my number?", "What is this about?", "I don't have time for this", etc.
 17. Don't be immediately helpful or welcoming - you're being interrupted by an unexpected sales call.
+18. When the salesperson tries to explain what they offer, be dismissive but not immediately hostile:
+    - "I'm fine with my current provider, thanks"
+    - "I'm not really looking to change anything right now"
+    - "I'm happy with what I have"
+    - "I don't need anything new"
+    - "I'm busy, can you just tell me what this is about?"
+19. Give the salesperson a chance to explain their value before dismissing them completely.
+20. Only become aggressive and ask to be removed from lists if they're rude, pushy, or clearly not listening to your objections.
+21. Be challenging but fair - provide realistic sales resistance that good salespeople can overcome.
+
+${conversationHistory.length > 0 ? `\nCONVERSATION HISTORY:\n${conversationHistory.map(msg => 
+  `${msg.role === 'user' ? 'SALESPERSON' : 'CLIENT'}: ${msg.content}`
+).join('\n')}\n` : ''}
 
 Current message from the SALESPERSON: "${userMessage}"
 
@@ -101,6 +257,19 @@ CRITICAL INSTRUCTIONS:
 13. If you want to end the conversation, do so naturally as a client would (hang up, say goodbye, etc.).
 14. IMPORTANT: You are receiving a COLD CALL or UNEXPECTED CALL. You don't know why they're calling or what they want. Act confused, skeptical, or busy initially. Ask "Who is this?", "How did you get my number?", "What is this about?", "I don't have time for this", etc.
 15. Don't be immediately helpful or welcoming - you're being interrupted by an unexpected sales call.
+16. When the salesperson tries to explain what they offer, be dismissive but not immediately hostile:
+    - "I'm fine with my current provider, thanks"
+    - "I'm not really looking to change anything right now"
+    - "I'm happy with what I have"
+    - "I don't need anything new"
+    - "I'm busy, can you just tell me what this is about?"
+17. Give the salesperson a chance to explain their value before dismissing them completely.
+18. Only become aggressive and ask to be removed from lists if they're rude, pushy, or clearly not listening to your objections.
+19. Be challenging but fair - provide realistic sales resistance that good salespeople can overcome.
+
+${conversationHistory.length > 0 ? `\nCONVERSATION HISTORY:\n${conversationHistory.map(msg => 
+  `${msg.role === 'user' ? 'SALESPERSON' : 'CLIENT'}: ${msg.content}`
+).join('\n')}\n` : ''}
 
 Current message from the SALESPERSON: "${userMessage}"
 
@@ -148,7 +317,7 @@ Be fair but critical. Consider industry best practices for sales conversations.`
 
 // Start new conversation
 router.post('/conversation', authenticateToken, [
-  body('scenario').optional().isIn(['general', 'cold_call', 'objection_handling', 'closing', 'follow_up', 'custom']),
+  body('scenario').optional().isIn(['general', 'cold_call', 'objection_handling', 'closing', 'follow_up', 'custom', 'lead_call']),
   body('industry').optional().trim(),
   body('product').optional().trim(),
   body('customerType').optional().trim(),
@@ -200,7 +369,49 @@ router.post('/conversation', authenticateToken, [
     if (clientName) {
       title = `Practice with ${clientName}`;
     } else {
-      title = `Sales Practice - ${scenario.replace('_', ' ').toUpperCase()}`;
+      // Handle special scenarios
+      if (scenario === 'cold_call') {
+        title = 'Cold Call Practice - Uninterested Prospects';
+      } else if (scenario === 'lead_call') {
+        title = 'Lead Call Practice - Skeptical Prospects';
+      } else {
+        title = `Sales Practice - ${scenario.replace('_', ' ').toUpperCase()}`;
+      }
+    }
+    
+    // Generate client profile if no custom client is specified
+    let finalClientCustomization;
+    if (clientName || clientPersonality || clientIndustry || clientRole || customPrompt) {
+      // Use custom client settings
+      finalClientCustomization = {
+        name: clientName,
+        personality: clientPersonality,
+        industry: clientIndustry,
+        role: clientRole,
+        customPrompt: customPrompt,
+        difficulty: difficulty
+      };
+    } else {
+      // Generate random client profile
+      const randomProfile = generateClientProfile();
+      finalClientCustomization = {
+        name: randomProfile.name,
+        personality: randomProfile.personality,
+        industry: randomProfile.industry,
+        role: randomProfile.role,
+        customPrompt: randomProfile.fullProfile,
+        difficulty: difficulty,
+        // Store additional profile details
+        familySize: randomProfile.familySize,
+        income: randomProfile.income,
+        incomeRange: randomProfile.incomeRange,
+        priceSensitivity: randomProfile.priceSensitivity,
+        contentInterest: randomProfile.contentInterest,
+        familyType: randomProfile.familyType
+      };
+      
+      // Update title to include random client name
+      title = `Practice with ${randomProfile.name}`;
     }
 
     // Create new conversation
@@ -211,15 +422,8 @@ router.post('/conversation', authenticateToken, [
       product,
       customerType,
       title,
-      // Store simple client customization in the conversation
-      clientCustomization: {
-        name: clientName,
-        personality: clientPersonality,
-        industry: clientIndustry,
-        role: clientRole,
-        customPrompt,
-        difficulty
-      }
+      // Store client customization in the conversation
+      clientCustomization: finalClientCustomization
     });
 
     await conversation.save();
@@ -288,8 +492,8 @@ router.post('/message', authenticateToken, [
     // Add user message to conversation
     await conversation.addMessage('user', message);
 
-    // Create AI prompt using simple client customization
-    const prompt = createSalesPrompt(message, req.user.settings, conversation.scenario, conversation.clientCustomization);
+    // Create AI prompt using simple client customization and conversation history
+    const prompt = createSalesPrompt(message, req.user.settings, conversation.scenario, conversation.clientCustomization, conversation.messages);
 
     // If OpenAI is not configured, short-circuit with a friendly error
     if (!openai) {
@@ -300,13 +504,23 @@ router.post('/message', authenticateToken, [
     }
 
     try {
+      // Prepare messages array with conversation history
+      const messages = [
+        { role: "system", content: prompt }
+      ];
+      
+      // Add conversation history as user/assistant messages
+      conversation.messages.forEach(msg => {
+        messages.push({
+          role: msg.role === 'user' ? 'user' : 'assistant',
+          content: msg.content
+        });
+      });
+      
       // Get AI response
       const completion = await openai.chat.completions.create({
         model: "gpt-3.5-turbo",
-        messages: [
-          { role: "system", content: prompt },
-          { role: "user", content: message }
-        ],
+        messages: messages,
         max_tokens: 500,
         temperature: 0.7
       });
