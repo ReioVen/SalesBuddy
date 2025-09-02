@@ -1,6 +1,7 @@
 import React from 'react';
 import { useAuth } from '../contexts/AuthContext.tsx';
 import { useTranslation } from '../hooks/useTranslation.ts';
+import SubscriptionManagement from '../components/SubscriptionManagement.tsx';
 
 const Profile: React.FC = () => {
   const { user } = useAuth();
@@ -38,6 +39,11 @@ const Profile: React.FC = () => {
             <div className="font-medium capitalize">{user.subscription?.plan}</div>
           </div>
         </div>
+      </div>
+
+      {/* Subscription Management Section */}
+      <div className="mt-6">
+        <SubscriptionManagement />
       </div>
     </div>
   );

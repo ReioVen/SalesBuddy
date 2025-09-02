@@ -12,7 +12,11 @@ interface User {
   subscription: {
     plan: string;
     status: string;
+    stripeCustomerId?: string;
+    stripeSubscriptionId?: string;
+    currentPeriodStart?: Date;
     currentPeriodEnd?: Date;
+    cancelAtPeriodEnd?: boolean;
   };
   usage: {
     aiConversations: number;
@@ -32,6 +36,7 @@ interface AuthContextType {
   register: (userData: RegisterData) => Promise<{ success: true } | { success: false, message?: string, fieldErrors?: Record<string, string> }>;
   logout: () => void | Promise<void>;
   updateUser: (userData: Partial<User>) => void;
+  refreshUser: () => Promise<void>;
 }
 
 interface RegisterData {
@@ -130,6 +135,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setUser(prev => prev ? { ...prev, ...userData } : null);
   };
 
+  const refreshUser = async () => {
+    try {
+      const response = await axios.get('/api/auth/me');
+      setUser(response.data.user);
+    } catch (error) {
+      console.error('Failed to refresh user data:', error);
+    }
+  };
+
   const value: AuthContextType = {
     user,
     loading,
@@ -137,6 +151,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     register,
     logout,
     updateUser,
+    refreshUser,
   };
 
   return (

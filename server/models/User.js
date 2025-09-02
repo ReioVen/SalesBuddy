@@ -64,7 +64,7 @@ const userSchema = new mongoose.Schema({
     },
     monthlyLimit: {
       type: Number,
-      default: 10 // Free tier limit
+      default: 50 // Free tier limit (matches subscription plans)
     },
     lastResetDate: {
       type: Date,
@@ -122,9 +122,35 @@ userSchema.methods.hasActiveSubscription = function() {
 
 // Check if user can use AI (has active subscription or within free tier limits)
 userSchema.methods.canUseAI = function() {
-  if (this.hasActiveSubscription()) return true;
+  // Check if within monthly limits
+  const now = new Date();
+  const lastReset = new Date(this.usage.lastResetDate);
+  const isNewMonth = now.getMonth() !== lastReset.getMonth() || now.getFullYear() !== lastReset.getFullYear();
   
-  // Check if within free tier limits
+  // Don't save here - just check the condition
+  const needsReset = isNewMonth;
+  
+  // Check if user has exceeded their limit
+  if (this.usage.aiConversations >= this.usage.monthlyLimit) {
+    return false;
+  }
+  
+  // Check if subscription is active
+  if (this.subscription.status === 'active') {
+    return true;
+  }
+  
+  // For free users, check if they're within free tier limits
+  if (this.subscription.plan === 'free') {
+    return this.usage.aiConversations < this.usage.monthlyLimit;
+  }
+  
+  return false;
+};
+
+// Increment AI usage
+userSchema.methods.incrementAIUsage = function() {
+  // Check if we need to reset monthly usage
   const now = new Date();
   const lastReset = new Date(this.usage.lastResetDate);
   const isNewMonth = now.getMonth() !== lastReset.getMonth() || now.getFullYear() !== lastReset.getFullYear();
@@ -132,14 +158,8 @@ userSchema.methods.canUseAI = function() {
   if (isNewMonth) {
     this.usage.aiConversations = 0;
     this.usage.lastResetDate = now;
-    this.save();
   }
   
-  return this.usage.aiConversations < this.usage.monthlyLimit;
-};
-
-// Increment AI usage
-userSchema.methods.incrementAIUsage = function() {
   this.usage.aiConversations += 1;
   return this.save();
 };
@@ -147,7 +167,7 @@ userSchema.methods.incrementAIUsage = function() {
 // Get subscription limits
 userSchema.methods.getSubscriptionLimits = function() {
   const limits = {
-    free: { conversations: 10, features: ['basic_ai'] },
+    free: { conversations: 50, features: ['basic_ai'] },
     basic: { conversations: 200, features: ['basic_ai', 'tips_lessons'] },
     pro: { conversations: 500, features: ['basic_ai', 'tips_lessons', 'client_customization', 'summary_feedback'] },
     unlimited: { conversations: -1, features: ['basic_ai', 'tips_lessons', 'summary', 'client_customization', 'summary_feedback'] },
@@ -155,6 +175,23 @@ userSchema.methods.getSubscriptionLimits = function() {
   };
   
   return limits[this.subscription.plan] || limits.free;
+};
+
+// Get current usage status
+userSchema.methods.getUsageStatus = function() {
+  const limits = this.getSubscriptionLimits();
+  const currentUsage = this.usage.aiConversations;
+  const monthlyLimit = this.usage.monthlyLimit;
+  
+  return {
+    currentUsage,
+    monthlyLimit,
+    remaining: monthlyLimit === -1 ? -1 : Math.max(0, monthlyLimit - currentUsage),
+    usagePercentage: monthlyLimit > 0 ? Math.round((currentUsage / monthlyLimit) * 100) : 0,
+    canUseAI: this.canUseAI(),
+    plan: this.subscription.plan,
+    status: this.subscription.status
+  };
 };
 
 module.exports = mongoose.model('User', userSchema); 

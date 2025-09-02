@@ -37,8 +37,16 @@ const limiter = rateLimit({
 });
 app.use('/api/', limiter);
 
-// Body parsing middleware
-app.use(express.json({ limit: '10mb' }));
+// Body parsing middleware - exclude webhook from JSON parsing
+app.use((req, res, next) => {
+  if (req.path === '/api/subscriptions/webhook') {
+    // Skip JSON parsing for webhook to preserve raw body
+    next();
+  } else {
+    express.json({ limit: '10mb' })(req, res, next);
+  }
+});
+
 app.use(express.urlencoded({ extended: true }));
 
 // CORS configuration
@@ -62,7 +70,10 @@ mongoose.connect(mongoUri, {
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', authenticateToken, userRoutes);
-app.use('/api/subscriptions', authenticateToken, subscriptionRoutes);
+
+// Subscription routes - webhook needs to be public, others need auth
+app.use('/api/subscriptions', subscriptionRoutes);
+
 app.use('/api/ai', authenticateToken, aiRoutes);
 app.use('/api/enterprise', enterpriseRoutes);
 

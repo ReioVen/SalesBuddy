@@ -32,7 +32,7 @@ const conversationSchema = new mongoose.Schema({
   },
   scenario: {
     type: String,
-    enum: ['general', 'cold_call', 'objection_handling', 'closing', 'follow_up', 'custom'],
+    enum: ['general', 'cold_call', 'objection_handling', 'closing', 'follow_up', 'custom', 'lead_call'],
     default: 'general'
   },
   industry: String,
@@ -48,7 +48,22 @@ const conversationSchema = new mongoose.Schema({
       type: String,
       enum: ['easy', 'medium', 'hard'],
       default: 'medium'
-    }
+    },
+         // Additional profile details for random client generation
+     familySize: Number,
+     income: String,
+     incomeRange: String,
+     priceSensitivity: String,
+     familyType: String,
+     specificDetails: String,
+     priceContext: String,
+     fullProfile: String,
+     // Personality traits for varied client behavior
+     personalityTraits: [String],
+     // Selling points, problems, and weak spots based on difficulty
+     sellingPoints: [String],
+     problems: [String],
+     weakSpots: [String]
   },
   messages: [messageSchema],
   totalTokens: {

@@ -35,7 +35,10 @@ const Navbar: React.FC = () => {
                   <NavLink to="/profile" className={navLinkClasses}>{t('profile')}</NavLink>
                 </>
               ) : (
-                <NavLink to="/login" className={navLinkClasses}>{t('login')}</NavLink>
+                <>
+                  <NavLink to="/pricing" className={navLinkClasses}>{t('pricing')}</NavLink>
+                  <NavLink to="/login" className={navLinkClasses}>{t('login')}</NavLink>
+                </>
               )}
             </nav>
 
@@ -75,7 +78,10 @@ const Navbar: React.FC = () => {
                     <NavLink to="/profile" className={navLinkClasses} onClick={() => setOpen(false)}>{t('profile')}</NavLink>
                   </>
                 ) : (
-                  <NavLink to="/login" className={navLinkClasses} onClick={() => setOpen(false)}>{t('login')}</NavLink>
+                  <>
+                    <NavLink to="/pricing" className={navLinkClasses} onClick={() => setOpen(false)}>{t('pricing')}</NavLink>
+                    <NavLink to="/login" className={navLinkClasses} onClick={() => setOpen(false)}>{t('login')}</NavLink>
+                  </>
                 )}
                 {user ? (
                   <Link to="/settings" className="btn-secondary mt-2 px-5 py-2.5 text-center" onClick={() => setOpen(false)}>
