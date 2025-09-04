@@ -60,6 +60,8 @@ const conversationSchema = new mongoose.Schema({
      fullProfile: String,
      // Personality traits for varied client behavior
      personalityTraits: [String],
+     // Difficulty phase for sales conversation (beginning_hard, middle_hard, closing_hard)
+     difficultyPhase: String,
      // Selling points, problems, and weak spots based on difficulty
      sellingPoints: [String],
      problems: [String],
@@ -134,8 +136,22 @@ conversationSchema.virtual('messageCount').get(function() {
   return this.messages.length;
 });
 
-// Method to add message
+// Method to add message (without saving to database)
 conversationSchema.methods.addMessage = function(role, content, tokens = 0) {
+  this.messages.push({
+    role,
+    content,
+    tokens,
+    timestamp: new Date()
+  });
+  this.totalTokens += tokens;
+  this.updatedAt = new Date();
+  // Note: Not saving to database immediately - will be saved when conversation ends
+  return this;
+};
+
+// Method to add message and save to database (for when immediate save is needed)
+conversationSchema.methods.addMessageAndSave = function(role, content, tokens = 0) {
   this.messages.push({
     role,
     content,

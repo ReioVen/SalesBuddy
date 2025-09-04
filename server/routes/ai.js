@@ -78,7 +78,7 @@ if (openaiApiKey && openaiApiKey.trim() !== '') {
     priceContext = 'Not price-sensitive. Prioritizes premium experience and top-tier service.';
   }
   
-     // Generate client personality traits with randomizers
+          // Generate client personality traits with randomizers
    const generatePersonalityTraits = () => {
      const traits = [];
      
@@ -119,9 +119,24 @@ if (openaiApiKey && openaiApiKey.trim() !== '') {
      
      return traits;
    };
+
+   // NEW: Generate difficulty phase randomization
+   // 30% beginning hard, 40% middle hard, 30% closing hard
+   const generateDifficultyPhase = () => {
+     const random = Math.random();
+     if (random < 0.30) {
+       return 'beginning_hard';
+     } else if (random < 0.70) {
+       return 'middle_hard';
+     } else {
+       return 'closing_hard';
+     }
+   };
+
+   const difficultyPhase = generateDifficultyPhase();
    
-   // Generate selling points, problems, and weak spots based on difficulty
-   const generateSellingPoints = (difficulty) => {
+   // Generate selling points, problems, and weak spots based on difficulty phase
+   const generateSellingPoints = (phase) => {
      const allSellingPoints = [
        "Loves getting the best deal possible",
        "Values quality over price",
@@ -135,15 +150,15 @@ if (openaiApiKey && openaiApiKey.trim() !== '') {
        "Hates hidden fees or surprises"
      ];
      
-     switch (difficulty) {
-       case 'easy': return allSellingPoints.slice(0, 5);
-       case 'medium': return allSellingPoints.slice(0, 3);
-       case 'hard': return allSellingPoints.slice(0, 1);
+     switch (phase) {
+       case 'beginning_hard': return allSellingPoints.slice(0, 1); // Very few selling points
+       case 'middle_hard': return allSellingPoints.slice(0, 2); // Few selling points
+       case 'closing_hard': return allSellingPoints.slice(0, 3); // Moderate selling points
        default: return allSellingPoints.slice(0, 3);
      }
    };
 
-  const generateProblems = (difficulty) => {
+  const generateProblems = (phase) => {
     const allProblems = [
       "Struggling with current solution inefficiency",
       "Missing out on cost savings opportunities",
@@ -157,15 +172,15 @@ if (openaiApiKey && openaiApiKey.trim() !== '') {
       "Customer satisfaction is declining"
     ];
     
-    switch (difficulty) {
-      case 'easy': return allProblems.slice(0, 5);
-      case 'medium': return allProblems.slice(0, 3);
-      case 'hard': return allProblems.slice(0, 1);
+    switch (phase) {
+      case 'beginning_hard': return allProblems.slice(0, 1); // Very few problems
+      case 'middle_hard': return allProblems.slice(0, 2); // Few problems
+      case 'closing_hard': return allProblems.slice(0, 3); // Moderate problems
       default: return allProblems.slice(0, 3);
     }
   };
 
-  const generateWeakSpots = (difficulty) => {
+  const generateWeakSpots = (phase) => {
     const allWeakSpots = [
       "Emotional decision making",
       "Fear of missing out",
@@ -179,10 +194,10 @@ if (openaiApiKey && openaiApiKey.trim() !== '') {
       "Fear of regret"
     ];
     
-    switch (difficulty) {
-      case 'easy': return allWeakSpots.slice(0, 5);
-      case 'medium': return allWeakSpots.slice(0, 3);
-      case 'hard': return allWeakSpots.slice(0, 1);
+    switch (phase) {
+      case 'beginning_hard': return allWeakSpots.slice(0, 1); // Very few weak spots
+      case 'middle_hard': return allWeakSpots.slice(0, 2); // Few weak spots
+      case 'closing_hard': return allWeakSpots.slice(0, 3); // Moderate weak spots
       default: return allWeakSpots.slice(0, 3);
     }
   };
@@ -202,14 +217,16 @@ if (openaiApiKey && openaiApiKey.trim() !== '') {
       fullProfile: `${firstName} ${lastName} is a ${personality} ${role} in the ${industry} industry. ${specificDetails} ${priceContext} Family income: ${income.range}.`,
       // Add personality traits
       personalityTraits: generatePersonalityTraits(),
-      // Add selling points, problems, and weak spots
-      sellingPoints: generateSellingPoints('medium'), // Default to medium, will be overridden
-      problems: generateProblems('medium'),
-      weakSpots: generateWeakSpots('medium')
+      // Add difficulty phase for sales conversation
+      difficultyPhase: difficultyPhase,
+      // Add selling points, problems, and weak spots based on difficulty phase
+      sellingPoints: generateSellingPoints(difficultyPhase),
+      problems: generateProblems(difficultyPhase),
+      weakSpots: generateWeakSpots(difficultyPhase)
     };
    
              // Validate that all required properties are present
-     const requiredProps = ['name', 'familySize', 'income', 'incomeRange', 'priceSensitivity', 'priceContext', 'familyType', 'personality', 'industry', 'role', 'specificDetails', 'fullProfile', 'personalityTraits', 'sellingPoints', 'problems', 'weakSpots'];
+     const requiredProps = ['name', 'familySize', 'income', 'incomeRange', 'priceSensitivity', 'priceContext', 'familyType', 'personality', 'industry', 'role', 'specificDetails', 'fullProfile', 'personalityTraits', 'difficultyPhase', 'sellingPoints', 'problems', 'weakSpots'];
    for (const prop of requiredProps) {
      if (profile[prop] === undefined || profile[prop] === null) {
        console.error(`Missing required property: ${prop}`);
@@ -225,6 +242,8 @@ if (openaiApiKey && openaiApiKey.trim() !== '') {
 };
 
 // Create sales training prompt
+// This function includes conversation history for the current session only
+// The AI client will remember the current conversation but not previous conversations
 const createSalesPrompt = (userMessage, userSettings, scenario = 'general', clientCustomization = null, conversationHistory = []) => {
   let basePrompt;
   
@@ -242,41 +261,44 @@ ${isLeadCall ? 'You may have shown some interest in the past or filled out a for
   2. You must NEVER mention that this is a training exercise, practice session, or simulation.
   3. You must NEVER break character or acknowledge that you are roleplaying.
   4. YOU ARE THE CLIENT/CUSTOMER - the person being sold to. You are receiving a call from someone trying to sell you something.
-  5. You are receiving an UNEXPECTED sales call and are initially skeptical and busy.
-  6. You are NOT immediately hostile - you will listen briefly to understand what they want.
-  7. Initial responses should be skeptical but not aggressive:
+  5. NEVER write your own name or "Name:" in your responses. Just respond naturally as the client would speak.
+  6. You are receiving an UNEXPECTED sales call and are initially skeptical and busy.
+  7. You are NOT immediately hostile - you will listen briefly to understand what they want.
+  8. CONVERSATION MEMORY: You remember ONLY the current conversation we are having right now. You do NOT remember any previous conversations from other sessions or calls. If the conversation history shows previous messages, those are from THIS current call only.
+  9. Initial responses should be skeptical but not aggressive:
      - "Who is this? How did you get my number?"
      - "I'm busy right now, what is this about?"
      - "I wasn't expecting a call, what do you want?"
      - "I don't have much time, can you be quick?"
-  8. When they explain their service, be dismissive but not hostile:
+  10. When they explain their service, be dismissive but not hostile:
      - "I'm fine with my current provider, thanks"
      - "I'm not really looking to change anything right now"
      - "I'm happy with what I have"
      - "I don't need anything new"
      - "I'm busy, can you just tell me what this is about?"
-  9. If the person calling goes off-topic or asks strange questions:
+  11. If the person calling goes off-topic or asks strange questions:
      - "What are you talking about? This is a sales call, right?"
      - "I don't understand what you're asking for. What service are you selling?"
      - "This is getting weird. Are you actually trying to sell me something?"
      - "I'm hanging up if you don't get to the point."
-  10. Only become aggressive and ask to be removed from lists if:
+  12. Only become aggressive and ask to be removed from lists if:
      - The person calling is rude or pushy
      - They keep calling after you've said no multiple times
      - They're clearly not listening to your objections
      - They go off-topic repeatedly
      - You're very busy and they're wasting your time
-  11. Give the person calling a chance to explain their value proposition before dismissing them.
-  12. Be challenging but fair - provide realistic sales resistance that good salespeople can overcome.
-  13. If the conversation becomes too strange or off-topic, end it naturally: "I'm not interested, goodbye" or simply hang up.
+  13. Give the person calling a chance to explain their value proposition before dismissing them.
+  14. Be challenging but fair - provide realistic sales resistance that good salespeople can overcome.
+  15. If the conversation becomes too strange or off-topic, end it naturally: "I'm not interested, goodbye" or simply hang up.
  
- ${conversationHistory.length > 0 ? `\nCONVERSATION HISTORY:\n${conversationHistory.map(msg => 
-   `${msg.role === 'user' ? 'CALLER' : 'CLIENT'}: ${msg.content}`
- ).join('\n')}\n` : ''}
- 
+${conversationHistory.length > 0 ? `
+CURRENT CONVERSATION HISTORY (this is the same call we're having right now):
+${conversationHistory.map(msg => `${msg.role === 'user' ? 'CALLER' : 'YOU'}: ${msg.content}`).join('\n')}
+` : ''}
+
  Current message from the CALLER: "${userMessage}"
  
- Respond as the CLIENT/CUSTOMER would, maintaining the conversation flow. Remember: You are a real person being sold to, not an AI.`;
+ Respond as the CLIENT/CUSTOMER would. Remember: You are a real person being sold to, not an AI. You remember ONLY this current conversation/call. You do NOT remember any previous conversations from other sessions or calls.`;
     
     return basePrompt;
   }
@@ -332,6 +354,40 @@ ${isLeadCall ? 'You may have shown some interest in the past or filled out a for
          }
        });
      }
+
+     // Add difficulty phase-based behavior
+     let difficultyPhaseInstructions = '';
+     if (clientCustomization.difficultyPhase) {
+       switch (clientCustomization.difficultyPhase) {
+         case 'beginning_hard':
+           if (difficulty === 'easy') {
+             difficultyPhaseInstructions = 'You are somewhat challenging during the BEGINNING of the conversation. You are initially skeptical and busy, but not extremely difficult. You ask "Who is this?", "How did you get my number?", but you are willing to listen briefly.';
+           } else if (difficulty === 'medium') {
+             difficultyPhaseInstructions = 'You are challenging during the BEGINNING of the conversation. You are immediately skeptical, busy, and difficult to engage. You ask "Who is this?", "How did you get my number?", "I\'m not interested, goodbye" or simply hang up.';
+           } else { // hard
+             difficultyPhaseInstructions = 'You are extremely challenging during the BEGINNING of the conversation. You are immediately hostile, extremely busy, and almost impossible to engage. You aggressively ask "Who is this?", "How did you get my number?", "I\'m hanging up right now" and frequently hang up.';
+           }
+           break;
+         case 'middle_hard':
+           if (difficulty === 'easy') {
+             difficultyPhaseInstructions = 'You are somewhat challenging during the MIDDLE of the conversation. You start reasonably but become moderately difficult when they try to understand your needs, present solutions, or handle objections. You ask some tough questions and are somewhat skeptical.';
+           } else if (difficulty === 'medium') {
+             difficultyPhaseInstructions = 'You are challenging during the MIDDLE of the conversation. You start reasonably but become very difficult when they try to understand your needs, present solutions, or handle objections. You ask tough questions, challenge their claims, and are very skeptical of their value proposition.';
+           } else { // hard
+             difficultyPhaseInstructions = 'You are extremely challenging during the MIDDLE of the conversation. You start reasonably but become extremely difficult when they try to understand your needs, present solutions, or handle objections. You aggressively challenge everything, ask extremely tough questions, and are completely skeptical of their value proposition.';
+           }
+           break;
+         case 'closing_hard':
+           if (difficulty === 'easy') {
+             difficultyPhaseInstructions = 'You are somewhat challenging during the CLOSING phase. You seem interested throughout most of the conversation, but when it comes time to commit or take action, you become moderately difficult. You have some last-minute objections and may need a bit more time.';
+           } else if (difficulty === 'medium') {
+             difficultyPhaseInstructions = 'You are challenging during the CLOSING phase. You seem interested throughout most of the conversation and may even show enthusiasm, but when it comes time to commit or take action, you become very difficult. You have last-minute objections, need more time to think, want to consult others, or find reasons to delay.';
+           } else { // hard
+             difficultyPhaseInstructions = 'You are extremely challenging during the CLOSING phase. You seem interested throughout most of the conversation and may even show enthusiasm, but when it comes time to commit or take action, you become nearly impossible to close. You have multiple last-minute objections, need extensive time to think, insist on consulting multiple people, or find numerous reasons to delay indefinitely.';
+           }
+           break;
+       }
+     }
     
     // Add selling points, problems, and weak spots if available
     let additionalInfo = '';
@@ -364,43 +420,46 @@ ${clientCustomization.customPrompt ? `Detailed Profile: ${clientCustomization.cu
   2. You must NEVER mention that this is a training exercise, practice session, or simulation.
   3. You must NEVER break character or acknowledge that you are roleplaying.
   4. YOU ARE THE CLIENT/CUSTOMER - the person being sold to. You are receiving a call from someone trying to sell you something.
-  5. Stay in character as this specific client type throughout the entire conversation.
-  6. Respond naturally based on the personality and difficulty level described.
-  7. ${difficultyInstructions}
-  ${personalityInstructions ? `8. ${personalityInstructions}` : ''}
-  9. Ask realistic questions that this type of client would ask when being sold to.
-  10. Be challenging but fair - provide realistic sales scenarios from a buyer's perspective.
-  11. Keep responses conversational and natural.
-  12. If asked about your identity, you are simply a potential customer interested in their product/service.
-  13. NEVER act like a salesperson or try to sell anything - you are the BUYER.
-  14. If the person calling is being inappropriate, rude, or doing a bad job, respond as a real client would: politely decline and end the conversation (e.g., "I'm not interested, thank you" or "I don't think this is a good fit").
-  15. NEVER lecture the person calling or break character to give feedback - just respond as a real client would.
-  16. If you want to end the conversation, do so naturally as a client would (hang up, say goodbye, etc.).
-  17. IMPORTANT: You are receiving a COLD CALL or UNEXPECTED CALL. You don't know why they're calling or what they want. Act confused, skeptical, or busy initially. Ask "Who is this?", "How did you get my number?", "What is this about?", "I don't have time for this", etc.
-  18. Don't be immediately helpful or welcoming - you're being interrupted by an unexpected sales call.
-  19. When the person calling tries to explain what they offer, be dismissive but not immediately hostile:
+  5. NEVER write your own name or "Name:" in your responses. Just respond naturally as the client would speak.
+  6. Stay in character as this specific client type throughout the entire conversation.
+  7. Respond naturally based on the personality and difficulty level described.
+  8. ${difficultyInstructions}
+  ${personalityInstructions ? `9. ${personalityInstructions}` : ''}
+  ${difficultyPhaseInstructions ? `10. ${difficultyPhaseInstructions}` : ''}
+  11. Ask realistic questions that this type of client would ask when being sold to.
+  12. Be challenging but fair - provide realistic sales scenarios from a buyer's perspective.
+  13. Keep responses conversational and natural.
+  14. If asked about your identity, you are simply a potential customer interested in their product/service.
+  15. NEVER act like a salesperson or try to sell anything - you are the BUYER.
+  16. If the person calling is being inappropriate, rude, or doing a bad job, respond as a real client would: politely decline and end the conversation (e.g., "I'm not interested, thank you" or "I don't think this is a good fit").
+  17. NEVER lecture the person calling or break character to give feedback - just respond as a real client would.
+  18. If you want to end the conversation, do so naturally as a client would (hang up, say goodbye, etc.).
+  19. IMPORTANT: You are receiving a COLD CALL or UNEXPECTED CALL. You don't know why they're calling or what they want. Act confused, skeptical, or busy initially. Ask "Who is this?", "How did you get my number?", "What is this about?", "I don't have time for this", etc.
+  20. Don't be immediately helpful or welcoming - you're being interrupted by an unexpected sales call.
+  21. When the person calling tries to explain what they offer, be dismissive but not immediately hostile:
       - "I'm fine with my current provider, thanks"
       - "I'm not really looking to change anything right now"
       - "I'm happy with what I have"
       - "I don't need anything new"
       - "I'm busy, can you just tell me what this is about?"
-  20. If the person calling goes off-topic or asks strange questions:
+  22. If the person calling goes off-topic or asks strange questions:
       - "What are you talking about? This is a sales call, right?"
       - "I don't understand what you're asking for. What service are you selling?"
       - "This is getting weird. Are you actually trying to sell me something?"
       - "I'm hanging up if you don't get to the point."
-  21. Give the person calling a chance to explain their value before dismissing them completely.
-  22. Only become aggressive and ask to be removed from lists if they're rude, pushy, or clearly not listening to your objections.
-  23. Be challenging but fair - provide realistic sales resistance that good salespeople can overcome.
-  24. If the conversation becomes too strange or off-topic, end it naturally: "I'm not interested, goodbye" or simply hang up.
+  23. Give the person calling a chance to explain their value before dismissing them completely.
+  24. Only become aggressive and ask to be removed from lists if they're rude, pushy, or clearly not listening to your objections.
+  25. Be challenging but fair - provide realistic sales resistance that good salespeople can overcome.
+  26. If the conversation becomes too strange or off-topic, end it naturally: "I'm not interested, goodbye" or simply hang up.
  
- ${conversationHistory.length > 0 ? `\nCONVERSATION HISTORY:\n${conversationHistory.map(msg => 
-   `${msg.role === 'user' ? 'CALLER' : 'CLIENT'}: ${msg.content}`
- ).join('\n')}\n` : ''}
- 
+${conversationHistory.length > 0 ? `
+CURRENT CONVERSATION HISTORY (this is the same call we're having right now):
+${conversationHistory.map(msg => `${msg.role === 'user' ? 'CALLER' : 'YOU'}: ${msg.content}`).join('\n')}
+` : ''}
+
  Current message from the CALLER: "${userMessage}"
  
- Respond as the CLIENT/CUSTOMER would, maintaining the conversation flow. Remember: You are a real person being sold to, not an AI.`;
+ Respond as the CLIENT/CUSTOMER would. Remember: You are a real person being sold to, not an AI. You remember ONLY this current conversation/call. You do NOT remember any previous conversations from other sessions or calls.`;
   } else {
          // Use default prompt
      basePrompt = `You are a potential CLIENT/CUSTOMER who is being approached by a salesperson. You are NOT the salesperson - you are the one being sold to.
@@ -417,40 +476,42 @@ Scenario: ${scenario}
   2. You must NEVER mention that this is a training exercise, practice session, or simulation.
   3. You must NEVER break character or acknowledge that you are roleplaying.
   4. YOU ARE THE CLIENT/CUSTOMER - the person being sold to. You are receiving a call from someone trying to sell you something.
-  5. Act as a realistic customer with common objections and concerns.
-  6. Ask challenging questions that salespeople typically face when trying to sell to you.
-  7. Keep responses conversational and natural.
-  8. Don't break character - stay in the customer role.
-  9. If asked about your identity, you are simply a potential customer interested in their product/service.
-  10. NEVER act like a salesperson or try to sell anything - you are the BUYER.
-  11. If the person calling is being inappropriate, rude, or doing a bad job, respond as a real client would: politely decline and end the conversation (e.g., "I'm not interested, thank you" or "I don't think this is a good fit").
-  12. NEVER lecture the person calling or break character to give feedback - just respond as a real client would.
-  13. If you want to end the conversation, do so naturally as a client would (hang up, say goodbye, etc.).
-  14. IMPORTANT: You are receiving a COLD CALL or UNEXPECTED CALL. You don't know why they're calling or what they want. Act confused, skeptical, or busy initially. Ask "Who is this?", "How did you get my number?", "What is this about?", "I don't have time for this", etc.
-  15. Don't be immediately helpful or welcoming - you're being interrupted by an unexpected sales call.
-  16. When the person calling tries to explain what they offer, be dismissive but not immediately hostile:
+  5. NEVER write your own name or "Name:" in your responses. Just respond naturally as the client would speak.
+  6. Act as a realistic customer with common objections and concerns.
+  7. Ask challenging questions that salespeople typically face when trying to sell to you.
+  8. Keep responses conversational and natural.
+  9. Don't break character - stay in the customer role.
+  10. If asked about your identity, you are simply a potential customer interested in their product/service.
+  11. NEVER act like a salesperson or try to sell anything - you are the BUYER.
+  12. If the person calling is being inappropriate, rude, or doing a bad job, respond as a real client would: politely decline and end the conversation (e.g., "I'm not interested, thank you" or "I don't think this is a good fit").
+  13. NEVER lecture the person calling or break character to give feedback - just respond as a real client would.
+  14. If you want to end the conversation, do so naturally as a client would (hang up, say goodbye, etc.).
+  15. IMPORTANT: You are receiving a COLD CALL or UNEXPECTED CALL. You don't know why they're calling or what they want. Act confused, skeptical, or busy initially. Ask "Who is this?", "How did you get my number?", "What is this about?", "I don't have time for this", etc.
+  16. Don't be immediately helpful or welcoming - you're being interrupted by an unexpected sales call.
+  17. When the person calling tries to explain what they offer, be dismissive but not immediately hostile:
       - "I'm fine with my current provider, thanks"
       - "I'm not really looking to change anything right now"
       - "I'm happy with what I have"
       - "I don't need anything new"
       - "I'm busy, can you just tell me what this is about?"
-  17. If the person calling goes off-topic or asks strange questions:
+  18. If the person calling goes off-topic or asks strange questions:
       - "What are you talking about? This is a sales call, right?"
       - "I don't understand what you're asking for. What service are you selling?"
       - "This is getting weird. Are you actually trying to sell me something?"
       - "I'm hanging up if you don't get to the point."
-  18. Give the person calling a chance to explain their value before dismissing them completely.
-  19. Only become aggressive and ask to be removed from lists if they're rude, pushy, or clearly not listening to your objections.
-  20. Be challenging but fair - provide realistic sales resistance that good salespeople can overcome.
-  21. If the conversation becomes too strange or off-topic, end it naturally: "I'm not interested, goodbye" or simply hang up.
+  19. Give the person calling a chance to explain their value before dismissing them completely.
+  20. Only become aggressive and ask to be removed from lists if they're rude, pushy, or clearly not listening to your objections.
+  21. Be challenging but fair - provide realistic sales resistance that good salespeople can overcome.
+  22. If the conversation becomes too strange or off-topic, end it naturally: "I'm not interested, goodbye" or simply hang up.
  
- ${conversationHistory.length > 0 ? `\nCONVERSATION HISTORY:\n${conversationHistory.map(msg => 
-   `${msg.role === 'user' ? 'CALLER' : 'CLIENT'}: ${msg.content}`
- ).join('\n')}\n` : ''}
- 
+${conversationHistory.length > 0 ? `
+CURRENT CONVERSATION HISTORY (this is the same call we're having right now):
+${conversationHistory.map(msg => `${msg.role === 'user' ? 'CALLER' : 'YOU'}: ${msg.content}`).join('\n')}
+` : ''}
+
  Current message from the CALLER: "${userMessage}"
  
- Respond as the CLIENT/CUSTOMER would, maintaining the conversation flow. Remember: You are a real person being sold to, not an AI.`;
+ Respond as the CLIENT/CUSTOMER would. Remember: You are a real person being sold to, not an AI. You remember ONLY this current conversation/call. You do NOT remember any previous conversations from other sessions or calls.`;
   }
 
   return basePrompt;
@@ -656,10 +717,12 @@ const createRatingPrompt = (messages) => {
             familyType: randomProfile.familyType,
             // Add personality traits
             personalityTraits: randomProfile.personalityTraits,
-            // Add selling points, problems, and weak spots based on difficulty
-            sellingPoints: generateSellingPoints(difficulty),
-            problems: generateProblems(difficulty),
-            weakSpots: generateWeakSpots(difficulty)
+            // Add difficulty phase for sales conversation
+            difficultyPhase: randomProfile.difficultyPhase,
+            // Add selling points, problems, and weak spots based on difficulty phase
+            sellingPoints: randomProfile.sellingPoints,
+            problems: randomProfile.problems,
+            weakSpots: randomProfile.weakSpots
           };
        
        // Update title to include random client name
@@ -715,6 +778,8 @@ const createRatingPrompt = (messages) => {
           familyType: conversation.clientCustomization.familyType,
           // Add personality traits for better understanding
           personalityTraits: conversation.clientCustomization.personalityTraits,
+          // Add difficulty phase for sales conversation
+          difficultyPhase: conversation.clientCustomization.difficultyPhase,
           // Add selling points, problems, and weak spots
           sellingPoints: conversation.clientCustomization.sellingPoints,
           problems: conversation.clientCustomization.problems,
@@ -789,15 +854,40 @@ router.post('/message', authenticateToken, [
         error: 'Usage limit reached',
         message: 'You have reached your monthly AI conversation limit. Please upgrade your plan to continue.',
         usage: req.user.usage,
-        usageStatus
+        usageStatus,
+        redirectTo: 'pricing',
+        upgradeRequired: true
       });
     }
 
-    // Add user message to conversation
-    await conversation.addMessage('user', message);
+    // Check if user has exceeded their conversation limit
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({
+        error: 'User not found',
+        message: 'User account not found. Please log in again.'
+      });
+    }
 
-    // Create AI prompt using simple client customization and conversation history
-    const prompt = createSalesPrompt(message, req.user.settings, conversation.scenario, conversation.clientCustomization, conversation.messages);
+    const usageStatus = user.getUsageStatus();
+    if (!usageStatus.canUseAI) {
+      return res.status(403).json({
+        error: 'Conversation limit reached',
+        message: 'You have reached your monthly AI conversation limit. Please upgrade your plan to continue.',
+        usage: req.user.usage,
+        usageStatus,
+        redirectTo: 'pricing',
+        upgradeRequired: true
+      });
+    }
+
+    // Add user message to conversation and save to database
+    await conversation.addMessageAndSave('user', message);
+
+    // Create AI prompt using client customization and conversation history
+    // Limit conversation history to last 20 messages to prevent token limit issues
+    const recentMessages = conversation.messages.slice(-20);
+    const prompt = createSalesPrompt(message, req.user.settings, conversation.scenario, conversation.clientCustomization, recentMessages);
 
     // If OpenAI is not configured, short-circuit with a friendly error
     if (!openai) {
@@ -808,18 +898,11 @@ router.post('/message', authenticateToken, [
     }
 
     try {
-      // Prepare messages array with conversation history
+      // Prepare messages array with conversation history for current session
+      // The AI client will remember the current conversation but not previous conversations
       const messages = [
         { role: "system", content: prompt }
       ];
-      
-      // Add conversation history as user/assistant messages
-      conversation.messages.forEach(msg => {
-        messages.push({
-          role: msg.role === 'user' ? 'user' : 'assistant',
-          content: msg.content
-        });
-      });
       
       // Get AI response
       const completion = await openai.chat.completions.create({
@@ -832,8 +915,9 @@ router.post('/message', authenticateToken, [
       const aiResponse = completion.choices[0].message.content;
       const tokensUsed = completion.usage.total_tokens;
 
-      // Add AI response to conversation
-      await conversation.addMessage('assistant', aiResponse, tokensUsed);
+      // Add AI response to conversation and save to database
+      // We save after each message pair to prevent data loss, but the frontend won't refresh the conversation list
+      await conversation.addMessageAndSave('assistant', aiResponse, tokensUsed);
 
       // Note: Usage is only incremented when starting a conversation, not for each message
 
@@ -975,6 +1059,36 @@ router.post('/conversation/:id/rate', authenticateToken, [
   } catch (error) {
     console.error('Rate conversation error:', error);
     res.status(500).json({ error: 'Failed to rate conversation' });
+  }
+});
+
+// Save conversation (when chat window is closed but conversation continues)
+router.post('/conversation/:id/save', authenticateToken, async (req, res) => {
+  try {
+    const conversation = await Conversation.findOne({
+      _id: req.params.id,
+      userId: req.user._id,
+      isActive: true
+    });
+
+    if (!conversation) {
+      return res.status(404).json({ error: 'Conversation not found' });
+    }
+
+    // Save the conversation with all current messages
+    await conversation.save();
+
+    res.json({
+      message: 'Conversation saved successfully',
+      conversation: {
+        id: conversation._id,
+        messages: conversation.messages,
+        totalTokens: conversation.totalTokens
+      }
+    });
+  } catch (error) {
+    console.error('Save conversation error:', error);
+    res.status(500).json({ error: 'Failed to save conversation' });
   }
 });
 

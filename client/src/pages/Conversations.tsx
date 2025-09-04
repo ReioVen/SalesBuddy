@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useTranslation } from '../hooks/useTranslation.ts';
 import { useAuth } from '../contexts/AuthContext.tsx';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import { Plus, MessageSquare, User, Building, Briefcase, FileText, Send, X, Star } from 'lucide-react';
@@ -19,6 +20,7 @@ interface ClientCustomization {
   priceSensitivity?: string;
   contentInterest?: string;
   familyType?: string;
+  difficultyPhase?: string;
 }
 
 interface Message {
@@ -52,6 +54,7 @@ interface Conversation {
 const Conversations: React.FC = () => {
   const { t } = useTranslation();
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [showNewChatForm, setShowNewChatForm] = useState(false);
   const [loading, setLoading] = useState(false);
   const [currentConversation, setCurrentConversation] = useState<Conversation | null>(null);
@@ -61,6 +64,7 @@ const Conversations: React.FC = () => {
   const [loadingHistory, setLoadingHistory] = useState(false);
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
   const [showConversationDetail, setShowConversationDetail] = useState(false);
+  const [usageStatus, setUsageStatus] = useState<any>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   
   const [clientCustomization, setClientCustomization] = useState<ClientCustomization>({
@@ -81,8 +85,33 @@ const Conversations: React.FC = () => {
     scrollToBottom();
   }, [currentConversation?.messages]);
 
+  const loadUsageStatus = useCallback(async () => {
+    if (!user) return;
+    
+    try {
+      const response = await axios.get('/api/subscriptions/status');
+      setUsageStatus(response.data.usageStatus);
+    } catch (error: any) {
+      console.error('Failed to load usage status:', error);
+    }
+  }, [user]);
+
+  // Load usage status when component mounts
+  useEffect(() => {
+    if (user) {
+      loadUsageStatus();
+    }
+  }, [user, loadUsageStatus]);
+
   const loadConversationHistory = useCallback(async () => {
     if (!user) return;
+    
+    // Check usage before loading conversation history
+    if (usageStatus && usageStatus.monthlyLimit > 0 && usageStatus.currentUsage >= usageStatus.monthlyLimit) {
+      toast.error('You have reached your monthly conversation limit. Please upgrade your plan to continue.');
+      navigate('/pricing');
+      return;
+    }
     
     setLoadingHistory(true);
     try {
@@ -99,7 +128,7 @@ const Conversations: React.FC = () => {
     } finally {
       setLoadingHistory(false);
     }
-  }, [user]);
+  }, [user, usageStatus, navigate]);
 
   // Load conversation history on component mount
   useEffect(() => {
@@ -108,9 +137,23 @@ const Conversations: React.FC = () => {
     }
   }, [user, loadConversationHistory]);
 
+  // Load conversation history when user first becomes able to use AI
+  useEffect(() => {
+    if (user && usageStatus && usageStatus.canUseAI) {
+      loadConversationHistory();
+    }
+  }, [user, usageStatus, loadConversationHistory]);
+
   const handleStartConversation = async () => {
     if (!user) {
       toast.error('Please log in to start a conversation');
+      return;
+    }
+
+    // Check usage before starting conversation
+    if (usageStatus && usageStatus.monthlyLimit > 0 && usageStatus.currentUsage >= usageStatus.monthlyLimit) {
+      toast.error('You have reached your monthly conversation limit. Please upgrade your plan to continue.');
+      navigate('/pricing');
       return;
     }
 
@@ -147,15 +190,32 @@ const Conversations: React.FC = () => {
         customPrompt: '',
         difficulty: 'medium'
       });
+
+      // Refresh usage status after starting conversation
+      loadUsageStatus();
     } catch (error: any) {
       const message = error.response?.data?.error || 'Failed to start conversation';
-      toast.error(message);
+      
+      // Check if user needs to upgrade their plan
+      if (error.response?.data?.upgradeRequired) {
+        toast.error('You have reached your conversation limit. Please upgrade your plan to continue.');
+        navigate('/pricing');
+      } else {
+        toast.error(message);
+      }
     } finally {
       setLoading(false);
     }
   };
 
   const handleUseDefaultClient = () => {
+    // Check usage before starting conversation
+    if (usageStatus && usageStatus.monthlyLimit > 0 && usageStatus.currentUsage >= usageStatus.monthlyLimit) {
+      toast.error('You have reached your monthly conversation limit. Please upgrade your plan to continue.');
+      navigate('/pricing');
+      return;
+    }
+
     setClientCustomization({
       name: '',
       scenario: 'general',
@@ -170,6 +230,13 @@ const Conversations: React.FC = () => {
 
   const handleSendMessage = async () => {
     if (!newMessage.trim() || !currentConversation || sendingMessage) return;
+
+    // Check usage before sending message
+    if (usageStatus && usageStatus.monthlyLimit > 0 && usageStatus.currentUsage >= usageStatus.monthlyLimit) {
+      toast.error('You have reached your monthly conversation limit. Please upgrade your plan to continue.');
+      navigate('/pricing');
+      return;
+    }
 
     setSendingMessage(true);
     const userMessage = newMessage.trim();
@@ -202,6 +269,7 @@ const Conversations: React.FC = () => {
         }]
       } : null);
 
+      // Note: Usage status is not refreshed after each message to improve performance
     } catch (error: any) {
       const message = error.response?.data?.error || 'Failed to send message';
       toast.error(message);
@@ -217,8 +285,35 @@ const Conversations: React.FC = () => {
     }
   };
 
+  const handleCloseChatWindow = async () => {
+    if (!currentConversation) return;
+    
+    try {
+      // End the conversation and generate AI ratings (same as "End Conversation" button)
+      await axios.post(`/api/ai/conversation/${currentConversation.id}/end`);
+      
+      // Close the chat window
+      setCurrentConversation(null);
+      
+      // Refresh conversation history and usage status to show AI ratings
+      loadConversationHistory();
+      loadUsageStatus();
+    } catch (error: any) {
+      console.error('Failed to end conversation:', error);
+      // Still close the window even if end fails
+      setCurrentConversation(null);
+    }
+  };
+
   const handleEndConversation = async () => {
     if (!currentConversation) return;
+    
+    // Check usage before ending conversation
+    if (usageStatus && usageStatus.monthlyLimit > 0 && usageStatus.currentUsage >= usageStatus.monthlyLimit) {
+      toast.error('You have reached your monthly conversation limit. Please upgrade your plan to continue.');
+      navigate('/pricing');
+      return;
+    }
     
     try {
       await axios.post(`/api/ai/conversation/${currentConversation.id}/end`);
@@ -227,8 +322,9 @@ const Conversations: React.FC = () => {
       // Close the chat window by setting currentConversation to null
       setCurrentConversation(null);
       
-      // Refresh conversation history
+      // Refresh conversation history and usage status
       loadConversationHistory();
+      loadUsageStatus();
       
     } catch (error: any) {
       const message = error.response?.data?.error || 'Failed to end conversation';
@@ -242,6 +338,13 @@ const Conversations: React.FC = () => {
       return;
     }
     
+    // Check usage before viewing conversation
+    if (usageStatus && usageStatus.monthlyLimit > 0 && usageStatus.currentUsage >= usageStatus.monthlyLimit) {
+      toast.error('You have reached your monthly conversation limit. Please upgrade your plan to continue.');
+      navigate('/pricing');
+      return;
+    }
+    
     try {
       const response = await axios.get(`/api/ai/conversation/${conversationId}`);
       // Map _id to id for frontend compatibility
@@ -251,6 +354,9 @@ const Conversations: React.FC = () => {
       };
       setSelectedConversation(conversation);
       setShowConversationDetail(true);
+      
+      // Refresh usage status after viewing conversation
+      loadUsageStatus();
     } catch (error: any) {
       console.error('Failed to load conversation details:', error);
       toast.error('Failed to load conversation details');
@@ -306,6 +412,24 @@ const Conversations: React.FC = () => {
     return t(contentInterest) || contentInterest;
   };
 
+  const getDifficultyPhaseColor = (phase: string) => {
+    switch (phase) {
+      case 'beginning_hard': return 'bg-red-100 text-red-800';
+      case 'middle_hard': return 'bg-orange-100 text-orange-800';
+      case 'closing_hard': return 'bg-purple-100 text-purple-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getDifficultyPhaseTranslation = (phase: string) => {
+    switch (phase) {
+      case 'beginning_hard': return 'Beginning Hard';
+      case 'middle_hard': return 'Middle Hard';
+      case 'closing_hard': return 'Closing Hard';
+      default: return phase;
+    }
+  };
+
   if (!user) {
     return (
       <div className="max-w-6xl mx-auto px-4 py-10">
@@ -320,7 +444,26 @@ const Conversations: React.FC = () => {
   return (
     <div className="max-w-6xl mx-auto px-4 py-10">
       <div className="flex items-center justify-between mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">{t('conversations')}</h1>
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">{t('conversations')}</h1>
+          {/* Usage Status in Header */}
+          {usageStatus && (
+            <div className="mt-2 flex items-center gap-4 text-sm text-gray-600">
+              <span>
+                Conversations: {usageStatus.currentUsage} / {usageStatus.monthlyLimit === -1 ? '∞' : usageStatus.monthlyLimit}
+              </span>
+              {usageStatus.monthlyLimit > 0 && (
+                <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                  usageStatus.usagePercentage >= 90 ? 'bg-red-100 text-red-800' :
+                  usageStatus.usagePercentage >= 75 ? 'bg-orange-100 text-orange-800' :
+                  'bg-blue-100 text-blue-800'
+                }`}>
+                  {usageStatus.usagePercentage}% used
+                </span>
+              )}
+            </div>
+          )}
+        </div>
         <button
           onClick={() => setShowNewChatForm(true)}
           className="btn-primary flex items-center gap-2 px-6 py-3"
@@ -329,6 +472,51 @@ const Conversations: React.FC = () => {
           {t('newChat')}
         </button>
       </div>
+
+      {/* Usage Warning Banner */}
+      {usageStatus && usageStatus.monthlyLimit > 0 && usageStatus.usagePercentage >= 80 && (
+        <div className={`mb-6 p-4 rounded-lg border ${
+          usageStatus.usagePercentage >= 90 ? 'bg-red-50 border-red-200' : 'bg-orange-50 border-orange-200'
+        }`}>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <span className={`text-lg ${
+                usageStatus.usagePercentage >= 90 ? 'text-red-600' : 'text-orange-600'
+              }`}>
+                {usageStatus.usagePercentage >= 90 ? '⚠️' : '⚠️'}
+              </span>
+              <div>
+                <p className={`font-medium ${
+                  usageStatus.usagePercentage >= 90 ? 'text-red-800' : 'text-orange-800'
+                }`}>
+                  {usageStatus.usagePercentage >= 90 
+                    ? 'You have reached your monthly conversation limit!' 
+                    : 'You are approaching your monthly conversation limit'
+                  }
+                </p>
+                <p className={`text-sm ${
+                  usageStatus.usagePercentage >= 90 ? 'text-red-700' : 'text-orange-700'
+                }`}>
+                  {usageStatus.usagePercentage >= 90 
+                    ? 'Upgrade your plan to continue practicing with AI clients.'
+                    : `You have ${usageStatus.remaining} conversations remaining this month.`
+                  }
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={() => navigate('/pricing')}
+              className={`px-4 py-2 rounded-lg font-medium text-sm ${
+                usageStatus.usagePercentage >= 90 
+                  ? 'bg-red-600 text-white hover:bg-red-700' 
+                  : 'bg-orange-600 text-white hover:bg-orange-700'
+              }`}
+            >
+              {usageStatus.usagePercentage >= 90 ? 'Upgrade Now' : 'View Plans'}
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* New Chat Form Modal */}
       {showNewChatForm && (
@@ -353,6 +541,43 @@ const Conversations: React.FC = () => {
                   <p className="text-gray-600 mb-6">
                     Customize your AI client to practice with different types of customers, or use the default client.
                   </p>
+                  
+                  {/* Usage Status Display */}
+                  {usageStatus && (
+                    <div className="bg-gray-50 rounded-lg p-4 mb-6">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-gray-600">Conversations this month:</span>
+                        <span className="font-medium">
+                          {usageStatus.currentUsage} / {usageStatus.monthlyLimit === -1 ? '∞' : usageStatus.monthlyLimit}
+                        </span>
+                      </div>
+                      {usageStatus.monthlyLimit > 0 && (
+                        <div className="mt-2">
+                          <div className="w-full bg-gray-200 rounded-full h-2">
+                            <div 
+                              className={`h-2 rounded-full transition-all ${
+                                usageStatus.usagePercentage >= 90 ? 'bg-red-500' :
+                                usageStatus.usagePercentage >= 75 ? 'bg-orange-500' :
+                                'bg-blue-500'
+                              }`}
+                              style={{ width: `${Math.min(usageStatus.usagePercentage, 100)}%` }}
+                            />
+                          </div>
+                          <div className="flex justify-between text-xs text-gray-500 mt-1">
+                            <span>{usageStatus.usagePercentage}% used</span>
+                            {usageStatus.remaining > 0 && <span>{usageStatus.remaining} remaining</span>}
+                          </div>
+                        </div>
+                      )}
+                      {usageStatus.usagePercentage >= 90 && (
+                        <div className="mt-3 p-3 bg-orange-100 border border-orange-200 rounded-lg">
+                          <p className="text-orange-800 text-sm font-medium">
+                            ⚠️ You're approaching your monthly limit. Consider upgrading your plan.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 <div className="space-y-4">
@@ -543,7 +768,7 @@ const Conversations: React.FC = () => {
                   {t('endConversation')}
                 </button>
                 <button
-                  onClick={() => setCurrentConversation(null)}
+                  onClick={handleCloseChatWindow}
                   className="text-gray-400 hover:text-gray-600"
                 >
                   <X className="w-6 h-6" />
@@ -556,7 +781,8 @@ const Conversations: React.FC = () => {
               currentConversation.clientCustomization.incomeRange || 
               currentConversation.clientCustomization.priceSensitivity ||
               currentConversation.clientCustomization.contentInterest ||
-              currentConversation.clientCustomization.familyType) && (
+              currentConversation.clientCustomization.familyType ||
+              currentConversation.clientCustomization.difficultyPhase) && (
               <div className="px-4 py-3 bg-gray-50 border-b border-gray-200">
                 <div className="flex flex-wrap gap-3 text-sm">
                   {currentConversation.clientCustomization.familySize && (
@@ -582,6 +808,11 @@ const Conversations: React.FC = () => {
                   {currentConversation.clientCustomization.familyType && (
                     <span className="px-2 py-1 bg-pink-100 text-pink-800 rounded-full">
                       🏠 {getFamilyTypeTranslation(currentConversation.clientCustomization.familyType)}
+                    </span>
+                  )}
+                  {currentConversation.clientCustomization.difficultyPhase && (
+                    <span className={`px-2 py-1 rounded-full ${getDifficultyPhaseColor(currentConversation.clientCustomization.difficultyPhase)}`}>
+                      ⚠️ {getDifficultyPhaseTranslation(currentConversation.clientCustomization.difficultyPhase)}
                     </span>
                   )}
                 </div>
@@ -699,7 +930,8 @@ const Conversations: React.FC = () => {
                       conversation.clientCustomization?.incomeRange || 
                       conversation.clientCustomization?.priceSensitivity ||
                       conversation.clientCustomization?.contentInterest ||
-                      conversation.clientCustomization?.familyType) && (
+                      conversation.clientCustomization?.familyType ||
+                      conversation.clientCustomization?.difficultyPhase) && (
                       <div className="flex flex-wrap gap-2 mb-3">
                         {conversation.clientCustomization?.familySize && (
                           <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">
@@ -724,6 +956,11 @@ const Conversations: React.FC = () => {
                         {conversation.clientCustomization?.familyType && (
                           <span className="px-2 py-1 bg-pink-100 text-pink-800 rounded-full text-xs">
                             🏠 {getFamilyTypeTranslation(conversation.clientCustomization.familyType)}
+                          </span>
+                        )}
+                        {conversation.clientCustomization?.difficultyPhase && (
+                          <span className={`px-2 py-1 rounded-full text-xs ${getDifficultyPhaseColor(conversation.clientCustomization.difficultyPhase)}`}>
+                            ⚠️ {getDifficultyPhaseTranslation(conversation.clientCustomization.difficultyPhase)}
                           </span>
                         )}
                       </div>
