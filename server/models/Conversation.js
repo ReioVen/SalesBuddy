@@ -86,28 +86,63 @@ const conversationSchema = new mongoose.Schema({
   aiRatings: {
     introduction: {
       type: Number,
-      min: 1,
-      max: 10
+      min: 0,
+      max: 10,
+      default: 0
     },
     mapping: {
       type: Number,
-      min: 1,
-      max: 10
+      min: 0,
+      max: 10,
+      default: 0
     },
     productPresentation: {
       type: Number,
-      min: 1,
-      max: 10
+      min: 0,
+      max: 10,
+      default: 0
     },
     objectionHandling: {
       type: Number,
-      min: 1,
-      max: 10
+      min: 0,
+      max: 10,
+      default: 0
     },
     close: {
       type: Number,
-      min: 1,
-      max: 10
+      min: 0,
+      max: 10,
+      default: 0
+    },
+    totalScore: {
+      type: Number,
+      default: 0
+    },
+    maxPossibleScore: {
+      type: Number,
+      default: 0
+    },
+    occurredPhases: {
+      introduction: {
+        type: Boolean,
+        default: false
+      },
+      mapping: {
+        type: Boolean,
+        default: false
+      },
+      productPresentation: {
+        type: Boolean,
+        default: false
+      },
+      objectionHandling: {
+        type: Boolean,
+        default: false
+      },
+      close: {
+        type: Boolean,
+        default: false
+      }
     }
   },
   aiRatingFeedback: String,

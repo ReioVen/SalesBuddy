@@ -82,23 +82,23 @@ if (openaiApiKey && openaiApiKey.trim() !== '') {
    const generatePersonalityTraits = () => {
      const traits = [];
      
-     // 10% chance - client doesn't want services at all
-     if (Math.random() < 0.10) {
+     // 8% chance - client doesn't want services at all
+     if (Math.random() < 0.08) {
        traits.push('completely_uninterested');
      }
      
-     // 20% chance - client is interested and actually listens
-     if (Math.random() < 0.20) {
+     // 15% chance - client is interested and actually listens
+     if (Math.random() < 0.15) {
        traits.push('interested_listener');
      }
      
-     // 20% chance - client is talkative
-     if (Math.random() < 0.20) {
+     // 12% chance - client is talkative
+     if (Math.random() < 0.12) {
        traits.push('talkative');
      }
      
-     // 15% chance - client is goofy and makes jokes
-     if (Math.random() < 0.15) {
+     // 10% chance - client is goofy and makes jokes
+     if (Math.random() < 0.10) {
        traits.push('goofy_jokester');
      }
      
@@ -107,9 +107,39 @@ if (openaiApiKey && openaiApiKey.trim() !== '') {
        traits.push('confused');
      }
      
-     // 10% chance - client is enthusiastic about the topic but still possible to not lead to a sale
-     if (Math.random() < 0.10) {
+     // 8% chance - client is enthusiastic about the topic but still possible to not lead to a sale
+     if (Math.random() < 0.08) {
        traits.push('enthusiastic_but_undecided');
+     }
+     
+     // 8% chance - client is naturally curious and asks lots of questions
+     if (Math.random() < 0.08) {
+       traits.push('naturally_curious');
+     }
+     
+     // 6% chance - client is busy but polite
+     if (Math.random() < 0.06) {
+       traits.push('busy_but_polite');
+     }
+     
+     // 5% chance - client is friendly and chatty
+     if (Math.random() < 0.05) {
+       traits.push('friendly_chatty');
+     }
+     
+     // 4% chance - client is analytical and detail-oriented
+     if (Math.random() < 0.04) {
+       traits.push('analytical_detail_oriented');
+     }
+     
+     // 3% chance - client is cautious but open-minded
+     if (Math.random() < 0.03) {
+       traits.push('cautious_but_open');
+     }
+     
+     // 2% chance - client is impatient and direct
+     if (Math.random() < 0.02) {
+       traits.push('impatient_direct');
      }
      
      // If no traits were selected, add a default trait
@@ -121,12 +151,12 @@ if (openaiApiKey && openaiApiKey.trim() !== '') {
    };
 
    // NEW: Generate difficulty phase randomization
-   // 30% beginning hard, 40% middle hard, 30% closing hard
+   // 15% beginning hard, 50% middle hard, 35% closing hard
    const generateDifficultyPhase = () => {
      const random = Math.random();
-     if (random < 0.30) {
+     if (random < 0.15) {
        return 'beginning_hard';
-     } else if (random < 0.70) {
+     } else if (random < 0.65) {
        return 'middle_hard';
      } else {
        return 'closing_hard';
@@ -331,25 +361,43 @@ ${conversationHistory.map(msg => `${msg.role === 'user' ? 'CALLER' : 'YOU'}: ${m
        clientCustomization.personalityTraits.forEach(trait => {
          switch (trait) {
            case 'completely_uninterested':
-             personalityInstructions += 'You are completely uninterested in any services and will firmly decline all offers. You may be polite but very direct about not wanting to continue the conversation.';
+             personalityInstructions += 'You are completely uninterested in any services and will firmly decline all offers. You may be polite but very direct about not wanting to continue the conversation. Express your disinterest in varied ways - sometimes brief, sometimes more detailed, but always clear.';
              break;
            case 'interested_listener':
-             personalityInstructions += 'You are genuinely interested in learning more and will listen attentively. You ask thoughtful questions and consider the information provided.';
+             personalityInstructions += 'You are genuinely interested in learning more and will listen attentively. You ask thoughtful questions and consider the information provided. Show your interest through varied questions and responses that demonstrate engagement.';
              break;
            case 'talkative':
-             personalityInstructions += 'You are very talkative and enjoy conversation. You may go off on tangents and share personal stories. You need to be gently guided back to the topic.';
+             personalityInstructions += 'You are very talkative and enjoy conversation. You may go off on tangents and share personal stories. You need to be gently guided back to the topic. Use varied storytelling and conversational styles.';
              break;
            case 'goofy_jokester':
-             personalityInstructions += 'You have a playful sense of humor and make jokes throughout the conversation. You may use sarcasm or witty remarks. Keep the mood light but stay on topic.';
+             personalityInstructions += 'You have a playful sense of humor and make jokes throughout the conversation. You may use sarcasm or witty remarks. Keep the mood light but stay on topic. Use different types of humor and wit.';
              break;
            case 'confused':
-             personalityInstructions += 'You seem confused about what is being offered and need things explained very simply. You ask clarifying questions frequently and may misunderstand basic concepts.';
+             personalityInstructions += 'You seem confused about what is being offered and need things explained very simply. You ask clarifying questions frequently and may misunderstand basic concepts. Express confusion in different ways and ask varied clarifying questions.';
              break;
            case 'enthusiastic_but_undecided':
-             personalityInstructions += 'You are enthusiastic about the topic and show genuine interest, but you are still undecided about making a purchase. You need convincing despite your enthusiasm.';
+             personalityInstructions += 'You are enthusiastic about the topic and show genuine interest, but you are still undecided about making a purchase. You need convincing despite your enthusiasm. Show enthusiasm in varied ways while expressing hesitation differently each time.';
+             break;
+           case 'naturally_curious':
+             personalityInstructions += 'You are naturally curious and ask lots of questions about everything. You want to understand how things work and why they would benefit you. You enjoy learning new things. Ask varied types of questions and express curiosity in different ways.';
+             break;
+           case 'busy_but_polite':
+             personalityInstructions += 'You are busy but polite. You may mention being in a hurry or having other things to do, but you are respectful and will give them a few minutes to explain. You appreciate when people are direct and to the point. Express your time constraints in varied, polite ways.';
+             break;
+           case 'friendly_chatty':
+             personalityInstructions += 'You are naturally friendly and chatty. You enjoy small talk and building rapport. You may ask about their day or share something about yourself. You are generally positive and upbeat. Use varied friendly expressions and conversation starters.';
+             break;
+           case 'analytical_detail_oriented':
+             personalityInstructions += 'You are analytical and detail-oriented. You want specific information, data, and facts. You ask detailed questions and want to understand the technical aspects. You make decisions based on logic and evidence. Ask varied analytical questions and express your need for data in different ways.';
+             break;
+           case 'cautious_but_open':
+             personalityInstructions += 'You are cautious but open-minded. You are willing to listen but need to be convinced. You ask questions to understand the risks and benefits. You take your time to make decisions. Express caution and openness in varied ways throughout the conversation.';
+             break;
+           case 'impatient_direct':
+             personalityInstructions += 'You are impatient and direct. You want people to get to the point quickly. You may interrupt if they are taking too long. You appreciate efficiency and clear communication. Express impatience and directness in varied ways.';
              break;
            case 'standard_skeptical':
-             personalityInstructions += 'You are the standard skeptical customer - cautious, asking questions, and needing proof before making decisions.';
+             personalityInstructions += 'You are the standard skeptical customer - cautious, asking questions, and needing proof before making decisions. Express skepticism in varied ways and ask different types of challenging questions.';
              break;
          }
        });
@@ -434,24 +482,41 @@ ${clientCustomization.customPrompt ? `Detailed Profile: ${clientCustomization.cu
   16. If the person calling is being inappropriate, rude, or doing a bad job, respond as a real client would: politely decline and end the conversation (e.g., "I'm not interested, thank you" or "I don't think this is a good fit").
   17. NEVER lecture the person calling or break character to give feedback - just respond as a real client would.
   18. If you want to end the conversation, do so naturally as a client would (hang up, say goodbye, etc.).
-  19. IMPORTANT: You are receiving a COLD CALL or UNEXPECTED CALL. You don't know why they're calling or what they want. Act confused, skeptical, or busy initially. Ask "Who is this?", "How did you get my number?", "What is this about?", "I don't have time for this", etc.
-  20. Don't be immediately helpful or welcoming - you're being interrupted by an unexpected sales call.
-  21. When the person calling tries to explain what they offer, be dismissive but not immediately hostile:
-      - "I'm fine with my current provider, thanks"
-      - "I'm not really looking to change anything right now"
-      - "I'm happy with what I have"
-      - "I don't need anything new"
-      - "I'm busy, can you just tell me what this is about?"
-  22. If the person calling goes off-topic or asks strange questions:
-      - "What are you talking about? This is a sales call, right?"
-      - "I don't understand what you're asking for. What service are you selling?"
-      - "This is getting weird. Are you actually trying to sell me something?"
-      - "I'm hanging up if you don't get to the point."
-  23. Give the person calling a chance to explain their value before dismissing them completely.
-  24. Only become aggressive and ask to be removed from lists if they're rude, pushy, or clearly not listening to your objections.
-  25. Be challenging but fair - provide realistic sales resistance that good salespeople can overcome.
-  26. If the conversation becomes too strange or off-topic, end it naturally: "I'm not interested, goodbye" or simply hang up.
+  19. **CRITICAL FOR VARIETY**: NEVER use the same phrases or responses repeatedly. Always vary your wording, sentence structure, and expression. Use different words to express the same meaning. Be creative with your language while staying in character.
+  20. **NATURAL SPEECH PATTERNS**: Use contractions, informal language, and natural speech patterns. Vary your sentence length and structure. Sometimes be brief, sometimes elaborate.
+  21. **UNIQUE RESPONSES**: Each response should feel fresh and unique. Avoid formulaic responses. Think about how a real person would naturally express themselves in this situation.
+  22. IMPORTANT: You are receiving a COLD CALL or UNEXPECTED CALL. Your initial response should vary based on your personality traits and current situation. Don't always use the same defensive responses.
+  23. VARY YOUR INITIAL RESPONSES based on your personality:
+      - Some clients might be curious: "Oh, hello. What's this about?"
+      - Some might be busy but polite: "Hi, I'm a bit busy but I can spare a minute"
+      - Some might be friendly: "Hello! How can I help you?"
+      - Some might be direct: "Yes, what do you need?"
+      - Some might be skeptical: "Who is this? How did you get my number?"
+      - Some might be confused: "I'm sorry, what company did you say you're with?"
+  24. When the person calling tries to explain what they offer, respond naturally based on your personality:
+      - Curious clients ask questions: "That sounds interesting, tell me more"
+      - Busy clients want efficiency: "I'm in a hurry, can you be quick?"
+      - Skeptical clients are cautious: "I'm not sure I need anything like that"
+      - Friendly clients are open: "Oh, that could be useful, how does it work?"
+  25. If the person calling goes off-topic or asks strange questions, respond naturally:
+      - "I'm not sure I understand what you're asking"
+      - "Could you clarify what service you're offering?"
+      - "This seems a bit confusing, what exactly are you selling?"
+  26. Give the person calling a chance to explain their value before dismissing them completely.
+  27. Only become aggressive and ask to be removed from lists if they're rude, pushy, or clearly not listening to your objections.
+  28. Be challenging but fair - provide realistic sales resistance that good salespeople can overcome.
+  29. If the conversation becomes too strange or off-topic, end it naturally: "I'm not interested, goodbye" or simply hang up.
  
+**RESPONSE VARIETY GUIDELINES:**
+- NEVER repeat the same phrases or sentence structures
+- Use different words to express similar meanings (e.g., "interesting" vs "fascinating" vs "intriguing")
+- Vary your sentence length - sometimes short and direct, sometimes longer and more detailed
+- Use different conversation starters and transitions
+- Express the same sentiment in multiple ways throughout the conversation
+- Be spontaneous and natural - real people don't use the same phrases repeatedly
+- Mix formal and informal language based on your personality
+- Use different question structures and response patterns
+
 ${conversationHistory.length > 0 ? `
 CURRENT CONVERSATION HISTORY (this is the same call we're having right now):
 ${conversationHistory.map(msg => `${msg.role === 'user' ? 'CALLER' : 'YOU'}: ${msg.content}`).join('\n')}
@@ -517,40 +582,117 @@ ${conversationHistory.map(msg => `${msg.role === 'user' ? 'CALLER' : 'YOU'}: ${m
   return basePrompt;
 };
 
+// Analyze conversation to detect which sales phases actually occurred
+const analyzeConversationPhases = (messages) => {
+  const conversationText = messages.map(msg => 
+    `${msg.role === 'user' ? 'SALESPERSON' : 'CLIENT'}: ${msg.content}`
+  ).join('\n').toLowerCase();
+
+  const phases = {
+    introduction: false,
+    mapping: false,
+    productPresentation: false,
+    objectionHandling: false,
+    close: false
+  };
+
+  // Check for introduction phase indicators
+  if (conversationText.includes('hello') || conversationText.includes('hi') || 
+      conversationText.includes('this is') || conversationText.includes('calling from') ||
+      conversationText.includes('my name is') || conversationText.includes('i\'m')) {
+    phases.introduction = true;
+  }
+
+  // Check for mapping phase indicators (understanding needs, asking questions)
+  if (conversationText.includes('what do you') || conversationText.includes('how can i help') ||
+      conversationText.includes('tell me about') || conversationText.includes('what are your') ||
+      conversationText.includes('do you have') || conversationText.includes('what challenges') ||
+      conversationText.includes('what problems') || conversationText.includes('what issues')) {
+    phases.mapping = true;
+  }
+
+  // Check for product presentation phase indicators
+  if (conversationText.includes('our service') || conversationText.includes('our product') ||
+      conversationText.includes('we offer') || conversationText.includes('we provide') ||
+      conversationText.includes('this solution') || conversationText.includes('this service') ||
+      conversationText.includes('benefits') || conversationText.includes('features') ||
+      conversationText.includes('value') || conversationText.includes('help you')) {
+    phases.productPresentation = true;
+  }
+
+  // Check for objection handling phase indicators
+  if (conversationText.includes('but') || conversationText.includes('however') ||
+      conversationText.includes('not interested') || conversationText.includes('don\'t need') ||
+      conversationText.includes('too expensive') || conversationText.includes('think about it') ||
+      conversationText.includes('concern') || conversationText.includes('worry') ||
+      conversationText.includes('objection') || conversationText.includes('hesitant')) {
+    phases.objectionHandling = true;
+  }
+
+  // Check for close phase indicators
+  if (conversationText.includes('next step') || conversationText.includes('schedule') ||
+      conversationText.includes('follow up') || conversationText.includes('meeting') ||
+      conversationText.includes('call back') || conversationText.includes('send information') ||
+      conversationText.includes('proposal') || conversationText.includes('contract') ||
+      conversationText.includes('sign up') || conversationText.includes('get started')) {
+    phases.close = true;
+  }
+
+  return phases;
+};
+
 // Create AI rating prompt for conversation analysis
 const createRatingPrompt = (messages) => {
   const conversationText = messages.map(msg => 
     `${msg.role === 'user' ? 'SALESPERSON' : 'CLIENT'}: ${msg.content}`
   ).join('\n');
 
-   return `You are an expert sales trainer analyzing a sales conversation. Please rate your performance in each phase on a scale of 1-10.
- 
- CONVERSATION:
- ${conversationText}
- 
- Please analyze the conversation and provide ratings for each sales phase:
- 
- 1. INTRODUCTION (1-10): How well did you introduce yourself, establish rapport, and set the stage for the conversation?
- 
- 2. MAPPING (1-10): How effectively did you understand the client's needs, pain points, and situation?
- 
- 3. PRODUCT PRESENTATION (1-10): How well did you present your solution and demonstrate value?
- 
- 4. OBJECTION HANDLING (1-10): How effectively did you address concerns and overcome objections?
- 
- 5. CLOSE (1-10): How well did you attempt to close the deal or move to next steps?
- 
- Respond in this exact JSON format:
- {
-   "introduction": [number 1-10],
-   "mapping": [number 1-10],
-   "productPresentation": [number 1-10],
-   "objectionHandling": [number 1-10],
-   "close": [number 1-10],
-   "feedback": "[brief overall feedback and suggestions for improvement. Use 'you' instead of 'the salesperson' throughout the feedback.]"
- }
- 
- Be fair but critical. Consider industry best practices for sales conversations.`;
+  // Analyze which phases actually occurred
+  const occurredPhases = analyzeConversationPhases(messages);
+  const totalMessages = messages.length;
+  
+  // Determine if conversation ended too early
+  const endedEarly = totalMessages < 6; // Less than 3 exchanges (6 messages total)
+  const earlyTerminationReason = endedEarly ? 
+    (conversationText.toLowerCase().includes('not interested') ? 'Client declined early' :
+     conversationText.toLowerCase().includes('busy') ? 'Client was too busy' :
+     conversationText.toLowerCase().includes('hang up') ? 'Client hung up' :
+     'Conversation ended abruptly') : null;
+
+  let prompt = `You are an expert sales trainer analyzing a sales conversation. 
+
+CONVERSATION:
+${conversationText}
+
+CONVERSATION ANALYSIS:
+- Total messages: ${totalMessages}
+- Conversation ended early: ${endedEarly ? 'YES' : 'NO'}
+${earlyTerminationReason ? `- Early termination reason: ${earlyTerminationReason}` : ''}
+
+PHASES THAT OCCURRED:
+- Introduction: ${occurredPhases.introduction ? 'YES' : 'NO'}
+- Mapping: ${occurredPhases.mapping ? 'YES' : 'NO'}
+- Product Presentation: ${occurredPhases.productPresentation ? 'YES' : 'NO'}
+- Objection Handling: ${occurredPhases.objectionHandling ? 'YES' : 'NO'}
+- Close: ${occurredPhases.close ? 'YES' : 'NO'}
+
+INSTRUCTIONS:
+1. Rate ONLY the phases that actually occurred in the conversation (1-10 scale)
+2. Give a rating of 0 for phases that did NOT occur
+3. If the conversation ended early, explain why and provide specific feedback about what went wrong
+4. Be fair but critical. Consider industry best practices for sales conversations.
+
+Respond in this exact JSON format:
+{
+  "introduction": ${occurredPhases.introduction ? '[number 1-10]' : '0'},
+  "mapping": ${occurredPhases.mapping ? '[number 1-10]' : '0'},
+  "productPresentation": ${occurredPhases.productPresentation ? '[number 1-10]' : '0'},
+  "objectionHandling": ${occurredPhases.objectionHandling ? '[number 1-10]' : '0'},
+  "close": ${occurredPhases.close ? '[number 1-10]' : '0'},
+  "feedback": "[Provide specific feedback about what went wrong and suggestions for improvement. If conversation ended early, explain why and what could have been done differently. Use 'you' instead of 'the salesperson' throughout the feedback.]"
+}`;
+
+  return prompt;
 };
 
 // Start new conversation
@@ -1127,13 +1269,42 @@ router.post('/conversation/:id/end', authenticateToken, async (req, res) => {
         try {
           const ratings = JSON.parse(ratingResponse);
           
+          // Calculate total score (only count phases that actually occurred)
+          const occurredPhases = analyzeConversationPhases(conversation.messages);
+          let totalScore = 0;
+          let maxPossibleScore = 0;
+          
+          if (occurredPhases.introduction) {
+            totalScore += ratings.introduction || 0;
+            maxPossibleScore += 10;
+          }
+          if (occurredPhases.mapping) {
+            totalScore += ratings.mapping || 0;
+            maxPossibleScore += 10;
+          }
+          if (occurredPhases.productPresentation) {
+            totalScore += ratings.productPresentation || 0;
+            maxPossibleScore += 10;
+          }
+          if (occurredPhases.objectionHandling) {
+            totalScore += ratings.objectionHandling || 0;
+            maxPossibleScore += 10;
+          }
+          if (occurredPhases.close) {
+            totalScore += ratings.close || 0;
+            maxPossibleScore += 10;
+          }
+          
           // Update conversation with AI ratings
           conversation.aiRatings = {
-            introduction: ratings.introduction,
-            mapping: ratings.mapping,
-            productPresentation: ratings.productPresentation,
-            objectionHandling: ratings.objectionHandling,
-            close: ratings.close
+            introduction: ratings.introduction || 0,
+            mapping: ratings.mapping || 0,
+            productPresentation: ratings.productPresentation || 0,
+            objectionHandling: ratings.objectionHandling || 0,
+            close: ratings.close || 0,
+            totalScore: totalScore,
+            maxPossibleScore: maxPossibleScore,
+            occurredPhases: occurredPhases
           };
           conversation.aiRatingFeedback = ratings.feedback;
           
