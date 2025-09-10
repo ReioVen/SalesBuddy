@@ -76,7 +76,16 @@ const conversationSchema = new mongoose.Schema({
      communicationStyle: String,
      preferredChannel: String,
      buyingHistory: String,
-     values: String
+     values: String,
+     // NEW: Advanced human-like characteristics
+     energyLevel: String,
+     cognitiveBias: String,
+     timeContextNew: String,
+     communicationGlitches: String,
+     personalityShifts: String,
+     emotionalTriggers: String,
+     randomAddOns: String,
+     memoryRecall: String
   },
   messages: [messageSchema],
   totalTokens: {

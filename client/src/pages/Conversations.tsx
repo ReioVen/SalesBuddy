@@ -32,6 +32,15 @@ interface ClientCustomization {
   preferredChannel?: string;
   buyingHistory?: string;
   values?: string;
+  // NEW: Advanced human-like characteristics
+  energyLevel?: string;
+  cognitiveBias?: string;
+  timeContextNew?: string;
+  communicationGlitches?: string;
+  personalityShifts?: string;
+  emotionalTriggers?: string;
+  randomAddOns?: string;
+  memoryRecall?: string;
   // Existing attributes
   personalityTraits?: string[];
   sellingPoints?: string[];
@@ -398,11 +407,21 @@ const Conversations: React.FC = () => {
   };
 
   const calculateTotalPoints = (aiRatings: Conversation['aiRatings']) => {
-    if (!aiRatings) return 0;
-    return Object.values(aiRatings).reduce((sum, rating) => sum + rating, 0);
+    if (!aiRatings || typeof aiRatings !== 'object') return 0;
+    try {
+      // Only include the actual phase ratings, exclude metadata fields
+      const validPhases = ['introduction', 'mapping', 'productPresentation', 'objectionHandling', 'close'];
+      return Object.entries(aiRatings)
+        .filter(([phase, rating]) => validPhases.includes(phase) && typeof rating === 'number')
+        .reduce((sum, [phase, rating]) => sum + rating, 0);
+    } catch (error) {
+      console.error('Error calculating total points:', error);
+      return 0;
+    }
   };
 
   const getRatingColor = (rating: number) => {
+    if (typeof rating !== 'number' || isNaN(rating)) return 'text-gray-600';
     if (rating >= 8) return 'text-green-600';
     if (rating >= 6) return 'text-yellow-600';
     return 'text-red-600';
@@ -989,11 +1008,16 @@ const Conversations: React.FC = () => {
                             {t('totalScore')}: <span className="text-lg font-bold text-blue-600">{calculateTotalPoints(conversation.aiRatings)}/50</span>
                           </span>
                           <div className="flex gap-2">
-                            {Object.entries(conversation.aiRatings).map(([phase, rating]) => (
-                              <span key={phase} className={`px-2 py-1 rounded text-xs font-medium ${getRatingColor(rating)}`}>
-                                {phase.charAt(0).toUpperCase() + phase.slice(1)}: {rating}/10
-                              </span>
-                            ))}
+                        {conversation.aiRatings && Object.entries(conversation.aiRatings)
+                          .filter(([phase, rating]) => {
+                            const validPhases = ['introduction', 'mapping', 'productPresentation', 'objectionHandling', 'close'];
+                            return validPhases.includes(phase) && typeof rating === 'number';
+                          })
+                          .map(([phase, rating]) => (
+                            <span key={phase} className={`px-2 py-1 rounded text-xs font-medium ${getRatingColor(rating)}`}>
+                              {phase.charAt(0).toUpperCase() + phase.slice(1)}: {rating}/10
+                            </span>
+                          ))}
                           </div>
                         </div>
                         {conversation.aiRatingFeedback && (
@@ -1074,12 +1098,17 @@ const Conversations: React.FC = () => {
                         <span className="ml-2 text-2xl font-bold text-blue-600">{calculateTotalPoints(selectedConversation.aiRatings)}/50</span>
                       </div>
                       <div className="space-y-2">
-                        {Object.entries(selectedConversation.aiRatings).map(([phase, rating]) => (
-                          <div key={phase} className="flex items-center justify-between">
-                            <span className="font-medium text-gray-700 capitalize">{phase.replace(/([A-Z])/g, ' $1')}:</span>
-                            <span className={`text-lg font-semibold ${getRatingColor(rating)}`}>{rating}/10</span>
-                          </div>
-                        ))}
+                        {selectedConversation.aiRatings && Object.entries(selectedConversation.aiRatings)
+                          .filter(([phase, rating]) => {
+                            const validPhases = ['introduction', 'mapping', 'productPresentation', 'objectionHandling', 'close'];
+                            return validPhases.includes(phase) && typeof rating === 'number';
+                          })
+                          .map(([phase, rating]) => (
+                            <div key={phase} className="flex items-center justify-between">
+                              <span className="font-medium text-gray-700 capitalize">{phase.replace(/([A-Z])/g, ' $1')}:</span>
+                              <span className={`text-lg font-semibold ${getRatingColor(rating)}`}>{rating}/10</span>
+                            </div>
+                          ))}
                       </div>
                       {selectedConversation.aiRatingFeedback && (
                         <div className="mt-4 p-3 bg-gray-50 rounded-lg">

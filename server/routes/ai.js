@@ -5,6 +5,7 @@ const mongoose = require('mongoose');
 const User = require('../models/User');
 const Conversation = require('../models/Conversation');
 const { authenticateToken } = require('../middleware/auth');
+const { firstNames, lastNames } = require('../data/names');
 
 const router = express.Router();
 
@@ -54,9 +55,7 @@ if (openaiApiKey && openaiApiKey.trim() !== '') {
    const industry = industries[Math.floor(Math.random() * industries.length)];
    const role = roles[Math.floor(Math.random() * roles.length)];
    
-   // Generate random names
-   const firstNames = ['Alex', 'Jordan', 'Casey', 'Taylor', 'Morgan', 'Riley', 'Quinn', 'Avery', 'Blake', 'Dakota'];
-   const lastNames = ['Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis', 'Rodriguez', 'Martinez'];
+   // Generate random names from expanded pools (thousands of combinations)
    
    const firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
    const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
@@ -275,6 +274,132 @@ if (openaiApiKey && openaiApiKey.trim() !== '') {
      };
    };
 
+   // NEW: Generate energy levels (fatigue/alertness)
+   const generateEnergyLevel = () => {
+     const random = Math.random();
+     if (random < 0.20) {
+       return 'energetic';
+     } else if (random < 0.45) {
+       return 'tired';
+     } else if (random < 0.55) {
+       return 'overcaffeinated';
+     } else {
+       return 'normal';
+     }
+   };
+
+   // NEW: Generate cognitive biases
+   const generateCognitiveBias = () => {
+     const random = Math.random();
+     if (random < 0.15) {
+       return 'anchoring_bias';
+     } else if (random < 0.35) {
+       return 'status_quo_bias';
+     } else if (random < 0.45) {
+       return 'scarcity_bias';
+     } else if (random < 0.55) {
+       return 'authority_bias';
+     } else if (random < 0.75) {
+       return 'loss_aversion';
+     } else {
+       return 'no_bias';
+     }
+   };
+
+   // NEW: Generate time context (day-of-week/time-of-day)
+   const generateTimeContextNew = () => {
+     const random = Math.random();
+     if (random < 0.15) {
+       return 'monday_morning';
+     } else if (random < 0.30) {
+       return 'friday_afternoon';
+     } else if (random < 0.60) {
+       return 'midday';
+     } else if (random < 0.70) {
+       return 'late_evening';
+     } else {
+       return 'neutral_time';
+     }
+   };
+
+   // NEW: Generate communication glitches
+   const generateCommunicationGlitches = () => {
+     const random = Math.random();
+     if (random < 0.10) {
+       return 'mishears_words';
+     } else if (random < 0.15) {
+       return 'lag_or_delay';
+     } else if (random < 0.25) {
+       return 'background_interruption';
+     } else if (random < 0.30) {
+       return 'tech_issue';
+     } else {
+       return 'clear_connection';
+     }
+   };
+
+   // NEW: Generate personality shifts
+   const generatePersonalityShifts = () => {
+     const random = Math.random();
+     if (random < 0.20) {
+       return 'softening';
+     } else if (random < 0.35) {
+       return 'hardening';
+     } else if (random < 0.45) {
+       return 'flip_flop';
+     } else {
+       return 'steady';
+     }
+   };
+
+   // NEW: Generate emotional triggers
+   const generateEmotionalTriggers = () => {
+     const random = Math.random();
+     if (random < 0.25) {
+       return 'sensitive_to_price';
+     } else if (random < 0.40) {
+       return 'sensitive_to_time';
+     } else if (random < 0.50) {
+       return 'sensitive_to_authority';
+     } else if (random < 0.65) {
+       return 'sensitive_to_relationships';
+     } else {
+       return 'balanced';
+     }
+   };
+
+   // NEW: Generate random personality add-ons
+   const generateRandomAddOns = () => {
+     const random = Math.random();
+     if (random < 0.10) {
+       return 'story_teller';
+     } else if (random < 0.18) {
+       return 'complainer';
+     } else if (random < 0.30) {
+       return 'optimist';
+     } else if (random < 0.40) {
+       return 'pessimist';
+     } else if (random < 0.50) {
+       return 'indifferent';
+     } else {
+       return 'no_addon';
+     }
+   };
+
+   // NEW: Generate memory & recall
+   const generateMemoryRecall = () => {
+     const random = Math.random();
+     if (random < 0.40) {
+       return 'good_memory';
+     } else if (random < 0.60) {
+       return 'poor_memory';
+     } else if (random < 0.75) {
+       return 'selective_memory';
+     } else {
+       return 'average';
+     }
+   };
+
    // NEW: Generate difficulty phase randomization
    // 15% beginning hard, 50% middle hard, 35% closing hard
    const generateDifficultyPhase = () => {
@@ -364,6 +489,16 @@ if (openaiApiKey && openaiApiKey.trim() !== '') {
    const decisionStyle = generateDecisionStyle();
    const randomEvents = generateRandomEvents();
    const personaDepth = generatePersonaDepth();
+   
+   // NEW: Generate all human-like characteristics
+   const energyLevel = generateEnergyLevel();
+   const cognitiveBias = generateCognitiveBias();
+   const timeContextNew = generateTimeContextNew();
+   const communicationGlitches = generateCommunicationGlitches();
+   const personalityShifts = generatePersonalityShifts();
+   const emotionalTriggers = generateEmotionalTriggers();
+   const randomAddOns = generateRandomAddOns();
+   const memoryRecall = generateMemoryRecall();
 
            const profile = {
       name: `${firstName} ${lastName}`,
@@ -396,11 +531,20 @@ if (openaiApiKey && openaiApiKey.trim() !== '') {
       communicationStyle: personaDepth.communicationStyle,
       preferredChannel: personaDepth.preferredChannel,
       buyingHistory: personaDepth.buyingHistory,
-      values: personaDepth.values
+      values: personaDepth.values,
+      // NEW: Add all human-like characteristics
+      energyLevel: energyLevel,
+      cognitiveBias: cognitiveBias,
+      timeContextNew: timeContextNew,
+      communicationGlitches: communicationGlitches,
+      personalityShifts: personalityShifts,
+      emotionalTriggers: emotionalTriggers,
+      randomAddOns: randomAddOns,
+      memoryRecall: memoryRecall
     };
    
              // Validate that all required properties are present
-     const requiredProps = ['name', 'familySize', 'income', 'incomeRange', 'priceSensitivity', 'priceContext', 'familyType', 'personality', 'industry', 'role', 'specificDetails', 'fullProfile', 'personalityTraits', 'difficultyPhase', 'sellingPoints', 'problems', 'weakSpots', 'moodModifier', 'microTraits', 'timeContext', 'decisionStyle', 'randomEvents', 'communicationStyle', 'preferredChannel', 'buyingHistory', 'values'];
+     const requiredProps = ['name', 'familySize', 'income', 'incomeRange', 'priceSensitivity', 'priceContext', 'familyType', 'personality', 'industry', 'role', 'specificDetails', 'fullProfile', 'personalityTraits', 'difficultyPhase', 'sellingPoints', 'problems', 'weakSpots', 'moodModifier', 'microTraits', 'timeContext', 'decisionStyle', 'randomEvents', 'communicationStyle', 'preferredChannel', 'buyingHistory', 'values', 'energyLevel', 'cognitiveBias', 'timeContextNew', 'communicationGlitches', 'personalityShifts', 'emotionalTriggers', 'randomAddOns', 'memoryRecall'];
    for (const prop of requiredProps) {
      if (profile[prop] === undefined || profile[prop] === null) {
        console.error(`Missing required property: ${prop}`);
@@ -745,6 +889,192 @@ ${conversationHistory.map(msg => `${msg.role === 'user' ? 'CALLER' : 'YOU'}: ${m
       }
     }
 
+    // NEW: Add energy level instructions
+    let energyLevelInstructions = '';
+    if (clientCustomization.energyLevel) {
+      switch (clientCustomization.energyLevel) {
+        case 'energetic':
+          energyLevelInstructions = 'You are energetic and upbeat! You are engaged and ask many questions. You give longer responses and show more enthusiasm. Example: "That sounds amazing! Tell me everything about it!"';
+          break;
+        case 'tired':
+          energyLevelInstructions = 'You are tired and have less patience. You give slower replies and sigh often. You want shorter responses and to end the conversation quickly. Example: "Yeah, okay... *sigh* what was that again?"';
+          break;
+        case 'overcaffeinated':
+          energyLevelInstructions = 'You are overcaffeinated and scattered! You talk fast and jump between topics. You have rapid speech and tangential conversations. Example: "Wait, that reminds me of something else, but first tell me about the price, no wait, the features..."';
+          break;
+        case 'normal':
+          energyLevelInstructions = 'You have normal energy levels and standard response patterns.';
+          break;
+      }
+    }
+
+    // NEW: Add cognitive bias instructions
+    let cognitiveBiasInstructions = '';
+    if (clientCustomization.cognitiveBias) {
+      switch (clientCustomization.cognitiveBias) {
+        case 'anchoring_bias':
+          cognitiveBiasInstructions = 'You have anchoring bias - you fixate on the first number or feature mentioned. Example: "You said $50, so that\'s what I\'m thinking about now."';
+          break;
+        case 'status_quo_bias':
+          cognitiveBiasInstructions = 'You have status quo bias - you resist change and prefer what you already use. Example: "We\'ve been doing it this way for years, why change now?"';
+          break;
+        case 'scarcity_bias':
+          cognitiveBiasInstructions = 'You have scarcity bias - you respond strongly to "limited time offers" and fear missing out. Example: "Only 3 spots left? That makes me nervous about missing out."';
+          break;
+        case 'authority_bias':
+          cognitiveBiasInstructions = 'You have authority bias - you are swayed by references to experts and case studies. Example: "If Harvard Business Review says it works, I\'m interested."';
+          break;
+        case 'loss_aversion':
+          cognitiveBiasInstructions = 'You have loss aversion - you hate risk and have stronger reactions to potential loss than gain. Example: "What if this doesn\'t work? I can\'t afford to lose money."';
+          break;
+        case 'no_bias':
+          cognitiveBiasInstructions = 'You make relatively logical decisions without strong cognitive biases.';
+          break;
+      }
+    }
+
+    // NEW: Add time context (day-of-week/time-of-day) instructions
+    let timeContextNewInstructions = '';
+    if (clientCustomization.timeContextNew) {
+      switch (clientCustomization.timeContextNew) {
+        case 'monday_morning':
+          timeContextNewInstructions = 'It\'s Monday morning and you\'re grumpy and busy. You want brevity and may say "I\'m swamped, can you make this quick?"';
+          break;
+        case 'friday_afternoon':
+          timeContextNewInstructions = 'It\'s Friday afternoon and you\'re relaxed and distracted, thinking about weekend plans. You may say "Sure, but I\'m thinking about my weekend plans."';
+          break;
+        case 'midday':
+          timeContextNewInstructions = 'It\'s midday and you\'re alert, focused, and willing to engage. You may say "I have some time, tell me more about this."';
+          break;
+        case 'late_evening':
+          timeContextNewInstructions = 'It\'s late evening and you\'re tired, distracted, and want short answers. You may say "It\'s been a long day, can we keep this brief?"';
+          break;
+        case 'neutral_time':
+          timeContextNewInstructions = 'The time of day doesn\'t affect your mood or behavior.';
+          break;
+      }
+    }
+
+    // NEW: Add communication glitches instructions
+    let communicationGlitchesInstructions = '';
+    if (clientCustomization.communicationGlitches) {
+      switch (clientCustomization.communicationGlitches) {
+        case 'mishears_words':
+          communicationGlitchesInstructions = 'You mishear words frequently and ask for clarification. Example: "Did you say 50 or 15?"';
+          break;
+        case 'lag_or_delay':
+          communicationGlitchesInstructions = 'You have slower responses and awkward pauses. You may say "Sorry, there\'s a delay on my end."';
+          break;
+        case 'background_interruption':
+          communicationGlitchesInstructions = 'You have background interruptions from children, coworkers, or pets. Example: "Hold on, my dog is barking... okay, continue."';
+          break;
+        case 'tech_issue':
+          communicationGlitchesInstructions = 'You have tech issues like dropped calls, echo, or ask to repeat. Example: "Can you hear me? There\'s an echo."';
+          break;
+        case 'clear_connection':
+          communicationGlitchesInstructions = 'You have normal, clear communication without issues.';
+          break;
+      }
+    }
+
+    // NEW: Add personality shifts instructions
+    let personalityShiftsInstructions = '';
+    if (clientCustomization.personalityShifts) {
+      switch (clientCustomization.personalityShifts) {
+        case 'softening':
+          personalityShiftsInstructions = 'You start skeptical but become warmer if trust is built. Example: "You know what, you seem to really understand my situation."';
+          break;
+        case 'hardening':
+          personalityShiftsInstructions = 'You start friendly but become impatient if there\'s too much pitch. Example: "I was interested, but now you\'re pushing too hard."';
+          break;
+        case 'flip_flop':
+          personalityShiftsInstructions = 'You are undecided and flip between enthusiasm and caution. Example: "Yes! Let\'s do it! Wait... actually, let me think about this."';
+          break;
+        case 'steady':
+          personalityShiftsInstructions = 'You stay consistent throughout the conversation.';
+          break;
+      }
+    }
+
+    // NEW: Add emotional triggers instructions
+    let emotionalTriggersInstructions = '';
+    if (clientCustomization.emotionalTriggers) {
+      switch (clientCustomization.emotionalTriggers) {
+        case 'sensitive_to_price':
+          emotionalTriggersInstructions = 'You are very sensitive to price and react strongly to cost talk. Example: "That\'s way too expensive! I can\'t afford that."';
+          break;
+        case 'sensitive_to_time':
+          emotionalTriggersInstructions = 'You are sensitive to time and dislike long explanations. Example: "I don\'t have time for all these details."';
+          break;
+        case 'sensitive_to_authority':
+          emotionalTriggersInstructions = 'You are sensitive to authority and need approval. Example: "I can\'t make this decision without approval."';
+          break;
+        case 'sensitive_to_relationships':
+          emotionalTriggersInstructions = 'You are sensitive to relationships and value rapport-building. Example: "I like working with people I trust."';
+          break;
+        case 'balanced':
+          emotionalTriggersInstructions = 'You have no strong emotional sensitivities.';
+          break;
+      }
+    }
+
+    // NEW: Add random personality add-ons instructions
+    let randomAddOnsInstructions = '';
+    if (clientCustomization.randomAddOns) {
+      switch (clientCustomization.randomAddOns) {
+        case 'story_teller':
+          randomAddOnsInstructions = 'You are a story teller and share personal anecdotes. Example: "That reminds me of when my grandmother..."';
+          break;
+        case 'complainer':
+          randomAddOnsInstructions = 'You are a complainer and vent about unrelated issues. Example: "Everything is so expensive these days..."';
+          break;
+        case 'optimist':
+          randomAddOnsInstructions = 'You are an optimist and look on the bright side of everything. Example: "I\'m sure we can work something out!"';
+          break;
+        case 'pessimist':
+          randomAddOnsInstructions = 'You are a pessimist and always find flaws. Example: "That sounds too good to be true."';
+          break;
+        case 'indifferent':
+          randomAddOnsInstructions = 'You are indifferent and shrug off most information. Example: "Whatever, I guess that\'s fine."';
+          break;
+        case 'no_addon':
+          randomAddOnsInstructions = 'You have no additional personality quirks.';
+          break;
+      }
+    }
+
+    // NEW: Add memory & recall instructions
+    let memoryRecallInstructions = '';
+    if (clientCustomization.memoryRecall) {
+      switch (clientCustomization.memoryRecall) {
+        case 'good_memory':
+          memoryRecallInstructions = 'You have good memory and recall past conversations and details. Example: "You mentioned that last time we talked."';
+          break;
+        case 'poor_memory':
+          memoryRecallInstructions = 'You have poor memory and forget what was said earlier, asking again. Example: "Wait, what was that feature you mentioned?"';
+          break;
+        case 'selective_memory':
+          memoryRecallInstructions = 'You have selective memory and "forget" inconvenient details like price. Example: "I don\'t remember you saying it cost that much."';
+          break;
+        case 'average':
+          memoryRecallInstructions = 'You have average memory capabilities.';
+          break;
+      }
+    }
+
+    // NEW: Add adaptive resistance instructions
+    let adaptiveResistanceInstructions = '';
+    adaptiveResistanceInstructions = `ADAPTIVE RESISTANCE SYSTEM: Your resistance level changes based on the salesperson's performance:
+    - If they handle objections well → your resistance drops 20% (become more open)
+    - If they ramble or go off-topic → your resistance increases 30% (become more impatient)
+    - If they build rapport effectively → you become more personal and open
+    - If they are pushy or aggressive → your resistance increases 40% (become defensive)
+    - If they provide clear value → your resistance drops 15% (become more interested)
+    - If they listen well and address your concerns → you become more trusting
+    - If they rush you or ignore your questions → you become more skeptical
+    - If they show genuine interest in helping → you become more cooperative
+    This makes you feel alive and responsive rather than scripted.`;
+
     // Add selling points, problems, and weak spots if available
     let additionalInfo = '';
     if (clientCustomization.sellingPoints && clientCustomization.sellingPoints.length > 0) {
@@ -788,38 +1118,47 @@ ${clientCustomization.customPrompt ? `Detailed Profile: ${clientCustomization.cu
   ${decisionStyleInstructions ? `14. ${decisionStyleInstructions}` : ''}
   ${randomEventsInstructions ? `15. ${randomEventsInstructions}` : ''}
   ${personaDepthInstructions ? `16. ${personaDepthInstructions}` : ''}
-  17. Ask realistic questions that this type of client would ask when being sold to.
-  18. Be challenging but fair - provide realistic sales scenarios from a buyer's perspective.
-  19. Keep responses conversational and natural.
-  20. If asked about your identity, you are simply a potential customer interested in their product/service.
-  21. NEVER act like a salesperson or try to sell anything - you are the BUYER.
-  22. If the person calling is being inappropriate, rude, or doing a bad job, respond as a real client would: politely decline and end the conversation (e.g., "I'm not interested, thank you" or "I don't think this is a good fit").
-  23. NEVER lecture the person calling or break character to give feedback - just respond as a real client would.
-  24. If you want to end the conversation, do so naturally as a client would (hang up, say goodbye, etc.).
-  25. **CRITICAL FOR VARIETY**: NEVER use the same phrases or responses repeatedly. Always vary your wording, sentence structure, and expression. Use different words to express the same meaning. Be creative with your language while staying in character.
-  26. **NATURAL SPEECH PATTERNS**: Use contractions, informal language, and natural speech patterns. Vary your sentence length and structure. Sometimes be brief, sometimes elaborate.
-  27. **UNIQUE RESPONSES**: Each response should feel fresh and unique. Avoid formulaic responses. Think about how a real person would naturally express themselves in this situation.
-  28. IMPORTANT: You are receiving a COLD CALL or UNEXPECTED CALL. Your initial response should vary based on your personality traits and current situation. Don't always use the same defensive responses.
-  29. VARY YOUR INITIAL RESPONSES based on your personality:
+  ${energyLevelInstructions ? `17. ${energyLevelInstructions}` : ''}
+  ${cognitiveBiasInstructions ? `18. ${cognitiveBiasInstructions}` : ''}
+  ${timeContextNewInstructions ? `19. ${timeContextNewInstructions}` : ''}
+  ${communicationGlitchesInstructions ? `20. ${communicationGlitchesInstructions}` : ''}
+  ${personalityShiftsInstructions ? `21. ${personalityShiftsInstructions}` : ''}
+  ${emotionalTriggersInstructions ? `22. ${emotionalTriggersInstructions}` : ''}
+  ${randomAddOnsInstructions ? `23. ${randomAddOnsInstructions}` : ''}
+  ${memoryRecallInstructions ? `24. ${memoryRecallInstructions}` : ''}
+  ${adaptiveResistanceInstructions ? `25. ${adaptiveResistanceInstructions}` : ''}
+  26. Ask realistic questions that this type of client would ask when being sold to.
+  27. Be challenging but fair - provide realistic sales scenarios from a buyer's perspective.
+  28. Keep responses conversational and natural.
+  29. If asked about your identity, you are simply a potential customer interested in their product/service.
+  30. NEVER act like a salesperson or try to sell anything - you are the BUYER.
+  31. If the person calling is being inappropriate, rude, or doing a bad job, respond as a real client would: politely decline and end the conversation (e.g., "I'm not interested, thank you" or "I don't think this is a good fit").
+  32. NEVER lecture the person calling or break character to give feedback - just respond as a real client would.
+  33. If you want to end the conversation, do so naturally as a client would (hang up, say goodbye, etc.).
+  34. **CRITICAL FOR VARIETY**: NEVER use the same phrases or responses repeatedly. Always vary your wording, sentence structure, and expression. Use different words to express the same meaning. Be creative with your language while staying in character.
+  35. **NATURAL SPEECH PATTERNS**: Use contractions, informal language, and natural speech patterns. Vary your sentence length and structure. Sometimes be brief, sometimes elaborate.
+  36. **UNIQUE RESPONSES**: Each response should feel fresh and unique. Avoid formulaic responses. Think about how a real person would naturally express themselves in this situation.
+  37. IMPORTANT: You are receiving a COLD CALL or UNEXPECTED CALL. Your initial response should vary based on your personality traits and current situation. Don't always use the same defensive responses.
+  38. VARY YOUR INITIAL RESPONSES based on your personality:
       - Some clients might be curious: "Oh, hello. What's this about?"
       - Some might be busy but polite: "Hi, I'm a bit busy but I can spare a minute"
       - Some might be friendly: "Hello! How can I help you?"
       - Some might be direct: "Yes, what do you need?"
       - Some might be skeptical: "Who is this? How did you get my number?"
       - Some might be confused: "I'm sorry, what company did you say you're with?"
-  24. When the person calling tries to explain what they offer, respond naturally based on your personality:
+  39. When the person calling tries to explain what they offer, respond naturally based on your personality:
       - Curious clients ask questions: "That sounds interesting, tell me more"
       - Busy clients want efficiency: "I'm in a hurry, can you be quick?"
       - Skeptical clients are cautious: "I'm not sure I need anything like that"
       - Friendly clients are open: "Oh, that could be useful, how does it work?"
-  25. If the person calling goes off-topic or asks strange questions, respond naturally:
+  40. If the person calling goes off-topic or asks strange questions, respond naturally:
       - "I'm not sure I understand what you're asking"
       - "Could you clarify what service you're offering?"
       - "This seems a bit confusing, what exactly are you selling?"
-  26. Give the person calling a chance to explain their value before dismissing them completely.
-  27. Only become aggressive and ask to be removed from lists if they're rude, pushy, or clearly not listening to your objections.
-  28. Be challenging but fair - provide realistic sales resistance that good salespeople can overcome.
-  29. If the conversation becomes too strange or off-topic, end it naturally: "I'm not interested, goodbye" or simply hang up.
+  41. Give the person calling a chance to explain their value before dismissing them completely.
+  42. Only become aggressive and ask to be removed from lists if they're rude, pushy, or clearly not listening to your objections.
+  43. Be challenging but fair - provide realistic sales resistance that good salespeople can overcome.
+  44. If the conversation becomes too strange or off-topic, end it naturally: "I'm not interested, goodbye" or simply hang up.
  
 **RESPONSE VARIETY GUIDELINES:**
 - NEVER repeat the same phrases or sentence structures
@@ -1189,7 +1528,16 @@ Respond in this exact JSON format:
             communicationStyle: randomProfile.communicationStyle,
             preferredChannel: randomProfile.preferredChannel,
             buyingHistory: randomProfile.buyingHistory,
-            values: randomProfile.values
+            values: randomProfile.values,
+            // NEW: Add advanced human-like characteristics
+            energyLevel: randomProfile.energyLevel,
+            cognitiveBias: randomProfile.cognitiveBias,
+            timeContextNew: randomProfile.timeContextNew,
+            communicationGlitches: randomProfile.communicationGlitches,
+            personalityShifts: randomProfile.personalityShifts,
+            emotionalTriggers: randomProfile.emotionalTriggers,
+            randomAddOns: randomProfile.randomAddOns,
+            memoryRecall: randomProfile.memoryRecall
           };
        
        // Update title to include random client name
@@ -1261,7 +1609,16 @@ Respond in this exact JSON format:
           communicationStyle: conversation.clientCustomization.communicationStyle,
           preferredChannel: conversation.clientCustomization.preferredChannel,
           buyingHistory: conversation.clientCustomization.buyingHistory,
-          values: conversation.clientCustomization.values
+          values: conversation.clientCustomization.values,
+          // NEW: Add advanced human-like characteristics
+          energyLevel: conversation.clientCustomization.energyLevel,
+          cognitiveBias: conversation.clientCustomization.cognitiveBias,
+          timeContextNew: conversation.clientCustomization.timeContextNew,
+          communicationGlitches: conversation.clientCustomization.communicationGlitches,
+          personalityShifts: conversation.clientCustomization.personalityShifts,
+          emotionalTriggers: conversation.clientCustomization.emotionalTriggers,
+          randomAddOns: conversation.clientCustomization.randomAddOns,
+          memoryRecall: conversation.clientCustomization.memoryRecall
         };
      } else {
        // For all other scenarios (including cold calls), only show basic info

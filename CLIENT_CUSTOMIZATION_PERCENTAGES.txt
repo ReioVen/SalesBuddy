@@ -462,7 +462,285 @@ TOTAL PERSONALITY SYSTEM:
 This creates thousands of unique client combinations for realistic sales training.
 
 ================================================================
+NEW: ADVANCED HUMAN-LIKE CHARACTERISTICS
+================================================================
+
+The system now includes 9 additional layers of human-like characteristics to create even more realistic and dynamic client interactions:
+
+⚡ 1. CLIENT ENERGY LEVELS (Fatigue/Alertness):
+Clients act differently depending on their energy, adding realism:
+
+• 20% - energetic
+  - Upbeat, engaged, asks many questions
+  - Longer responses, more enthusiasm
+  - Example: "That sounds amazing! Tell me everything about it!"
+
+• 25% - tired
+  - Slower replies, less patience, sighs often
+  - Shorter responses, wants to end quickly
+  - Example: "Yeah, okay... *sigh* what was that again?"
+
+• 10% - overcaffeinated
+  - Scattered, talks fast, jumps topics
+  - Rapid speech, tangential conversations
+  - Example: "Wait, that reminds me of something else, but first tell me about the price, no wait, the features..."
+
+• 45% - normal
+  - Baseline energy level
+  - Standard response patterns
+
+👉 Energy modifies response length, tone, and patience levels.
+
+🧠 2. COGNITIVE BIASES (Subconscious Decision Drivers):
+People rarely make "perfectly logical" decisions. Add biases:
+
+• 15% - anchoring_bias
+  - Fixates on the first number/feature mentioned
+  - Example: "You said $50, so that's what I'm thinking about now."
+
+• 20% - status_quo_bias
+  - Resists change, prefers what they already use
+  - Example: "We've been doing it this way for years, why change now?"
+
+• 10% - scarcity_bias
+  - Responds strongly to "limited time offer"
+  - Example: "Only 3 spots left? That makes me nervous about missing out."
+
+• 10% - authority_bias
+  - Swayed by references to experts, case studies
+  - Example: "If Harvard Business Review says it works, I'm interested."
+
+• 20% - loss_aversion
+  - Hates risk, stronger reaction to potential loss than gain
+  - Example: "What if this doesn't work? I can't afford to lose money."
+
+• 25% - no_bias
+  - Baseline, makes relatively logical decisions
+
+📅 3. DAY-OF-WEEK / TIME-OF-DAY CONTEXT:
+Reactions shift depending on when you "catch" them:
+
+• 15% - monday_morning
+  - Grumpy, busy, wants brevity
+  - Example: "I'm swamped, can you make this quick?"
+
+• 15% - friday_afternoon
+  - Relaxed, distracted, weekend-focused
+  - Example: "Sure, but I'm thinking about my weekend plans."
+
+• 30% - midday
+  - Alert, focused, willing to engage
+  - Example: "I have some time, tell me more about this."
+
+• 10% - late_evening
+  - Tired, distracted, short answers
+  - Example: "It's been a long day, can we keep this brief?"
+
+• 30% - neutral_time
+  - Baseline, no time-based modifications
+
+📞 4. COMMUNICATION GLITCHES:
+Simulate human imperfections in calls:
+
+• 10% - mishears_words
+  - "Did you say 50 or 15?"
+  - Asks for clarification frequently
+
+• 5% - lag_or_delay
+  - Slower responses, awkward pauses
+  - "Sorry, there's a delay on my end."
+
+• 10% - background_interruption
+  - Child, coworker, pet interrupts
+  - "Hold on, my dog is barking... okay, continue."
+
+• 5% - tech_issue
+  - Dropped call, echo, asks you to repeat
+  - "Can you hear me? There's an echo."
+
+• 70% - clear_connection
+  - Normal communication
+
+👉 Makes roleplays feel more raw & realistic.
+
+🔄 5. IN-CONVERSATION PERSONALITY SHIFTS:
+Humans don't stay static. Add state transitions:
+
+• 20% - softening
+  - Skeptical → warmer if trust is built
+  - Example: "You know what, you seem to really understand my situation."
+
+• 15% - hardening
+  - Friendly → impatient if too much pitch
+  - Example: "I was interested, but now you're pushing too hard."
+
+• 10% - flip_flop
+  - Undecided → suddenly very enthusiastic, then cautious again
+  - Example: "Yes! Let's do it! Wait... actually, let me think about this."
+
+• 55% - steady
+  - Stays consistent throughout conversation
+
+📊 6. EMOTIONAL TRIGGERS:
+Give each client a sensitivity slider:
+
+• 25% - sensitive_to_price
+  - Reacts strongly to cost talk
+  - Example: "That's way too expensive! I can't afford that."
+
+• 15% - sensitive_to_time
+  - Dislikes long explanations
+  - Example: "I don't have time for all these details."
+
+• 10% - sensitive_to_authority
+  - "I need to check with my boss"
+  - Example: "I can't make this decision without approval."
+
+• 15% - sensitive_to_relationships
+  - Values rapport-building
+  - Example: "I like working with people I trust."
+
+• 35% - balanced
+  - No strong sensitivities
+
+🎲 7. RANDOM PERSONALITY ADD-ONS:
+Tiny traits that may or may not appear:
+
+• 10% - story_teller
+  - Shares personal anecdotes
+  - Example: "That reminds me of when my grandmother..."
+
+• 8% - complainer
+  - Vents about unrelated issues
+  - Example: "Everything is so expensive these days..."
+
+• 12% - optimist
+  - Looks on the bright side of everything
+  - Example: "I'm sure we can work something out!"
+
+• 10% - pessimist
+  - Always finds flaws
+  - Example: "That sounds too good to be true."
+
+• 10% - indifferent
+  - Shrugs off most info
+  - Example: "Whatever, I guess that's fine."
+
+🧩 8. MEMORY & RECALL:
+Give clients a memory score:
+
+• 40% - good_memory
+  - Recalls past conversations, details
+  - Example: "You mentioned that last time we talked."
+
+• 20% - poor_memory
+  - Forgets what was said earlier, asks again
+  - Example: "Wait, what was that feature you mentioned?"
+
+• 15% - selective_memory
+  - "Forgets" inconvenient details like price
+  - Example: "I don't remember you saying it cost that much."
+
+• 25% - average
+  - Baseline memory capabilities
+
+⚡ 9. ADAPTIVE RESISTANCE:
+Instead of static percentages, resistance adapts to salesperson performance:
+
+DYNAMIC RESISTANCE MODIFIERS:
+• If salesperson handles objections well → resistance drops 20%
+• If salesperson rambles → resistance increases 30%
+• If salesperson builds rapport → more personal disclosure
+• If salesperson is pushy → resistance increases 40%
+• If salesperson provides value → resistance drops 15%
+
+👉 Makes clients feel alive instead of scripted.
+
+================================================================
+UPDATED TECHNICAL IMPLEMENTATION
+================================================================
+
+The randomization system now uses JavaScript Math.random() with these additional thresholds:
+
+ENERGY LEVELS:
+• 0.20 = 20% energetic
+• 0.45 = 25% tired (0.20 + 0.25)
+• 0.55 = 10% overcaffeinated (0.45 + 0.10)
+• 1.00 = 45% normal (remaining)
+
+COGNITIVE BIASES:
+• 0.15 = 15% anchoring_bias
+• 0.35 = 20% status_quo_bias (0.15 + 0.20)
+• 0.45 = 10% scarcity_bias (0.35 + 0.10)
+• 0.55 = 10% authority_bias (0.45 + 0.10)
+• 0.75 = 20% loss_aversion (0.55 + 0.20)
+• 1.00 = 25% no_bias (remaining)
+
+TIME CONTEXT:
+• 0.15 = 15% monday_morning
+• 0.30 = 15% friday_afternoon (0.15 + 0.15)
+• 0.60 = 30% midday (0.30 + 0.30)
+• 0.70 = 10% late_evening (0.60 + 0.10)
+• 1.00 = 30% neutral_time (remaining)
+
+COMMUNICATION GLITCHES:
+• 0.10 = 10% mishears_words
+• 0.15 = 5% lag_or_delay (0.10 + 0.05)
+• 0.25 = 10% background_interruption (0.15 + 0.10)
+• 0.30 = 5% tech_issue (0.25 + 0.05)
+• 1.00 = 70% clear_connection (remaining)
+
+PERSONALITY SHIFTS:
+• 0.20 = 20% softening
+• 0.35 = 15% hardening (0.20 + 0.15)
+• 0.45 = 10% flip_flop (0.35 + 0.10)
+• 1.00 = 55% steady (remaining)
+
+EMOTIONAL TRIGGERS:
+• 0.25 = 25% sensitive_to_price
+• 0.40 = 15% sensitive_to_time (0.25 + 0.15)
+• 0.50 = 10% sensitive_to_authority (0.40 + 0.10)
+• 0.65 = 15% sensitive_to_relationships (0.50 + 0.15)
+• 1.00 = 35% balanced (remaining)
+
+RANDOM ADD-ONS:
+• 0.10 = 10% story_teller
+• 0.18 = 8% complainer (0.10 + 0.08)
+• 0.30 = 12% optimist (0.18 + 0.12)
+• 0.40 = 10% pessimist (0.30 + 0.10)
+• 0.50 = 10% indifferent (0.40 + 0.10)
+• 1.00 = 50% no_addon (remaining)
+
+MEMORY & RECALL:
+• 0.40 = 40% good_memory
+• 0.60 = 20% poor_memory (0.40 + 0.20)
+• 0.75 = 15% selective_memory (0.60 + 0.15)
+• 1.00 = 25% average (remaining)
+
+================================================================
+FINAL PERCENTAGE BREAKDOWN
+================================================================
+
+TOTAL HUMAN-LIKE CHARACTERISTICS SYSTEM:
+• Primary Traits: 12 different traits (2%-15% each)
+• Mood Modifiers: 4 mood states (15%-50% each)
+• Micro-Traits: 6 speech quirks (5%-15% each)
+• Time Context: 5 context situations (10%-40% each)
+• Decision Styles: 5 decision-making approaches (10%-30% each)
+• Random Events: 4 escalation scenarios (5%-15% each)
+• Energy Levels: 4 energy states (10%-45% each)
+• Cognitive Biases: 6 bias types (10%-25% each)
+• Communication Glitches: 5 glitch types (5%-70% each)
+• Personality Shifts: 4 shift patterns (10%-55% each)
+• Emotional Triggers: 5 sensitivity types (10%-35% each)
+• Random Add-Ons: 6 personality quirks (8%-12% each)
+• Memory Types: 4 memory levels (15%-40% each)
+• Adaptive Resistance: Dynamic based on performance
+
+This creates millions of unique client combinations for ultra-realistic sales training.
+
+================================================================
 END OF DOCUMENTATION
 ================================================================
 
-This documentation covers all the percentages and client customization features implemented in the SalesBuddy AI sales training system, including the new layered personality and mood modifier system. The system creates highly realistic and varied client interactions to provide comprehensive sales training experiences.
+This documentation covers all the percentages and client customization features implemented in the SalesBuddy AI sales training system, including the comprehensive human-like characteristics system. The system creates highly realistic, dynamic, and varied client interactions that adapt to salesperson performance, providing the most comprehensive sales training experiences possible.
