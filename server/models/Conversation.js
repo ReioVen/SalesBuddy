@@ -65,7 +65,18 @@ const conversationSchema = new mongoose.Schema({
      // Selling points, problems, and weak spots based on difficulty
      sellingPoints: [String],
      problems: [String],
-     weakSpots: [String]
+     weakSpots: [String],
+     // NEW: Layered personality modifiers
+     moodModifier: String,
+     microTraits: [String],
+     timeContext: String,
+     decisionStyle: String,
+     randomEvents: [String],
+     // NEW: Persona depth attributes
+     communicationStyle: String,
+     preferredChannel: String,
+     buyingHistory: String,
+     values: String
   },
   messages: [messageSchema],
   totalTokens: {

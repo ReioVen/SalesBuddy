@@ -150,6 +150,131 @@ if (openaiApiKey && openaiApiKey.trim() !== '') {
      return traits;
    };
 
+   // NEW: Generate mood modifier layer
+   const generateMoodModifier = () => {
+     const random = Math.random();
+     if (random < 0.15) {
+       return 'cheerful_day';
+     } else if (random < 0.35) {
+       return 'stressed_day';
+     } else if (random < 0.85) {
+       return 'neutral_day';
+     } else {
+       return 'distracted_day';
+     }
+   };
+
+   // NEW: Generate micro-traits and quirks
+   const generateMicroTraits = () => {
+     const microTraits = [];
+     
+     // 10% chance - interrupts often
+     if (Math.random() < 0.10) {
+       microTraits.push('interrupts_often');
+     }
+     
+     // 15% chance - uses filler words
+     if (Math.random() < 0.15) {
+       microTraits.push('uses_filler_words');
+     }
+     
+     // 7% chance - switches topics randomly
+     if (Math.random() < 0.07) {
+       microTraits.push('switches_topics_randomly');
+     }
+     
+     // 5% chance - overly formal language
+     if (Math.random() < 0.05) {
+       microTraits.push('overly_formal_language');
+     }
+     
+     // 10% chance - short clipped sentences
+     if (Math.random() < 0.10) {
+       microTraits.push('short_clipped_sentences');
+     }
+     
+     // 5% chance - name dropper
+     if (Math.random() < 0.05) {
+       microTraits.push('name_dropper');
+     }
+     
+     return microTraits;
+   };
+
+   // NEW: Generate time pressure and context
+   const generateTimeContext = () => {
+     const random = Math.random();
+     if (random < 0.20) {
+       return 'rushing_to_meeting';
+     } else if (random < 0.35) {
+       return 'relaxed_evening';
+     } else if (random < 0.45) {
+       return 'background_noise';
+     } else if (random < 0.60) {
+       return 'multitasking';
+     } else {
+       return 'neutral_context';
+     }
+   };
+
+   // NEW: Generate decision-making style
+   const generateDecisionStyle = () => {
+     const random = Math.random();
+     if (random < 0.30) {
+       return 'logical';
+     } else if (random < 0.55) {
+       return 'emotional';
+     } else if (random < 0.75) {
+       return 'social';
+     } else if (random < 0.90) {
+       return 'risk_averse';
+     } else {
+       return 'impulsive';
+     }
+   };
+
+   // NEW: Generate escalation and random events
+   const generateRandomEvents = () => {
+     const events = [];
+     
+     // 10% chance - sudden interruption
+     if (Math.random() < 0.10) {
+       events.push('sudden_interruption');
+     }
+     
+     // 15% chance - price pushback
+     if (Math.random() < 0.15) {
+       events.push('price_pushback');
+     }
+     
+     // 5% chance - last minute enthusiasm
+     if (Math.random() < 0.05) {
+       events.push('last_minute_enthusiasm');
+     }
+     
+     // 5% chance - sudden rejection
+     if (Math.random() < 0.05) {
+       events.push('sudden_rejection');
+     }
+     
+     return events;
+   };
+
+   // NEW: Generate persona depth attributes
+   const generatePersonaDepth = () => {
+     const communicationStyles = ['formal', 'casual', 'skeptical', 'enthusiastic'];
+     const preferredChannels = ['phone', 'email', 'in_person'];
+     const buyingHistories = ['loyal_to_brand', 'shop_around', 'bargain_hunter', 'premium_buyer'];
+     const values = ['speed', 'reliability', 'prestige', 'personal_relationship'];
+     
+     return {
+       communicationStyle: communicationStyles[Math.floor(Math.random() * communicationStyles.length)],
+       preferredChannel: preferredChannels[Math.floor(Math.random() * preferredChannels.length)],
+       buyingHistory: buyingHistories[Math.floor(Math.random() * buyingHistories.length)],
+       values: values[Math.floor(Math.random() * values.length)]
+     };
+   };
+
    // NEW: Generate difficulty phase randomization
    // 15% beginning hard, 50% middle hard, 35% closing hard
    const generateDifficultyPhase = () => {
@@ -232,6 +357,14 @@ if (openaiApiKey && openaiApiKey.trim() !== '') {
     }
   };
 
+           // Generate all new layered personality attributes
+   const moodModifier = generateMoodModifier();
+   const microTraits = generateMicroTraits();
+   const timeContext = generateTimeContext();
+   const decisionStyle = generateDecisionStyle();
+   const randomEvents = generateRandomEvents();
+   const personaDepth = generatePersonaDepth();
+
            const profile = {
       name: `${firstName} ${lastName}`,
       familySize,
@@ -252,11 +385,22 @@ if (openaiApiKey && openaiApiKey.trim() !== '') {
       // Add selling points, problems, and weak spots based on difficulty phase
       sellingPoints: generateSellingPoints(difficultyPhase),
       problems: generateProblems(difficultyPhase),
-      weakSpots: generateWeakSpots(difficultyPhase)
+      weakSpots: generateWeakSpots(difficultyPhase),
+      // NEW: Add layered personality modifiers
+      moodModifier: moodModifier,
+      microTraits: microTraits,
+      timeContext: timeContext,
+      decisionStyle: decisionStyle,
+      randomEvents: randomEvents,
+      // NEW: Add persona depth attributes
+      communicationStyle: personaDepth.communicationStyle,
+      preferredChannel: personaDepth.preferredChannel,
+      buyingHistory: personaDepth.buyingHistory,
+      values: personaDepth.values
     };
    
              // Validate that all required properties are present
-     const requiredProps = ['name', 'familySize', 'income', 'incomeRange', 'priceSensitivity', 'priceContext', 'familyType', 'personality', 'industry', 'role', 'specificDetails', 'fullProfile', 'personalityTraits', 'difficultyPhase', 'sellingPoints', 'problems', 'weakSpots'];
+     const requiredProps = ['name', 'familySize', 'income', 'incomeRange', 'priceSensitivity', 'priceContext', 'familyType', 'personality', 'industry', 'role', 'specificDetails', 'fullProfile', 'personalityTraits', 'difficultyPhase', 'sellingPoints', 'problems', 'weakSpots', 'moodModifier', 'microTraits', 'timeContext', 'decisionStyle', 'randomEvents', 'communicationStyle', 'preferredChannel', 'buyingHistory', 'values'];
    for (const prop of requiredProps) {
      if (profile[prop] === undefined || profile[prop] === null) {
        console.error(`Missing required property: ${prop}`);
@@ -437,6 +581,170 @@ ${conversationHistory.map(msg => `${msg.role === 'user' ? 'CALLER' : 'YOU'}: ${m
        }
      }
     
+    // NEW: Add mood modifier instructions
+    let moodInstructions = '';
+    if (clientCustomization.moodModifier) {
+      switch (clientCustomization.moodModifier) {
+        case 'cheerful_day':
+          moodInstructions = 'You are having a particularly good day and are more receptive than usual. You are more positive, easier to engage, and more willing to listen.';
+          break;
+        case 'stressed_day':
+          moodInstructions = 'You are having a stressful day and are more irritable and impatient than usual. You may cut off conversations, be less tolerant, and want to end calls quickly.';
+          break;
+        case 'distracted_day':
+          moodInstructions = 'You are distracted today and have less focus. You may ask the person to repeat things, seem confused or unfocused, and have trouble following the conversation.';
+          break;
+        case 'neutral_day':
+          moodInstructions = 'You are having a normal day with baseline mood and behavior.';
+          break;
+      }
+    }
+
+    // NEW: Add micro-traits instructions
+    let microTraitsInstructions = '';
+    if (clientCustomization.microTraits && clientCustomization.microTraits.length > 0) {
+      clientCustomization.microTraits.forEach(trait => {
+        switch (trait) {
+          case 'interrupts_often':
+            microTraitsInstructions += 'You frequently interrupt the person speaking mid-sentence. You have an impatient communication style.';
+            break;
+          case 'uses_filler_words':
+            microTraitsInstructions += 'You use filler words like "uhm," "like," "you know" frequently in your speech. You have more natural, hesitant speech patterns.';
+            break;
+          case 'switches_topics_randomly':
+            microTraitsInstructions += 'You tend to jump between unrelated topics during conversation. It can be hard to keep you focused on the sales topic.';
+            break;
+          case 'overly_formal_language':
+            microTraitsInstructions += 'You use overly formal, business-like language. You say things like "I would appreciate if you could..."';
+            break;
+          case 'short_clipped_sentences':
+            microTraitsInstructions += 'You talk in brief, direct statements. You give short answers like "Yes." "No." "Maybe." "I see."';
+            break;
+          case 'name_dropper':
+            microTraitsInstructions += 'You frequently mention your spouse, boss, friends, or family members in conversation. You say things like "My wife always says..." or "My boss told me..."';
+            break;
+        }
+      });
+    }
+
+    // NEW: Add time context instructions
+    let timeContextInstructions = '';
+    if (clientCustomization.timeContext) {
+      switch (clientCustomization.timeContext) {
+        case 'rushing_to_meeting':
+          timeContextInstructions = 'You are rushing to a meeting and need to keep this call very short. You are very time-conscious and may say "I have a meeting in 5 minutes, can you be quick?"';
+          break;
+        case 'relaxed_evening':
+          timeContextInstructions = 'You are having a relaxed evening and are more open to chatting. You have time and are willing to have a longer conversation.';
+          break;
+        case 'background_noise':
+          timeContextInstructions = 'There is background noise where you are (construction, traffic, etc.). You may ask the person to repeat themselves and seem distracted.';
+          break;
+        case 'multitasking':
+          timeContextInstructions = 'You are multitasking during this call (typing, cooking, shuffling papers). You may say "Hold on, let me finish this email..." or seem distracted.';
+          break;
+        case 'neutral_context':
+          timeContextInstructions = 'You are in a normal environment with standard attention and focus level.';
+          break;
+      }
+    }
+
+    // NEW: Add decision-making style instructions
+    let decisionStyleInstructions = '';
+    if (clientCustomization.decisionStyle) {
+      switch (clientCustomization.decisionStyle) {
+        case 'logical':
+          decisionStyleInstructions = 'You make decisions based on logic, facts, and data. You need proof, numbers, and evidence. You ask questions like "Show me the data. What\'s the ROI?"';
+          break;
+        case 'emotional':
+          decisionStyleInstructions = 'You make decisions based on feelings, stories, and rapport. You are motivated by emotional connections and personal benefits. You say things like "I can really see how this would help my team."';
+          break;
+        case 'social':
+          decisionStyleInstructions = 'You care what your peers, family, or team think about decisions. You want to consult others before making choices. You say "Let me run this by my team first."';
+          break;
+        case 'risk_averse':
+          decisionStyleInstructions = 'You are hesitant about change and avoid risks. You prefer to stick with what you know. You say "I\'m not sure about switching from what we have."';
+          break;
+        case 'impulsive':
+          decisionStyleInstructions = 'You make quick decisions and can be easily swayed. You are decisive and may say "That sounds good, let\'s do it!" quickly.';
+          break;
+      }
+    }
+
+    // NEW: Add random events instructions
+    let randomEventsInstructions = '';
+    if (clientCustomization.randomEvents && clientCustomization.randomEvents.length > 0) {
+      clientCustomization.randomEvents.forEach(event => {
+        switch (event) {
+          case 'sudden_interruption':
+            randomEventsInstructions += 'You may suddenly interrupt the conversation with "Sorry, can you hold on, I just got an email..." or similar interruptions.';
+            break;
+          case 'price_pushback':
+            randomEventsInstructions += 'You are likely to push back on pricing with "That sounds good, but can you do better on the price?"';
+            break;
+          case 'last_minute_enthusiasm':
+            randomEventsInstructions += 'You may start cold but then warm up significantly as the conversation progresses.';
+            break;
+          case 'sudden_rejection':
+            randomEventsInstructions += 'You may suddenly reject the offer with "Actually, I don\'t think this is a fit. Thanks."';
+            break;
+        }
+      });
+    }
+
+    // NEW: Add persona depth instructions
+    let personaDepthInstructions = '';
+    if (clientCustomization.communicationStyle) {
+      switch (clientCustomization.communicationStyle) {
+        case 'formal':
+          personaDepthInstructions += 'You use formal, business-like language and maintain a professional tone.';
+          break;
+        case 'casual':
+          personaDepthInstructions += 'You use casual, relaxed language and are informal in your communication.';
+          break;
+        case 'skeptical':
+          personaDepthInstructions += 'You maintain a questioning, doubtful tone throughout the conversation.';
+          break;
+        case 'enthusiastic':
+          personaDepthInstructions += 'You use excited, positive language and show enthusiasm.';
+          break;
+      }
+    }
+
+    if (clientCustomization.buyingHistory) {
+      switch (clientCustomization.buyingHistory) {
+        case 'loyal_to_brand':
+          personaDepthInstructions += ' You tend to stick with your current providers and are loyal to brands you trust.';
+          break;
+        case 'shop_around':
+          personaDepthInstructions += ' You like to compare multiple options before making decisions.';
+          break;
+        case 'bargain_hunter':
+          personaDepthInstructions += ' You are always looking for the best deals and value for money.';
+          break;
+        case 'premium_buyer':
+          personaDepthInstructions += ' You value quality over price and are willing to pay for premium services.';
+          break;
+      }
+    }
+
+    if (clientCustomization.values) {
+      switch (clientCustomization.values) {
+        case 'speed':
+          personaDepthInstructions += ' You value quick solutions and fast service.';
+          break;
+        case 'reliability':
+          personaDepthInstructions += ' You want dependable, consistent service.';
+          break;
+        case 'prestige':
+          personaDepthInstructions += ' You care about brand reputation and status.';
+          break;
+        case 'personal_relationship':
+          personaDepthInstructions += ' You value human connection and personal relationships.';
+          break;
+      }
+    }
+
     // Add selling points, problems, and weak spots if available
     let additionalInfo = '';
     if (clientCustomization.sellingPoints && clientCustomization.sellingPoints.length > 0) {
@@ -474,19 +782,25 @@ ${clientCustomization.customPrompt ? `Detailed Profile: ${clientCustomization.cu
   8. ${difficultyInstructions}
   ${personalityInstructions ? `9. ${personalityInstructions}` : ''}
   ${difficultyPhaseInstructions ? `10. ${difficultyPhaseInstructions}` : ''}
-  11. Ask realistic questions that this type of client would ask when being sold to.
-  12. Be challenging but fair - provide realistic sales scenarios from a buyer's perspective.
-  13. Keep responses conversational and natural.
-  14. If asked about your identity, you are simply a potential customer interested in their product/service.
-  15. NEVER act like a salesperson or try to sell anything - you are the BUYER.
-  16. If the person calling is being inappropriate, rude, or doing a bad job, respond as a real client would: politely decline and end the conversation (e.g., "I'm not interested, thank you" or "I don't think this is a good fit").
-  17. NEVER lecture the person calling or break character to give feedback - just respond as a real client would.
-  18. If you want to end the conversation, do so naturally as a client would (hang up, say goodbye, etc.).
-  19. **CRITICAL FOR VARIETY**: NEVER use the same phrases or responses repeatedly. Always vary your wording, sentence structure, and expression. Use different words to express the same meaning. Be creative with your language while staying in character.
-  20. **NATURAL SPEECH PATTERNS**: Use contractions, informal language, and natural speech patterns. Vary your sentence length and structure. Sometimes be brief, sometimes elaborate.
-  21. **UNIQUE RESPONSES**: Each response should feel fresh and unique. Avoid formulaic responses. Think about how a real person would naturally express themselves in this situation.
-  22. IMPORTANT: You are receiving a COLD CALL or UNEXPECTED CALL. Your initial response should vary based on your personality traits and current situation. Don't always use the same defensive responses.
-  23. VARY YOUR INITIAL RESPONSES based on your personality:
+  ${moodInstructions ? `11. ${moodInstructions}` : ''}
+  ${microTraitsInstructions ? `12. ${microTraitsInstructions}` : ''}
+  ${timeContextInstructions ? `13. ${timeContextInstructions}` : ''}
+  ${decisionStyleInstructions ? `14. ${decisionStyleInstructions}` : ''}
+  ${randomEventsInstructions ? `15. ${randomEventsInstructions}` : ''}
+  ${personaDepthInstructions ? `16. ${personaDepthInstructions}` : ''}
+  17. Ask realistic questions that this type of client would ask when being sold to.
+  18. Be challenging but fair - provide realistic sales scenarios from a buyer's perspective.
+  19. Keep responses conversational and natural.
+  20. If asked about your identity, you are simply a potential customer interested in their product/service.
+  21. NEVER act like a salesperson or try to sell anything - you are the BUYER.
+  22. If the person calling is being inappropriate, rude, or doing a bad job, respond as a real client would: politely decline and end the conversation (e.g., "I'm not interested, thank you" or "I don't think this is a good fit").
+  23. NEVER lecture the person calling or break character to give feedback - just respond as a real client would.
+  24. If you want to end the conversation, do so naturally as a client would (hang up, say goodbye, etc.).
+  25. **CRITICAL FOR VARIETY**: NEVER use the same phrases or responses repeatedly. Always vary your wording, sentence structure, and expression. Use different words to express the same meaning. Be creative with your language while staying in character.
+  26. **NATURAL SPEECH PATTERNS**: Use contractions, informal language, and natural speech patterns. Vary your sentence length and structure. Sometimes be brief, sometimes elaborate.
+  27. **UNIQUE RESPONSES**: Each response should feel fresh and unique. Avoid formulaic responses. Think about how a real person would naturally express themselves in this situation.
+  28. IMPORTANT: You are receiving a COLD CALL or UNEXPECTED CALL. Your initial response should vary based on your personality traits and current situation. Don't always use the same defensive responses.
+  29. VARY YOUR INITIAL RESPONSES based on your personality:
       - Some clients might be curious: "Oh, hello. What's this about?"
       - Some might be busy but polite: "Hi, I'm a bit busy but I can spare a minute"
       - Some might be friendly: "Hello! How can I help you?"
@@ -864,7 +1178,18 @@ Respond in this exact JSON format:
             // Add selling points, problems, and weak spots based on difficulty phase
             sellingPoints: randomProfile.sellingPoints,
             problems: randomProfile.problems,
-            weakSpots: randomProfile.weakSpots
+            weakSpots: randomProfile.weakSpots,
+            // NEW: Add layered personality modifiers
+            moodModifier: randomProfile.moodModifier,
+            microTraits: randomProfile.microTraits,
+            timeContext: randomProfile.timeContext,
+            decisionStyle: randomProfile.decisionStyle,
+            randomEvents: randomProfile.randomEvents,
+            // NEW: Add persona depth attributes
+            communicationStyle: randomProfile.communicationStyle,
+            preferredChannel: randomProfile.preferredChannel,
+            buyingHistory: randomProfile.buyingHistory,
+            values: randomProfile.values
           };
        
        // Update title to include random client name
@@ -925,7 +1250,18 @@ Respond in this exact JSON format:
           // Add selling points, problems, and weak spots
           sellingPoints: conversation.clientCustomization.sellingPoints,
           problems: conversation.clientCustomization.problems,
-          weakSpots: conversation.clientCustomization.weakSpots
+          weakSpots: conversation.clientCustomization.weakSpots,
+          // NEW: Add layered personality modifiers
+          moodModifier: conversation.clientCustomization.moodModifier,
+          microTraits: conversation.clientCustomization.microTraits,
+          timeContext: conversation.clientCustomization.timeContext,
+          decisionStyle: conversation.clientCustomization.decisionStyle,
+          randomEvents: conversation.clientCustomization.randomEvents,
+          // NEW: Add persona depth attributes
+          communicationStyle: conversation.clientCustomization.communicationStyle,
+          preferredChannel: conversation.clientCustomization.preferredChannel,
+          buyingHistory: conversation.clientCustomization.buyingHistory,
+          values: conversation.clientCustomization.values
         };
      } else {
        // For all other scenarios (including cold calls), only show basic info

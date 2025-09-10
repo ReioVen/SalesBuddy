@@ -21,6 +21,22 @@ interface ClientCustomization {
   contentInterest?: string;
   familyType?: string;
   difficultyPhase?: string;
+  // NEW: Layered personality modifiers
+  moodModifier?: string;
+  microTraits?: string[];
+  timeContext?: string;
+  decisionStyle?: string;
+  randomEvents?: string[];
+  // NEW: Persona depth attributes
+  communicationStyle?: string;
+  preferredChannel?: string;
+  buyingHistory?: string;
+  values?: string;
+  // Existing attributes
+  personalityTraits?: string[];
+  sellingPoints?: string[];
+  problems?: string[];
+  weakSpots?: string[];
 }
 
 interface Message {
