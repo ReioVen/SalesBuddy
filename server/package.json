@@ -6,7 +6,9 @@
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js",
-    "test": "jest"
+    "test": "jest",
+    "kill-port": "node scripts/kill-port.js",
+    "clean-start": "npm run kill-port && npm run dev"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
@@ -21,6 +23,7 @@
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.0.3",
     "multer": "^1.4.5-lts.1",
+    "nodemailer": "^6.10.1",
     "openai": "^4.20.1",
     "stripe": "^14.7.0"
   },

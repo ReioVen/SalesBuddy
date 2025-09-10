@@ -39,9 +39,14 @@ const Login: React.FC = () => {
           {error && <p className="text-sm text-red-600">{error}</p>}
           <button type="submit" disabled={loading} className="btn-primary w-full">{loading ? 'Signing in...' : 'Sign in'}</button>
         </form>
-        <p className="text-center text-sm text-gray-600 mt-4">
-          New here? <Link to="/register" className="text-blue-600 hover:underline">Create an account</Link>
-        </p>
+        <div className="text-center text-sm text-gray-600 mt-4 space-y-2">
+          <p>
+            New here? <Link to="/register" className="text-blue-600 hover:underline">Create an account</Link>
+          </p>
+          <p>
+            <Link to="/forgot-password" className="text-blue-600 hover:underline">Forgot your password?</Link>
+          </p>
+        </div>
       </div>
     </div>
   );

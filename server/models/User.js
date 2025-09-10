@@ -24,6 +24,7 @@ const userSchema = new mongoose.Schema({
     required: true,
     trim: true
   },
+  // Legacy company field (keep for backward compatibility)
   company: {
     type: String,
     trim: true
@@ -32,10 +33,55 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  // New company system
+  companyId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Company',
+    default: null
+  },
   role: {
     type: String,
-    enum: ['individual', 'company_admin', 'company_user'],
+    enum: ['individual', 'company_admin', 'company_team_leader', 'company_user', 'super_admin', 'admin'],
     default: 'individual'
+  },
+  teamId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Company.teams',
+    default: null
+  },
+  isCompanyAdmin: {
+    type: Boolean,
+    default: false
+  },
+  isTeamLeader: {
+    type: Boolean,
+    default: false
+  },
+  isSuperAdmin: {
+    type: Boolean,
+    default: false
+  },
+  isAdmin: {
+    type: Boolean,
+    default: false
+  },
+  adminPermissions: {
+    canManageCompanies: {
+      type: Boolean,
+      default: false
+    },
+    canManageUsers: {
+      type: Boolean,
+      default: false
+    },
+    canViewAnalytics: {
+      type: Boolean,
+      default: false
+    },
+    canManageSubscriptions: {
+      type: Boolean,
+      default: false
+    }
   },
   subscription: {
     plan: {
@@ -192,6 +238,64 @@ userSchema.methods.getUsageStatus = function() {
     plan: this.subscription.plan,
     status: this.subscription.status
   };
+};
+
+// Company management methods
+userSchema.methods.isCompanyAdminUser = function() {
+  return this.role === 'company_admin' || this.isCompanyAdmin;
+};
+
+userSchema.methods.isTeamLeaderUser = function() {
+  return this.role === 'company_team_leader' || this.isTeamLeader;
+};
+
+userSchema.methods.canManageUsers = function() {
+  return this.role === 'company_admin' || this.role === 'company_team_leader';
+};
+
+userSchema.methods.canCreateTeams = function() {
+  return this.role === 'company_admin';
+};
+
+userSchema.methods.belongsToCompany = function() {
+  return this.companyId !== null;
+};
+
+userSchema.methods.getCompanyRole = function() {
+  if (this.role === 'individual') return 'individual';
+  if (this.role === 'company_admin') return 'admin';
+  if (this.role === 'company_team_leader') return 'team_leader';
+  if (this.role === 'company_user') return 'user';
+  return 'unknown';
+};
+
+// Admin management methods
+userSchema.methods.isSuperAdminUser = function() {
+  return this.role === 'super_admin' || this.isSuperAdmin;
+};
+
+userSchema.methods.isAdminUser = function() {
+  return this.role === 'admin' || this.isAdmin || this.isSuperAdminUser();
+};
+
+userSchema.methods.canManageAllCompanies = function() {
+  return this.isSuperAdminUser() || (this.isAdminUser() && this.adminPermissions.canManageCompanies);
+};
+
+userSchema.methods.canManageAllUsers = function() {
+  return this.isSuperAdminUser() || (this.isAdminUser() && this.adminPermissions.canManageUsers);
+};
+
+userSchema.methods.canViewAllAnalytics = function() {
+  return this.isSuperAdminUser() || (this.isAdminUser() && this.adminPermissions.canViewAnalytics);
+};
+
+userSchema.methods.canManageAllSubscriptions = function() {
+  return this.isSuperAdminUser() || (this.isAdminUser() && this.adminPermissions.canManageSubscriptions);
+};
+
+userSchema.methods.hasAdminAccess = function() {
+  return this.isSuperAdminUser() || this.isAdminUser();
 };
 
 module.exports = mongoose.model('User', userSchema); 

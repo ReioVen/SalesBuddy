@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken');
 const { body, validationResult } = require('express-validator');
 const User = require('../models/User');
 const { authenticateToken } = require('../middleware/auth');
+const { sendWelcomeEmail } = require('../services/emailService');
 
 const router = express.Router();
 
@@ -69,6 +70,11 @@ router.post('/register', [
     user.lastLogin = new Date();
     await user.save();
 
+    // Send welcome email (don't wait for it to complete)
+    sendWelcomeEmail(user.email, user.firstName).catch(error => {
+      console.error('Failed to send welcome email:', error);
+    });
+
     res.status(201).json({
       message: 'User registered successfully',
       user: {
@@ -131,7 +137,14 @@ router.post('/login', [
         lastName: user.lastName,
         company: user.company,
         companyPermissions: user.companyPermissions,
+        companyId: user.companyId,
         role: user.role,
+        teamId: user.teamId,
+        isCompanyAdmin: user.isCompanyAdmin,
+        isTeamLeader: user.isTeamLeader,
+        isSuperAdmin: user.isSuperAdmin,
+        isAdmin: user.isAdmin,
+        adminPermissions: user.adminPermissions,
         subscription: user.subscription,
         usage: user.usage,
         settings: user.settings
@@ -154,7 +167,14 @@ router.get('/me', authenticateToken, async (req, res) => {
         lastName: req.user.lastName,
         company: req.user.company,
         companyPermissions: req.user.companyPermissions,
+        companyId: req.user.companyId,
         role: req.user.role,
+        teamId: req.user.teamId,
+        isCompanyAdmin: req.user.isCompanyAdmin,
+        isTeamLeader: req.user.isTeamLeader,
+        isSuperAdmin: req.user.isSuperAdmin,
+        isAdmin: req.user.isAdmin,
+        adminPermissions: req.user.adminPermissions,
         subscription: req.user.subscription,
         usage: req.user.usage,
         settings: req.user.settings,

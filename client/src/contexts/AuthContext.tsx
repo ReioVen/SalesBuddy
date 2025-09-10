@@ -8,7 +8,19 @@ interface User {
   firstName: string;
   lastName: string;
   company?: string;
+  companyId?: string;
   role: string;
+  teamId?: string;
+  isCompanyAdmin?: boolean;
+  isTeamLeader?: boolean;
+  isSuperAdmin?: boolean;
+  isAdmin?: boolean;
+  adminPermissions?: {
+    canManageCompanies?: boolean;
+    canManageUsers?: boolean;
+    canViewAnalytics?: boolean;
+    canManageSubscriptions?: boolean;
+  };
   subscription: {
     plan: string;
     status: string;
@@ -36,7 +48,9 @@ interface AuthContextType {
   register: (userData: RegisterData) => Promise<{ success: true } | { success: false, message?: string, fieldErrors?: Record<string, string> }>;
   logout: () => void | Promise<void>;
   updateUser: (userData: Partial<User>) => void;
+  setUser: (user: User | null) => void;
   refreshUser: () => Promise<void>;
+  hasAdminAccess: () => boolean;
 }
 
 interface RegisterData {
@@ -144,6 +158,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
+  const hasAdminAccess = () => {
+    return user?.role === 'super_admin' || user?.role === 'admin' || user?.isSuperAdmin || user?.isAdmin || false;
+  };
+
   const value: AuthContextType = {
     user,
     loading,
@@ -151,7 +169,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     register,
     logout,
     updateUser,
+    setUser,
     refreshUser,
+    hasAdminAccess,
   };
 
   return (

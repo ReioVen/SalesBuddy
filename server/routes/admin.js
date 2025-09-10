@@ -1,0 +1,488 @@
+const express = require('express');
+const { body, validationResult } = require('express-validator');
+const User = require('../models/User');
+const Company = require('../models/Company');
+const { authenticateToken } = require('../middleware/auth');
+const { 
+  requireSuperAdmin, 
+  requireAdmin, 
+  canManageCompanies, 
+  canManageAllUsers,
+  canViewAnalytics,
+  canManageSubscriptions,
+  getAdminPermissions 
+} = require('../middleware/adminAuth');
+
+const router = express.Router();
+
+// Get admin dashboard data
+router.get('/dashboard', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const totalUsers = await User.countDocuments();
+    const totalCompanies = await Company.countDocuments();
+    const activeUsers = await User.countDocuments({ 'subscription.status': 'active' });
+    const recentUsers = await User.find()
+      .sort({ createdAt: -1 })
+      .limit(10)
+      .select('firstName lastName email role createdAt subscription.plan');
+
+    const recentCompanies = await Company.find()
+      .sort({ createdAt: -1 })
+      .limit(10)
+      .populate('admin', 'firstName lastName email')
+      .select('name companyId admin createdAt subscription.plan');
+
+    const subscriptionStats = await User.aggregate([
+      {
+        $group: {
+          _id: '$subscription.plan',
+          count: { $sum: 1 }
+        }
+      }
+    ]);
+
+    res.json({
+      stats: {
+        totalUsers,
+        totalCompanies,
+        activeUsers,
+        subscriptionStats
+      },
+      recentUsers,
+      recentCompanies
+    });
+  } catch (error) {
+    console.error('Admin dashboard error:', error);
+    res.status(500).json({ error: 'Failed to fetch dashboard data' });
+  }
+});
+
+// Get all companies (admin view)
+router.get('/companies', authenticateToken, canManageCompanies, async (req, res) => {
+  try {
+    const { page = 1, limit = 20, search = '' } = req.query;
+    const skip = (page - 1) * limit;
+
+    let query = {};
+    if (search) {
+      query = {
+        $or: [
+          { name: { $regex: search, $options: 'i' } },
+          { companyId: { $regex: search, $options: 'i' } }
+        ]
+      };
+    }
+
+    const companies = await Company.find(query)
+      .populate('admin', 'firstName lastName email')
+      .populate('users', 'firstName lastName email role')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(parseInt(limit));
+
+    const total = await Company.countDocuments(query);
+
+    res.json({
+      companies,
+      pagination: {
+        current: parseInt(page),
+        total: Math.ceil(total / limit),
+        count: total
+      }
+    });
+  } catch (error) {
+    console.error('Get companies error:', error);
+    res.status(500).json({ error: 'Failed to fetch companies' });
+  }
+});
+
+// Create a new company (admin)
+router.post('/companies', authenticateToken, canManageCompanies, [
+  body('name').trim().notEmpty().withMessage('Company name is required'),
+  body('adminEmail').isEmail().withMessage('Valid admin email is required'),
+  body('adminPassword')
+    .isLength({ min: 8, max: 64 }).withMessage('Password must be 8-64 characters long')
+    .matches(/[a-z]/).withMessage('Password must include a lowercase letter')
+    .matches(/[A-Z]/).withMessage('Password must include an uppercase letter')
+    .matches(/[0-9]/).withMessage('Password must include a number')
+    .matches(/[^A-Za-z0-9]/).withMessage('Password must include a special character')
+    .not().matches(/\s/).withMessage('Password cannot contain spaces'),
+  body('adminFirstName').trim().notEmpty().withMessage('Admin first name is required'),
+  body('adminLastName').trim().notEmpty().withMessage('Admin last name is required'),
+  body('description').optional().trim(),
+  body('industry').optional().trim(),
+  body('size').optional().isIn(['1-10', '11-50', '51-200', '201-500', '500+'])
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { 
+      name, 
+      adminEmail, 
+      adminPassword, 
+      adminFirstName, 
+      adminLastName, 
+      description, 
+      industry, 
+      size 
+    } = req.body;
+
+    // Check if admin email already exists
+    const existingUser = await User.findOne({ email: adminEmail });
+    if (existingUser) {
+      return res.status(400).json({ error: 'Admin email already exists' });
+    }
+
+    // Create company
+    const company = new Company({
+      name,
+      description,
+      industry,
+      size
+    });
+
+    await company.save();
+
+    // Create admin user
+    const adminUser = new User({
+      email: adminEmail,
+      password: adminPassword,
+      firstName: adminFirstName,
+      lastName: adminLastName,
+      companyId: company._id,
+      role: 'company_admin',
+      isCompanyAdmin: true
+    });
+
+    await adminUser.save();
+
+    // Set company admin
+    company.admin = adminUser._id;
+    await company.addUser(adminUser._id);
+    await company.save();
+
+    const populatedCompany = await Company.findById(company._id)
+      .populate('admin', 'firstName lastName email')
+      .populate('users', 'firstName lastName email role');
+
+    res.status(201).json({
+      message: 'Company and admin created successfully',
+      company: populatedCompany
+    });
+  } catch (error) {
+    console.error('Create company error:', error);
+    res.status(500).json({ error: 'Failed to create company' });
+  }
+});
+
+// Get all users (admin view)
+router.get('/users', authenticateToken, canManageAllUsers, async (req, res) => {
+  try {
+    const { page = 1, limit = 20, search = '', role = '', company = '' } = req.query;
+    const skip = (page - 1) * limit;
+
+    let query = {};
+    if (search) {
+      query.$or = [
+        { firstName: { $regex: search, $options: 'i' } },
+        { lastName: { $regex: search, $options: 'i' } },
+        { email: { $regex: search, $options: 'i' } }
+      ];
+    }
+    if (role) {
+      query.role = role;
+    }
+    if (company) {
+      const companies = await Company.find({ 
+        name: { $regex: company, $options: 'i' } 
+      }).select('_id');
+      query.companyId = { $in: companies.map(c => c._id) };
+    }
+
+    const users = await User.find(query)
+      .populate('companyId', 'name companyId')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(parseInt(limit))
+      .select('-password');
+
+    const total = await User.countDocuments(query);
+
+    res.json({
+      users,
+      pagination: {
+        current: parseInt(page),
+        total: Math.ceil(total / limit),
+        count: total
+      }
+    });
+  } catch (error) {
+    console.error('Get users error:', error);
+    res.status(500).json({ error: 'Failed to fetch users' });
+  }
+});
+
+// Create user (admin only)
+router.post('/users/create', authenticateToken, canManageAllUsers, [
+  body('email').isEmail().withMessage('Please enter a valid email').normalizeEmail(),
+  body('password')
+    .isLength({ min: 8, max: 64 }).withMessage('Password must be 8-64 characters long')
+    .matches(/[a-z]/).withMessage('Password must include a lowercase letter')
+    .matches(/[A-Z]/).withMessage('Password must include an uppercase letter')
+    .matches(/[0-9]/).withMessage('Password must include a number')
+    .matches(/[^A-Za-z0-9]/).withMessage('Password must include a special character')
+    .not().matches(/\s/).withMessage('Password cannot contain spaces'),
+  body('firstName').trim().notEmpty().withMessage('First name is required'),
+  body('lastName').trim().notEmpty().withMessage('Last name is required'),
+  body('role').isIn(['individual', 'company_user', 'company_team_leader', 'company_admin']).withMessage('Invalid role'),
+  body('companyId').optional().isMongoId().withMessage('Invalid company ID'),
+  body('teamId').optional().isString().withMessage('Invalid team ID')
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { email, password, firstName, lastName, role, companyId, teamId } = req.body;
+
+    // Check if user already exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ error: 'Email already registered' });
+    }
+
+    // Validate company if provided
+    if (companyId) {
+      const company = await Company.findById(companyId);
+      if (!company) {
+        return res.status(400).json({ error: 'Company not found' });
+      }
+    }
+
+    // Create new user
+    const newUser = new User({
+      email,
+      password,
+      firstName,
+      lastName,
+      role,
+      companyId: companyId || null,
+      teamId: teamId || null,
+      isCompanyAdmin: role === 'company_admin',
+      isTeamLeader: role === 'company_team_leader',
+      subscription: {
+        plan: 'free',
+        status: 'active'
+      },
+      usage: {
+        aiConversations: 0,
+        monthlyLimit: 50,
+        lastResetDate: new Date()
+      },
+      settings: {
+        experienceLevel: 'beginner'
+      }
+    });
+
+    await newUser.save();
+
+    // Add user to company if specified
+    if (companyId) {
+      await Company.findByIdAndUpdate(companyId, {
+        $addToSet: { users: newUser._id }
+      });
+    }
+
+    res.status(201).json({
+      message: 'User created successfully',
+      user: {
+        id: newUser._id,
+        email: newUser.email,
+        firstName: newUser.firstName,
+        lastName: newUser.lastName,
+        role: newUser.role,
+        companyId: newUser.companyId,
+        teamId: newUser.teamId,
+        isCompanyAdmin: newUser.isCompanyAdmin,
+        isTeamLeader: newUser.isTeamLeader,
+        subscription: newUser.subscription,
+        usage: newUser.usage,
+        settings: newUser.settings,
+        createdAt: newUser.createdAt
+      }
+    });
+  } catch (error) {
+    console.error('Create user error:', error);
+    res.status(500).json({ error: 'Failed to create user' });
+  }
+});
+
+// Create admin user (super admin only)
+router.post('/admins', authenticateToken, requireSuperAdmin, [
+  body('email').isEmail().withMessage('Valid email is required'),
+  body('password')
+    .isLength({ min: 8, max: 64 }).withMessage('Password must be 8-64 characters long')
+    .matches(/[a-z]/).withMessage('Password must include a lowercase letter')
+    .matches(/[A-Z]/).withMessage('Password must include an uppercase letter')
+    .matches(/[0-9]/).withMessage('Password must include a number')
+    .matches(/[^A-Za-z0-9]/).withMessage('Password must include a special character')
+    .not().matches(/\s/).withMessage('Password cannot contain spaces'),
+  body('firstName').trim().notEmpty().withMessage('First name is required'),
+  body('lastName').trim().notEmpty().withMessage('Last name is required'),
+  body('role').isIn(['admin', 'super_admin']).withMessage('Invalid admin role'),
+  body('permissions').optional().isObject()
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { email, password, firstName, lastName, role, permissions = {} } = req.body;
+
+    // Check if user already exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ error: 'Email already exists' });
+    }
+
+    // Create admin user
+    const adminUser = new User({
+      email,
+      password,
+      firstName,
+      lastName,
+      role,
+      isSuperAdmin: role === 'super_admin',
+      isAdmin: role === 'admin',
+      adminPermissions: {
+        canManageCompanies: permissions.canManageCompanies || false,
+        canManageUsers: permissions.canManageUsers || false,
+        canViewAnalytics: permissions.canViewAnalytics || false,
+        canManageSubscriptions: permissions.canManageSubscriptions || false
+      }
+    });
+
+    await adminUser.save();
+
+    res.status(201).json({
+      message: 'Admin user created successfully',
+      user: {
+        id: adminUser._id,
+        email: adminUser.email,
+        firstName: adminUser.firstName,
+        lastName: adminUser.lastName,
+        role: adminUser.role,
+        isSuperAdmin: adminUser.isSuperAdmin,
+        isAdmin: adminUser.isAdmin,
+        adminPermissions: adminUser.adminPermissions
+      }
+    });
+  } catch (error) {
+    console.error('Create admin error:', error);
+    res.status(500).json({ error: 'Failed to create admin user' });
+  }
+});
+
+// Update user role/permissions
+router.put('/users/:userId', authenticateToken, canManageAllUsers, [
+  body('role').optional().isIn(['individual', 'company_admin', 'company_team_leader', 'company_user', 'admin', 'super_admin']),
+  body('adminPermissions').optional().isObject()
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { userId } = req.params;
+    const { role, adminPermissions } = req.body;
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Don't allow non-super-admins to modify super-admins
+    if (user.role === 'super_admin' && !req.user.isSuperAdminUser()) {
+      return res.status(403).json({ error: 'Cannot modify super admin' });
+    }
+
+    const updateData = {};
+    if (role) {
+      updateData.role = role;
+      updateData.isSuperAdmin = role === 'super_admin';
+      updateData.isAdmin = role === 'admin';
+      updateData.isCompanyAdmin = role === 'company_admin';
+      updateData.isTeamLeader = role === 'company_team_leader';
+    }
+    if (adminPermissions) {
+      updateData.adminPermissions = { ...user.adminPermissions, ...adminPermissions };
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      updateData,
+      { new: true }
+    ).select('-password');
+
+    res.json({
+      message: 'User updated successfully',
+      user: updatedUser
+    });
+  } catch (error) {
+    console.error('Update user error:', error);
+    res.status(500).json({ error: 'Failed to update user' });
+  }
+});
+
+// Delete company (super admin only)
+router.delete('/companies/:companyId', authenticateToken, requireSuperAdmin, async (req, res) => {
+  try {
+    const { companyId } = req.params;
+
+    const company = await Company.findById(companyId);
+    if (!company) {
+      return res.status(404).json({ error: 'Company not found' });
+    }
+
+    // Update all users in this company to individual
+    await User.updateMany(
+      { companyId: company._id },
+      { 
+        companyId: null,
+        role: 'individual',
+        isCompanyAdmin: false,
+        isTeamLeader: false,
+        teamId: null
+      }
+    );
+
+    // Delete the company
+    await Company.findByIdAndDelete(companyId);
+
+    res.json({
+      message: 'Company deleted successfully'
+    });
+  } catch (error) {
+    console.error('Delete company error:', error);
+    res.status(500).json({ error: 'Failed to delete company' });
+  }
+});
+
+// Get admin permissions
+router.get('/permissions', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const permissions = getAdminPermissions(req.user);
+    res.json({ permissions });
+  } catch (error) {
+    console.error('Get permissions error:', error);
+    res.status(500).json({ error: 'Failed to get permissions' });
+  }
+});
+
+module.exports = router;

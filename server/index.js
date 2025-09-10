@@ -16,6 +16,9 @@ const userRoutes = require('./routes/users');
 const subscriptionRoutes = require('./routes/subscriptions');
 const aiRoutes = require('./routes/ai');
 const enterpriseRoutes = require('./routes/enterprise');
+const companyRoutes = require('./routes/companies');
+const passwordResetRoutes = require('./routes/passwordReset');
+const adminRoutes = require('./routes/admin');
 const { authenticateToken } = require('./middleware/auth');
 
 const app = express();
@@ -60,16 +63,16 @@ const mongoUri = (process.env.MONGODB_URI && process.env.MONGODB_URI.trim() !== 
   ? process.env.MONGODB_URI
   : 'mongodb://127.0.0.1:27017/salesbuddy';
 
-mongoose.connect(mongoUri, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
+mongoose.connect(mongoUri)
 .then(() => console.log(`Connected to MongoDB: ${mongoUri.includes('127.0.0.1') ? 'local' : 'remote'}`))
 .catch(err => console.error('MongoDB connection error:', err));
 
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', authenticateToken, userRoutes);
+app.use('/api/companies', authenticateToken, companyRoutes);
+app.use('/api/password-reset', passwordResetRoutes);
+app.use('/api/admin', authenticateToken, adminRoutes);
 
 // Subscription routes - webhook needs to be public, others need auth
 app.use('/api/subscriptions', subscriptionRoutes);
@@ -96,8 +99,53 @@ app.use('*', (req, res) => {
   res.status(404).json({ error: 'Route not found' });
 });
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`SalesBuddy server running on port ${PORT}`);
+});
+
+// Graceful shutdown handling
+const gracefulShutdown = (signal) => {
+  console.log(`\nReceived ${signal}. Starting graceful shutdown...`);
+  
+  // Set a shorter timeout for development
+  const timeout = process.env.NODE_ENV === 'development' ? 3000 : 10000;
+  
+  server.close((err) => {
+    if (err) {
+      console.error('Error during server shutdown:', err);
+      process.exit(1);
+    }
+    
+    console.log('HTTP server closed.');
+    
+    // Close MongoDB connection
+    mongoose.connection.close(false, () => {
+      console.log('MongoDB connection closed.');
+      process.exit(0);
+    });
+  });
+  
+  // Force close after timeout
+  setTimeout(() => {
+    console.error('Could not close connections in time, forcefully shutting down');
+    process.exit(1);
+  }, timeout);
+};
+
+// Handle different termination signals
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+
+// Handle uncaught exceptions
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught Exception:', err);
+  gracefulShutdown('uncaughtException');
+});
+
+// Handle unhandled promise rejections
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+  gracefulShutdown('unhandledRejection');
 });
 
 module.exports = app; 

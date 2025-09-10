@@ -33,6 +33,12 @@ const Navbar: React.FC = () => {
                 <>
                   <NavLink to="/conversations" className={navLinkClasses}>{t('conversations')}</NavLink>
                   <NavLink to="/profile" className={navLinkClasses}>{t('profile')}</NavLink>
+                  {user.companyId && (
+                    <NavLink to="/company" className={navLinkClasses}>Company</NavLink>
+                  )}
+                  {(user.role === 'super_admin' || user.role === 'admin' || user.isSuperAdmin || user.isAdmin) && (
+                    <NavLink to="/admin" className={navLinkClasses}>Admin</NavLink>
+                  )}
                 </>
               ) : (
                 <>
@@ -76,6 +82,12 @@ const Navbar: React.FC = () => {
                   <>
                     <NavLink to="/conversations" className={navLinkClasses} onClick={() => setOpen(false)}>{t('conversations')}</NavLink>
                     <NavLink to="/profile" className={navLinkClasses} onClick={() => setOpen(false)}>{t('profile')}</NavLink>
+                    {user.companyId && (
+                      <NavLink to="/company" className={navLinkClasses} onClick={() => setOpen(false)}>Company</NavLink>
+                    )}
+                    {(user.role === 'super_admin' || user.role === 'admin' || user.isSuperAdmin || user.isAdmin) && (
+                      <NavLink to="/admin" className={navLinkClasses} onClick={() => setOpen(false)}>Admin</NavLink>
+                    )}
                   </>
                 ) : (
                   <>
