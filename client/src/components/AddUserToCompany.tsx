@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
+import { useAuth } from '../contexts/AuthContext.tsx';
 
 interface AddUserForm {
   email: string;
   password: string;
+  confirmPassword: string;
   firstName: string;
   lastName: string;
   role: 'company_user' | 'company_team_leader';
@@ -28,22 +30,32 @@ const AddUserToCompany: React.FC<AddUserToCompanyProps> = ({
   onUserAdded, 
   onCancel 
 }) => {
+  const { user } = useAuth();
   const [form, setForm] = useState<AddUserForm>({
     email: '',
     password: '',
+    confirmPassword: '',
     firstName: '',
     lastName: '',
     role: 'company_user'
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [passwordMatchError, setPasswordMatchError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
+    setPasswordMatchError(null);
 
     // Client-side validation
+    if (form.password !== form.confirmPassword) {
+      setPasswordMatchError('Passwords do not match');
+      setLoading(false);
+      return;
+    }
+
     if (form.role === 'company_team_leader' && !form.teamId) {
       setError('Please select a team for team leader role');
       setLoading(false);
@@ -51,16 +63,33 @@ const AddUserToCompany: React.FC<AddUserToCompanyProps> = ({
     }
 
     try {
-      const response = await fetch('/api/companies/users/add', {
+      // Prepare form data
+      const formData = {
+        ...form,
+        companyId
+      };
+
+      // For team leaders, automatically set the team name
+      if (user?.role === 'company_team_leader') {
+        const userTeam = teams.find(team => team.teamLeader === user.id);
+        if (userTeam) {
+          formData.teamName = userTeam.name;
+        }
+      } else if (form.teamId) {
+        // For company admins, use the selected team
+        const selectedTeam = teams.find(team => team._id === form.teamId);
+        if (selectedTeam) {
+          formData.teamName = selectedTeam.name;
+        }
+      }
+
+      const response = await fetch('/api/companies/users', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
         credentials: 'include',
-        body: JSON.stringify({
-          ...form,
-          companyId
-        })
+        body: JSON.stringify(formData)
       });
 
       if (!response.ok) {
@@ -72,6 +101,7 @@ const AddUserToCompany: React.FC<AddUserToCompanyProps> = ({
       setForm({
         email: '',
         password: '',
+        confirmPassword: '',
         firstName: '',
         lastName: '',
         role: 'company_user'
@@ -169,6 +199,34 @@ const AddUserToCompany: React.FC<AddUserToCompanyProps> = ({
         </div>
 
         <div>
+          <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
+            Confirm Password *
+          </label>
+          <input
+            type="password"
+            id="confirmPassword"
+            required
+            minLength={8}
+            value={form.confirmPassword}
+            onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })}
+            onBlur={() => {
+              if (form.confirmPassword && form.password !== form.confirmPassword) {
+                setPasswordMatchError('Passwords do not match');
+              } else {
+                setPasswordMatchError(null);
+              }
+            }}
+            className={`w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+              passwordMatchError ? 'border-red-500 ring-2 ring-red-500' : 'border-gray-300'
+            }`}
+            placeholder="Confirm password"
+          />
+          {passwordMatchError && (
+            <p className="mt-1 text-sm text-red-600">{passwordMatchError}</p>
+          )}
+        </div>
+
+        <div>
           <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-1">
             Role *
           </label>
@@ -180,14 +238,17 @@ const AddUserToCompany: React.FC<AddUserToCompanyProps> = ({
             className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
             <option value="company_user">Company User</option>
-            <option value="company_team_leader">Team Leader</option>
+            {user?.role === 'company_admin' && (
+              <option value="company_team_leader">Team Leader</option>
+            )}
           </select>
         </div>
 
-        {form.role === 'company_team_leader' && teams.length > 0 && (
+        {/* Only show team selection for company admins */}
+        {user?.role === 'company_admin' && teams.length > 0 && (
           <div>
             <label htmlFor="teamId" className="block text-sm font-medium text-gray-700 mb-1">
-              Team *
+              Team {form.role === 'company_team_leader' ? '*' : '(optional)'}
             </label>
             <select
               id="teamId"
@@ -204,15 +265,18 @@ const AddUserToCompany: React.FC<AddUserToCompanyProps> = ({
               ))}
             </select>
             <p className="mt-1 text-sm text-gray-500">
-              Select the team this user will lead
+              {form.role === 'company_team_leader' 
+                ? 'Select the team this user will lead'
+                : 'Select a team to assign this user to (optional)'
+              }
             </p>
           </div>
         )}
 
-        {form.role === 'company_team_leader' && teams.length === 0 && (
+        {teams.length === 0 && (
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
             <p className="text-sm text-yellow-700">
-              No teams available. Create a team first before assigning a team leader.
+              No teams available. Create a team first before assigning users to teams.
             </p>
           </div>
         )}

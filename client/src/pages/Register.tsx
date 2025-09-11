@@ -16,9 +16,24 @@ const Register: React.FC = () => {
   });
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [passwordMatchError, setPasswordMatchError] = useState<string | null>(null);
 
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
+    
+    // Clear password match error when user types
+    if (e.target.name === 'password' || e.target.name === 'confirmPassword') {
+      setPasswordMatchError(null);
+    }
+  };
+
+  // Check password match in real-time
+  const checkPasswordMatch = () => {
+    if (form.confirmPassword && form.password !== form.confirmPassword) {
+      setPasswordMatchError('Passwords do not match');
+    } else {
+      setPasswordMatchError(null);
+    }
   };
 
   const onSubmit = async (e: React.FormEvent) => {
@@ -27,8 +42,11 @@ const Register: React.FC = () => {
     try {
       setError(null);
       setFieldErrors({});
+      setPasswordMatchError(null);
+      
       if (form.password !== form.confirmPassword) {
-        setError('Passwords do not match');
+        setPasswordMatchError('Passwords do not match');
+        setLoading(false);
         return;
       }
       const result = await register({
@@ -72,7 +90,19 @@ const Register: React.FC = () => {
             <input className={`input-field ${fieldErrors.password ? 'ring-2 ring-red-500' : ''}`} name="password" type="password" placeholder="Password" value={form.password} onChange={onChange} required />
             {fieldErrors.password && <p className="text-xs text-red-600 mt-1">{fieldErrors.password}</p>}
           </div>
-          <input className="input-field" name="confirmPassword" type="password" placeholder="Confirm password" value={form.confirmPassword} onChange={onChange} required />
+          <div>
+            <input 
+              className={`input-field ${passwordMatchError ? 'ring-2 ring-red-500' : ''}`} 
+              name="confirmPassword" 
+              type="password" 
+              placeholder="Confirm password" 
+              value={form.confirmPassword} 
+              onChange={onChange}
+              onBlur={checkPasswordMatch}
+              required 
+            />
+            {passwordMatchError && <p className="text-xs text-red-600 mt-1">{passwordMatchError}</p>}
+          </div>
           {error && <p className="text-sm text-red-600">{error}</p>}
           <input className="input-field" name="company" placeholder="Company (optional)" value={form.company} onChange={onChange} />
           <button type="submit" disabled={loading} className="btn-primary w-full">{loading ? 'Creating...' : 'Create account'}</button>

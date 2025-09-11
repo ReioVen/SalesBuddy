@@ -16,11 +16,36 @@ const CreateCompany: React.FC = () => {
     description: '',
     industry: '',
     size: '1-10',
-    maxUsers: 5
+    maxUsers: 1000 // Default to higher number for enterprise
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+
+  // Check if user is admin
+  const isAdmin = user?.role === 'super_admin' || user?.role === 'admin' || user?.isSuperAdmin || user?.isAdmin;
+  
+  if (!isAdmin) {
+    return (
+      <div className="max-w-2xl mx-auto p-6">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+          <div className="flex items-center">
+            <div className="flex-shrink-0">
+              <svg className="h-8 w-8 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 19.5c-.77.833.192 2.5 1.732 2.5z" />
+              </svg>
+            </div>
+            <div className="ml-3">
+              <h3 className="text-lg font-medium text-red-800">Access Denied</h3>
+              <p className="mt-1 text-red-700">
+                Only admin accounts can create companies. Please contact your administrator.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -68,8 +93,6 @@ const CreateCompany: React.FC = () => {
   };
 
   if (success) {
-    const isAdmin = user?.role === 'super_admin' || user?.role === 'admin' || user?.isSuperAdmin || user?.isAdmin;
-    
     return (
       <div className="max-w-2xl mx-auto p-6">
         <div className="bg-green-50 border border-green-200 rounded-lg p-6">
@@ -82,10 +105,7 @@ const CreateCompany: React.FC = () => {
             <div className="ml-3">
               <h3 className="text-lg font-medium text-green-800">Company Created Successfully!</h3>
               <p className="mt-1 text-green-700">
-                {isAdmin 
-                  ? 'The company has been created successfully. You can now manage it from the admin panel.'
-                  : 'Your company has been created and you are now the company administrator. You can now invite users and create teams.'
-                }
+                The company has been created successfully with enterprise plan. You can now manage it from the admin panel.
               </p>
             </div>
           </div>
@@ -97,7 +117,7 @@ const CreateCompany: React.FC = () => {
   return (
     <div className="max-w-2xl mx-auto p-6">
       <div className="bg-white rounded-lg shadow-md p-6">
-        <h1 className="text-2xl font-bold text-gray-900 mb-6">Create Your Company</h1>
+        <h1 className="text-2xl font-bold text-gray-900 mb-6">Create New Company</h1>
         
         {error && (
           <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
@@ -198,12 +218,13 @@ const CreateCompany: React.FC = () => {
           </div>
 
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <h3 className="text-sm font-medium text-blue-800 mb-2">What happens next?</h3>
+            <h3 className="text-sm font-medium text-blue-800 mb-2">Enterprise Plan Features</h3>
             <ul className="text-sm text-blue-700 space-y-1">
-              <li>• You'll become the company administrator</li>
-              <li>• You can invite team members and create teams</li>
-              <li>• You'll have full control over company settings</li>
-              <li>• You can manage user permissions and roles</li>
+              <li>• Unlimited users and conversations</li>
+              <li>• Full team management capabilities</li>
+              <li>• Advanced analytics and reporting</li>
+              <li>• Client customization and feedback tools</li>
+              <li>• Complete admin control over company settings</li>
             </ul>
           </div>
 

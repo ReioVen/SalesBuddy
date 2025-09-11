@@ -4,6 +4,7 @@ import AddUserToCompany from './AddUserToCompany.tsx';
 import CreateTeam from './CreateTeam.tsx';
 import EditUser from './EditUser.tsx';
 import EditTeam from './EditTeam.tsx';
+import TeamMemberManagement from './TeamMemberManagement.tsx';
 
 interface CompanyUser {
   _id: string;
@@ -22,7 +23,12 @@ interface Team {
   name: string;
   description?: string;
   members: string[];
-  teamLeader?: string;
+  teamLeader?: {
+    _id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+  };
   createdAt: string;
 }
 
@@ -50,6 +56,7 @@ const CompanyManagement: React.FC = () => {
   const [showCreateTeam, setShowCreateTeam] = useState(false);
   const [editingUser, setEditingUser] = useState<CompanyUser | null>(null);
   const [editingTeam, setEditingTeam] = useState<Team | null>(null);
+  const [managingTeam, setManagingTeam] = useState<Team | null>(null);
 
   // Fetch company data
   const fetchCompanyData = useCallback(async () => {
@@ -389,12 +396,14 @@ const CompanyManagement: React.FC = () => {
             <div className="space-y-6">
               <div className="flex justify-between items-center">
                 <h2 className="text-xl font-semibold text-gray-900">Teams</h2>
-                <button 
-                  onClick={() => setShowCreateTeam(!showCreateTeam)}
-                  className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-                >
-                  {showCreateTeam ? 'Cancel' : 'Create Team'}
-                </button>
+                {user?.role === 'company_admin' && (
+                  <button 
+                    onClick={() => setShowCreateTeam(!showCreateTeam)}
+                    className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                  >
+                    {showCreateTeam ? 'Cancel' : 'Create Team'}
+                  </button>
+                )}
               </div>
               
               {showCreateTeam ? (
@@ -446,7 +455,12 @@ const CompanyManagement: React.FC = () => {
                         <div>
                           <h4 className="text-sm font-medium text-gray-700 mb-2">Team Leader</h4>
                           {team.teamLeader ? (
-                            <p className="text-sm text-gray-600">Assigned</p>
+                            <div>
+                              <p className="text-sm text-gray-900 font-medium">
+                                {team.teamLeader.firstName} {team.teamLeader.lastName}
+                              </p>
+                              <p className="text-xs text-gray-500">{team.teamLeader.email}</p>
+                            </div>
                           ) : (
                             <p className="text-sm text-gray-500">No team leader assigned</p>
                           )}
@@ -460,7 +474,10 @@ const CompanyManagement: React.FC = () => {
                         </div>
                         
                         <div className="pt-2">
-                          <button className="text-blue-600 hover:text-blue-900 text-sm">
+                          <button 
+                            onClick={() => setManagingTeam(team)}
+                            className="text-blue-600 hover:text-blue-900 text-sm"
+                          >
                             Manage Members
                           </button>
                         </div>
@@ -480,6 +497,16 @@ const CompanyManagement: React.FC = () => {
           )}
         </div>
       </div>
+
+      {/* Team Member Management Modal */}
+      {managingTeam && (
+        <TeamMemberManagement
+          team={managingTeam}
+          companyId={company?._id || ''}
+          onClose={() => setManagingTeam(null)}
+          onUpdate={fetchCompanyData}
+        />
+      )}
     </div>
   );
 };

@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 interface CreateUserForm {
   email: string;
   password: string;
+  confirmPassword: string;
   firstName: string;
   lastName: string;
   role: 'individual' | 'company_user' | 'company_team_leader' | 'company_admin';
@@ -20,12 +21,14 @@ const CreateUser: React.FC = () => {
   const [form, setForm] = useState<CreateUserForm>({
     email: '',
     password: '',
+    confirmPassword: '',
     firstName: '',
     lastName: '',
     role: 'individual'
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [passwordMatchError, setPasswordMatchError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [companies, setCompanies] = useState<Company[]>([]);
   const [loadingCompanies, setLoadingCompanies] = useState(true);
@@ -57,8 +60,15 @@ const CreateUser: React.FC = () => {
     console.log('User form submitted with data:', form);
     setLoading(true);
     setError(null);
+    setPasswordMatchError(null);
 
     // Client-side validation
+    if (form.password !== form.confirmPassword) {
+      setPasswordMatchError('Passwords do not match');
+      setLoading(false);
+      return;
+    }
+
     if (form.role !== 'individual' && !form.companyId) {
       setError('Please select a company for this user role');
       setLoading(false);
@@ -87,6 +97,7 @@ const CreateUser: React.FC = () => {
       setForm({
         email: '',
         password: '',
+        confirmPassword: '',
         firstName: '',
         lastName: '',
         role: 'individual',
@@ -201,6 +212,34 @@ const CreateUser: React.FC = () => {
             className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             placeholder="Enter password (min 8 characters)"
           />
+        </div>
+
+        <div>
+          <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
+            Confirm Password *
+          </label>
+          <input
+            type="password"
+            id="confirmPassword"
+            required
+            minLength={8}
+            value={form.confirmPassword}
+            onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })}
+            onBlur={() => {
+              if (form.confirmPassword && form.password !== form.confirmPassword) {
+                setPasswordMatchError('Passwords do not match');
+              } else {
+                setPasswordMatchError(null);
+              }
+            }}
+            className={`w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+              passwordMatchError ? 'border-red-500 ring-2 ring-red-500' : 'border-gray-300'
+            }`}
+            placeholder="Confirm password"
+          />
+          {passwordMatchError && (
+            <p className="mt-1 text-sm text-red-600">{passwordMatchError}</p>
+          )}
         </div>
 
         <div>

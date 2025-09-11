@@ -257,6 +257,14 @@ userSchema.methods.canCreateTeams = function() {
   return this.role === 'company_admin';
 };
 
+userSchema.methods.canManageOwnTeam = function() {
+  return this.role === 'company_admin' || this.role === 'company_team_leader';
+};
+
+userSchema.methods.canCreateTeamLeaders = function() {
+  return this.role === 'company_admin';
+};
+
 userSchema.methods.belongsToCompany = function() {
   return this.companyId !== null;
 };

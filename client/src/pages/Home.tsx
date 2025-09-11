@@ -6,7 +6,6 @@ import {
   MessageSquare, 
   TrendingUp, 
   Users, 
-  CheckCircle, 
   ArrowRight,
   Play,
   Star

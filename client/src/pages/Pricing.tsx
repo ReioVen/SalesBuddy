@@ -1,15 +1,9 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext.tsx';
 import { 
   Check, 
   X, 
-  Star,
-  Users,
-  MessageSquare,
-  Brain,
-  TrendingUp,
-  Shield
+  Star
 } from 'lucide-react';
 import axios from 'axios';
 import toast from 'react-hot-toast';

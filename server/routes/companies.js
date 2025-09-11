@@ -30,7 +30,7 @@ const canManageUsers = async (req, res, next) => {
   }
 };
 
-// Create a new company
+// Create a new company (admin only)
 router.post('/create', authenticateToken, [
   body('name').trim().notEmpty().withMessage('Company name is required'),
   body('description').optional().trim(),
@@ -39,6 +39,15 @@ router.post('/create', authenticateToken, [
   body('maxUsers').optional().isInt({ min: 1, max: 10000 }).withMessage('Max users must be between 1 and 10000')
 ], async (req, res) => {
   try {
+    // Only allow super admins to create companies
+    if (!req.user.isSuperAdminUser()) {
+      return res.status(403).json({ 
+        error: 'Only admin accounts can create companies',
+        requiredRole: 'super_admin',
+        userRole: req.user.role
+      });
+    }
+
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
@@ -46,12 +55,7 @@ router.post('/create', authenticateToken, [
 
     const { name, description, industry, size, maxUsers } = req.body;
 
-    // Check if user already has a company
-    if (req.user.companyId) {
-      return res.status(400).json({ error: 'User already belongs to a company' });
-    }
-
-    // Create company
+    // Create company (only super admins can reach this point)
     const company = new Company({
       name,
       description,
@@ -59,21 +63,15 @@ router.post('/create', authenticateToken, [
       size,
       admin: req.user._id,
       subscription: {
-        plan: 'free',
+        plan: 'enterprise',
         status: 'active',
-        maxUsers: maxUsers || 5 // Default to 5 if not specified
+        maxUsers: maxUsers || -1 // Unlimited for enterprise
       }
     });
 
     await company.save();
 
-    // Update user to be company admin
-    req.user.companyId = company._id;
-    req.user.role = 'company_admin';
-    req.user.isCompanyAdmin = true;
-    await req.user.save();
-
-    // Add user to company users list
+    // Super admins remain as super admins, just add them to the company users list
     await company.addUser(req.user._id);
 
     res.status(201).json({
@@ -215,7 +213,7 @@ router.post('/teams', authenticateToken, requireCompanyAdmin, [
     await company.createTeam({
       name,
       description,
-      teamLeader: teamLeader || null
+      teamLeader: null // Don't set team leader here, use setTeamLeader method instead
     });
 
     // Update team leader role if specified
@@ -224,6 +222,9 @@ router.post('/teams', authenticateToken, requireCompanyAdmin, [
       leader.role = 'company_team_leader';
       leader.isTeamLeader = true;
       await leader.save();
+      
+      // Use the setTeamLeader method to properly assign the team leader
+      await company.setTeamLeader(teamLeader, name);
     }
 
     const updatedCompany = await Company.findById(req.user.companyId)
@@ -263,7 +264,17 @@ router.post('/users', authenticateToken, canManageUsers, [
 
     const { email, password, firstName, lastName, role = 'company_user', teamName } = req.body;
 
-    const company = await Company.findById(req.user.companyId);
+    // Check if team leader is trying to create another team leader
+    if (role === 'company_team_leader' && !req.user.canCreateTeamLeaders()) {
+      return res.status(403).json({ 
+        error: 'Only company admins can create team leaders',
+        requiredRole: 'company_admin',
+        userRole: req.user.role
+      });
+    }
+
+    const company = await Company.findById(req.user.companyId)
+      .populate('teams.teamLeader', '_id');
     if (!company) {
       return res.status(404).json({ error: 'Company not found' });
     }
@@ -279,9 +290,27 @@ router.post('/users', authenticateToken, canManageUsers, [
       return res.status(400).json({ error: 'Email already registered' });
     }
 
-    // Validate team if specified
+    // Determine team assignment
     let team = null;
-    if (teamName) {
+    let finalTeamName = teamName;
+
+    if (req.user.role === 'company_team_leader') {
+      // Team leaders automatically assign users to their own team
+      team = company.teams.find(t => {
+        if (!t.teamLeader) return false;
+        // Handle both ObjectId and string comparisons
+        return t.teamLeader.equals ? t.teamLeader.equals(req.user._id) : t.teamLeader.toString() === req.user._id.toString();
+      });
+      
+      if (!team) {
+        return res.status(403).json({ 
+          error: 'You are not assigned as a team leader of any team',
+          userRole: req.user.role
+        });
+      }
+      finalTeamName = team.name;
+    } else if (teamName) {
+      // Company admins can specify any team
       team = company.teams.find(t => t.name === teamName);
       if (!team) {
         return res.status(400).json({ error: 'Team not found' });
@@ -307,7 +336,7 @@ router.post('/users', authenticateToken, canManageUsers, [
 
     // Add user to team if specified
     if (team) {
-      await company.addUserToTeam(user._id, teamName);
+      await company.addUserToTeam(user._id, finalTeamName);
     }
 
     res.status(201).json({
@@ -399,6 +428,67 @@ router.put('/users/:userId/team', authenticateToken, canManageUsers, [
   } catch (error) {
     console.error('Assign user to team error:', error);
     res.status(500).json({ error: 'Failed to assign user to team' });
+  }
+});
+
+// Remove user from team
+router.delete('/users/:userId/team', authenticateToken, canManageUsers, [
+  body('teamName').trim().notEmpty().withMessage('Team name is required')
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { userId } = req.params;
+    const { teamName } = req.body;
+
+    const company = await Company.findById(req.user.companyId);
+    if (!company) {
+      return res.status(404).json({ error: 'Company not found' });
+    }
+
+    // Find team
+    const team = company.teams.find(t => t.name === teamName);
+    if (!team) {
+      return res.status(404).json({ error: 'Team not found' });
+    }
+
+    // Check if team leader is trying to remove user from a team they don't lead
+    if (req.user.role === 'company_team_leader' && (!team.teamLeader || !team.teamLeader.equals(req.user._id))) {
+      return res.status(403).json({ 
+        error: 'You can only manage members of your own team',
+        teamName: teamName,
+        userRole: req.user.role
+      });
+    }
+
+    // Find user
+    const user = await User.findById(userId);
+    if (!user || !user.companyId.equals(company._id)) {
+      return res.status(404).json({ error: 'User not found in company' });
+    }
+
+    // Remove user from team
+    await company.removeUserFromTeam(userId, teamName);
+
+    // Update user's teamId
+    user.teamId = null;
+    await user.save();
+
+    res.json({
+      message: 'User removed from team successfully',
+      user: {
+        id: user._id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        teamId: user.teamId
+      }
+    });
+  } catch (error) {
+    console.error('Remove user from team error:', error);
+    res.status(500).json({ error: 'Failed to remove user from team' });
   }
 });
 
@@ -560,8 +650,9 @@ router.post('/users/add', authenticateToken, requireCompanyAdmin, [
     }
 
     // Validate team if provided
+    let team = null;
     if (teamId) {
-      const team = company.teams.id(teamId);
+      team = company.teams.id(teamId);
       if (!team) {
         return res.status(400).json({ error: 'Team not found' });
       }
@@ -780,6 +871,60 @@ router.put('/users/:userId', authenticateToken, requireCompanyAdmin, [
   } catch (error) {
     console.error('Update user error:', error);
     res.status(500).json({ error: 'Failed to update user' });
+  }
+});
+
+// Fix team leader assignments (Admin only)
+router.post('/fix-team-leaders', authenticateToken, requireCompanyAdmin, async (req, res) => {
+  try {
+    const company = await Company.findById(req.user.companyId);
+    if (!company) {
+      return res.status(404).json({ error: 'Company not found' });
+    }
+
+    console.log('🔍 Fixing team leader assignments...');
+    let fixedCount = 0;
+
+    // Find all team leaders in the company
+    const teamLeaders = await User.find({ 
+      companyId: company._id,
+      role: 'company_team_leader',
+      isTeamLeader: true,
+      teamId: { $exists: true, $ne: null }
+    });
+
+    for (const leader of teamLeaders) {
+      const team = company.teams.id(leader.teamId);
+      if (team && (!team.teamLeader || !team.teamLeader.equals(leader._id))) {
+        console.log(`Fixing team leader for team: ${team.name}`);
+        team.teamLeader = leader._id;
+        
+        // Make sure the user is also a member of the team
+        if (!team.members.includes(leader._id)) {
+          team.members.push(leader._id);
+        }
+        
+        fixedCount++;
+      }
+    }
+
+    if (fixedCount > 0) {
+      await company.save();
+    }
+
+    res.json({
+      message: `Fixed ${fixedCount} team leader assignments`,
+      fixedCount,
+      teamLeaders: teamLeaders.map(leader => ({
+        id: leader._id,
+        name: `${leader.firstName} ${leader.lastName}`,
+        email: leader.email,
+        teamId: leader.teamId
+      }))
+    });
+  } catch (error) {
+    console.error('Fix team leaders error:', error);
+    res.status(500).json({ error: 'Failed to fix team leaders' });
   }
 });
 

@@ -136,12 +136,17 @@ router.post('/companies', authenticateToken, canManageCompanies, [
       return res.status(400).json({ error: 'Admin email already exists' });
     }
 
-    // Create company
+    // Create company with enterprise plan (admin-created companies)
     const company = new Company({
       name,
       description,
       industry,
-      size
+      size,
+      subscription: {
+        plan: 'enterprise',
+        status: 'active',
+        maxUsers: -1 // Unlimited for enterprise
+      }
     });
 
     await company.save();
@@ -471,6 +476,58 @@ router.delete('/companies/:companyId', authenticateToken, requireSuperAdmin, asy
   } catch (error) {
     console.error('Delete company error:', error);
     res.status(500).json({ error: 'Failed to delete company' });
+  }
+});
+
+// Update company subscription plan
+router.put('/companies/:companyId/subscription', authenticateToken, canManageCompanies, [
+  body('plan').isIn(['free', 'basic', 'pro', 'unlimited', 'enterprise']).withMessage('Invalid plan'),
+  body('status').optional().isIn(['active', 'inactive', 'cancelled', 'past_due']).withMessage('Invalid status')
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { companyId } = req.params;
+    const { plan, status = 'active' } = req.body;
+
+    const company = await Company.findById(companyId);
+    if (!company) {
+      return res.status(404).json({ error: 'Company not found' });
+    }
+
+    // Update subscription
+    company.subscription.plan = plan;
+    company.subscription.status = status;
+    
+    // Set maxUsers based on plan
+    if (plan === 'enterprise') {
+      company.subscription.maxUsers = -1; // Unlimited
+    } else if (plan === 'unlimited') {
+      company.subscription.maxUsers = 500;
+    } else if (plan === 'pro') {
+      company.subscription.maxUsers = 100;
+    } else if (plan === 'basic') {
+      company.subscription.maxUsers = 25;
+    } else {
+      company.subscription.maxUsers = 5; // Free
+    }
+
+    await company.save();
+
+    res.json({
+      message: `Company subscription updated to ${plan}`,
+      company: {
+        id: company._id,
+        name: company.name,
+        subscription: company.subscription
+      }
+    });
+  } catch (error) {
+    console.error('Update company subscription error:', error);
+    res.status(500).json({ error: 'Failed to update company subscription' });
   }
 });
 
