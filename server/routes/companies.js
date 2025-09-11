@@ -264,6 +264,15 @@ router.post('/users', authenticateToken, canManageUsers, [
 
     const { email, password, firstName, lastName, role = 'company_user', teamName } = req.body;
 
+    // Only company admins can create users
+    if (!req.user.canManageUsers()) {
+      return res.status(403).json({ 
+        error: 'Only company admins can create users',
+        requiredRole: 'company_admin',
+        userRole: req.user.role
+      });
+    }
+
     // Check if team leader is trying to create another team leader
     if (role === 'company_team_leader' && !req.user.canCreateTeamLeaders()) {
       return res.status(403).json({ 
@@ -290,26 +299,11 @@ router.post('/users', authenticateToken, canManageUsers, [
       return res.status(400).json({ error: 'Email already registered' });
     }
 
-    // Determine team assignment
+    // Determine team assignment (only company admins can create users)
     let team = null;
     let finalTeamName = teamName;
 
-    if (req.user.role === 'company_team_leader') {
-      // Team leaders automatically assign users to their own team
-      team = company.teams.find(t => {
-        if (!t.teamLeader) return false;
-        // Handle both ObjectId and string comparisons
-        return t.teamLeader.equals ? t.teamLeader.equals(req.user._id) : t.teamLeader.toString() === req.user._id.toString();
-      });
-      
-      if (!team) {
-        return res.status(403).json({ 
-          error: 'You are not assigned as a team leader of any team',
-          userRole: req.user.role
-        });
-      }
-      finalTeamName = team.name;
-    } else if (teamName) {
+    if (teamName) {
       // Company admins can specify any team
       team = company.teams.find(t => t.name === teamName);
       if (!team) {
@@ -317,7 +311,7 @@ router.post('/users', authenticateToken, canManageUsers, [
       }
     }
 
-    // Create new user
+    // Create new user with enterprise plan
     const user = new User({
       email,
       password,
@@ -326,7 +320,22 @@ router.post('/users', authenticateToken, canManageUsers, [
       companyId: company._id,
       role,
       teamId: team ? team._id : null,
-      isTeamLeader: role === 'company_team_leader'
+      isTeamLeader: role === 'company_team_leader',
+      subscription: {
+        plan: 'enterprise',
+        status: 'active',
+        stripeCustomerId: 'enterprise_customer', // Special identifier for enterprise users
+        currentPeriodStart: new Date(),
+        currentPeriodEnd: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 year from now
+        cancelAtPeriodEnd: false
+      },
+      usage: {
+        aiConversations: 0,
+        monthlyLimit: 50,
+        dailyLimit: 50,
+        lastResetDate: new Date(),
+        lastDailyResetDate: new Date()
+      }
     });
 
     await user.save();
@@ -409,6 +418,26 @@ router.put('/users/:userId/team', authenticateToken, canManageUsers, [
       return res.status(404).json({ error: 'User not found in company' });
     }
 
+    // Check if team leader is trying to add user to a team they don't lead
+    if (req.user.role === 'company_team_leader' && (!team.teamLeader || !team.teamLeader.equals(req.user._id))) {
+      return res.status(403).json({ 
+        error: 'You can only manage members of your own team',
+        teamName: teamName,
+        userRole: req.user.role
+      });
+    }
+
+    // Team leaders can only add regular users to their team, not other team leaders or admins
+    if (req.user.role === 'company_team_leader') {
+      if (user.role !== 'company_user') {
+        return res.status(403).json({ 
+          error: 'You can only add regular users to your team',
+          userRole: user.role,
+          yourRole: req.user.role
+        });
+      }
+    }
+
     // Add user to team
     await company.addUserToTeam(userId, teamName);
 
@@ -455,6 +484,12 @@ router.delete('/users/:userId/team', authenticateToken, canManageUsers, [
       return res.status(404).json({ error: 'Team not found' });
     }
 
+    // Find user
+    const user = await User.findById(userId);
+    if (!user || !user.companyId.equals(company._id)) {
+      return res.status(404).json({ error: 'User not found in company' });
+    }
+
     // Check if team leader is trying to remove user from a team they don't lead
     if (req.user.role === 'company_team_leader' && (!team.teamLeader || !team.teamLeader.equals(req.user._id))) {
       return res.status(403).json({ 
@@ -464,10 +499,15 @@ router.delete('/users/:userId/team', authenticateToken, canManageUsers, [
       });
     }
 
-    // Find user
-    const user = await User.findById(userId);
-    if (!user || !user.companyId.equals(company._id)) {
-      return res.status(404).json({ error: 'User not found in company' });
+    // Team leaders can only remove regular users from their team, not other team leaders or admins
+    if (req.user.role === 'company_team_leader') {
+      if (user.role !== 'company_user') {
+        return res.status(403).json({ 
+          error: 'You can only remove regular users from your team',
+          userRole: user.role,
+          yourRole: req.user.role
+        });
+      }
     }
 
     // Remove user from team
@@ -572,11 +612,13 @@ router.delete('/users/:userId', authenticateToken, requireCompanyAdmin, async (r
       return res.status(404).json({ error: 'User not found' });
     }
     
-    // For company admins, verify user is in their company
-    if (req.user.role !== 'super_admin') {
-      if (!user.companyId || !user.companyId.equals(company._id)) {
-        return res.status(404).json({ error: 'User not found in company' });
-      }
+    // Check if current user can delete this specific user
+    if (req.user.role !== 'super_admin' && !req.user.canDeleteUser(user)) {
+      return res.status(403).json({ 
+        error: 'You do not have permission to delete this user',
+        requiredRole: 'company_admin',
+        userRole: req.user.role
+      });
     }
 
     // Don't allow removing the company admin
@@ -658,7 +700,7 @@ router.post('/users/add', authenticateToken, requireCompanyAdmin, [
       }
     }
 
-    // Create new user
+    // Create new user with enterprise plan
     const newUser = new User({
       email,
       password,
@@ -670,13 +712,19 @@ router.post('/users/add', authenticateToken, requireCompanyAdmin, [
       isCompanyAdmin: false,
       isTeamLeader: role === 'company_team_leader',
       subscription: {
-        plan: 'free',
-        status: 'active'
+        plan: 'enterprise',
+        status: 'active',
+        stripeCustomerId: 'enterprise_customer', // Special identifier for enterprise users
+        currentPeriodStart: new Date(),
+        currentPeriodEnd: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 year from now
+        cancelAtPeriodEnd: false
       },
       usage: {
         aiConversations: 0,
         monthlyLimit: 50,
-        lastResetDate: new Date()
+        dailyLimit: 50,
+        lastResetDate: new Date(),
+        lastDailyResetDate: new Date()
       },
       settings: {
         experienceLevel: 'beginner'
@@ -793,11 +841,13 @@ router.put('/users/:userId', authenticateToken, requireCompanyAdmin, [
       return res.status(404).json({ error: 'User not found' });
     }
     
-    // For super admins, allow editing any user; for company admins, only users in their company
-    if (req.user.role !== 'super_admin') {
-      if (!user.companyId || !user.companyId.equals(req.user.companyId)) {
-        return res.status(404).json({ error: 'User not found in company' });
-      }
+    // Check if current user can edit this specific user
+    if (!req.user.canEditUser(user)) {
+      return res.status(403).json({ 
+        error: 'You do not have permission to edit this user',
+        requiredRole: 'company_admin',
+        userRole: req.user.role
+      });
     }
 
     // Prevent downgrading super admin users

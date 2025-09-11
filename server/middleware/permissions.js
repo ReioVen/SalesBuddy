@@ -20,13 +20,13 @@ const requireCompanyAdmin = async (req, res, next) => {
   }
 };
 
-// Check if user can manage users (admin or team leader)
+// Check if user can manage users (admin only)
 const canManageUsers = async (req, res, next) => {
   try {
     if (!req.user.canManageUsers()) {
       return res.status(403).json({ 
         error: 'User management access required',
-        requiredRoles: ['company_admin', 'company_team_leader'],
+        requiredRoles: ['company_admin'],
         userRole: req.user.role
       });
     }
@@ -168,18 +168,21 @@ const checkSubscriptionLimits = async (req, res, next) => {
 const getUserPermissions = (user) => {
   const permissions = {
     canCreateCompany: user.role === 'individual' && !user.companyId,
-    canManageUsers: user.canManageUsers(),
-    canCreateTeams: user.canCreateTeams(),
+    canManageUsers: user.canManageUsers(), // Only company admins
+    canCreateTeams: user.canCreateTeams(), // Only company admins
     canManageTeams: user.role === 'company_admin' || user.role === 'company_team_leader',
     canViewAnalytics: user.role === 'company_admin',
     canManageSubscription: user.role === 'company_admin',
-    canInviteUsers: user.canManageUsers(),
+    canInviteUsers: user.canManageUsers(), // Only company admins
     canRemoveUsers: user.role === 'company_admin',
     canSetTeamLeaders: user.role === 'company_admin',
     canViewAllTeams: user.role === 'company_admin',
     canViewOwnTeam: user.role === 'company_team_leader' || user.role === 'company_user',
     canAccessAI: true, // All users can access AI
-    canViewCompanySettings: user.role === 'company_admin'
+    canViewCompanySettings: user.role === 'company_admin',
+    canEditUsers: user.role === 'company_admin', // Only company admins can edit users
+    canDeleteUsers: user.role === 'company_admin', // Only company admins can delete users
+    canManageTeamMembers: user.role === 'company_team_leader' || user.role === 'company_admin' // Team leaders can manage regular users in their team
   };
 
   return permissions;

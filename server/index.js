@@ -20,6 +20,7 @@ const companyRoutes = require('./routes/companies');
 const passwordResetRoutes = require('./routes/passwordReset');
 const adminRoutes = require('./routes/admin');
 const { authenticateToken } = require('./middleware/auth');
+const dailyRefreshService = require('./services/dailyRefreshService');
 
 const app = express();
 const PORT = process.env.PORT || 5002;
@@ -101,6 +102,10 @@ app.use('*', (req, res) => {
 
 const server = app.listen(PORT, () => {
   console.log(`SalesBuddy server running on port ${PORT}`);
+  
+  // Start the daily refresh service for enterprise users
+  dailyRefreshService.startDailyRefresh();
+  console.log('Daily refresh service initialized');
 });
 
 // Graceful shutdown handling
@@ -117,6 +122,9 @@ const gracefulShutdown = (signal) => {
     }
     
     console.log('HTTP server closed.');
+    
+    // Stop the daily refresh service
+    dailyRefreshService.stopDailyRefresh();
     
     // Close MongoDB connection
     mongoose.connection.close(false, () => {

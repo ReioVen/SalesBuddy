@@ -191,23 +191,41 @@ const SubscriptionManagement: React.FC<SubscriptionManagementProps> = ({ onClose
           <div className="flex items-center justify-between text-sm">
             <span className="text-gray-600">AI Conversations:</span>
             <span className="font-medium text-gray-900">
-              {user.usage?.aiConversations || 0} / {user.usage?.monthlyLimit || '∞'}
+              {user.usage?.aiConversations || 0} / {subscription?.plan === 'enterprise' ? (user.usage?.dailyLimit || '∞') : (user.usage?.monthlyLimit || '∞')}
             </span>
           </div>
-          {user.usage?.monthlyLimit && user.usage.monthlyLimit > 0 && (
-            <div className="mt-2">
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div 
-                  className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                  style={{ 
-                    width: `${Math.min(100, ((user.usage?.aiConversations || 0) / user.usage.monthlyLimit) * 100)}%` 
-                  }}
-                ></div>
+          {subscription?.plan === 'enterprise' ? (
+            user.usage?.dailyLimit && user.usage.dailyLimit > 0 && (
+              <div className="mt-2">
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div 
+                    className="bg-green-600 h-2 rounded-full transition-all duration-300"
+                    style={{ 
+                      width: `${Math.min(100, ((user.usage?.aiConversations || 0) / user.usage.dailyLimit) * 100)}%` 
+                    }}
+                  ></div>
+                </div>
+                <div className="text-xs text-gray-500 mt-1 text-right">
+                  {Math.round(((user.usage?.aiConversations || 0) / user.usage.dailyLimit) * 100)}% used (daily)
+                </div>
               </div>
-              <div className="text-xs text-gray-500 mt-1 text-right">
-                {Math.round(((user.usage?.aiConversations || 0) / user.usage.monthlyLimit) * 100)}% used
+            )
+          ) : (
+            user.usage?.monthlyLimit && user.usage.monthlyLimit > 0 && (
+              <div className="mt-2">
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div 
+                    className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                    style={{ 
+                      width: `${Math.min(100, ((user.usage?.aiConversations || 0) / user.usage.monthlyLimit) * 100)}%` 
+                    }}
+                  ></div>
+                </div>
+                <div className="text-xs text-gray-500 mt-1 text-right">
+                  {Math.round(((user.usage?.aiConversations || 0) / user.usage.monthlyLimit) * 100)}% used
+                </div>
               </div>
-            </div>
+            )
           )}
         </div>
       </div>
@@ -224,7 +242,7 @@ const SubscriptionManagement: React.FC<SubscriptionManagementProps> = ({ onClose
           </button>
         )}
 
-        {isActive && subscription?.stripeCustomerId && (
+        {isActive && subscription?.stripeCustomerId && subscription?.plan !== 'enterprise' && (
           <>
             <div className="mb-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
               <div className="text-sm text-blue-800">
@@ -264,7 +282,19 @@ const SubscriptionManagement: React.FC<SubscriptionManagementProps> = ({ onClose
           </>
         )}
 
-        {isActive && !subscription?.stripeCustomerId && (
+        {isActive && subscription?.plan === 'enterprise' && (
+          <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+            <div className="flex items-start gap-2">
+              <CheckCircle className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
+              <div className="text-sm text-green-800">
+                <p className="font-medium">Enterprise Subscription</p>
+                <p>Your enterprise subscription is fully managed by your company. All features are included with 50 daily AI conversations.</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {isActive && !subscription?.stripeCustomerId && subscription?.plan !== 'enterprise' && (
           <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
             <div className="flex items-start gap-2">
               <AlertCircle className="w-4 h-4 text-yellow-600 mt-0.5 flex-shrink-0" />
@@ -287,7 +317,7 @@ const SubscriptionManagement: React.FC<SubscriptionManagementProps> = ({ onClose
           </div>
         )}
 
-        {isPastDue && subscription?.stripeCustomerId && (
+        {isPastDue && subscription?.stripeCustomerId && subscription?.plan !== 'enterprise' && (
           <button
             onClick={handleManageSubscription}
             disabled={loading}

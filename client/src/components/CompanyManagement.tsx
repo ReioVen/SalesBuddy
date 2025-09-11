@@ -294,12 +294,15 @@ const CompanyManagement: React.FC = () => {
             <div className="space-y-6">
               <div className="flex justify-between items-center">
                 <h2 className="text-xl font-semibold text-gray-900">Company Users</h2>
-                <button 
-                  onClick={() => setShowAddUser(!showAddUser)}
-                  className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-                >
-                  {showAddUser ? 'Cancel' : 'Add User'}
-                </button>
+                {/* Only company admins can add users */}
+                {user?.role === 'company_admin' && (
+                  <button 
+                    onClick={() => setShowAddUser(!showAddUser)}
+                    className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                  >
+                    {showAddUser ? 'Cancel' : 'Add User'}
+                  </button>
+                )}
               </div>
               
               {showAddUser ? (
@@ -345,43 +348,50 @@ const CompanyManagement: React.FC = () => {
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
-                      {company.users.map((user) => (
-                        <tr key={user._id}>
+                      {company.users.map((companyUser) => (
+                        <tr key={companyUser._id}>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="text-sm font-medium text-gray-900">
-                              {user.firstName} {user.lastName}
+                              {companyUser.firstName} {companyUser.lastName}
                             </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {user.email}
+                            {companyUser.email}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                              user.isCompanyAdmin 
+                              companyUser.isCompanyAdmin 
                                 ? 'bg-red-100 text-red-800'
-                                : user.isTeamLeader
+                                : companyUser.isTeamLeader
                                 ? 'bg-blue-100 text-blue-800'
                                 : 'bg-gray-100 text-gray-800'
                             }`}>
-                              {user.isCompanyAdmin ? 'Admin' : user.isTeamLeader ? 'Team Leader' : 'User'}
+                              {companyUser.isCompanyAdmin ? 'Admin' : companyUser.isTeamLeader ? 'Team Leader' : 'User'}
                             </span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {user.teamId ? 'Assigned' : 'No Team'}
+                            {companyUser.teamId ? 'Assigned' : 'No Team'}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                            <button 
-                              onClick={() => handleEditUser(user)}
-                              className="text-blue-600 hover:text-blue-900 mr-3"
-                            >
-                              Edit
-                            </button>
-                            <button 
-                              onClick={() => handleDeleteUser(user._id)}
-                              className="text-red-600 hover:text-red-900"
-                            >
-                              Delete
-                            </button>
+                            {/* Only company admins can edit/delete users */}
+                            {user?.role === 'company_admin' ? (
+                              <>
+                                <button 
+                                  onClick={() => handleEditUser(companyUser)}
+                                  className="text-blue-600 hover:text-blue-900 mr-3"
+                                >
+                                  Edit
+                                </button>
+                                <button 
+                                  onClick={() => handleDeleteUser(companyUser._id)}
+                                  className="text-red-600 hover:text-red-900"
+                                >
+                                  Delete
+                                </button>
+                              </>
+                            ) : (
+                              <span className="text-gray-400 text-sm">-</span>
+                            )}
                           </td>
                         </tr>
                       ))}
@@ -435,20 +445,23 @@ const CompanyManagement: React.FC = () => {
                             <p className="text-sm text-gray-500 mt-1">{team.description}</p>
                           )}
                         </div>
-                        <div className="flex space-x-2">
-                          <button 
-                            onClick={() => handleEditTeam(team)}
-                            className="text-blue-600 hover:text-blue-900 text-sm"
-                          >
-                            Edit
-                          </button>
-                          <button 
-                            onClick={() => handleDeleteTeam(team._id)}
-                            className="text-red-600 hover:text-red-900 text-sm"
-                          >
-                            Delete
-                          </button>
-                        </div>
+                        {/* Only company admins can edit/delete teams */}
+                        {user?.role === 'company_admin' && (
+                          <div className="flex space-x-2">
+                            <button 
+                              onClick={() => handleEditTeam(team)}
+                              className="text-blue-600 hover:text-blue-900 text-sm"
+                            >
+                              Edit
+                            </button>
+                            <button 
+                              onClick={() => handleDeleteTeam(team._id)}
+                              className="text-red-600 hover:text-red-900 text-sm"
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        )}
                       </div>
                       
                       <div className="space-y-3">
@@ -473,14 +486,17 @@ const CompanyManagement: React.FC = () => {
                           </p>
                         </div>
                         
-                        <div className="pt-2">
-                          <button 
-                            onClick={() => setManagingTeam(team)}
-                            className="text-blue-600 hover:text-blue-900 text-sm"
-                          >
-                            Manage Members
-                          </button>
-                        </div>
+                        {/* Only company admins and team leaders can manage members */}
+                        {(user?.role === 'company_admin' || user?.role === 'company_team_leader') && (
+                          <div className="pt-2">
+                            <button 
+                              onClick={() => setManagingTeam(team)}
+                              className="text-blue-600 hover:text-blue-900 text-sm"
+                            >
+                              Manage Members
+                            </button>
+                          </div>
+                        )}
                       </div>
                     </div>
                   ))}

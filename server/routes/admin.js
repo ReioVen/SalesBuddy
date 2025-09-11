@@ -12,6 +12,7 @@ const {
   canManageSubscriptions,
   getAdminPermissions 
 } = require('../middleware/adminAuth');
+const dailyRefreshService = require('../services/dailyRefreshService');
 
 const router = express.Router();
 
@@ -268,7 +269,7 @@ router.post('/users/create', authenticateToken, canManageAllUsers, [
       }
     }
 
-    // Create new user
+    // Create new user - assign enterprise plan if they belong to a company
     const newUser = new User({
       email,
       password,
@@ -280,13 +281,19 @@ router.post('/users/create', authenticateToken, canManageAllUsers, [
       isCompanyAdmin: role === 'company_admin',
       isTeamLeader: role === 'company_team_leader',
       subscription: {
-        plan: 'free',
-        status: 'active'
+        plan: companyId ? 'enterprise' : 'free', // Enterprise for company users, free for individual users
+        status: 'active',
+        stripeCustomerId: companyId ? 'enterprise_customer' : undefined, // Special identifier for enterprise users
+        currentPeriodStart: companyId ? new Date() : undefined,
+        currentPeriodEnd: companyId ? new Date(Date.now() + 365 * 24 * 60 * 60 * 1000) : undefined, // 1 year for enterprise
+        cancelAtPeriodEnd: false
       },
       usage: {
         aiConversations: 0,
         monthlyLimit: 50,
-        lastResetDate: new Date()
+        dailyLimit: companyId ? 50 : 50, // Set daily limit for enterprise users
+        lastResetDate: new Date(),
+        lastDailyResetDate: new Date()
       },
       settings: {
         experienceLevel: 'beginner'
@@ -539,6 +546,47 @@ router.get('/permissions', authenticateToken, requireAdmin, async (req, res) => 
   } catch (error) {
     console.error('Get permissions error:', error);
     res.status(500).json({ error: 'Failed to get permissions' });
+  }
+});
+
+// Daily refresh service management endpoints
+// Get daily refresh service status
+router.get('/daily-refresh/status', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const status = dailyRefreshService.getStatus();
+    res.json({ 
+      success: true, 
+      status,
+      message: 'Daily refresh service status retrieved successfully'
+    });
+  } catch (error) {
+    console.error('Get daily refresh status error:', error);
+    res.status(500).json({ error: 'Failed to get daily refresh status' });
+  }
+});
+
+// Manually trigger daily reset
+router.post('/daily-refresh/reset', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const result = await dailyRefreshService.manualReset();
+    
+    if (result.success) {
+      res.json({
+        success: true,
+        message: 'Daily reset completed successfully',
+        resetCount: result.resetCount,
+        totalUsers: result.totalUsers
+      });
+    } else {
+      res.status(500).json({
+        success: false,
+        error: 'Daily reset failed',
+        details: result.error
+      });
+    }
+  } catch (error) {
+    console.error('Manual daily reset error:', error);
+    res.status(500).json({ error: 'Failed to trigger daily reset' });
   }
 });
 

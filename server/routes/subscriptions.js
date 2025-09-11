@@ -45,10 +45,12 @@ const SUBSCRIPTION_PLANS = {
   },
   enterprise: {
     name: 'Enterprise',
-    price: null,
+    price: 'Custom Pricing',
     stripePriceId: null,
-    features: ['Unlimited AI conversations', 'Tips and Lessons', 'Summary', 'More Client Customization', 'Personal Summary Feedback', 'Team management', 'Dedicated support'],
-    limits: { conversations: -1 }
+    features: ['50 AI conversations per day', 'Tips and Lessons', 'Summary', 'More Client Customization', 'Personal Summary Feedback', 'Team management', 'Dedicated support'],
+    limits: { conversations: 50, period: 'daily' },
+    isPaid: true,
+    billingType: 'enterprise'
   }
 };
 
@@ -78,12 +80,14 @@ async function applyPlanUpdate(userId, planData) {
     // Get plan limits
     const planConfig = SUBSCRIPTION_PLANS[plan] || SUBSCRIPTION_PLANS.free;
     const monthlyLimit = planConfig.limits.conversations === -1 ? 1000000 : planConfig.limits.conversations;
+    const dailyLimit = planConfig.limits.period === 'daily' ? planConfig.limits.conversations : 50;
     
     // Prepare update data
     const updateData = {
       'subscription.plan': plan,
       'subscription.status': status,
-      'usage.monthlyLimit': monthlyLimit
+      'usage.monthlyLimit': monthlyLimit,
+      'usage.dailyLimit': dailyLimit
     };
     
     // Add optional fields if provided

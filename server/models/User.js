@@ -112,7 +112,15 @@ const userSchema = new mongoose.Schema({
       type: Number,
       default: 50 // Free tier limit (matches subscription plans)
     },
+    dailyLimit: {
+      type: Number,
+      default: 50 // Daily limit for enterprise users
+    },
     lastResetDate: {
+      type: Date,
+      default: Date.now
+    },
+    lastDailyResetDate: {
       type: Date,
       default: Date.now
     }
@@ -163,18 +171,36 @@ userSchema.methods.comparePassword = async function(candidatePassword) {
 
 // Check if user has active subscription
 userSchema.methods.hasActiveSubscription = function() {
+  // Enterprise users are always considered to have active subscription if they have a company
+  if (this.subscription.plan === 'enterprise' && this.companyId) {
+    return true;
+  }
   return this.subscription.status === 'active';
 };
 
 // Check if user can use AI (has active subscription or within free tier limits)
 userSchema.methods.canUseAI = function() {
-  // Check if within monthly limits
   const now = new Date();
+  
+  // For enterprise users, check daily limits (always active if they have a company)
+  if (this.subscription.plan === 'enterprise' && this.companyId) {
+    const lastDailyReset = new Date(this.usage.lastDailyResetDate);
+    const isNewDay = now.getDate() !== lastDailyReset.getDate() || 
+                     now.getMonth() !== lastDailyReset.getMonth() || 
+                     now.getFullYear() !== lastDailyReset.getFullYear();
+    
+    // If it's a new day, they can use AI (daily limit will be reset)
+    if (isNewDay) {
+      return true;
+    }
+    
+    // Check if within daily limit
+    return this.usage.aiConversations < this.usage.dailyLimit;
+  }
+  
+  // For non-enterprise users, check monthly limits
   const lastReset = new Date(this.usage.lastResetDate);
   const isNewMonth = now.getMonth() !== lastReset.getMonth() || now.getFullYear() !== lastReset.getFullYear();
-  
-  // Don't save here - just check the condition
-  const needsReset = isNewMonth;
   
   // Check if user has exceeded their limit
   if (this.usage.aiConversations >= this.usage.monthlyLimit) {
@@ -196,14 +222,28 @@ userSchema.methods.canUseAI = function() {
 
 // Increment AI usage
 userSchema.methods.incrementAIUsage = function() {
-  // Check if we need to reset monthly usage
   const now = new Date();
-  const lastReset = new Date(this.usage.lastResetDate);
-  const isNewMonth = now.getMonth() !== lastReset.getMonth() || now.getFullYear() !== lastReset.getFullYear();
   
-  if (isNewMonth) {
-    this.usage.aiConversations = 0;
-    this.usage.lastResetDate = now;
+  // For enterprise users, check daily reset (always active if they have a company)
+  if (this.subscription.plan === 'enterprise' && this.companyId) {
+    const lastDailyReset = new Date(this.usage.lastDailyResetDate);
+    const isNewDay = now.getDate() !== lastDailyReset.getDate() || 
+                     now.getMonth() !== lastDailyReset.getMonth() || 
+                     now.getFullYear() !== lastDailyReset.getFullYear();
+    
+    if (isNewDay) {
+      this.usage.aiConversations = 0;
+      this.usage.lastDailyResetDate = now;
+    }
+  } else {
+    // For non-enterprise users, check monthly reset
+    const lastReset = new Date(this.usage.lastResetDate);
+    const isNewMonth = now.getMonth() !== lastReset.getMonth() || now.getFullYear() !== lastReset.getFullYear();
+    
+    if (isNewMonth) {
+      this.usage.aiConversations = 0;
+      this.usage.lastResetDate = now;
+    }
   }
   
   this.usage.aiConversations += 1;
@@ -213,11 +253,11 @@ userSchema.methods.incrementAIUsage = function() {
 // Get subscription limits
 userSchema.methods.getSubscriptionLimits = function() {
   const limits = {
-    free: { conversations: 50, features: ['basic_ai'] },
-    basic: { conversations: 200, features: ['basic_ai', 'tips_lessons'] },
-    pro: { conversations: 500, features: ['basic_ai', 'tips_lessons', 'client_customization', 'summary_feedback'] },
-    unlimited: { conversations: -1, features: ['basic_ai', 'tips_lessons', 'summary', 'client_customization', 'summary_feedback'] },
-    enterprise: { conversations: -1, features: ['basic_ai', 'tips_lessons', 'summary', 'client_customization', 'summary_feedback', 'team_management'] }
+    free: { conversations: 50, features: ['basic_ai'], period: 'monthly' },
+    basic: { conversations: 200, features: ['basic_ai', 'tips_lessons'], period: 'monthly' },
+    pro: { conversations: 500, features: ['basic_ai', 'tips_lessons', 'client_customization', 'summary_feedback'], period: 'monthly' },
+    unlimited: { conversations: -1, features: ['basic_ai', 'tips_lessons', 'summary', 'client_customization', 'summary_feedback'], period: 'monthly' },
+    enterprise: { conversations: 50, features: ['basic_ai', 'tips_lessons', 'summary', 'client_customization', 'summary_feedback', 'team_management'], period: 'daily' }
   };
   
   return limits[this.subscription.plan] || limits.free;
@@ -227,13 +267,23 @@ userSchema.methods.getSubscriptionLimits = function() {
 userSchema.methods.getUsageStatus = function() {
   const limits = this.getSubscriptionLimits();
   const currentUsage = this.usage.aiConversations;
-  const monthlyLimit = this.usage.monthlyLimit;
+  
+  // For enterprise users, use daily limits
+  let limit, period;
+  if (this.subscription.plan === 'enterprise' && this.companyId) {
+    limit = this.usage.dailyLimit;
+    period = 'daily';
+  } else {
+    limit = this.usage.monthlyLimit;
+    period = 'monthly';
+  }
   
   return {
     currentUsage,
-    monthlyLimit,
-    remaining: monthlyLimit === -1 ? -1 : Math.max(0, monthlyLimit - currentUsage),
-    usagePercentage: monthlyLimit > 0 ? Math.round((currentUsage / monthlyLimit) * 100) : 0,
+    limit,
+    period,
+    remaining: limit === -1 ? -1 : Math.max(0, limit - currentUsage),
+    usagePercentage: limit > 0 ? Math.round((currentUsage / limit) * 100) : 0,
     canUseAI: this.canUseAI(),
     plan: this.subscription.plan,
     status: this.subscription.status
@@ -250,7 +300,7 @@ userSchema.methods.isTeamLeaderUser = function() {
 };
 
 userSchema.methods.canManageUsers = function() {
-  return this.role === 'company_admin' || this.role === 'company_team_leader';
+  return this.role === 'company_admin';
 };
 
 userSchema.methods.canCreateTeams = function() {
@@ -263,6 +313,45 @@ userSchema.methods.canManageOwnTeam = function() {
 
 userSchema.methods.canCreateTeamLeaders = function() {
   return this.role === 'company_admin';
+};
+
+// Check if user can edit/delete a specific user
+userSchema.methods.canEditUser = function(targetUser) {
+  // Only company admins can edit users
+  if (this.role !== 'company_admin') {
+    return false;
+  }
+  
+  // Company admins can edit any user in their company
+  return targetUser.companyId && targetUser.companyId.equals(this.companyId);
+};
+
+// Check if user can delete a specific user
+userSchema.methods.canDeleteUser = function(targetUser) {
+  // Only company admins can delete users
+  if (this.role !== 'company_admin') {
+    return false;
+  }
+  
+  // Company admins can delete any user in their company
+  return targetUser.companyId && targetUser.companyId.equals(this.companyId);
+};
+
+// Check if user can manage team members (only team leaders can manage regular users in their team)
+userSchema.methods.canManageTeamMembers = function(targetUser) {
+  // Team leaders can only manage regular company users in their own team
+  if (this.role === 'company_team_leader') {
+    return targetUser.role === 'company_user' && 
+           targetUser.teamId && 
+           targetUser.teamId.equals(this.teamId);
+  }
+  
+  // Company admins can manage all users in their company
+  if (this.role === 'company_admin') {
+    return targetUser.companyId && targetUser.companyId.equals(this.companyId);
+  }
+  
+  return false;
 };
 
 userSchema.methods.belongsToCompany = function() {
@@ -304,6 +393,16 @@ userSchema.methods.canManageAllSubscriptions = function() {
 
 userSchema.methods.hasAdminAccess = function() {
   return this.isSuperAdminUser() || this.isAdminUser();
+};
+
+// Check if enterprise subscription is properly set up (paid by company)
+userSchema.methods.isEnterpriseSubscriptionValid = function() {
+  if (this.subscription.plan !== 'enterprise') {
+    return false;
+  }
+  
+  // Enterprise users are valid if they belong to a company (company pays for them)
+  return this.companyId !== null && this.companyId !== undefined;
 };
 
 module.exports = mongoose.model('User', userSchema); 
