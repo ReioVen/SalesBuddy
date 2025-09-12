@@ -8,6 +8,7 @@ import ForgotPassword from './pages/ForgotPassword.tsx';
 import ResetPassword from './pages/ResetPassword.tsx';
 import Navbar from './components/Navbar.tsx';
 import Conversations from './pages/Conversations.tsx';
+import ConversationSummaries from './pages/ConversationSummaries.tsx';
 import Profile from './pages/Profile.tsx';
 import Settings from './pages/Settings.tsx';
 import Company from './pages/Company.tsx';
@@ -78,6 +79,14 @@ const PageRenderer: React.FC = () => {
         <Conversations />
       </div>
 
+      {/* Conversation Summaries Page */}
+      <div 
+        className={`absolute inset-0 w-full ${currentPath === '/conversation-summaries' ? 'block' : 'hidden'}`}
+        style={{ zIndex: currentPath === '/conversation-summaries' ? 10 : 1 }}
+      >
+        <ConversationSummaries />
+      </div>
+
       {/* Profile Page */}
       <div 
         className={`absolute inset-0 w-full ${currentPath === '/profile' ? 'block' : 'hidden'}`}
@@ -111,7 +120,7 @@ const PageRenderer: React.FC = () => {
       </div>
 
       {/* 404 Fallback - redirect to home */}
-      {!['/', '/pricing', '/login', '/register', '/forgot-password', '/reset-password', '/conversations', '/profile', '/settings', '/company', '/admin'].includes(currentPath) && (
+      {!['/', '/pricing', '/login', '/register', '/forgot-password', '/reset-password', '/conversations', '/conversation-summaries', '/profile', '/settings', '/company', '/admin'].includes(currentPath) && (
         <div className="absolute inset-0 w-full block" style={{ zIndex: 10 }}>
           <Home />
         </div>

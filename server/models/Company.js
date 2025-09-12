@@ -62,7 +62,11 @@ const companySchema = new mongoose.Schema({
     plan: {
       type: String,
       enum: ['free', 'basic', 'pro', 'unlimited', 'enterprise'],
-      default: 'free'
+      default: 'free',
+      set: function(value) {
+        // Normalize to lowercase
+        return value ? value.toLowerCase() : 'free';
+      }
     },
     status: {
       type: String,

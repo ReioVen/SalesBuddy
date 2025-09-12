@@ -2,6 +2,8 @@ const express = require('express');
 const { body, validationResult } = require('express-validator');
 const Company = require('../models/Company');
 const User = require('../models/User');
+const Conversation = require('../models/Conversation');
+const ConversationSummary = require('../models/ConversationSummary');
 const { authenticateToken } = require('../middleware/auth');
 
 const router = express.Router();
@@ -892,17 +894,56 @@ router.put('/users/:userId', authenticateToken, requireCompanyAdmin, [
 
     await user.save();
 
-    // Update team assignments if needed
+    // Update team assignments
+    let teamAssignmentChanged = false;
+    
     if (role === 'company_team_leader' && teamId) {
+      // Set as team leader
       await company.setTeamLeader(userId, company.teams.id(teamId).name);
+      teamAssignmentChanged = true;
     } else if (role === 'company_user') {
-      // Remove from all teams if changing to regular user
+      // Remove from team leader positions
       for (const team of company.teams) {
         if (team.teamLeader && team.teamLeader.equals(userId)) {
           team.teamLeader = null;
+          teamAssignmentChanged = true;
         }
-        team.members = team.members.filter(id => !id.equals(userId));
       }
+      
+      // Handle team membership for regular users
+      if (teamId) {
+        // Add to specified team
+        const targetTeam = company.teams.id(teamId);
+        if (targetTeam && !targetTeam.members.includes(userId)) {
+          targetTeam.members.push(userId);
+          teamAssignmentChanged = true;
+        }
+        
+        // Remove from other teams
+        for (const team of company.teams) {
+          if (!team._id.equals(teamId) && team.members.includes(userId)) {
+            team.members = team.members.filter(id => !id.equals(userId));
+            teamAssignmentChanged = true;
+          }
+        }
+      } else {
+        // Remove from all teams if no team specified
+        for (const team of company.teams) {
+          if (team.members.includes(userId)) {
+            team.members = team.members.filter(id => !id.equals(userId));
+            teamAssignmentChanged = true;
+          }
+        }
+      }
+    }
+    
+    // Save company if team assignments changed
+    if (teamAssignmentChanged) {
+      // Normalize subscription plan to lowercase before saving
+      if (company.subscription && company.subscription.plan) {
+        company.subscription.plan = company.subscription.plan.toLowerCase();
+      }
+      
       await company.save();
     }
 
@@ -923,6 +964,129 @@ router.put('/users/:userId', authenticateToken, requireCompanyAdmin, [
     res.status(500).json({ error: 'Failed to update user' });
   }
 });
+
+// Get team member conversations (Team leads and admins only)
+router.get('/users/:userId/conversations', authenticateToken, async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { page = 1, limit = 20 } = req.query;
+    const skip = (page - 1) * limit;
+
+    // Check if user has permission to view this user's conversations
+    const canView = await checkUserViewPermission(req.user._id, userId);
+    if (!canView) {
+      return res.status(403).json({ error: 'Not authorized to view this user\'s conversations' });
+    }
+
+    const conversations = await Conversation.getUserHistory(userId, parseInt(limit), skip);
+    const total = await Conversation.countDocuments({ userId, isActive: true });
+
+    res.json({
+      conversations,
+      pagination: {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        total,
+        pages: Math.ceil(total / limit)
+      }
+    });
+  } catch (error) {
+    console.error('Get team member conversations error:', error);
+    res.status(500).json({ error: 'Failed to get team member conversations' });
+  }
+});
+
+// Get team member conversation summaries (Team leads and admins only)
+router.get('/users/:userId/summaries', authenticateToken, async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    // Check if user has permission to view this user's summaries
+    const canView = await checkUserViewPermission(req.user._id, userId);
+    if (!canView) {
+      return res.status(403).json({ error: 'Not authorized to view this user\'s summaries' });
+    }
+
+    const summaries = await ConversationSummary.find({ userId })
+      .sort({ summaryNumber: -1 })
+      .populate('exampleConversations.conversationId', 'title createdAt')
+      .lean();
+
+    res.json({ summaries });
+  } catch (error) {
+    console.error('Get team member summaries error:', error);
+    res.status(500).json({ error: 'Failed to get team member summaries' });
+  }
+});
+
+// Get full conversation details (Team leads and admins only)
+router.get('/users/:userId/conversations/:conversationId', authenticateToken, async (req, res) => {
+  try {
+    const { userId, conversationId } = req.params;
+
+    // Check if user has permission to view this user's conversations
+    const canView = await checkUserViewPermission(req.user._id, userId);
+    if (!canView) {
+      return res.status(403).json({ error: 'Not authorized to view this user\'s conversations' });
+    }
+
+    const conversation = await Conversation.findById(conversationId)
+      .populate('userId', 'firstName lastName email')
+      .lean();
+
+    if (!conversation) {
+      return res.status(404).json({ error: 'Conversation not found' });
+    }
+
+    // Verify the conversation belongs to the specified user
+    if (!conversation.userId._id.equals(userId)) {
+      return res.status(403).json({ error: 'Conversation does not belong to this user' });
+    }
+
+    res.json({ conversation });
+  } catch (error) {
+    console.error('Get conversation details error:', error);
+    res.status(500).json({ error: 'Failed to get conversation details' });
+  }
+});
+
+// Helper function to check if user can view another user's data
+async function checkUserViewPermission(viewerId, targetUserId) {
+  const viewer = await User.findById(viewerId);
+  const targetUser = await User.findById(targetUserId);
+  
+  if (!viewer || !targetUser) {
+    return false;
+  }
+
+  // Super admins can view anyone
+  if (viewer.role === 'super_admin') {
+    return true;
+  }
+
+  // Company admins can view anyone in their company
+  if (viewer.role === 'company_admin' && viewer.companyId && viewer.companyId.equals(targetUser.companyId)) {
+    return true;
+  }
+
+  // Team leaders can view their team members
+  if (viewer.role === 'company_team_leader' && viewer.companyId && viewer.companyId.equals(targetUser.companyId)) {
+    const company = await Company.findById(viewer.companyId);
+    if (company) {
+      const viewerTeam = company.teams.find(team => team.teamLeader && team.teamLeader.equals(viewerId));
+      if (viewerTeam && viewerTeam.members.some(memberId => memberId.equals(targetUserId))) {
+        return true;
+      }
+    }
+  }
+
+  // Users can view their own data
+  if (viewerId === targetUserId) {
+    return true;
+  }
+
+  return false;
+}
 
 // Fix team leader assignments (Admin only)
 router.post('/fix-team-leaders', authenticateToken, requireCompanyAdmin, async (req, res) => {

@@ -77,7 +77,7 @@ interface Conversation {
 }
 
 const Conversations: React.FC = () => {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [showNewChatForm, setShowNewChatForm] = useState(false);
@@ -113,6 +113,22 @@ const Conversations: React.FC = () => {
   useEffect(() => {
     scrollToBottom();
   }, [currentConversation?.messages]);
+
+  // Add/remove CSS class to body when chat popups are open
+  useEffect(() => {
+    const isPopupOpen = showNewChatForm || currentConversation || showConversationDetail;
+    
+    if (isPopupOpen) {
+      document.body.classList.add('chat-popup-open');
+    } else {
+      document.body.classList.remove('chat-popup-open');
+    }
+
+    // Cleanup on unmount
+    return () => {
+      document.body.classList.remove('chat-popup-open');
+    };
+  }, [showNewChatForm, currentConversation, showConversationDetail]);
 
   // Load usage status only once when component mounts
   useEffect(() => {
@@ -232,7 +248,8 @@ const Conversations: React.FC = () => {
         clientIndustry: clientCustomization.industry || undefined,
         clientRole: clientCustomization.role || undefined,
         customPrompt: clientCustomization.customPrompt || undefined,
-        difficulty: clientCustomization.difficulty
+        difficulty: clientCustomization.difficulty,
+        language: language
       });
 
       toast.success('Conversation started!');
@@ -331,7 +348,8 @@ const Conversations: React.FC = () => {
     try {
       const response = await axios.post('/api/ai/message', {
         conversationId: currentConversation.id,
-        message: userMessage
+        message: userMessage,
+        language: language
       });
 
       // Add AI response to conversation
@@ -632,8 +650,8 @@ const Conversations: React.FC = () => {
 
       {/* New Chat Form Modal */}
       {showNewChatForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="fixed top-0 left-0 right-0 bottom-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999] p-4">
+          <div className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto relative z-[10000]">
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-2xl font-bold text-gray-900">{t('startNewConversation')}</h2>
@@ -811,8 +829,8 @@ const Conversations: React.FC = () => {
 
       {/* Chat Window */}
       {currentConversation && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl max-w-4xl w-full h-[80vh] flex flex-col">
+        <div className="fixed top-0 left-0 right-0 bottom-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999] p-4">
+          <div className="bg-white rounded-xl max-w-4xl w-full h-[80vh] flex flex-col relative z-[10000]">
             {/* Chat Header */}
             <div className="flex items-center justify-between p-4 border-b border-gray-200">
               <div className="flex items-center gap-3">
@@ -1083,8 +1101,8 @@ const Conversations: React.FC = () => {
 
       {/* Conversation Detail Modal */}
       {showConversationDetail && selectedConversation && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl max-w-4xl w-full h-[90vh] flex flex-col">
+        <div className="fixed top-0 left-0 right-0 bottom-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999] p-4">
+          <div className="bg-white rounded-xl max-w-4xl w-full h-[90vh] flex flex-col relative z-[10000]">
             {/* Modal Header */}
             <div className="flex items-center justify-between p-4 border-b border-gray-200">
               <h2 className="text-xl font-bold text-gray-900">{t('conversationDetails')}</h2>

@@ -38,6 +38,11 @@ const conversationSchema = new mongoose.Schema({
   industry: String,
   product: String,
   customerType: String,
+  language: {
+    type: String,
+    enum: ['en', 'et', 'es', 'ru'],
+    default: 'en'
+  },
   clientCustomization: {
     name: String,
     personality: String,

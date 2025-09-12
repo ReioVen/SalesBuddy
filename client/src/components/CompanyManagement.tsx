@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext.tsx';
+import { useTranslation } from '../hooks/useTranslation.ts';
 import AddUserToCompany from './AddUserToCompany.tsx';
 import CreateTeam from './CreateTeam.tsx';
 import EditUser from './EditUser.tsx';
 import EditTeam from './EditTeam.tsx';
 import TeamMemberManagement from './TeamMemberManagement.tsx';
+import UserDetailModal from './UserDetailModal.tsx';
 
 interface CompanyUser {
   _id: string;
@@ -48,6 +50,7 @@ interface Company {
 
 const CompanyManagement: React.FC = () => {
   const { user } = useAuth();
+  const { t } = useTranslation();
   const [company, setCompany] = useState<Company | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -57,6 +60,7 @@ const CompanyManagement: React.FC = () => {
   const [editingUser, setEditingUser] = useState<CompanyUser | null>(null);
   const [editingTeam, setEditingTeam] = useState<Team | null>(null);
   const [managingTeam, setManagingTeam] = useState<Team | null>(null);
+  const [viewingUser, setViewingUser] = useState<CompanyUser | null>(null);
 
   // Fetch company data
   const fetchCompanyData = useCallback(async () => {
@@ -87,6 +91,10 @@ const CompanyManagement: React.FC = () => {
   // Handle user operations
   const handleEditUser = (user: CompanyUser) => {
     setEditingUser(user);
+  };
+
+  const handleViewUser = (user: CompanyUser) => {
+    setViewingUser(user);
   };
 
   const handleDeleteUser = async (userId: string) => {
@@ -173,9 +181,9 @@ const CompanyManagement: React.FC = () => {
         <div className="border-b border-gray-200">
           <nav className="flex space-x-8 px-6">
             {[
-              { id: 'overview', label: 'Overview' },
-              { id: 'users', label: 'Users' },
-              { id: 'teams', label: 'Teams' }
+              { id: 'overview', label: t('overview') },
+              { id: 'users', label: t('users') },
+              { id: 'teams', label: t('teams') }
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -221,13 +229,13 @@ const CompanyManagement: React.FC = () => {
                     <thead className="bg-gray-50">
                       <tr>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Name
+                          {t('name')}
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Email
+                          {t('email')}
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Role
+                          {t('role')}
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Joined
@@ -253,7 +261,7 @@ const CompanyManagement: React.FC = () => {
                                 ? 'bg-blue-100 text-blue-800'
                                 : 'bg-gray-100 text-gray-800'
                             }`}>
-                              {user.isCompanyAdmin ? 'Admin' : user.isTeamLeader ? 'Team Leader' : 'User'}
+                              {user.isCompanyAdmin ? t('admin') : user.isTeamLeader ? t('teamLeader') : t('user')}
                             </span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -300,7 +308,7 @@ const CompanyManagement: React.FC = () => {
                     onClick={() => setShowAddUser(!showAddUser)}
                     className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
                   >
-                    {showAddUser ? 'Cancel' : 'Add User'}
+                    {showAddUser ? t('cancel') : t('addUser')}
                   </button>
                 )}
               </div>
@@ -370,28 +378,46 @@ const CompanyManagement: React.FC = () => {
                             </span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {companyUser.teamId ? 'Assigned' : 'No Team'}
+                            {companyUser.teamId ? 
+                              (company.teams.find(team => team._id === companyUser.teamId)?.name?.substring(0, 10) || 'Unknown') 
+                              : 'No Team'
+                            }
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                            {/* Only company admins can edit/delete users */}
-                            {user?.role === 'company_admin' ? (
-                              <>
+                            <div className="flex items-center space-x-2">
+                              {/* Team leads and admins can view user details */}
+                              {(user?.role === 'company_admin' || user?.role === 'company_team_leader') && (
                                 <button 
-                                  onClick={() => handleEditUser(companyUser)}
-                                  className="text-blue-600 hover:text-blue-900 mr-3"
+                                  onClick={() => handleViewUser(companyUser)}
+                                  className="text-green-600 hover:text-green-900"
                                 >
-                                  Edit
+                                  View Details
                                 </button>
-                                <button 
-                                  onClick={() => handleDeleteUser(companyUser._id)}
-                                  className="text-red-600 hover:text-red-900"
-                                >
-                                  Delete
-                                </button>
-                              </>
-                            ) : (
-                              <span className="text-gray-400 text-sm">-</span>
-                            )}
+                              )}
+                              
+                              {/* Only company admins can edit/delete users */}
+                              {user?.role === 'company_admin' && (
+                                <>
+                                  <button 
+                                    onClick={() => handleEditUser(companyUser)}
+                                    className="text-blue-600 hover:text-blue-900"
+                                  >
+                                    Edit
+                                  </button>
+                                  <button 
+                                    onClick={() => handleDeleteUser(companyUser._id)}
+                                    className="text-red-600 hover:text-red-900"
+                                  >
+                                    Delete
+                                  </button>
+                                </>
+                              )}
+                              
+                              {/* Show dash if no actions available */}
+                              {user?.role !== 'company_admin' && user?.role !== 'company_team_leader' && (
+                                <span className="text-gray-400 text-sm">-</span>
+                              )}
+                            </div>
                           </td>
                         </tr>
                       ))}
@@ -521,6 +547,14 @@ const CompanyManagement: React.FC = () => {
           companyId={company?._id || ''}
           onClose={() => setManagingTeam(null)}
           onUpdate={fetchCompanyData}
+        />
+      )}
+
+      {/* User Detail Modal */}
+      {viewingUser && (
+        <UserDetailModal
+          user={viewingUser}
+          onClose={() => setViewingUser(null)}
         />
       )}
     </div>

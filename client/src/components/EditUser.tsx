@@ -58,13 +58,13 @@ const EditUser: React.FC<EditUserProps> = ({
     }
 
     try {
-      // Prepare data for API - remove teamId if it's empty or undefined for company_user role
+      // Prepare data for API - include teamId for all users if selected
       const apiData = {
         firstName: form.firstName,
         lastName: form.lastName,
         email: form.email,
         role: form.role,
-        ...(form.role === 'company_team_leader' && form.teamId ? { teamId: form.teamId } : {})
+        ...(form.teamId ? { teamId: form.teamId } : {})
       };
       
       const response = await fetch(`/api/companies/users/${user._id}`, {
@@ -170,7 +170,7 @@ const EditUser: React.FC<EditUserProps> = ({
             id="role"
             required
             value={form.role}
-            onChange={(e) => setForm({ ...form, role: e.target.value as any, teamId: e.target.value === 'company_user' ? undefined : form.teamId })}
+            onChange={(e) => setForm({ ...form, role: e.target.value as any })}
             className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
             <option value="company_user">Company User</option>
@@ -178,10 +178,10 @@ const EditUser: React.FC<EditUserProps> = ({
           </select>
         </div>
 
-        {form.role === 'company_team_leader' && teams.length > 0 && (
+        {teams.length > 0 && (
           <div>
             <label htmlFor="teamId" className="block text-sm font-medium text-gray-700 mb-1">
-              Team *
+              Team {form.role === 'company_team_leader' ? '*' : ''}
             </label>
             <select
               id="teamId"
@@ -190,7 +190,7 @@ const EditUser: React.FC<EditUserProps> = ({
               onChange={(e) => setForm({ ...form, teamId: e.target.value || undefined })}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
-              <option value="">Select a team</option>
+              <option value="">{form.role === 'company_team_leader' ? 'Select a team' : 'No team assigned'}</option>
               {teams.map((team) => (
                 <option key={team._id} value={team._id}>
                   {team.name}
@@ -198,7 +198,10 @@ const EditUser: React.FC<EditUserProps> = ({
               ))}
             </select>
             <p className="mt-1 text-sm text-gray-500">
-              Select the team this user will lead
+              {form.role === 'company_team_leader' 
+                ? 'Select the team this user will lead' 
+                : 'Optionally assign this user to a team'
+              }
             </p>
           </div>
         )}
@@ -221,7 +224,7 @@ const EditUser: React.FC<EditUserProps> = ({
           </button>
           <button
             type="submit"
-            disabled={loading || (form.role === 'company_team_leader' && teams.length === 0)}
+            disabled={loading || (form.role === 'company_team_leader' && teams.length === 0) || (form.role === 'company_team_leader' && !form.teamId)}
             className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? 'Updating User...' : 'Update User'}

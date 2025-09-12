@@ -19,6 +19,7 @@ const enterpriseRoutes = require('./routes/enterprise');
 const companyRoutes = require('./routes/companies');
 const passwordResetRoutes = require('./routes/passwordReset');
 const adminRoutes = require('./routes/admin');
+const conversationSummaryRoutes = require('./routes/conversationSummaries');
 const { authenticateToken } = require('./middleware/auth');
 const dailyRefreshService = require('./services/dailyRefreshService');
 
@@ -79,6 +80,7 @@ app.use('/api/admin', authenticateToken, adminRoutes);
 app.use('/api/subscriptions', subscriptionRoutes);
 
 app.use('/api/ai', authenticateToken, aiRoutes);
+app.use('/api/conversation-summaries', authenticateToken, conversationSummaryRoutes);
 app.use('/api/enterprise', enterpriseRoutes);
 
 // Health check endpoint
