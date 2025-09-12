@@ -1,14 +1,13 @@
 import React from 'react';
 import { useAuth } from '../contexts/AuthContext.tsx';
-import { Navigate } from 'react-router-dom';
 import CompanyManagement from '../components/CompanyManagement.tsx';
 
 const Company: React.FC = () => {
   const { user } = useAuth();
 
-  // If user doesn't have a company, redirect to admin panel
+  // If user doesn't have a company, show message instead of redirect
   if (!user?.companyId) {
-    return <Navigate to="/admin" replace />;
+    return <div className="p-4">No company associated with your account.</div>;
   }
 
   // If user has a company, show company management

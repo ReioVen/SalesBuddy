@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef, ReactNode } from 'react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
@@ -80,15 +80,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const authCheckCompleted = useRef(false);
 
   // Set up axios defaults
   useEffect(() => {
     axios.defaults.withCredentials = true;
   }, []);
 
-  // Check if user is logged in on app start
+  // Check if user is logged in on app start (only once)
   useEffect(() => {
     const checkAuth = async () => {
+      if (authCheckCompleted.current) return;
+      authCheckCompleted.current = true;
+      
       try {
         const response = await axios.get('/api/auth/me');
         setUser(response.data.user);

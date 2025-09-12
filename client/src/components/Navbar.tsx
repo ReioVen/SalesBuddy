@@ -1,19 +1,23 @@
 import React, { useState } from 'react';
-import { Link, NavLink } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext.tsx';
 import { useTranslation } from '../hooks/useTranslation.ts';
-
-const navLinkClasses = ({ isActive }: { isActive: boolean }) =>
-  `relative px-3 py-2 text-sm font-medium transition-colors ${
-    isActive
-      ? 'text-blue-700'
-      : 'text-gray-700 hover:text-gray-900'
-  }`;
 
 const Navbar: React.FC = () => {
   const [open, setOpen] = useState(false);
   const { user } = useAuth();
   const { t } = useTranslation();
+  const location = useLocation();
+
+  // Get active link classes based on current path
+  const getNavLinkClasses = (path: string) => {
+    const isActive = location.pathname === path;
+    return `relative px-3 py-2 text-sm font-medium transition-colors ${
+      isActive
+        ? 'text-blue-700'
+        : 'text-gray-700 hover:text-gray-900'
+    }`;
+  };
 
   return (
     <header className="fixed top-0 inset-x-0 z-40">
@@ -28,22 +32,22 @@ const Navbar: React.FC = () => {
             </Link>
 
             <nav className="hidden md:flex items-center gap-2 justify-center">
-              <NavLink to="/" className={navLinkClasses}>{t('home')}</NavLink>
+              <Link to="/" className={getNavLinkClasses('/')}>{t('home')}</Link>
               {user ? (
                 <>
-                  <NavLink to="/conversations" className={navLinkClasses}>{t('conversations')}</NavLink>
-                  <NavLink to="/profile" className={navLinkClasses}>{t('profile')}</NavLink>
+                  <Link to="/conversations" className={getNavLinkClasses('/conversations')}>{t('conversations')}</Link>
+                  <Link to="/profile" className={getNavLinkClasses('/profile')}>{t('profile')}</Link>
                   {user.companyId && (
-                    <NavLink to="/company" className={navLinkClasses}>Company</NavLink>
+                    <Link to="/company" className={getNavLinkClasses('/company')}>Company</Link>
                   )}
                   {(user.role === 'super_admin' || user.role === 'admin' || user.isSuperAdmin || user.isAdmin) && (
-                    <NavLink to="/admin" className={navLinkClasses}>Admin</NavLink>
+                    <Link to="/admin" className={getNavLinkClasses('/admin')}>Admin</Link>
                   )}
                 </>
               ) : (
                 <>
-                  <NavLink to="/pricing" className={navLinkClasses}>{t('pricing')}</NavLink>
-                  <NavLink to="/login" className={navLinkClasses}>{t('login')}</NavLink>
+                  <Link to="/pricing" className={getNavLinkClasses('/pricing')}>{t('pricing')}</Link>
+                  <Link to="/login" className={getNavLinkClasses('/login')}>{t('login')}</Link>
                 </>
               )}
             </nav>
@@ -77,22 +81,22 @@ const Navbar: React.FC = () => {
           {open && (
             <div className="md:hidden border-t border-gray-200 px-3 py-3">
               <div className="flex flex-col gap-1">
-                <NavLink to="/" className={navLinkClasses} onClick={() => setOpen(false)}>{t('home')}</NavLink>
+                <Link to="/" className={getNavLinkClasses('/')} onClick={() => setOpen(false)}>{t('home')}</Link>
                 {user ? (
                   <>
-                    <NavLink to="/conversations" className={navLinkClasses} onClick={() => setOpen(false)}>{t('conversations')}</NavLink>
-                    <NavLink to="/profile" className={navLinkClasses} onClick={() => setOpen(false)}>{t('profile')}</NavLink>
+                    <Link to="/conversations" className={getNavLinkClasses('/conversations')} onClick={() => setOpen(false)}>{t('conversations')}</Link>
+                    <Link to="/profile" className={getNavLinkClasses('/profile')} onClick={() => setOpen(false)}>{t('profile')}</Link>
                     {user.companyId && (
-                      <NavLink to="/company" className={navLinkClasses} onClick={() => setOpen(false)}>Company</NavLink>
+                      <Link to="/company" className={getNavLinkClasses('/company')} onClick={() => setOpen(false)}>Company</Link>
                     )}
                     {(user.role === 'super_admin' || user.role === 'admin' || user.isSuperAdmin || user.isAdmin) && (
-                      <NavLink to="/admin" className={navLinkClasses} onClick={() => setOpen(false)}>Admin</NavLink>
+                      <Link to="/admin" className={getNavLinkClasses('/admin')} onClick={() => setOpen(false)}>Admin</Link>
                     )}
                   </>
                 ) : (
                   <>
-                    <NavLink to="/pricing" className={navLinkClasses} onClick={() => setOpen(false)}>{t('pricing')}</NavLink>
-                    <NavLink to="/login" className={navLinkClasses} onClick={() => setOpen(false)}>{t('login')}</NavLink>
+                    <Link to="/pricing" className={getNavLinkClasses('/pricing')} onClick={() => setOpen(false)}>{t('pricing')}</Link>
+                    <Link to="/login" className={getNavLinkClasses('/login')} onClick={() => setOpen(false)}>{t('login')}</Link>
                   </>
                 )}
                 {user ? (

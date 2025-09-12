@@ -92,6 +92,10 @@ const Conversations: React.FC = () => {
   const [usageStatus, setUsageStatus] = useState<any>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   
+  // Add flags to track if data has been loaded to prevent unnecessary re-fetching
+  const [dataLoaded, setDataLoaded] = useState(false);
+  const [usageStatusLoaded, setUsageStatusLoaded] = useState(false);
+  
   const [clientCustomization, setClientCustomization] = useState<ClientCustomization>({
     name: '',
     scenario: 'general',
@@ -110,64 +114,101 @@ const Conversations: React.FC = () => {
     scrollToBottom();
   }, [currentConversation?.messages]);
 
-  const loadUsageStatus = useCallback(async () => {
+  // Load usage status only once when component mounts
+  useEffect(() => {
+    const loadUsageStatus = async () => {
+      if (!user || usageStatusLoaded) return;
+      
+      try {
+        const response = await axios.get('/api/subscriptions/status');
+        setUsageStatus(response.data.usageStatus);
+        setUsageStatusLoaded(true);
+      } catch (error: any) {
+        console.error('Failed to load usage status:', error);
+      }
+    };
+
+    if (user && !usageStatusLoaded) {
+      loadUsageStatus();
+    }
+  }, [user, usageStatusLoaded]);
+
+  // Function to refresh usage status (used after actions that might change usage)
+  const refreshUsageStatus = useCallback(async () => {
     if (!user) return;
     
     try {
       const response = await axios.get('/api/subscriptions/status');
       setUsageStatus(response.data.usageStatus);
     } catch (error: any) {
-      console.error('Failed to load usage status:', error);
+      console.error('Failed to refresh usage status:', error);
     }
   }, [user]);
 
-  // Load usage status when component mounts
-  useEffect(() => {
-    if (user) {
-      loadUsageStatus();
-    }
-  }, [user, loadUsageStatus]);
 
-  const loadConversationHistory = useCallback(async () => {
-    if (!user) return;
-    
-    // Check usage before loading conversation history
-    if (usageStatus && usageStatus.monthlyLimit > 0 && usageStatus.currentUsage >= usageStatus.monthlyLimit) {
-      toast.error('You have reached your monthly conversation limit. Please upgrade your plan to continue.');
-      navigate('/pricing');
-      return;
-    }
-    
-    setLoadingHistory(true);
-    try {
-      const response = await axios.get('/api/ai/conversations');
-      // Map _id to id for frontend compatibility
-      const conversations = (response.data.conversations || []).map((conv: any) => ({
-        ...conv,
-        id: conv._id || conv.id
-      }));
-      setConversationHistory(conversations);
-    } catch (error: any) {
-      console.error('Failed to load conversation history:', error);
-      toast.error('Failed to load conversation history');
-    } finally {
-      setLoadingHistory(false);
-    }
-  }, [user, usageStatus, navigate]);
-
-  // Load conversation history on component mount
+  // Load conversation history only once when component mounts
   useEffect(() => {
-    if (user) {
-      loadConversationHistory();
-    }
-  }, [user, loadConversationHistory]);
+    const loadHistory = async () => {
+      if (!user || dataLoaded) return;
+      
+      // Check usage before loading conversation history
+      if (usageStatus && usageStatus.monthlyLimit > 0 && usageStatus.currentUsage >= usageStatus.monthlyLimit) {
+        toast.error('You have reached your monthly conversation limit. Please upgrade your plan to continue.');
+        navigate('/pricing');
+        return;
+      }
+      
+      setLoadingHistory(true);
+      try {
+        const response = await axios.get('/api/ai/conversations');
+        // Map _id to id for frontend compatibility
+        const conversations = (response.data.conversations || []).map((conv: any) => ({
+          ...conv,
+          id: conv._id || conv.id
+        }));
+        setConversationHistory(conversations);
+        setDataLoaded(true);
+      } catch (error: any) {
+        console.error('Failed to load conversation history:', error);
+        toast.error('Failed to load conversation history');
+      } finally {
+        setLoadingHistory(false);
+      }
+    };
 
-  // Load conversation history when user first becomes able to use AI
-  useEffect(() => {
-    if (user && usageStatus && usageStatus.canUseAI) {
-      loadConversationHistory();
+    if (user && !dataLoaded) {
+      loadHistory();
     }
-  }, [user, usageStatus, loadConversationHistory]);
+  }, [user, dataLoaded, usageStatus, navigate]);
+
+  // Load conversation history when user first becomes able to use AI (only if not already loaded)
+  useEffect(() => {
+    const loadHistoryWhenReady = async () => {
+      if (!user || !usageStatus || !usageStatus.canUseAI || dataLoaded) return;
+      
+      setLoadingHistory(true);
+      try {
+        const response = await axios.get('/api/ai/conversations');
+        const conversations = (response.data.conversations || []).map((conv: any) => ({
+          ...conv,
+          id: conv._id || conv.id
+        }));
+        setConversationHistory(conversations);
+        setDataLoaded(true);
+      } catch (error: any) {
+        console.error('Failed to load conversation history:', error);
+        toast.error('Failed to load conversation history');
+      } finally {
+        setLoadingHistory(false);
+      }
+    };
+
+    if (user && usageStatus && usageStatus.canUseAI && !dataLoaded) {
+      loadHistoryWhenReady();
+    }
+  }, [user, usageStatus, dataLoaded]);
+
+  // No automatic refresh - only refresh when user performs actions
 
   const handleStartConversation = async () => {
     if (!user) {
@@ -217,7 +258,16 @@ const Conversations: React.FC = () => {
       });
 
       // Refresh usage status after starting conversation
-      loadUsageStatus();
+      refreshUsageStatus();
+      // Manually add the new conversation to the history
+      const newConversation = {
+        id: response.data.conversation.id,
+        title: response.data.conversation.title,
+        scenario: response.data.conversation.scenario,
+        clientCustomization: response.data.conversation.clientCustomization,
+        messages: response.data.conversation.messages || []
+      };
+      setConversationHistory(prev => [newConversation, ...prev]);
     } catch (error: any) {
       const message = error.response?.data?.error || 'Failed to start conversation';
       
@@ -294,7 +344,8 @@ const Conversations: React.FC = () => {
         }]
       } : null);
 
-      // Note: Usage status is not refreshed after each message to improve performance
+      // No need to refresh conversation history after each message
+      // The current conversation is already updated with the new message
     } catch (error: any) {
       const message = error.response?.data?.error || 'Failed to send message';
       toast.error(message);
@@ -320,9 +371,22 @@ const Conversations: React.FC = () => {
       // Close the chat window
       setCurrentConversation(null);
       
-      // Refresh conversation history and usage status to show AI ratings
-      loadConversationHistory();
-      loadUsageStatus();
+      // Refresh usage status to show updated usage
+      refreshUsageStatus();
+      // Manually refresh conversation history to get AI ratings
+      const refreshHistory = async () => {
+        try {
+          const response = await axios.get('/api/ai/conversations');
+          const conversations = (response.data.conversations || []).map((conv: any) => ({
+            ...conv,
+            id: conv._id || conv.id
+          }));
+          setConversationHistory(conversations);
+        } catch (error: any) {
+          console.error('Failed to refresh conversation history:', error);
+        }
+      };
+      refreshHistory();
     } catch (error: any) {
       console.error('Failed to end conversation:', error);
       // Still close the window even if end fails
@@ -347,9 +411,22 @@ const Conversations: React.FC = () => {
       // Close the chat window by setting currentConversation to null
       setCurrentConversation(null);
       
-      // Refresh conversation history and usage status
-      loadConversationHistory();
-      loadUsageStatus();
+      // Refresh usage status
+      refreshUsageStatus();
+      // Manually refresh conversation history to get AI ratings
+      const refreshHistory = async () => {
+        try {
+          const response = await axios.get('/api/ai/conversations');
+          const conversations = (response.data.conversations || []).map((conv: any) => ({
+            ...conv,
+            id: conv._id || conv.id
+          }));
+          setConversationHistory(conversations);
+        } catch (error: any) {
+          console.error('Failed to refresh conversation history:', error);
+        }
+      };
+      refreshHistory();
       
     } catch (error: any) {
       const message = error.response?.data?.error || 'Failed to end conversation';
@@ -381,7 +458,7 @@ const Conversations: React.FC = () => {
       setShowConversationDetail(true);
       
       // Refresh usage status after viewing conversation
-      loadUsageStatus();
+      refreshUsageStatus();
     } catch (error: any) {
       console.error('Failed to load conversation details:', error);
       toast.error('Failed to load conversation details');
@@ -577,42 +654,6 @@ const Conversations: React.FC = () => {
                     Customize your AI client to practice with different types of customers, or use the default client.
                   </p>
                   
-                  {/* Usage Status Display */}
-                  {usageStatus && (
-                    <div className="bg-gray-50 rounded-lg p-4 mb-6">
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-gray-600">Conversations this month:</span>
-                        <span className="font-medium">
-                          {usageStatus.currentUsage} / {usageStatus.monthlyLimit === -1 ? '∞' : usageStatus.monthlyLimit}
-                        </span>
-                      </div>
-                      {usageStatus.monthlyLimit > 0 && (
-                        <div className="mt-2">
-                          <div className="w-full bg-gray-200 rounded-full h-2">
-                            <div 
-                              className={`h-2 rounded-full transition-all ${
-                                usageStatus.usagePercentage >= 90 ? 'bg-red-500' :
-                                usageStatus.usagePercentage >= 75 ? 'bg-orange-500' :
-                                'bg-blue-500'
-                              }`}
-                              style={{ width: `${Math.min(usageStatus.usagePercentage, 100)}%` }}
-                            />
-                          </div>
-                          <div className="flex justify-between text-xs text-gray-500 mt-1">
-                            <span>{usageStatus.usagePercentage}% used</span>
-                            {usageStatus.remaining > 0 && <span>{usageStatus.remaining} remaining</span>}
-                          </div>
-                        </div>
-                      )}
-                      {usageStatus.usagePercentage >= 90 && (
-                        <div className="mt-3 p-3 bg-orange-100 border border-orange-200 rounded-lg">
-                          <p className="text-orange-800 text-sm font-medium">
-                            ⚠️ You're approaching your monthly limit. Consider upgrading your plan.
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  )}
                 </div>
 
                 <div className="space-y-4">
