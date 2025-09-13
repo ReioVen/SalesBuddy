@@ -39,7 +39,8 @@ router.get('/dashboard', authenticateToken, async (req, res) => {
         role: user.role,
         subscription: user.subscription,
         usage: user.usage,
-        settings: user.settings
+        settings: user.settings,
+        language: user.language
       },
       limits,
       stats: {
@@ -61,7 +62,8 @@ router.get('/dashboard', authenticateToken, async (req, res) => {
 router.put('/settings', authenticateToken, [
   body('industry').optional().trim(),
   body('salesRole').optional().trim(),
-  body('experienceLevel').optional().isIn(['beginner', 'intermediate', 'advanced'])
+  body('experienceLevel').optional().isIn(['beginner', 'intermediate', 'advanced']),
+  body('language').optional().isIn(['en', 'et', 'es', 'ru'])
 ], async (req, res) => {
   try {
     const errors = validationResult(req);
@@ -69,12 +71,13 @@ router.put('/settings', authenticateToken, [
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { industry, salesRole, experienceLevel } = req.body;
+    const { industry, salesRole, experienceLevel, language } = req.body;
     const updateData = {};
 
     if (industry !== undefined) updateData['settings.industry'] = industry;
     if (salesRole !== undefined) updateData['settings.salesRole'] = salesRole;
     if (experienceLevel !== undefined) updateData['settings.experienceLevel'] = experienceLevel;
+    if (language !== undefined) updateData['language'] = language;
 
     const user = await User.findByIdAndUpdate(
       req.user._id,
@@ -84,7 +87,8 @@ router.put('/settings', authenticateToken, [
 
     res.json({
       message: 'Settings updated successfully',
-      settings: user.settings
+      settings: user.settings,
+      language: user.language
     });
   } catch (error) {
     console.error('Update settings error:', error);

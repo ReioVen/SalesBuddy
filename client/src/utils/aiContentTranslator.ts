@@ -138,6 +138,35 @@ const aiContentTranslations = {
     'You could say something like': 'You could say something like',
     'So, can I put you down for a TV': 'So, can I put you down for a TV',
     'We have a great discount going on right now': 'We have a great discount going on right now',
+    
+    // Additional common AI feedback patterns
+    'Clear introductions': 'Clear introductions',
+    'Consistency in approach': 'Consistency in approach',
+    'Quick responses': 'Quick responses',
+    'Need to ask more open-ended questions': 'Need to ask more open-ended questions',
+    'Provide more detailed product information': 'Provide more detailed product information',
+    'Improve objection handling and closing techniques': 'Improve objection handling and closing techniques',
+    'Good listening skills': 'Good listening skills',
+    'Professional communication style': 'Professional communication style',
+    'Effective questioning techniques': 'Effective questioning techniques',
+    'Strong rapport building': 'Strong rapport building',
+    'Confident presentation': 'Confident presentation',
+    'Adaptive communication': 'Adaptive communication',
+    'Customer-focused approach': 'Customer-focused approach',
+    'Solution-oriented mindset': 'Solution-oriented mindset',
+    'Persuasive techniques': 'Persuasive techniques',
+    'Active listening': 'Active listening',
+    'Empathetic responses': 'Empathetic responses',
+    'Clear value proposition': 'Clear value proposition',
+    'Strong closing attempts': 'Strong closing attempts',
+    'Effective follow-up': 'Effective follow-up',
+    
+    // Stage names
+    'opening': 'opening',
+    'discovery': 'discovery', 
+    'presentation': 'presentation',
+    'objectionHandling': 'objection handling',
+    'closing': 'closing',
   },
   et: {
     // Strengths patterns
@@ -275,6 +304,281 @@ const aiContentTranslations = {
     'You could say something like': 'Võiksite öelda midagi sellist',
     'So, can I put you down for a TV': 'Kas ma saan teid teleri jaoks kirja panna',
     'We have a great discount going on right now': 'Meil on praegu suurepärane allahindlus',
+    
+    // Additional common AI feedback patterns
+    'Clear introductions': 'Selged tutvustused',
+    'Consistency in approach': 'Ühtlane lähenemine',
+    'Quick responses': 'Kiired vastused',
+    'Need to ask more open-ended questions': 'Vaja küsida rohkem avatud küsimusi',
+    'Provide more detailed product information': 'Esitage üksikasjalikumat toote teavet',
+    'Improve objection handling and closing techniques': 'Parandage vastuväidete käsitlemist ja sulgemise tehnikaid',
+    'Good listening skills': 'Head kuulamise oskused',
+    'Professional communication style': 'Professionaalne suhtlusstiil',
+    'Effective questioning techniques': 'Tõhusad küsimiste tehnikad',
+    'Strong rapport building': 'Tugev suhtluse loomine',
+    'Confident presentation': 'Enesekindel esitlus',
+    'Adaptive communication': 'Kohanev suhtlus',
+    'Customer-focused approach': 'Kliendile keskendunud lähenemine',
+    'Solution-oriented mindset': 'Lahendustele orienteeritud mõtlemine',
+    'Persuasive techniques': 'Veenevad tehnikad',
+    'Active listening': 'Aktiivne kuulamine',
+    'Empathetic responses': 'Empaatilised vastused',
+    'Clear value proposition': 'Selge väärtuspakkumine',
+    'Strong closing attempts': 'Tugevad sulgemise katsed',
+    'Effective follow-up': 'Tõhus järelkontroll',
+    
+    // Stage names
+    'opening': 'avamine',
+    'discovery': 'avastamine', 
+    'presentation': 'esitlus',
+    'objectionHandling': 'vastuväidete käsitlemine',
+    'closing': 'sulgemine',
+    
+    // Mixed language patterns that need translation
+    'Reio\'s opening in all conversations': 'Reio avamine kõigis vestlustes',
+    'Reio\'s discovery stage': 'Reio avastamise etapp',
+    'Reio\'s product presentation': 'Reio toote esitlus',
+    'Reio\'s product presentación': 'Reio toote esitlus',
+    'Reio\'s apertura in all conversations': 'Reio avamine kõigis vestlustes',
+    'Reio\'s descubrimiento stage': 'Reio avastamise etapp',
+    'Reio doesn\'t effectively handle objections': 'Reio ei käsitle tõhusalt vastuväiteid',
+    'Reio doesn\'t effectively move towards closing': 'Reio ei liigu tõhusalt müügi sulgemise poole',
+    'Reio doesn\'t effectively move towards cierre': 'Reio ei liigu tõhusalt müügi sulgemise poole',
+    'He introduces himself and mentions the product': 'Ta tutvustab ennast ja mainib toodet',
+    'he is selling': 'mida ta müüb',
+    'which is good': 'mis on hea',
+    'However, in': 'Kuid',
+    'business communication': 'ärisuhtluses',
+    'it\'s often appreciated': 'hinnatakse sageli',
+    'if the salesperson': 'kui müügimees',
+    'shows interest': 'näitab huvi',
+    'in the client': 'klienti',
+    'or their business': 'või nende äri',
+    'before jumping into': 'enne kui hüppab',
+    'the sales pitch': 'müügikõnele',
+    'stage needs improvement': 'etapp vajab parandamist',
+    'He fails to ask': 'Ta ei suuda küsida',
+    'open-ended questions': 'avatud küsimusi',
+    'to understand': 'mõista',
+    'the customer\'s needs': 'kliendi vajadusi',
+    'or situation better': 'või olukorda paremini',
+    'fails to ask open-ended questions to understand': 'ei suuda küsida avatud küsimusi mõistmaks',
+    'the customer\'s needs or situation better': 'kliendi vajadusi või olukorda paremini',
+    'Rather than making assumptions': 'Selle asemel, et teha eeldusi',
+    'Reio should inquire about': 'Reio peaks küsima',
+    'the customer\'s current': 'kliendi praeguse',
+    'TV package': 'TV paketi',
+    'or what they are looking for': 'või mida nad otsivad',
+    'in a product': 'tootes',
+    'is too vague': 'on liiga ebamäärane',
+    'Customers asked for more details': 'Kliendid küsid rohkem üksikasju',
+    'about the TV packages': 'TV pakettide kohta',
+    'and products offered': 'ja pakutud toodete kohta',
+    'but Reio did not provide': 'aga Reio ei andnud',
+    'sufficient information': 'piisavat teavet',
+    'His responses like': 'Tema vastused nagu',
+    'are not helpful': 'ei ole kasulikud',
+    'for a customer': 'kliendi jaoks',
+    'seeking to make': 'kes soovib teha',
+    'an informed decision': 'teadliku otsuse',
+    'He should elaborate on': 'Ta peaks üksikasjalikumalt rääkima',
+    'the features': 'funktsioonidest',
+    'benefits': 'eelised',
+    'and value': 'ja väärtusest',
+    'of his product': 'oma toote',
+    'or concerns from customers': 'või kliendite mureid',
+    'When customers show': 'Kui kliendid näitavad',
+    'hesitance or require': 'kõhklust või vajavad',
+    'more information': 'rohkem teavet',
+    'Reio should provide': 'Reio peaks andma',
+    'more specific details': 'rohkem spetsiifilisi üksikasju',
+    'and reassurances': 'ja rahustust',
+    'to address their concerns': 'nende murede lahendamiseks',
+    'towards closing a sale': 'müügi sulgemise poole',
+    'He does not summarize': 'Ta ei võta kokku',
+    'the benefits': 'eeliseid',
+    'or ask for the sale': 'või küsi müüki',
+    'He should practice': 'Ta peaks harjutama',
+    'summarizing the main': 'peamiste kokkuvõtet',
+    'selling points': 'müügipunkte',
+    'and asking for the sale': 'ja müügi küsimist',
+    'in a direct yet polite manner': 'otsese, kuid viisaka viisil',
+    'considering': 'arvestades',
+    'business communication norms': 'ärisuhtluse norme',
+    
+    // Full paragraph translations for common AI feedback
+    'Reio\'s opening in all conversations is clear and to the point, but lacks a personalized touch. He introduces himself and mentions the product he is selling, which is good. However, in Estonian business communication, it\'s often appreciated if the salesperson shows interest in the client or their business before jumping into the sales pitch.': 'Reio avamine kõigis vestlustes on selge ja asjakohane, kuid puudub isiklik puudutus. Ta tutvustab ennast ja mainib toodet, mida ta müüb, mis on hea. Kuid eesti ärisuhtluses hinnatakse sageli, kui müügimees näitab huvi klienti või nende äri vastu enne müügikõnele üleminekut.',
+    
+    'Reio\'s discovery stage needs improvement. He fails to ask open-ended questions to understand the customer\'s needs or situation better. Rather than making assumptions, Reio should inquire about the customer\'s current TV package or what they are looking for in a product.': 'Reio avastamise etapp vajab parandamist. Ta ei suuda küsida avatud küsimusi, et mõista kliendi vajadusi või olukorda paremini. Selle asemel, et teha eeldusi, peaks Reio küsima kliendi praeguse TV paketi kohta või mida nad tootes otsivad.',
+    
+    'Reio\'s product presentation is too vague. Customers asked for more details about the TV packages and products offered, but Reio did not provide sufficient information. His responses like \'kõike\' (everything) are not helpful for a customer seeking to make an informed decision. He should elaborate on the features, benefits, and value of his product.': 'Reio toote esitlus on liiga ebamäärane. Kliendid küsid rohkem üksikasju TV pakettide ja pakutud toodete kohta, kuid Reio ei andnud piisavat teavet. Tema vastused nagu "kõike" ei ole kasulikud kliendi jaoks, kes soovib teha teadliku otsuse. Ta peaks üksikasjalikumalt rääkima oma toote funktsioonidest, eelistest ja väärtusest.',
+    
+    'Reio doesn\'t effectively handle objections or concerns from customers. When customers show hesitance or require more information, Reio should provide more specific details and reassurances to address their concerns.': 'Reio ei käsitle tõhusalt kliendite vastuväiteid ega muret. Kui kliendid näitavad kõhklust või vajavad rohkem teavet, peaks Reio andma rohkem spetsiifilisi üksikasju ja rahustust nende murede lahendamiseks.',
+    
+    'Reio doesn\'t effectively move towards closing a sale. He does not summarize the benefits of his product or ask for the sale. He should practice summarizing the main selling points and asking for the sale in a direct yet polite manner, considering Estonian business communication norms.': 'Reio ei liigu tõhusalt müügi sulgemise poole. Ta ei võta kokku oma toote eeliseid ega küsi müüki. Ta peaks harjutama peamiste müügipunktide kokkuvõtet ja müügi küsimist otsese, kuid viisaka viisil, arvestades eesti ärisuhtluse norme.',
+    
+    // Example-related translations
+    'In this excerpt': 'Selles väljavõttes',
+    'the customer is asking': 'kürib kliendit',
+    'for more specifics': 'rohkem üksikasju',
+    'about TV packages': 'TV pakettide kohta',
+    'but Reio responds with': 'kuid Reio vastab',
+    'which is not helpful': 'mis ei ole kasulik',
+    'for the customer': 'kliendi jaoks',
+    'asking for more specifics': 'rohkem üksikasju kürib',
+    'TV packages': 'TV paketid',
+    'responds with': 'vastab',
+    'not helpful': 'ei ole kasulik',
+    'customer': 'klient',
+    'excerpt': 'väljavõte',
+    'this excerpt': 'see väljavõte',
+    'the excerpt': 'väljavõte',
+    
+    // AI Insights related translations
+    'Reio seems to have': 'Reio tundub omavat',
+    'a direct and straightforward approach': 'otse ja sirge lähenemine',
+    'which can be seen as confident': 'mida võib pidada enesekindlaks',
+    'he needs to balance': 'ta peab tasakaalustama',
+    'with more empathy': 'rohkem empaatiaga',
+    'and attention to': 'ja tähelepanu',
+    'customer needs': 'kliendi vajadustele',
+    'communication style': 'suhtlemise stiil',
+    'is brief and to the point': 'on lühike ja asjakohane',
+    'but lacks detail': 'kuid puudub detailid',
+    'and depth': 'ja sügavus',
+    'He should work on': 'Ta peaks töötama',
+    'providing more comprehensive': 'pakkuma rohkem põhjalikku',
+    'responses': 'vastuseid',
+    'and demonstrating': 'ja näitama',
+    'product knowledge': 'toote tundmist',
+    'Improving product knowledge': 'Toote tundmise parandamine',
+    'Practice objection handling': 'Harjuta vastuväidete käsitlemist',
+    'techniques': 'tehnikaid',
+    'Developing closing': 'Sulgemise arendamine',
+    'techniques': 'tehnikaid',
+    'Role-play sales conversations': 'Rollimäng müügivestlusi',
+    'with a focus on': 'keskendudes',
+    'the discovery': 'avastamisele',
+    'and presentation stages': 'ja esitluse etappidele',
+    'Study product details': 'Õpi toote üksikasju',
+    'to provide in-depth': 'et pakkuda põhjalikku',
+    'information': 'informatsiooni',
+    'Learn and practice': 'Õpi ja harjuta',
+    'effective closing': 'tõhusat sulgemist',
+    'techniques appropriate': 'tehnikaid sobivaid',
+    'for Estonian business culture': 'eesti ärikultuurile',
+    'Next Steps': 'Järgmised sammud',
+    'Recommended Focus Areas': 'Soovitatavad fookuse alad',
+    'Personality Insights': 'Isiksuse vihjed',
+    'Communication Style': 'Suhtlemise stiil',
+    
+    // Conversation summary translations
+    'Vestluse Kokkuvõte': 'Vestluse kokkuvõte',
+    'Practice with Mariana Villegas': 'Harjutus Mariana Villegasega',
+    'general': 'üldine',
+    'Raskusaste': 'Raskusaste',
+    'Keskmine': 'Keskmine',
+    'Kestus': 'Kestus',
+    'sõnumid': 'sõnumid',
+    'Kogutulemus': 'Kogutulemus',
+    'introduction': 'sissejuhatus',
+    'mapping': 'kaardistamine',
+    'product Presentation': 'toote esitlus',
+    'objection Handling': 'vastuväidete käsitlemine',
+    'close': 'sulgemine',
+    'AI Tagasiside': 'AI tagasiside',
+    
+    // AI Feedback content translations
+    'The salesperson did well in the introduction phase by greeting the client and introducing themselves. However, they missed the opportunity to properly map the client\'s needs and preferences. The client was interested in learning more about the TV packages, channels, services, quality, user support, and potential benefits for their large family. The salesperson should have engaged in a mapping phase to understand the client\'s requirements better. Additionally, the salesperson could have provided a more detailed product presentation, addressed the client\'s questions about package contents, additional services, and discounts, and handled the client\'s request for more information effectively. It\'s important to actively listen to the client\'s needs, ask probing questions, and tailor the presentation to match those needs. The conversation did not end early, but the salesperson missed opportunities to fully engage the client and address their concerns.': 'Müügimees tegi hästi sissejuhatuse faasis, tervitades klienti ja tutvustades ennast. Kuid nad jätsid kasutamata võimaluse korralikult kaardistada kliendi vajadusi ja eelistusi. Klient oli huvitatud rohkem teadmast TV pakettidest, kanalitest, teenustest, kvaliteedist, kasutajatugist ja võimalikest kasudest oma suure pere jaoks. Müügimees oleks pidanud osalema kaardistamise faasis, et paremini mõista kliendi nõudeid. Lisaks oleks müügimees võinud pakkuda põhjalikumat toote esitlust, vastata kliendi küsimustele paketi sisu, täiendavate teenuste ja allahindluste kohta ning tõhusalt käsitleda kliendi palvet rohkem teavet. Oluline on aktiivselt kuulata kliendi vajadusi, küsida uurivaid küsimusi ja kohandada esitlust nende vajadustega. Vestlus ei lõppenud varakult, kuid müügimees jätsid kasutamata võimalusi täielikult kaasata klienti ja käsitleda nende muret.',
+    
+    'The salesperson did well in the introduction phase': 'Müügimees tegi hästi sissejuhatuse faasis',
+    'by greeting the client and introducing themselves': 'tervitades klienti ja tutvustades ennast',
+    'However, they missed the opportunity': 'Kuid nad jätsid kasutamata võimaluse',
+    'to properly map the client\'s needs': 'korralikult kaardistada kliendi vajadusi',
+    'and preferences': 'ja eelistusi',
+    'The client was interested in learning more': 'Klient oli huvitatud rohkem õppimast',
+    'about the TV packages, channels, services': 'TV pakettidest, kanalitest, teenustest',
+    'quality, user support': 'kvaliteedist, kasutajatugist',
+    'and potential benefits': 'ja võimalikest kasudest',
+    'for their large family': 'oma suure pere jaoks',
+    'The salesperson should have engaged': 'Müügimees oleks pidanud osalema',
+    'in a mapping phase': 'kaardistamise faasis',
+    'to understand the client\'s requirements better': 'et paremini mõista kliendi nõudeid',
+    'Additionally, the salesperson could have provided': 'Lisaks oleks müügimees võinud pakkuda',
+    'a more detailed product presentation': 'põhjalikumat toote esitlust',
+    'addressed the client\'s questions about': 'vastata kliendi küsimustele',
+    'package contents, additional services, and discounts': 'paketi sisu, täiendavate teenuste ja allahindluste kohta',
+    'and handled the client\'s request': 'ning tõhusalt käsitleda kliendi palvet',
+    'for more information effectively': 'rohkem teavet',
+    'It\'s important to actively listen': 'Oluline on aktiivselt kuulata',
+    'to the client\'s needs': 'kliendi vajadusi',
+    'ask probing questions': 'küsida uurivaid küsimusi',
+    'and tailor the presentation': 'ja kohandada esitlust',
+    'to match those needs': 'nende vajadustega',
+    'The conversation did not end early': 'Vestlus ei lõppenud varakult',
+    'but the salesperson missed opportunities': 'kuid müügimees jätsid kasutamata võimalusi',
+    'to fully engage the client': 'täielikult kaasata klienti',
+    'and address their concerns': 'ja käsitleda nende muret',
+    
+    // Additional common phrases
+    'Estonian business communication': 'eesti ärisuhtlus',
+    'Estonian business communication norms': 'eesti ärisuhtluse normid',
+    'in Estonian business communication': 'eesti ärisuhtluses',
+    'Estonian speakers': 'eesti keele kõnelejad',
+    'for Estonian speakers': 'eesti keele kõnelejate jaoks',
+    'Estonian language': 'eesti keel',
+    'in Estonian': 'eesti keeles',
+    
+    // Missing connecting words and phrases
+    'is clear and to the point': 'on selge ja asjakohane',
+    'but lacks a personalized touch': 'kuid puudub isiklik puudutus',
+    'but lacks': 'kuid puudub',
+    'a personalized touch': 'isiklik puudutus',
+    'personalized touch': 'isiklik puudutus',
+    'clear and to the point': 'selge ja asjakohane',
+    'and to the point': 'ja asjakohane',
+    'to the point': 'asjakohane',
+    'However': 'Kuid',
+    'however': 'kuid',
+    'but': 'kuid',
+    'and': 'ja',
+    'or': 'või',
+    'is': 'on',
+    'are': 'on',
+    'was': 'oli',
+    'were': 'olid',
+    'has': 'on',
+    'have': 'on',
+    'had': 'oli',
+    'will': 'saab',
+    'would': 'oleks',
+    'should': 'peaks',
+    'could': 'võiks',
+    'must': 'peab',
+    'may': 'võib',
+    'might': 'võiks',
+    'can': 'saab',
+    'cannot': 'ei saa',
+    'can\'t': 'ei saa',
+    'do not': 'ei tee',
+    'don\'t': 'ei tee',
+    'does not': 'ei tee',
+    'doesn\'t': 'ei tee',
+    'did not': 'ei teinud',
+    'didn\'t': 'ei teinud',
+    'will not': 'ei tee',
+    'won\'t': 'ei tee',
+    'would not': 'ei teeks',
+    'wouldn\'t': 'ei teeks',
+    'should not': 'ei peaks',
+    'shouldn\'t': 'ei peaks',
+    'could not': 'ei saaks',
+    'couldn\'t': 'ei saaks',
+    'must not': 'ei tohi',
+    'mustn\'t': 'ei tohi',
+    'may not': 'ei tohi',
+    'might not': 'ei võiks',
+    'mightn\'t': 'ei võiks',
   },
   es: {
     // Strengths patterns
@@ -412,6 +716,279 @@ const aiContentTranslations = {
     'You could say something like': 'Podrías decir algo como',
     'So, can I put you down for a TV': 'Entonces, ¿puedo anotarte para una televisión',
     'We have a great discount going on right now': 'Tenemos un gran descuento en este momento',
+    
+    // Additional common AI feedback patterns
+    'Clear introductions': 'Introducciones claras',
+    'Consistency in approach': 'Consistencia en el enfoque',
+    'Quick responses': 'Respuestas rápidas',
+    'Need to ask more open-ended questions': 'Necesitas hacer más preguntas abiertas',
+    'Provide more detailed product information': 'Proporciona información más detallada del producto',
+    'Improve objection handling and closing techniques': 'Mejora el manejo de objeciones y las técnicas de cierre',
+    'Good listening skills': 'Buenas habilidades de escucha',
+    'Professional communication style': 'Estilo de comunicación profesional',
+    'Effective questioning techniques': 'Técnicas efectivas de cuestionamiento',
+    'Strong rapport building': 'Fuerte construcción de relación',
+    'Confident presentation': 'Presentación confiada',
+    'Adaptive communication': 'Comunicación adaptativa',
+    'Customer-focused approach': 'Enfoque centrado en el cliente',
+    'Solution-oriented mindset': 'Mentalidad orientada a soluciones',
+    'Persuasive techniques': 'Técnicas persuasivas',
+    'Active listening': 'Escucha activa',
+    'Empathetic responses': 'Respuestas empáticas',
+    'Clear value proposition': 'Propuesta de valor clara',
+    'Strong closing attempts': 'Fuertes intentos de cierre',
+    'Effective follow-up': 'Seguimiento efectivo',
+    
+    // Stage names
+    'opening': 'apertura',
+    'discovery': 'descubrimiento', 
+    'presentation': 'presentación',
+    'objectionHandling': 'manejo de objeciones',
+    'closing': 'cierre',
+    
+    // Mixed language patterns that need translation
+    'Reio\'s opening in all conversations': 'La apertura de Reio en todas las conversaciones',
+    'Reio\'s discovery stage': 'La etapa de descubrimiento de Reio',
+    'Reio\'s product presentation': 'La presentación del producto de Reio',
+    'Reio\'s product presentación': 'La presentación del producto de Reio',
+    'Reio\'s apertura in all conversations': 'La apertura de Reio en todas las conversaciones',
+    'Reio\'s descubrimiento stage': 'La etapa de descubrimiento de Reio',
+    'Reio doesn\'t effectively handle objections': 'Reio no maneja efectivamente las objeciones',
+    'Reio doesn\'t effectively move towards closing': 'Reio no se mueve efectivamente hacia el cierre',
+    'Reio doesn\'t effectively move towards cierre': 'Reio no se mueve efectivamente hacia el cierre',
+    'He introduces himself and mentions the product': 'Se presenta y menciona el producto',
+    'he is selling': 'que está vendiendo',
+    'which is good': 'lo cual es bueno',
+    'However, in': 'Sin embargo, en',
+    'business communication': 'comunicación empresarial',
+    'it\'s often appreciated': 'a menudo se aprecia',
+    'if the salesperson': 'si el vendedor',
+    'shows interest': 'muestra interés',
+    'in the client': 'en el cliente',
+    'or their business': 'o su negocio',
+    'before jumping into': 'antes de saltar a',
+    'the sales pitch': 'el discurso de ventas',
+    'stage needs improvement': 'etapa necesita mejora',
+    'He fails to ask': 'No logra hacer',
+    'open-ended questions': 'preguntas abiertas',
+    'to understand': 'para entender',
+    'the customer\'s needs': 'las necesidades del cliente',
+    'or situation better': 'o situación mejor',
+    'Rather than making assumptions': 'En lugar de hacer suposiciones',
+    'Reio should inquire about': 'Reio debería preguntar sobre',
+    'the customer\'s current': 'la situación actual del cliente',
+    'TV package': 'paquete de TV',
+    'or what they are looking for': 'o qué están buscando',
+    'in a product': 'en un producto',
+    'is too vague': 'es demasiado vaga',
+    'Customers asked for more details': 'Los clientes pidieron más detalles',
+    'about the TV packages': 'sobre los paquetes de TV',
+    'and products offered': 'y productos ofrecidos',
+    'but Reio did not provide': 'pero Reio no proporcionó',
+    'sufficient information': 'información suficiente',
+    'His responses like': 'Sus respuestas como',
+    'are not helpful': 'no son útiles',
+    'for a customer': 'para un cliente',
+    'seeking to make': 'que busca hacer',
+    'an informed decision': 'una decisión informada',
+    'He should elaborate on': 'Debería elaborar sobre',
+    'the features': 'las características',
+    'benefits': 'beneficios',
+    'and value': 'y valor',
+    'of his product': 'de su producto',
+    'or concerns from customers': 'o preocupaciones de los clientes',
+    'When customers show': 'Cuando los clientes muestran',
+    'hesitance or require': 'vacilación o requieren',
+    'more information': 'más información',
+    'Reio should provide': 'Reio debería proporcionar',
+    'more specific details': 'detalles más específicos',
+    'and reassurances': 'y tranquilidades',
+    'to address their concerns': 'para abordar sus preocupaciones',
+    'towards closing a sale': 'hacia cerrar una venta',
+    'He does not summarize': 'No resume',
+    'the benefits': 'los beneficios',
+    'or ask for the sale': 'o pedir la venta',
+    'He should practice': 'Debería practicar',
+    'summarizing the main': 'resumiendo los principales',
+    'selling points': 'puntos de venta',
+    'and asking for the sale': 'y pidiendo la venta',
+    'in a direct yet polite manner': 'de manera directa pero educada',
+    'considering': 'considerando',
+    'business communication norms': 'normas de comunicación empresarial',
+    
+    // Full paragraph translations for common AI feedback
+    'Reio\'s opening in all conversations is clear and to the point, but lacks a personalized touch. He introduces himself and mentions the product he is selling, which is good. However, in Estonian business communication, it\'s often appreciated if the salesperson shows interest in the client or their business before jumping into the sales pitch.': 'La apertura de Reio en todas las conversaciones es clara y directa, pero carece de un toque personalizado. Se presenta y menciona el producto que está vendiendo, lo cual es bueno. Sin embargo, en la comunicación empresarial estonia, a menudo se aprecia si el vendedor muestra interés en el cliente o su negocio antes de pasar al discurso de ventas.',
+    
+    'Reio\'s discovery stage needs improvement. He fails to ask open-ended questions to understand the customer\'s needs or situation better. Rather than making assumptions, Reio should inquire about the customer\'s current TV package or what they are looking for in a product.': 'La etapa de descubrimiento de Reio necesita mejoras. No logra hacer preguntas abiertas para entender mejor las necesidades o situación del cliente. En lugar de hacer suposiciones, Reio debería preguntar sobre el paquete de TV actual del cliente o qué están buscando en un producto.',
+    
+    'Reio\'s product presentation is too vague. Customers asked for more details about the TV packages and products offered, but Reio did not provide sufficient information. His responses like \'kõike\' (everything) are not helpful for a customer seeking to make an informed decision. He should elaborate on the features, benefits, and value of his product.': 'La presentación del producto de Reio es demasiado vaga. Los clientes pidieron más detalles sobre los paquetes de TV y productos ofrecidos, pero Reio no proporcionó información suficiente. Sus respuestas como "kõike" (todo) no son útiles para un cliente que busca tomar una decisión informada. Debería elaborar sobre las características, beneficios y valor de su producto.',
+    
+    'Reio doesn\'t effectively handle objections or concerns from customers. When customers show hesitance or require more information, Reio should provide more specific details and reassurances to address their concerns.': 'Reio no maneja efectivamente las objeciones o preocupaciones de los clientes. Cuando los clientes muestran vacilación o requieren más información, Reio debería proporcionar detalles más específicos y tranquilidades para abordar sus preocupaciones.',
+    
+    'Reio doesn\'t effectively move towards closing a sale. He does not summarize the benefits of his product or ask for the sale. He should practice summarizing the main selling points and asking for the sale in a direct yet polite manner, considering Estonian business communication norms.': 'Reio no se mueve efectivamente hacia el cierre de una venta. No resume los beneficios de su producto ni pide la venta. Debería practicar resumiendo los principales puntos de venta y pidiendo la venta de manera directa pero educada, considerando las normas de comunicación empresarial estonia.',
+    
+    // Example-related translations
+    'In this excerpt': 'En este extracto',
+    'the customer is asking': 'el cliente está pidiendo',
+    'for more specifics': 'más detalles específicos',
+    'about TV packages': 'sobre paquetes de TV',
+    'but Reio responds with': 'pero Reio responde con',
+    'which is not helpful': 'lo cual no es útil',
+    'for the customer': 'para el cliente',
+    'asking for more specifics': 'pidiendo más detalles específicos',
+    'TV packages': 'paquetes de TV',
+    'responds with': 'responde con',
+    'not helpful': 'no es útil',
+    'customer': 'cliente',
+    'excerpt': 'extracto',
+    'this excerpt': 'este extracto',
+    'the excerpt': 'el extracto',
+    
+    // AI Insights related translations
+    'Reio seems to have': 'Reio parece tener',
+    'a direct and straightforward approach': 'un enfoque directo y claro',
+    'which can be seen as confident': 'que puede verse como confiado',
+    'he needs to balance': 'necesita equilibrar',
+    'with more empathy': 'con más empatía',
+    'and attention to': 'y atención a',
+    'customer needs': 'las necesidades del cliente',
+    'communication style': 'estilo de comunicación',
+    'is brief and to the point': 'es breve y directo',
+    'but lacks detail': 'pero carece de detalle',
+    'and depth': 'y profundidad',
+    'He should work on': 'Debería trabajar en',
+    'providing more comprehensive': 'proporcionar respuestas más completas',
+    'responses': 'respuestas',
+    'and demonstrating': 'y demostrar',
+    'product knowledge': 'conocimiento del producto',
+    'Improving product knowledge': 'Mejorar el conocimiento del producto',
+    'Practice objection handling': 'Practicar el manejo de objeciones',
+    'techniques': 'técnicas',
+    'Developing closing': 'Desarrollar técnicas de cierre',
+    'techniques': 'técnicas',
+    'Role-play sales conversations': 'Simulación de conversaciones de ventas',
+    'with a focus on': 'con un enfoque en',
+    'the discovery': 'el descubrimiento',
+    'and presentation stages': 'y las etapas de presentación',
+    'Study product details': 'Estudiar los detalles del producto',
+    'to provide in-depth': 'para proporcionar información profunda',
+    'information': 'información',
+    'Learn and practice': 'Aprender y practicar',
+    'effective closing': 'cierre efectivo',
+    'techniques appropriate': 'técnicas apropiadas',
+    'for Estonian business culture': 'para la cultura empresarial estonia',
+    'Next Steps': 'Próximos pasos',
+    'Recommended Focus Areas': 'Áreas de enfoque recomendadas',
+    'Personality Insights': 'Insights de personalidad',
+    'Communication Style': 'Estilo de comunicación',
+    
+    // Conversation summary translations
+    'Vestluse Kokkuvõte': 'Resumen de conversación',
+    'Practice with Mariana Villegas': 'Práctica con Mariana Villegas',
+    'general': 'general',
+    'Raskusaste': 'Nivel de dificultad',
+    'Keskmine': 'Medio',
+    'Kestus': 'Duración',
+    'sõnumid': 'mensajes',
+    'Kogutulemus': 'Puntuación total',
+    'introduction': 'introducción',
+    'mapping': 'mapeo',
+    'product Presentation': 'presentación del producto',
+    'objection Handling': 'manejo de objeciones',
+    'close': 'cierre',
+    'AI Tagasiside': 'Retroalimentación de IA',
+    
+    // AI Feedback content translations
+    'The salesperson did well in the introduction phase by greeting the client and introducing themselves. However, they missed the opportunity to properly map the client\'s needs and preferences. The client was interested in learning more about the TV packages, channels, services, quality, user support, and potential benefits for their large family. The salesperson should have engaged in a mapping phase to understand the client\'s requirements better. Additionally, the salesperson could have provided a more detailed product presentation, addressed the client\'s questions about package contents, additional services, and discounts, and handled the client\'s request for more information effectively. It\'s important to actively listen to the client\'s needs, ask probing questions, and tailor the presentation to match those needs. The conversation did not end early, but the salesperson missed opportunities to fully engage the client and address their concerns.': 'El vendedor lo hizo bien en la fase de introducción saludando al cliente y presentándose. Sin embargo, perdieron la oportunidad de mapear adecuadamente las necesidades y preferencias del cliente. El cliente estaba interesado en aprender más sobre los paquetes de TV, canales, servicios, calidad, soporte al usuario y beneficios potenciales para su familia numerosa. El vendedor debería haber participado en una fase de mapeo para entender mejor los requerimientos del cliente. Además, el vendedor podría haber proporcionado una presentación del producto más detallada, abordado las preguntas del cliente sobre el contenido del paquete, servicios adicionales y descuentos, y manejado efectivamente la solicitud del cliente de más información. Es importante escuchar activamente las necesidades del cliente, hacer preguntas exploratorias y adaptar la presentación para que coincida con esas necesidades. La conversación no terminó temprano, pero el vendedor perdió oportunidades de involucrar completamente al cliente y abordar sus preocupaciones.',
+    
+    'The salesperson did well in the introduction phase': 'El vendedor lo hizo bien en la fase de introducción',
+    'by greeting the client and introducing themselves': 'saludando al cliente y presentándose',
+    'However, they missed the opportunity': 'Sin embargo, perdieron la oportunidad',
+    'to properly map the client\'s needs': 'de mapear adecuadamente las necesidades del cliente',
+    'and preferences': 'y preferencias',
+    'The client was interested in learning more': 'El cliente estaba interesado en aprender más',
+    'about the TV packages, channels, services': 'sobre los paquetes de TV, canales, servicios',
+    'quality, user support': 'calidad, soporte al usuario',
+    'and potential benefits': 'y beneficios potenciales',
+    'for their large family': 'para su familia numerosa',
+    'The salesperson should have engaged': 'El vendedor debería haber participado',
+    'in a mapping phase': 'en una fase de mapeo',
+    'to understand the client\'s requirements better': 'para entender mejor los requerimientos del cliente',
+    'Additionally, the salesperson could have provided': 'Además, el vendedor podría haber proporcionado',
+    'a more detailed product presentation': 'una presentación del producto más detallada',
+    'addressed the client\'s questions about': 'abordado las preguntas del cliente sobre',
+    'package contents, additional services, and discounts': 'contenido del paquete, servicios adicionales y descuentos',
+    'and handled the client\'s request': 'y manejado la solicitud del cliente',
+    'for more information effectively': 'de más información efectivamente',
+    'It\'s important to actively listen': 'Es importante escuchar activamente',
+    'to the client\'s needs': 'las necesidades del cliente',
+    'ask probing questions': 'hacer preguntas exploratorias',
+    'and tailor the presentation': 'y adaptar la presentación',
+    'to match those needs': 'para que coincida con esas necesidades',
+    'The conversation did not end early': 'La conversación no terminó temprano',
+    'but the salesperson missed opportunities': 'pero el vendedor perdió oportunidades',
+    'to fully engage the client': 'de involucrar completamente al cliente',
+    'and address their concerns': 'y abordar sus preocupaciones',
+    
+    // Additional common phrases
+    'Estonian business communication': 'comunicación empresarial estonia',
+    'Estonian business communication norms': 'normas de comunicación empresarial estonia',
+    'in Estonian business communication': 'en la comunicación empresarial estonia',
+    'Estonian speakers': 'hablantes de estonio',
+    'for Estonian speakers': 'para hablantes de estonio',
+    'Estonian language': 'idioma estonio',
+    'in Estonian': 'en estonio',
+    
+    // Missing connecting words and phrases
+    'is clear and to the point': 'es claro y directo',
+    'but lacks a personalized touch': 'pero carece de un toque personalizado',
+    'but lacks': 'pero carece de',
+    'a personalized touch': 'un toque personalizado',
+    'personalized touch': 'toque personalizado',
+    'clear and to the point': 'claro y directo',
+    'and to the point': 'y directo',
+    'to the point': 'directo',
+    'However': 'Sin embargo',
+    'however': 'sin embargo',
+    'but': 'pero',
+    'and': 'y',
+    'or': 'o',
+    'is': 'es',
+    'are': 'son',
+    'was': 'era',
+    'were': 'eran',
+    'has': 'ha',
+    'have': 'tiene',
+    'had': 'había',
+    'will': 'será',
+    'would': 'sería',
+    'should': 'debería',
+    'could': 'podría',
+    'must': 'debe',
+    'may': 'puede',
+    'might': 'podría',
+    'can': 'puede',
+    'cannot': 'no puede',
+    'can\'t': 'no puede',
+    'do not': 'no hace',
+    'don\'t': 'no hace',
+    'does not': 'no hace',
+    'doesn\'t': 'no hace',
+    'did not': 'no hizo',
+    'didn\'t': 'no hizo',
+    'will not': 'no hará',
+    'won\'t': 'no hará',
+    'would not': 'no haría',
+    'wouldn\'t': 'no haría',
+    'should not': 'no debería',
+    'shouldn\'t': 'no debería',
+    'could not': 'no podría',
+    'couldn\'t': 'no podría',
+    'must not': 'no debe',
+    'mustn\'t': 'no debe',
+    'may not': 'no puede',
+    'might not': 'no podría',
+    'mightn\'t': 'no podría',
   },
   ru: {
     // Strengths patterns
@@ -549,7 +1126,330 @@ const aiContentTranslations = {
     'You could say something like': 'Вы могли бы сказать что-то вроде',
     'So, can I put you down for a TV': 'Итак, могу ли я записать вас на телевизор',
     'We have a great discount going on right now': 'У нас сейчас отличная скидка',
+    
+    // Additional common AI feedback patterns
+    'Clear introductions': 'Четкие введения',
+    'Consistency in approach': 'Последовательность в подходе',
+    'Quick responses': 'Быстрые ответы',
+    'Need to ask more open-ended questions': 'Нужно задавать больше открытых вопросов',
+    'Provide more detailed product information': 'Предоставляйте более подробную информацию о продукте',
+    'Improve objection handling and closing techniques': 'Улучшите работу с возражениями и техники закрытия',
+    'Good listening skills': 'Хорошие навыки слушания',
+    'Professional communication style': 'Профессиональный стиль общения',
+    'Effective questioning techniques': 'Эффективные техники задавания вопросов',
+    'Strong rapport building': 'Сильное построение отношений',
+    'Confident presentation': 'Уверенная презентация',
+    'Adaptive communication': 'Адаптивное общение',
+    'Customer-focused approach': 'Подход, ориентированный на клиента',
+    'Solution-oriented mindset': 'Мышление, ориентированное на решения',
+    'Persuasive techniques': 'Убедительные техники',
+    'Active listening': 'Активное слушание',
+    'Empathetic responses': 'Эмпатичные ответы',
+    'Clear value proposition': 'Четкое ценностное предложение',
+    'Strong closing attempts': 'Сильные попытки закрытия',
+    'Effective follow-up': 'Эффективный последующий контроль',
+    
+    // Stage names
+    'opening': 'начало',
+    'discovery': 'исследование', 
+    'presentation': 'презентация',
+    'objectionHandling': 'работа с возражениями',
+    'closing': 'закрытие',
+    
+    // Mixed language patterns that need translation
+    'Reio\'s opening in all conversations': 'Начало Реио во всех разговорах',
+    'Reio\'s discovery stage': 'Этап исследования Реио',
+    'Reio\'s product presentation': 'Презентация продукта Реио',
+    'Reio\'s product presentación': 'Презентация продукта Реио',
+    'Reio\'s apertura in all conversations': 'Начало Реио во всех разговорах',
+    'Reio\'s descubrimiento stage': 'Этап исследования Реио',
+    'Reio doesn\'t effectively handle objections': 'Реио не эффективно работает с возражениями',
+    'Reio doesn\'t effectively move towards closing': 'Реио не эффективно движется к закрытию',
+    'Reио doesn\'t effectively move towards cierre': 'Реио не эффективно движется к закрытию',
+    'He introduces himself and mentions the product': 'Он представляется и упоминает продукт',
+    'he is selling': 'который продает',
+    'which is good': 'что хорошо',
+    'However, in': 'Однако, в',
+    'business communication': 'деловом общении',
+    'it\'s often appreciated': 'часто ценится',
+    'if the salesperson': 'если продавец',
+    'shows interest': 'показывает интерес',
+    'in the client': 'к клиенту',
+    'or their business': 'или их бизнесу',
+    'before jumping into': 'прежде чем переходить к',
+    'the sales pitch': 'продажному выступлению',
+    'stage needs improvement': 'этап нуждается в улучшении',
+    'He fails to ask': 'Он не может задавать',
+    'open-ended questions': 'открытые вопросы',
+    'to understand': 'чтобы понять',
+    'the customer\'s needs': 'потребности клиента',
+    'or situation better': 'или ситуацию лучше',
+    'Rather than making assumptions': 'Вместо того, чтобы делать предположения',
+    'Reio should inquire about': 'Реио должен интересоваться',
+    'the customer\'s current': 'текущим',
+    'TV package': 'телевизионным пакетом',
+    'or what they are looking for': 'или что они ищут',
+    'in a product': 'в продукте',
+    'is too vague': 'слишком расплывчато',
+    'Customers asked for more details': 'Клиенты просили больше деталей',
+    'about the TV packages': 'о телевизионных пакетах',
+    'and products offered': 'и предлагаемых продуктах',
+    'but Reio did not provide': 'но Реио не предоставил',
+    'sufficient information': 'достаточной информации',
+    'His responses like': 'Его ответы, такие как',
+    'are not helpful': 'не полезны',
+    'for a customer': 'для клиента',
+    'seeking to make': 'пытающегося принять',
+    'an informed decision': 'обоснованное решение',
+    'He should elaborate on': 'Он должен подробно рассказать о',
+    'the features': 'функциях',
+    'benefits': 'преимуществах',
+    'and value': 'и ценности',
+    'of his product': 'своего продукта',
+    'or concerns from customers': 'или опасения клиентов',
+    'When customers show': 'Когда клиенты показывают',
+    'hesitance or require': 'нерешительность или требуют',
+    'more information': 'больше информации',
+    'Reio should provide': 'Реио должен предоставить',
+    'more specific details': 'более конкретные детали',
+    'and reassurances': 'и заверения',
+    'to address their concerns': 'чтобы решить их опасения',
+    'towards closing a sale': 'к закрытию продажи',
+    'He does not summarize': 'Он не резюмирует',
+    'the benefits': 'преимущества',
+    'or ask for the sale': 'или просит о продаже',
+    'He should practice': 'Он должен практиковаться в',
+    'summarizing the main': 'резюмировании основных',
+    'selling points': 'продажных моментов',
+    'and asking for the sale': 'и просьбе о продаже',
+    'in a direct yet polite manner': 'прямым, но вежливым образом',
+    'considering': 'учитывая',
+    'business communication norms': 'нормы делового общения',
+    
+    // Full paragraph translations for common AI feedback
+    'Reio\'s opening in all conversations is clear and to the point, but lacks a personalized touch. He introduces himself and mentions the product he is selling, which is good. However, in Estonian business communication, it\'s often appreciated if the salesperson shows interest in the client or their business before jumping into the sales pitch.': 'Начало Реио во всех разговорах четкое и по делу, но не хватает личного подхода. Он представляется и упоминает продукт, который продает, что хорошо. Однако в эстонском деловом общении часто ценится, если продавец проявляет интерес к клиенту или его бизнесу перед переходом к продажному выступлению.',
+    
+    'Reio\'s discovery stage needs improvement. He fails to ask open-ended questions to understand the customer\'s needs or situation better. Rather than making assumptions, Reio should inquire about the customer\'s current TV package or what they are looking for in a product.': 'Этап исследования Реио нуждается в улучшении. Он не может задавать открытые вопросы, чтобы лучше понять потребности или ситуацию клиента. Вместо того, чтобы делать предположения, Реио должен интересоваться текущим телевизионным пакетом клиента или тем, что они ищут в продукте.',
+    
+    'Reio\'s product presentation is too vague. Customers asked for more details about the TV packages and products offered, but Reio did not provide sufficient information. His responses like \'kõike\' (everything) are not helpful for a customer seeking to make an informed decision. He should elaborate on the features, benefits, and value of his product.': 'Презентация продукта Реио слишком расплывчата. Клиенты просили больше деталей о телевизионных пакетах и предлагаемых продуктах, но Реио не предоставил достаточной информации. Его ответы, такие как "kõike" (все), не полезны для клиента, пытающегося принять обоснованное решение. Он должен подробно рассказать о функциях, преимуществах и ценности своего продукта.',
+    
+    'Reio doesn\'t effectively handle objections or concerns from customers. When customers show hesitance or require more information, Reio should provide more specific details and reassurances to address their concerns.': 'Реио не эффективно работает с возражениями или опасениями клиентов. Когда клиенты показывают нерешительность или требуют больше информации, Реио должен предоставить более конкретные детали и заверения, чтобы решить их опасения.',
+    
+    'Reio doesn\'t effectively move towards closing a sale. He does not summarize the benefits of his product or ask for the sale. He should practice summarizing the main selling points and asking for the sale in a direct yet polite manner, considering Estonian business communication norms.': 'Реио не эффективно движется к закрытию продажи. Он не резюмирует преимущества своего продукта и не просит о продаже. Он должен практиковаться в резюмировании основных продажных моментов и просьбе о продаже прямым, но вежливым образом, учитывая нормы эстонского делового общения.',
+    
+    // Example-related translations
+    'In this excerpt': 'В этом отрывке',
+    'the customer is asking': 'клиент просит',
+    'for more specifics': 'более конкретные детали',
+    'about TV packages': 'о телевизионных пакетах',
+    'but Reio responds with': 'но Реио отвечает',
+    'which is not helpful': 'что не полезно',
+    'for the customer': 'для клиента',
+    'asking for more specifics': 'прося более конкретные детали',
+    'TV packages': 'телевизионные пакеты',
+    'responds with': 'отвечает',
+    'not helpful': 'не полезно',
+    'customer': 'клиент',
+    'excerpt': 'отрывок',
+    'this excerpt': 'этот отрывок',
+    'the excerpt': 'отрывок',
+    
+    // AI Insights related translations
+    'Reio seems to have': 'Реио, кажется, имеет',
+    'a direct and straightforward approach': 'прямой и четкий подход',
+    'which can be seen as confident': 'что можно считать уверенным',
+    'he needs to balance': 'ему нужно сбалансировать',
+    'with more empathy': 'с большей эмпатией',
+    'and attention to': 'и вниманием к',
+    'customer needs': 'потребностям клиента',
+    'communication style': 'стиль общения',
+    'is brief and to the point': 'краткий и по делу',
+    'but lacks detail': 'но не хватает деталей',
+    'and depth': 'и глубины',
+    'He should work on': 'Он должен работать над',
+    'providing more comprehensive': 'предоставлением более полных',
+    'responses': 'ответов',
+    'and demonstrating': 'и демонстрацией',
+    'product knowledge': 'знания продукта',
+    'Improving product knowledge': 'Улучшение знаний о продукте',
+    'Practice objection handling': 'Практика работы с возражениями',
+    'techniques': 'техник',
+    'Developing closing': 'Разработка техник закрытия',
+    'techniques': 'техник',
+    'Role-play sales conversations': 'Ролевые игры продаж',
+    'with a focus on': 'с фокусом на',
+    'the discovery': 'исследование',
+    'and presentation stages': 'и этапы презентации',
+    'Study product details': 'Изучите детали продукта',
+    'to provide in-depth': 'чтобы предоставить глубокую',
+    'information': 'информацию',
+    'Learn and practice': 'Изучите и практикуйте',
+    'effective closing': 'эффективное закрытие',
+    'techniques appropriate': 'техники подходящие',
+    'for Estonian business culture': 'для эстонской деловой культуры',
+    'Next Steps': 'Следующие шаги',
+    'Recommended Focus Areas': 'Рекомендуемые области фокуса',
+    'Personality Insights': 'Инсайты личности',
+    'Communication Style': 'Стиль общения',
+    
+    // Conversation summary translations
+    'Vestluse Kokkuvõte': 'Резюме разговора',
+    'Practice with Mariana Villegas': 'Практика с Марианой Виллегас',
+    'general': 'общий',
+    'Raskusaste': 'Уровень сложности',
+    'Keskmine': 'Средний',
+    'Kestus': 'Продолжительность',
+    'sõnumid': 'сообщения',
+    'Kogutulemus': 'Общий результат',
+    'introduction': 'введение',
+    'mapping': 'картирование',
+    'product Presentation': 'презентация продукта',
+    'objection Handling': 'работа с возражениями',
+    'close': 'закрытие',
+    'AI Tagasiside': 'Обратная связь ИИ',
+    
+    // AI Feedback content translations
+    'The salesperson did well in the introduction phase by greeting the client and introducing themselves. However, they missed the opportunity to properly map the client\'s needs and preferences. The client was interested in learning more about the TV packages, channels, services, quality, user support, and potential benefits for their large family. The salesperson should have engaged in a mapping phase to understand the client\'s requirements better. Additionally, the salesperson could have provided a more detailed product presentation, addressed the client\'s questions about package contents, additional services, and discounts, and handled the client\'s request for more information effectively. It\'s important to actively listen to the client\'s needs, ask probing questions, and tailor the presentation to match those needs. The conversation did not end early, but the salesperson missed opportunities to fully engage the client and address their concerns.': 'Продавец хорошо справился в фазе введения, приветствуя клиента и представляясь. Однако они упустили возможность правильно картировать потребности и предпочтения клиента. Клиент был заинтересован в изучении большего о телевизионных пакетах, каналах, услугах, качестве, поддержке пользователей и потенциальных преимуществах для их большой семьи. Продавец должен был участвовать в фазе картирования, чтобы лучше понять требования клиента. Кроме того, продавец мог бы предоставить более подробную презентацию продукта, ответить на вопросы клиента о содержании пакета, дополнительных услугах и скидках, и эффективно обработать запрос клиента на дополнительную информацию. Важно активно слушать потребности клиента, задавать зондирующие вопросы и адаптировать презентацию в соответствии с этими потребностями. Разговор не закончился рано, но продавец упустил возможности полностью вовлечь клиента и решить их проблемы.',
+    
+    'The salesperson did well in the introduction phase': 'Продавец хорошо справился в фазе введения',
+    'by greeting the client and introducing themselves': 'приветствуя клиента и представляясь',
+    'However, they missed the opportunity': 'Однако они упустили возможность',
+    'to properly map the client\'s needs': 'правильно картировать потребности клиента',
+    'and preferences': 'и предпочтения',
+    'The client was interested in learning more': 'Клиент был заинтересован в изучении большего',
+    'about the TV packages, channels, services': 'о телевизионных пакетах, каналах, услугах',
+    'quality, user support': 'качестве, поддержке пользователей',
+    'and potential benefits': 'и потенциальных преимуществах',
+    'for their large family': 'для их большой семьи',
+    'The salesperson should have engaged': 'Продавец должен был участвовать',
+    'in a mapping phase': 'в фазе картирования',
+    'to understand the client\'s requirements better': 'чтобы лучше понять требования клиента',
+    'Additionally, the salesperson could have provided': 'Кроме того, продавец мог бы предоставить',
+    'a more detailed product presentation': 'более подробную презентацию продукта',
+    'addressed the client\'s questions about': 'ответить на вопросы клиента о',
+    'package contents, additional services, and discounts': 'содержании пакета, дополнительных услугах и скидках',
+    'and handled the client\'s request': 'и обработать запрос клиента',
+    'for more information effectively': 'на дополнительную информацию эффективно',
+    'It\'s important to actively listen': 'Важно активно слушать',
+    'to the client\'s needs': 'потребности клиента',
+    'ask probing questions': 'задавать зондирующие вопросы',
+    'and tailor the presentation': 'и адаптировать презентацию',
+    'to match those needs': 'в соответствии с этими потребностями',
+    'The conversation did not end early': 'Разговор не закончился рано',
+    'but the salesperson missed opportunities': 'но продавец упустил возможности',
+    'to fully engage the client': 'полностью вовлечь клиента',
+    'and address their concerns': 'и решить их проблемы',
+    
+    // Additional common phrases
+    'Estonian business communication': 'эстонское деловое общение',
+    'Estonian business communication norms': 'нормы эстонского делового общения',
+    'in Estonian business communication': 'в эстонском деловом общении',
+    'Estonian speakers': 'говорящие на эстонском',
+    'for Estonian speakers': 'для говорящих на эстонском',
+    'Estonian language': 'эстонский язык',
+    'in Estonian': 'на эстонском',
+    
+    // Missing connecting words and phrases
+    'is clear and to the point': 'четкий и по делу',
+    'but lacks a personalized touch': 'но не хватает личного подхода',
+    'but lacks': 'но не хватает',
+    'a personalized touch': 'личного подхода',
+    'personalized touch': 'личный подход',
+    'clear and to the point': 'четкий и по делу',
+    'and to the point': 'и по делу',
+    'to the point': 'по делу',
+    'However': 'Однако',
+    'however': 'однако',
+    'but': 'но',
+    'and': 'и',
+    'or': 'или',
+    'is': 'есть',
+    'are': 'есть',
+    'was': 'был',
+    'were': 'были',
+    'has': 'имеет',
+    'have': 'имеет',
+    'had': 'имел',
+    'will': 'будет',
+    'would': 'был бы',
+    'should': 'должен',
+    'could': 'мог бы',
+    'must': 'должен',
+    'may': 'может',
+    'might': 'мог бы',
+    'can': 'может',
+    'cannot': 'не может',
+    'can\'t': 'не может',
+    'do not': 'не делает',
+    'don\'t': 'не делает',
+    'does not': 'не делает',
+    'doesn\'t': 'не делает',
+    'did not': 'не делал',
+    'didn\'t': 'не делал',
+    'will not': 'не будет',
+    'won\'t': 'не будет',
+    'would not': 'не был бы',
+    'wouldn\'t': 'не был бы',
+    'should not': 'не должен',
+    'shouldn\'t': 'не должен',
+    'could not': 'не мог бы',
+    'couldn\'t': 'не мог бы',
+    'must not': 'не должен',
+    'mustn\'t': 'не должен',
+    'may not': 'не может',
+    'might not': 'не мог бы',
+    'mightn\'t': 'не мог бы',
   },
+};
+
+// Function to detect content language state
+const analyzeContentLanguage = (content: string, language: Language): 'english' | 'mixed' | 'target' | 'broken' => {
+  if (language === 'en') return 'english';
+  
+  const words = content.toLowerCase().split(/\s+/);
+  
+  // Estonian indicators
+  const estonianWords = ['on', 'ja', 'kuid', 'või', 'ta', 'see', 'mis', 'kui', 'et', 'ei', 'ole', 'peaks', 'saab', 'võiks', 'peab', 'tutvustab', 'mainib', 'toodet', 'müüb', 'hea', 'eesti', 'ärisuhtluses', 'hinnatakse', 'sageli', 'müügimees', 'näitab', 'huvi', 'klienti', 'nende', 'äri', 'enne', 'hüppab', 'müügikõnele', 'selge', 'asjakohane', 'puudub', 'isiklik', 'puudutus'];
+  
+  // Spanish indicators  
+  const spanishWords = ['es', 'son', 'pero', 'y', 'o', 'el', 'la', 'que', 'si', 'no', 'ser', 'debería', 'puede', 'podría', 'debe', 'comunicación', 'empresarial', 'estonia', 'vendedor', 'cliente', 'negocio', 'ventas'];
+  
+  // Russian indicators
+  const russianWords = ['есть', 'и', 'но', 'или', 'он', 'она', 'что', 'если', 'не', 'быть', 'должен', 'может', 'мог бы', 'должен', 'деловое', 'общение', 'эстонское', 'продавец', 'клиент', 'бизнес', 'продажи'];
+  
+  // English indicators
+  const englishWords = ['the', 'and', 'but', 'is', 'are', 'was', 'were', 'has', 'have', 'will', 'would', 'should', 'could', 'must', 'can', 'do', 'does', 'did', 'a', 'an', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by'];
+  
+    // Broken Estonian indicators (common mistakes from translation)
+    const brokenEstonianWords = ['oniklik', 'mon', 'äronuhtluses', 'kõigon', 'vestlustes', 'fvõi', 'mvõie', 'thon', 'infvõimation', 'käsitlemont'];
+  
+  const targetWords = language === 'et' ? estonianWords : 
+                     language === 'es' ? spanishWords : 
+                     language === 'ru' ? russianWords : [];
+  
+  const estonianCount = words.filter(word => estonianWords.includes(word)).length;
+  const spanishCount = words.filter(word => spanishWords.includes(word)).length;
+  const russianCount = words.filter(word => russianWords.includes(word)).length;
+  const englishCount = words.filter(word => englishWords.includes(word)).length;
+  const brokenCount = words.filter(word => brokenEstonianWords.includes(word)).length;
+  
+  // If has broken words, it's broken
+  if (brokenCount > 0) return 'broken';
+  
+  // If has target language words and no English, it's target
+  const targetCount = language === 'et' ? estonianCount : 
+                     language === 'es' ? spanishCount : 
+                     language === 'ru' ? russianCount : 0;
+  
+  if (targetCount > 0 && englishCount === 0) return 'target';
+  
+  // If has both English and target language, it's mixed
+  if (englishCount > 0 && targetCount > 0) return 'mixed';
+  
+  // If only English, it's English
+  if (englishCount > 0 && targetCount === 0) return 'english';
+  
+  return 'english';
 };
 
 // Function to translate AI-generated content
@@ -557,7 +1457,93 @@ export const translateAIContent = (content: string, language: Language): string 
   if (language === 'en') {
     return content; // No translation needed for English
   }
+  
+  // Analyze the content language state
+  const contentState = analyzeContentLanguage(content, language);
+  
+  // Handle different content states
+  switch (contentState) {
+    case 'target':
+      // Content is already properly in target language
+      return content;
+      
+    case 'broken':
+      // Content has broken translations, try to fix them
+      return fixBrokenTranslation(content, language);
+      
+    case 'mixed':
+      // Content has both English and target language, needs careful translation
+      return translateMixedContent(content, language);
+      
+    case 'english':
+    default:
+      // Content is in English, needs full translation
+      return translateEnglishContent(content, language);
+  }
+};
 
+// Function to fix broken translations
+const fixBrokenTranslation = (content: string, language: Language): string => {
+  if (language === 'et') {
+    // Fix common Estonian translation mistakes
+    let fixed = content
+      .replace(/\boniklik\b/g, 'isiklik')
+      .replace(/\bmon\b/g, 'mis')
+      .replace(/\bäronuhtluses\b/g, 'ärisuhtluses')
+      .replace(/\bkõigon\b/g, 'kõigis')
+      .replace(/\bfvõi\b/g, 'või')
+      .replace(/\bmvõie\b/g, 'rohkem')
+      .replace(/\bthon\b/g, 'see')
+      .replace(/\binfvõimation\b/g, 'informatsiooni')
+      .replace(/\bkäsitlemont\b/g, 'käsitlemise')
+      .replace(/\bvestlustes\b/g, 'vestlustes'); // This one might be correct, keeping as is
+    return fixed;
+  }
+  return content;
+};
+
+// Function to translate mixed content
+const translateMixedContent = (content: string, language: Language): string => {
+  // For mixed content, try to translate only the English parts
+  const translations = aiContentTranslations[language];
+  if (!translations) return content;
+  
+  let translatedContent = content;
+  
+  // Translate sentence by sentence, being more conservative
+  const sentences = content.split(/[.!?]+/).filter(s => s.trim());
+  
+  for (const sentence of sentences) {
+    const trimmedSentence = sentence.trim();
+    
+    // Try exact sentence match first
+    if (translations[trimmedSentence]) {
+      translatedContent = translatedContent.replace(sentence, translations[trimmedSentence]);
+      continue;
+    }
+    
+    // For mixed content, only translate if we're confident
+    let translatedSentence = trimmedSentence;
+    const sortedKeys = Object.keys(translations).sort((a, b) => b.length - a.length);
+    
+    for (const key of sortedKeys) {
+      // Only translate if it's a complete phrase (3+ words) to avoid breaking grammar
+      if (key.split(' ').length >= 3 && translatedSentence.includes(key)) {
+        translatedSentence = translatedSentence.replace(new RegExp(key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), translations[key]);
+      }
+    }
+    
+    // Only replace if we made meaningful changes
+    if (translatedSentence !== trimmedSentence) {
+      translatedContent = translatedContent.replace(sentence, translatedSentence);
+    }
+  }
+  
+  return translatedContent;
+};
+
+// Function to translate English content
+const translateEnglishContent = (content: string, language: Language): string => {
   const translations = aiContentTranslations[language];
   if (!translations) {
     return content; // Fallback to original content
@@ -568,34 +1554,90 @@ export const translateAIContent = (content: string, language: Language): string 
     return translations[content];
   }
 
-  // Try to find partial matches and translate sentence by sentence
+  // Try to translate sentence by sentence first
   let translatedContent = content;
   
-  // Split by sentences and try to translate each
+  // Split into sentences and translate each one
   const sentences = content.split(/[.!?]+/).filter(s => s.trim());
   
   for (const sentence of sentences) {
     const trimmedSentence = sentence.trim();
+    
+    // First, try exact sentence match
     if (translations[trimmedSentence]) {
       translatedContent = translatedContent.replace(sentence, translations[trimmedSentence]);
-    } else {
-      // Try to find partial matches within the sentence
-      for (const [key, translation] of Object.entries(translations)) {
-        if (trimmedSentence.includes(key)) {
-          translatedContent = translatedContent.replace(key, translation);
-        }
+      continue;
+    }
+    
+    // If no exact match, try to translate the sentence by finding the longest matching phrases
+    let translatedSentence = trimmedSentence;
+    const sortedKeys = Object.keys(translations).sort((a, b) => b.length - a.length);
+    
+    for (const key of sortedKeys) {
+      if (translatedSentence.includes(key)) {
+        translatedSentence = translatedSentence.replace(new RegExp(key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), translations[key]);
       }
+    }
+    
+    // Only replace if we actually made changes
+    if (translatedSentence !== trimmedSentence) {
+      translatedContent = translatedContent.replace(sentence, translatedSentence);
     }
   }
 
-  // Also try to translate common phrases within the content
-  for (const [key, translation] of Object.entries(translations)) {
-    if (translatedContent.includes(key)) {
-      translatedContent = translatedContent.replace(key, translation);
-    }
+  // Handle common patterns that might not be caught by exact matches
+  // This includes things like "You did well in..." -> translated equivalent
+  const patternTranslations = getPatternTranslations(language);
+  for (const [pattern, replacement] of Object.entries(patternTranslations)) {
+    const regex = new RegExp(pattern, 'gi');
+    translatedContent = translatedContent.replace(regex, replacement);
   }
 
   return translatedContent;
+};
+
+// Function to get pattern-based translations for common AI response structures
+const getPatternTranslations = (language: Language): Record<string, string> => {
+  const patterns = {
+    es: {
+      'You did well in (.+)': 'Lo hiciste bien en $1',
+      'You need to improve (.+)': 'Necesitas mejorar $1',
+      'Your (.+) is good': 'Tu $1 es bueno',
+      'Consider working on (.+)': 'Considera trabajar en $1',
+      'Great job with (.+)': 'Excelente trabajo con $1',
+      'You should focus on (.+)': 'Deberías enfocarte en $1',
+      'Your approach to (.+) was': 'Tu enfoque hacia $1 fue',
+      'You handled (.+) well': 'Manejaste $1 bien',
+      'You struggled with (.+)': 'Tuviste dificultades con $1',
+      'You showed good (.+)': 'Mostraste buen $1',
+    },
+    et: {
+      'You did well in (.+)': 'Sa tegid hästi $1',
+      'You need to improve (.+)': 'Sa pead parandama $1',
+      'Your (.+) is good': 'Sinu $1 on hea',
+      'Consider working on (.+)': 'Kaalu $1 kallal töötamist',
+      'Great job with (.+)': 'Suurepärane töö $1-ga',
+      'You should focus on (.+)': 'Sa peaksid keskenduma $1-le',
+      'Your approach to (.+) was': 'Sinu lähenemine $1-le oli',
+      'You handled (.+) well': 'Sa käsitlesid $1 hästi',
+      'You struggled with (.+)': 'Sa võitlesid $1-ga',
+      'You showed good (.+)': 'Sa näitasid head $1',
+    },
+    ru: {
+      'You did well in (.+)': 'Вы хорошо справились с $1',
+      'You need to improve (.+)': 'Вам нужно улучшить $1',
+      'Your (.+) is good': 'Ваш $1 хорош',
+      'Consider working on (.+)': 'Рассмотрите работу над $1',
+      'Great job with (.+)': 'Отличная работа с $1',
+      'You should focus on (.+)': 'Вам следует сосредоточиться на $1',
+      'Your approach to (.+) was': 'Ваш подход к $1 был',
+      'You handled (.+) well': 'Вы хорошо справились с $1',
+      'You struggled with (.+)': 'Вы испытывали трудности с $1',
+      'You showed good (.+)': 'Вы показали хороший $1',
+    }
+  };
+
+  return patterns[language] || {};
 };
 
 // Function to translate arrays of AI content

@@ -2133,8 +2133,8 @@ async function generateConversationSummary(userId) {
       return;
     }
 
-    // Generate AI analysis
-    const aiAnalysis = await generateConversationAnalysis(recentConversations, user);
+    // Generate AI analysis using user's language preference
+    const aiAnalysis = await generateConversationAnalysis(recentConversations, user, user.language || 'en');
     
     // Create the summary
     const summary = new ConversationSummary({
@@ -2157,7 +2157,7 @@ async function generateConversationSummary(userId) {
 }
 
 // Helper function to generate AI analysis (same as in conversationSummaries.js)
-async function generateConversationAnalysis(conversations, user) {
+async function generateConversationAnalysis(conversations, user, userLanguage = 'en') {
   try {
     // Prepare conversation data for AI analysis
     const conversationData = conversations.map(conv => ({
@@ -2170,21 +2170,18 @@ async function generateConversationAnalysis(conversations, user) {
       language: conv.language || 'en'
     }));
 
-    // Determine the primary language of the conversations
-    const languages = conversations.map(conv => conv.language || 'en');
-    const primaryLanguage = languages.reduce((a, b, i, arr) => 
-      arr.filter(v => v === a).length >= arr.filter(v => v === b).length ? a : b
-    );
+    // Use the user's preferred language for analysis
+    const analysisLanguage = userLanguage || 'en';
 
     // Language-specific grading instructions
     const languageInstructions = {
-      en: "IMPORTANT: Grade these conversations as if they were conducted in English. Evaluate English language proficiency, grammar, vocabulary, and natural expression in the sales context.",
-      et: "IMPORTANT: Grade these conversations as if they were conducted in Estonian. Evaluate Estonian language proficiency, grammar, vocabulary, and natural expression in the sales context. Consider Estonian business communication norms and cultural appropriateness.",
-      es: "IMPORTANT: Grade these conversations as if they were conducted in Spanish. Evaluate Spanish language proficiency, grammar, vocabulary, and natural expression in the sales context. Consider Spanish business communication norms and cultural appropriateness.",
-      ru: "IMPORTANT: Grade these conversations as if they were conducted in Russian. Evaluate Russian language proficiency, grammar, vocabulary, and natural expression in the sales context. Consider Russian business communication norms and cultural appropriateness."
+      en: "IMPORTANT: Grade these conversations as if they were conducted in English. Evaluate English language proficiency, grammar, vocabulary, and natural expression in the sales context. Provide all feedback in English.",
+      et: "IMPORTANT: Grade these conversations as if they were conducted in Estonian. Evaluate Estonian language proficiency, grammar, vocabulary, and natural expression in the sales context. Consider Estonian business communication norms and cultural appropriateness. Provide all feedback in Estonian.",
+      es: "IMPORTANT: Grade these conversations as if they were conducted in Spanish. Evaluate Spanish language proficiency, grammar, vocabulary, and natural expression in the sales context. Consider Spanish business communication norms and cultural appropriateness. Provide all feedback in Spanish.",
+      ru: "IMPORTANT: Grade these conversations as if they were conducted in Russian. Evaluate Russian language proficiency, grammar, vocabulary, and natural expression in the sales context. Consider Russian business communication norms and cultural appropriateness. Provide all feedback in Russian."
     };
 
-    const languageInstruction = languageInstructions[primaryLanguage] || languageInstructions.en;
+    const languageInstruction = languageInstructions[analysisLanguage] || languageInstructions.en;
 
     const prompt = `
 You are an expert sales coach analyzing a user's sales conversation performance. 
@@ -2196,7 +2193,7 @@ User Profile:
 - Name: ${user.firstName} ${user.lastName}
 - Industry: ${user.industry || 'Not specified'}
 - Role: ${user.role || 'Not specified'}
-- Primary Language: ${primaryLanguage.toUpperCase()}
+- Preferred Language: ${analysisLanguage.toUpperCase()}
 
 Conversations to analyze:
 ${JSON.stringify(conversationData, null, 2)}
@@ -2246,20 +2243,21 @@ Please provide a detailed analysis in the following JSON format:
 
 Focus on:
 1. Sales technique effectiveness
-2. Communication clarity in the ${primaryLanguage.toUpperCase()} language
+2. Communication clarity in the ${analysisLanguage.toUpperCase()} language
 3. Language proficiency and natural expression
 4. Objection handling skills
 5. Closing ability
 6. Overall confidence and professionalism
-7. Cultural appropriateness for ${primaryLanguage.toUpperCase()} business communication
+7. Cultural appropriateness for ${analysisLanguage.toUpperCase()} business communication
 8. Specific examples from conversations
 9. Actionable improvement suggestions
 
-IMPORTANT: When grading, consider that these conversations were conducted in ${primaryLanguage.toUpperCase()}. 
-- Rate language proficiency, grammar, and vocabulary appropriate for ${primaryLanguage.toUpperCase()}
-- Consider cultural norms and business communication standards for ${primaryLanguage.toUpperCase()}
-- Evaluate naturalness and fluency in ${primaryLanguage.toUpperCase()}
-- Provide feedback that is culturally appropriate for ${primaryLanguage.toUpperCase()} speakers
+IMPORTANT: When grading, consider that these conversations were conducted in ${analysisLanguage.toUpperCase()}. 
+- Rate language proficiency, grammar, and vocabulary appropriate for ${analysisLanguage.toUpperCase()}
+- Consider cultural norms and business communication standards for ${analysisLanguage.toUpperCase()}
+- Evaluate naturalness and fluency in ${analysisLanguage.toUpperCase()}
+- Provide feedback that is culturally appropriate for ${analysisLanguage.toUpperCase()} speakers
+- ALL FEEDBACK AND ANALYSIS MUST BE PROVIDED IN ${analysisLanguage.toUpperCase()}
 
 Be constructive, specific, and encouraging in your feedback.
 `;

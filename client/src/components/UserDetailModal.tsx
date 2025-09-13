@@ -416,12 +416,12 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, onClose }) => {
                                       </span>
                                       <div className="flex items-center space-x-2">
                                         <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getStageColor(example.stage)}`}>
-                                          {example.stage}
+                                          {translateAIContent(example.stage, language)}
                                         </span>
                                         <span className="text-sm font-medium">{example.rating}/10</span>
                                       </div>
                                     </div>
-                                    <p className="text-sm text-gray-600">{example.notes}</p>
+                                    <p className="text-sm text-gray-600">{translateAIContent(example.notes, language)}</p>
                                   </div>
                                 ))}
                               </div>

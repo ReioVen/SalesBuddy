@@ -39,6 +39,12 @@ const userSchema = new mongoose.Schema({
     ref: 'Company',
     default: null
   },
+  // User language preference
+  language: {
+    type: String,
+    enum: ['en', 'et', 'es', 'ru'],
+    default: 'en'
+  },
   role: {
     type: String,
     enum: ['individual', 'company_admin', 'company_team_leader', 'company_user', 'super_admin', 'admin'],

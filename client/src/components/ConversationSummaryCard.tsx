@@ -107,7 +107,7 @@ const ConversationSummaryCard: React.FC<ConversationSummaryCardProps> = ({ summa
           </div>
           <div className="flex items-center gap-4">
             <div className="text-sm text-gray-500">
-              {summary.conversationCount} conversations
+              {summary.conversationCount} {t('conversations')}
             </div>
             <div className="text-sm text-gray-500">
               {formatDate(summary.dateRange.startDate)} - {formatDate(summary.dateRange.endDate)}
@@ -127,10 +127,10 @@ const ConversationSummaryCard: React.FC<ConversationSummaryCardProps> = ({ summa
           {/* Tabs */}
           <div className="flex border-b border-gray-200">
             {[
-              { id: 'overview', label: 'Overview', icon: TrendingUp },
-              { id: 'stages', label: 'Stage Ratings', icon: Target },
-              { id: 'examples', label: 'Examples', icon: MessageSquare },
-              { id: 'insights', label: 'AI Insights', icon: Lightbulb }
+              { id: 'overview', label: t('overview'), icon: TrendingUp },
+              { id: 'stages', label: t('stageRatings'), icon: Target },
+              { id: 'examples', label: t('examples'), icon: MessageSquare },
+              { id: 'insights', label: t('aiInsights'), icon: Lightbulb }
             ].map(({ id, label, icon: Icon }) => (
               <button
                 key={id}
@@ -164,7 +164,7 @@ const ConversationSummaryCard: React.FC<ConversationSummaryCardProps> = ({ summa
                   <div>
                     <h4 className="text-lg font-semibold text-green-700 mb-3 flex items-center gap-2">
                       <Star className="w-5 h-5" />
-                      Strengths
+                      {t('strengths')}
                     </h4>
                     <ul className="space-y-2">
                       {summary.strengths.map((strength, index) => (
@@ -178,7 +178,7 @@ const ConversationSummaryCard: React.FC<ConversationSummaryCardProps> = ({ summa
                   <div>
                     <h4 className="text-lg font-semibold text-orange-700 mb-3 flex items-center gap-2">
                       <TrendingUp className="w-5 h-5" />
-                      Areas for Improvement
+                      {t('areasForImprovement')}
                     </h4>
                     <ul className="space-y-2">
                       {summary.improvements.map((improvement, index) => (
@@ -199,13 +199,13 @@ const ConversationSummaryCard: React.FC<ConversationSummaryCardProps> = ({ summa
                   <div key={stage} className="bg-gray-50 rounded-lg p-4">
                     <div className="flex items-center justify-between mb-2">
                       <h4 className="font-semibold text-gray-900">
-                        {stageNames[stage as keyof typeof stageNames]}
+                        {stageNames[stage as keyof typeof stageNames] || translateAIContent(stage, language)}
                       </h4>
                       <span className={`px-3 py-1 rounded-full text-sm font-medium ${getRatingColor(rating.rating)}`}>
                         {rating.rating}/10
                       </span>
                     </div>
-                    <p className="text-gray-700">{rating.feedback}</p>
+                    <p className="text-gray-700">{translateAIContent(rating.feedback, language)}</p>
                   </div>
                 ))}
               </div>
@@ -217,16 +217,16 @@ const ConversationSummaryCard: React.FC<ConversationSummaryCardProps> = ({ summa
                   <div key={index} className="bg-gray-50 rounded-lg p-4">
                     <div className="flex items-center gap-2 mb-2">
                       <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded">
-                        {example.stage}
+                        {translateAIContent(example.stage, language)}
                       </span>
                       <span className="text-sm text-gray-500">
-                        Conversation #{summary.summaryNumber}
+                        {t('conversationTitle')} #{summary.summaryNumber}
                       </span>
                     </div>
                     <blockquote className="text-gray-700 italic mb-2">
-                      "{example.excerpt}"
+                      "{translateAIContent(example.excerpt, language)}"
                     </blockquote>
-                    <p className="text-sm text-gray-600">{example.context}</p>
+                    <p className="text-sm text-gray-600">{translateAIContent(example.context, language)}</p>
                   </div>
                 ))}
               </div>
@@ -235,15 +235,15 @@ const ConversationSummaryCard: React.FC<ConversationSummaryCardProps> = ({ summa
             {activeTab === 'insights' && (
               <div className="space-y-6">
                 <div>
-                  <h4 className="text-lg font-semibold text-gray-900 mb-3">Personality Insights</h4>
+                  <h4 className="text-lg font-semibold text-gray-900 mb-3">{t('personalityInsights')}</h4>
                   <p className="text-gray-700">{translateAIContent(summary.aiAnalysis.personalityInsights, language)}</p>
                 </div>
                 <div>
-                  <h4 className="text-lg font-semibold text-gray-900 mb-3">Communication Style</h4>
+                  <h4 className="text-lg font-semibold text-gray-900 mb-3">{t('communicationStyle')}</h4>
                   <p className="text-gray-700">{translateAIContent(summary.aiAnalysis.communicationStyle, language)}</p>
                 </div>
                 <div>
-                  <h4 className="text-lg font-semibold text-gray-900 mb-3">Recommended Focus Areas</h4>
+                  <h4 className="text-lg font-semibold text-gray-900 mb-3">{t('recommendedFocusAreas')}</h4>
                   <div className="flex flex-wrap gap-2">
                     {summary.aiAnalysis.recommendedFocus.map((focus, index) => (
                       <span key={index} className="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full">
@@ -253,7 +253,7 @@ const ConversationSummaryCard: React.FC<ConversationSummaryCardProps> = ({ summa
                   </div>
                 </div>
                 <div>
-                  <h4 className="text-lg font-semibold text-gray-900 mb-3">Next Steps</h4>
+                  <h4 className="text-lg font-semibold text-gray-900 mb-3">{t('nextSteps')}</h4>
                   <ul className="space-y-2">
                     {summary.aiAnalysis.nextSteps.map((step, index) => (
                       <li key={index} className="flex items-start gap-2">

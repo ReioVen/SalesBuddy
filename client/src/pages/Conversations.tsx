@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import { Plus, MessageSquare, User, Building, Briefcase, FileText, Send, X, Star } from 'lucide-react';
+import { translateAIContent } from '../utils/aiContentTranslator.ts';
 
 interface ClientCustomization {
   name: string;
@@ -560,6 +561,17 @@ const Conversations: React.FC = () => {
     }
   };
 
+  const translateStageName = (stage: string) => {
+    const stageTranslations = {
+      'introduction': t('stageOpening'),
+      'mapping': t('stageDiscovery'),
+      'productPresentation': t('stagePresentation'),
+      'objectionHandling': t('stageObjectionHandling'),
+      'close': t('stageClosing')
+    };
+    return stageTranslations[stage as keyof typeof stageTranslations] || stage;
+  };
+
   if (!user) {
     return (
       <div className="max-w-6xl mx-auto px-4 py-10">
@@ -1074,13 +1086,13 @@ const Conversations: React.FC = () => {
                           })
                           .map(([phase, rating]) => (
                             <span key={phase} className={`px-2 py-1 rounded text-xs font-medium ${getRatingColor(rating)}`}>
-                              {phase.charAt(0).toUpperCase() + phase.slice(1)}: {rating}/10
+                              {translateStageName(phase)}: {rating}/10
                             </span>
                           ))}
                           </div>
                         </div>
                         {conversation.aiRatingFeedback && (
-                          <p className="text-sm text-gray-600 mt-2 italic">"{conversation.aiRatingFeedback}"</p>
+                          <p className="text-sm text-gray-600 mt-2 italic">"{translateAIContent(conversation.aiRatingFeedback, language)}"</p>
                         )}
                       </div>
                     )}
@@ -1164,7 +1176,7 @@ const Conversations: React.FC = () => {
                           })
                           .map(([phase, rating]) => (
                             <div key={phase} className="flex items-center justify-between">
-                              <span className="font-medium text-gray-700 capitalize">{phase.replace(/([A-Z])/g, ' $1')}:</span>
+                              <span className="font-medium text-gray-700">{translateStageName(phase)}:</span>
                               <span className={`text-lg font-semibold ${getRatingColor(rating)}`}>{rating}/10</span>
                             </div>
                           ))}
@@ -1172,7 +1184,7 @@ const Conversations: React.FC = () => {
                       {selectedConversation.aiRatingFeedback && (
                         <div className="mt-4 p-3 bg-gray-50 rounded-lg">
                           <span className="font-medium text-gray-700">{t('aiFeedback')}:</span>
-                          <p className="text-gray-600 mt-1 italic">"{selectedConversation.aiRatingFeedback}"</p>
+                          <p className="text-gray-600 mt-1 italic">"{translateAIContent(selectedConversation.aiRatingFeedback, language)}"</p>
                         </div>
                       )}
                     </div>
