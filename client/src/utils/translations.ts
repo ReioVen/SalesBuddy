@@ -5,6 +5,7 @@ export const translations = {
     // Navigation
     home: 'Home',
     conversations: 'Conversations',
+    companyNav: 'Company',
     profile: 'Profile',
     settings: 'Settings',
     login: 'Login',
@@ -281,7 +282,6 @@ export const translations = {
 
     // Summary Content
     summaryNumber: 'Summary #',
-    conversations: 'conversations',
     overallRating: 'Overall Rating',
     stageRatings: 'Stage Ratings',
     strengths: 'Strengths',
@@ -346,6 +346,7 @@ export const translations = {
     // Navigation
     home: 'Kodu',
     conversations: 'Vestlused',
+    companyNav: 'Ettevõte',
     profile: 'Profiil',
     settings: 'Seaded',
     login: 'Logi sisse',
@@ -622,7 +623,6 @@ export const translations = {
 
     // Summary Content
     summaryNumber: 'Kokkuvõte #',
-    conversations: 'vestlused',
     overallRating: 'Üldine Hinnang',
     stageRatings: 'Etapi Hinnangud',
     strengths: 'Tugevused',
@@ -687,6 +687,7 @@ export const translations = {
     // Navigation
     home: 'Inicio',
     conversations: 'Conversaciones',
+    companyNav: 'Empresa',
     profile: 'Perfil',
     settings: 'Configuración',
     login: 'Iniciar sesión',
@@ -963,7 +964,6 @@ export const translations = {
 
     // Summary Content
     summaryNumber: 'Resumen #',
-    conversations: 'conversaciones',
     overallRating: 'Calificación General',
     stageRatings: 'Calificaciones por Etapa',
     strengths: 'Fortalezas',
@@ -1028,6 +1028,7 @@ export const translations = {
     // Navigation
     home: 'Главная',
     conversations: 'Разговоры',
+    companyNav: 'Компания',
     profile: 'Профиль',
     settings: 'Настройки',
     login: 'Войти',
@@ -1304,7 +1305,6 @@ export const translations = {
 
     // Summary Content
     summaryNumber: 'Резюме #',
-    conversations: 'разговоры',
     overallRating: 'Общий Рейтинг',
     stageRatings: 'Рейтинги по Этапам',
     strengths: 'Сильные Стороны',

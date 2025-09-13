@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from '../hooks/useTranslation.ts';
 import ConversationReaderModal from './ConversationReaderModal.tsx';
-import { translateAIContent, translateAIArray, translateAIAnalysis } from '../utils/aiContentTranslator.ts';
+import { translateAIContent } from '../utils/aiContentTranslator.ts';
 
 interface Conversation {
   _id: string;
@@ -61,7 +61,7 @@ interface UserDetailModalProps {
 }
 
 const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, onClose }) => {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
 
   // Function to translate stage names
   const translateStage = (stage: string) => {
@@ -88,7 +88,7 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, onClose }) => {
   const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
 
   // Fetch conversations
-  const fetchConversations = async (page = 1) => {
+  const fetchConversations = useCallback(async (page = 1) => {
     setLoading(true);
     setError(null);
     try {
@@ -109,10 +109,10 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, onClose }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user._id]);
 
   // Fetch summaries
-  const fetchSummaries = async () => {
+  const fetchSummaries = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -132,7 +132,7 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, onClose }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user._id]);
 
   useEffect(() => {
     if (activeTab === 'conversations') {

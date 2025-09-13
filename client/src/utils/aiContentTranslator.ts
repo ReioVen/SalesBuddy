@@ -1,4 +1,4 @@
-import { getTranslation, type Language } from './translations.ts';
+import { type Language } from './translations.ts';
 
 // Translation mappings for common AI-generated content patterns
 const aiContentTranslations = {
@@ -202,6 +202,200 @@ const aiContentTranslations = {
     'Improve questioning techniques': 'Paranda küsimiste tehnikaid',
     'Work on confidence': 'Tööta enesekindluse kallal',
     'Develop follow-up strategies': 'Arenda järelkontrolli strateegiaid',
+    
+    // Complete English to Estonian translations with proper grammar
+    'Your': 'Teie',
+    'your': 'oma',
+    'introductions': 'sissejuhatuses',
+    'were': 'olid',
+    'was': 'oli',
+    'is': 'on',
+    'are': 'on',
+    'clear': 'selge',
+    'but': 'kuid',
+    'lacked': 'puudus',
+    'enthusiasm': 'entusiasmi',
+    'or': 'või',
+    'an': 'üks',
+    'engaging': 'põnev',
+    'hook': 'külg',
+    'Try': 'Proovi',
+    'try': 'proovi',
+    'to': 'et',
+    'make': 'teha',
+    'statement': 'avaldus',
+    'more': 'rohkem',
+    'interesting': 'huvitav',
+    'grab': 'haarata',
+    'attention': 'tähelepanu',
+    'about': 'umbes',
+    'understanding': 'mõistmine',
+    'customer': 'kliendi',
+    'needs': 'vajadusi',
+    'and': 'ja',
+    'situation': 'olukord',
+    'There': 'Seal',
+    'room': 'ruumi',
+    'for': 'jaoks',
+    'improvement': 'parandamist',
+    'here': 'siin',
+    'as': 'kuna',
+    'you': 'sa',
+    'did': 'teginud',
+    'not': 'ei',
+    'ask': 'küsi',
+    'enough': 'piisavalt',
+    'questions': 'küsimusi',
+    'many': 'mitu',
+    'Always': 'Alati',
+    'remember': 'mäleta',
+    'open': 'avatud',
+    'gather': 'koguma',
+    'information': 'teavet',
+    'When': 'Kui',
+    'presenting': 'esitad',
+    'products': 'toodeteid',
+    'it\'s': 'see on',
+    'important': 'oluline',
+    'provide': 'pakkuma',
+    'concise': 'konkreetne',
+    'relevant': 'asjakohane',
+    'Instead': 'Selle asemel',
+    'of': 'et',
+    'saying': 'öelda',
+    'everything': 'kõike',
+    'mention': 'mainida',
+    'specific': 'spetsiifilisi',
+    'features': 'funktsioone',
+    'that': 'mis',
+    'could': 'võiks',
+    'benefit': 'kasu',
+    'the': 'see',
+    'client': 'klient',
+    'You': 'Sa',
+    'seemed': 'tundus',
+    'struggle': 'võitlema',
+    'with': 'koos',
+    'handling': 'käsitlemine',
+    'requests': 'taotlusi',
+    'anticipate': 'ennetama',
+    'common': 'tavalisi',
+    'prepare': 'valmistuma',
+    'answer': 'vastama',
+    'them': 'neile',
+    'If': 'Kui',
+    'provide': 'pakkuma',
+    'it': 'seda',
+    'in': 'sisse',
+    'a': 'üks',
+    'detailed': 'üksikasjalik',
+    'manner': 'viisil',
+    'techniques': 'tehnikaid',
+    'use': 'kasutama',
+    'some': 'mõned',
+    'Instead': 'Selle asemel',
+    'waiting': 'ootama',
+    'for': 'jaoks',
+    'make': 'teha',
+    'a': 'üks',
+    'decision': 'otsus',
+    'guide': 'juhtima',
+    'them': 'neid',
+    'towards': 'suunas',
+    'by': 'poolt',
+    'summarizing': 'kokkuvõtte tegemine',
+    'benefits': 'eelised',
+    'product': 'toode',
+    'sales': 'müügi',
+    'question': 'küsimus',
+    
+    // Sales-context Estonian translations - natural and professional
+    'Your opening were clear': 'Teie sissejuhatus oli selge',
+    'Your introductions were clear': 'Teie sissejuhatused olid selged',
+    'but lacked enthusiasm': 'kuid puudus entusiasmi',
+    'or an engaging hook': 'või põnev külg',
+    'or an': 'või',
+    'an engaging': 'põnev',
+    'Try to make': 'Proovi teha',
+    'your opening statement': 'oma sissejuhatuse avaldus',
+    'more interesting': 'rohkem huvitav',
+    'to grab': 'et haarata',
+    'the client\'s attention': 'kliendi tähelepanu',
+    'to grab the client\'s attention': 'et haarata kliendi tähelepanu',
+    'Discovery is about': 'Avastamine tähendab',
+    'understanding customer needs': 'kliendi vajaduste mõistmist',
+    'and situation': 'ja olukorda',
+    'There is room': 'Seal on ruumi',
+    'for improvement here': 'parandamiseks siin',
+    'as you did not': 'kuna sa ei teinud',
+    'ask enough questions': 'piisavalt küsimusi',
+    'about customer needs': 'kliendi vajaduste kohta',
+    'or situation': 'või olukorda',
+    'Always remember': 'Alati mäleta',
+    'to ask open questions': 'küsida avatud küsimusi',
+    'to gather more information': 'et koguda rohkem teavet',
+    'When presenting': 'Kui esitad',
+    'your products': 'oma tooteid',
+    'it\'s important': 'see on oluline',
+    'to provide clear': 'pakkuda selge',
+    'concise and relevant': 'konkreetne ja asjakohane',
+    'information': 'informatsiooni',
+    'Instead of saying': 'Selle asemel et öelda',
+    'everything': 'kõike',
+    'try to mention': 'proovi mainida',
+    'specific features': 'spetsiifilisi funktsioone',
+    'of the TV packages': 'TV pakettide',
+    'that could benefit': 'mis võiksid kasu',
+    'the client': 'kliendile',
+    'You seemed to struggle': 'Sa tundusid võitlevat',
+    'with handling objections': 'vastuväidete käsitlemisega',
+    'or requests': 'või taotlustega',
+    'for more information': 'rohkem teavet',
+    'Try to anticipate': 'Proovi ennetada',
+    'common objections': 'tavalisi vastuväiteid',
+    'and prepare': 'ja valmistuda',
+    'to answer them': 'neile vastama',
+    'If a customer needs': 'Kui klient vajab',
+    'more information': 'rohkem teavet',
+    'provide it': 'paku seda',
+    'in a clear': 'selgelt',
+    'and detailed manner': 'ja üksikasjalikult',
+    'Your closing techniques': 'Teie sulgemise tehnikad',
+    'could use': 'võiksid kasutada',
+    'some improvement': 'mõningast parandamist',
+    'Instead of waiting': 'Selle asemel et oodata',
+    'for the customer': 'kliendilt',
+    'to make a decision': 'otsuse tegemist',
+    'try to guide them': 'proovi juhtida neid',
+    'towards it': 'selle suunas',
+    'by summarizing': 'kokkuvõtte tegemisega',
+    'the benefits': 'eelised',
+    'of your product': 'oma toote',
+    'and asking': 'ja küsides',
+    'for the sale': 'müügi järele',
+    
+    // Additional sales-specific translations
+    'generally': 'üldiselt',
+    'or': 'või',
+    'to': 'et',
+    'of': 'oma',
+    'in a': 'selgelt',
+    'and': 'ja',
+    'for': 'jaoks',
+    'with': 'koos',
+    'by': 'poolt',
+    'in': 'sisse',
+    'on': 'peal',
+    'at': 'juures',
+    'to the': 'selle',
+    'of the': 'oma',
+    'and the': 'ja',
+    'for the': 'selle',
+    'with the': 'selle',
+    'by the': 'selle',
+    'in the': 'selle',
+    'on the': 'selle',
+    'at the': 'selle',
     'More context in opening lines': 'Rohkem konteksti avavõtetes',
     'More specific discovery questions': 'Rohkem spetsiifilisi avastamise küsimusi',
     'Include presentation and closing stages': 'Kaasa esitluse ja sulgemise etapid',
@@ -700,6 +894,173 @@ const aiContentTranslations = {
     'Develop a compelling product presentation': 'Desarrollar una presentación de producto convincente',
     'Learn and practise closing techniques': 'Aprender y practicar técnicas de cierre',
     
+    // Sales-context Spanish translations
+    'Your': 'Tu',
+    'your': 'tu',
+    'were': 'fueron',
+    'was': 'fue',
+    'is': 'es',
+    'are': 'son',
+    'clear': 'claro',
+    'but': 'pero',
+    'lacked': 'faltó',
+    'enthusiasm': 'entusiasmo',
+    'or': 'o',
+    'an': 'un',
+    'engaging': 'atractivo',
+    'hook': 'gancho',
+    'Try': 'Intenta',
+    'try': 'intenta',
+    'to': 'a',
+    'make': 'hacer',
+    'statement': 'declaración',
+    'more': 'más',
+    'interesting': 'interesante',
+    'grab': 'capturar',
+    'attention': 'atención',
+    'about': 'sobre',
+    'understanding': 'entender',
+    'customer': 'cliente',
+    'needs': 'necesidades',
+    'and': 'y',
+    'situation': 'situación',
+    'There': 'Hay',
+    'room': 'espacio',
+    'for': 'para',
+    'improvement': 'mejora',
+    'here': 'aquí',
+    'as': 'como',
+    'you': 'tú',
+    'did': 'hiciste',
+    'not': 'no',
+    'ask': 'preguntar',
+    'enough': 'suficientes',
+    'questions': 'preguntas',
+    'many': 'muchas',
+    'Always': 'Siempre',
+    'remember': 'recuerda',
+    'open': 'abiertas',
+    'gather': 'recopilar',
+    'information': 'información',
+    'When': 'Cuando',
+    'presenting': 'presentando',
+    'products': 'productos',
+    'it\'s': 'es',
+    'important': 'importante',
+    'provide': 'proporcionar',
+    'concise': 'conciso',
+    'relevant': 'relevante',
+    'Instead': 'En lugar',
+    'of': 'de',
+    'saying': 'decir',
+    'everything': 'todo',
+    'mention': 'mencionar',
+    'specific': 'específicas',
+    'features': 'características',
+    'that': 'que',
+    'could': 'podría',
+    'benefit': 'beneficiar',
+    'the': 'el',
+    'client': 'cliente',
+    'You': 'Tú',
+    'seemed': 'pareciste',
+    'struggle': 'luchar',
+    'with': 'con',
+    'handling': 'manejo',
+    'requests': 'solicitudes',
+    'anticipate': 'anticipar',
+    'common': 'comunes',
+    'prepare': 'preparar',
+    'answer': 'responder',
+    'them': 'ellos',
+    'If': 'Si',
+    'provide': 'proporcionar',
+    'it': 'lo',
+    'in': 'en',
+    'a': 'una',
+    'detailed': 'detallada',
+    'manner': 'manera',
+    'techniques': 'técnicas',
+    'use': 'usar',
+    'some': 'algunas',
+    'Instead': 'En lugar',
+    'waiting': 'esperando',
+    'for': 'para',
+    'make': 'hacer',
+    'a': 'una',
+    'decision': 'decisión',
+    'guide': 'guiar',
+    'them': 'ellos',
+    'towards': 'hacia',
+    'by': 'por',
+    'summarizing': 'resumiendo',
+    'benefits': 'beneficios',
+    'product': 'producto',
+    'sales': 'ventas',
+    'question': 'pregunta',
+    'generally': 'generalmente',
+    
+    // Common Spanish sales phrases
+    'Your opening were clear': 'Tu apertura fue clara',
+    'but lacked enthusiasm': 'pero faltó entusiasmo',
+    'or an engaging hook': 'o un gancho atractivo',
+    'Try to make': 'Intenta hacer',
+    'your opening statement': 'tu declaración de apertura',
+    'more interesting': 'más interesante',
+    'to grab': 'para capturar',
+    'the client\'s attention': 'la atención del cliente',
+    'Discovery is about': 'El descubrimiento se trata',
+    'understanding customer needs': 'de entender las necesidades del cliente',
+    'and situation': 'y situación',
+    'There is room': 'Hay espacio',
+    'for improvement here': 'para mejora aquí',
+    'as you did not': 'como no hiciste',
+    'ask enough questions': 'suficientes preguntas',
+    'about customer needs': 'sobre las necesidades del cliente',
+    'or situation': 'o situación',
+    'Always remember': 'Siempre recuerda',
+    'to ask open questions': 'hacer preguntas abiertas',
+    'to gather more information': 'para recopilar más información',
+    'When presenting': 'Cuando presentes',
+    'your products': 'tus productos',
+    'it\'s important': 'es importante',
+    'to provide clear': 'proporcionar claro',
+    'concise and relevant': 'conciso y relevante',
+    'information': 'información',
+    'Instead of saying': 'En lugar de decir',
+    'everything': 'todo',
+    'try to mention': 'intenta mencionar',
+    'specific features': 'características específicas',
+    'of the TV packages': 'de los paquetes de TV',
+    'that could benefit': 'que podrían beneficiar',
+    'the client': 'al cliente',
+    'You seemed to struggle': 'Pareciste luchar',
+    'with handling objections': 'con el manejo de objeciones',
+    'or requests': 'o solicitudes',
+    'for more information': 'para más información',
+    'Try to anticipate': 'Intenta anticipar',
+    'common objections': 'objeciones comunes',
+    'and prepare': 'y preparar',
+    'to answer them': 'para responderlas',
+    'If a customer needs': 'Si un cliente necesita',
+    'more information': 'más información',
+    'provide it': 'proporciónala',
+    'in a clear': 'de manera clara',
+    'and detailed manner': 'y detallada',
+    'Your closing techniques': 'Tus técnicas de cierre',
+    'could use': 'podrían usar',
+    'some improvement': 'algunas mejoras',
+    'Instead of waiting': 'En lugar de esperar',
+    'for the customer': 'al cliente',
+    'to make a decision': 'para tomar una decisión',
+    'try to guide them': 'intenta guiarlos',
+    'towards it': 'hacia ella',
+    'by summarizing': 'resumiendo',
+    'the benefits': 'los beneficios',
+    'of your product': 'de tu producto',
+    'and asking': 'y preguntando',
+    'for the sale': 'por la venta',
+    
     // More specific patterns for detailed feedback
     'Reio, your opening lines are a bit abrupt and lack context': 'Reio, tus líneas de apertura son un poco abruptas y carecen de contexto',
     'Hello pls buy my tv': 'Hola por favor compra mi tv',
@@ -1110,6 +1471,173 @@ const aiContentTranslations = {
     'Develop a compelling product presentation': 'Разработайте убедительную презентацию продукта',
     'Learn and practise closing techniques': 'Изучайте и практикуйте техники закрытия',
     
+    // Sales-context Russian translations
+    'Your': 'Ваше',
+    'your': 'ваше',
+    'were': 'были',
+    'was': 'было',
+    'is': 'есть',
+    'are': 'есть',
+    'clear': 'ясное',
+    'but': 'но',
+    'lacked': 'не хватало',
+    'enthusiasm': 'энтузиазма',
+    'or': 'или',
+    'an': 'один',
+    'engaging': 'увлекательный',
+    'hook': 'крючок',
+    'Try': 'Попробуйте',
+    'try': 'попробуйте',
+    'to': 'чтобы',
+    'make': 'сделать',
+    'statement': 'заявление',
+    'more': 'более',
+    'interesting': 'интересное',
+    'grab': 'захватить',
+    'attention': 'внимание',
+    'about': 'о',
+    'understanding': 'понимание',
+    'customer': 'клиента',
+    'needs': 'потребности',
+    'and': 'и',
+    'situation': 'ситуация',
+    'There': 'Там',
+    'room': 'место',
+    'for': 'для',
+    'improvement': 'улучшения',
+    'here': 'здесь',
+    'as': 'как',
+    'you': 'вы',
+    'did': 'делали',
+    'not': 'не',
+    'ask': 'задавать',
+    'enough': 'достаточно',
+    'questions': 'вопросов',
+    'many': 'много',
+    'Always': 'Всегда',
+    'remember': 'помните',
+    'open': 'открытые',
+    'gather': 'собирать',
+    'information': 'информацию',
+    'When': 'Когда',
+    'presenting': 'представляя',
+    'products': 'продукты',
+    'it\'s': 'это',
+    'important': 'важно',
+    'provide': 'предоставлять',
+    'concise': 'краткое',
+    'relevant': 'релевантная',
+    'Instead': 'Вместо',
+    'of': 'того',
+    'saying': 'говорить',
+    'everything': 'все',
+    'mention': 'упомянуть',
+    'specific': 'конкретные',
+    'features': 'функции',
+    'that': 'что',
+    'could': 'могли',
+    'benefit': 'принести пользу',
+    'the': 'клиенту',
+    'client': 'клиенту',
+    'You': 'Вы',
+    'seemed': 'казались',
+    'struggle': 'бороться',
+    'with': 'с',
+    'handling': 'обработкой',
+    'requests': 'запросов',
+    'anticipate': 'предвидеть',
+    'common': 'общие',
+    'prepare': 'подготовить',
+    'answer': 'отвечать',
+    'them': 'им',
+    'If': 'Если',
+    'provide': 'предоставить',
+    'it': 'это',
+    'in': 'в',
+    'a': 'одну',
+    'detailed': 'подробную',
+    'manner': 'манеру',
+    'techniques': 'техники',
+    'use': 'использовать',
+    'some': 'некоторые',
+    'Instead': 'Вместо',
+    'waiting': 'ожидания',
+    'for': 'от',
+    'make': 'принять',
+    'a': 'одно',
+    'decision': 'решение',
+    'guide': 'направить',
+    'them': 'их',
+    'towards': 'к',
+    'by': 'путем',
+    'summarizing': 'подведения итогов',
+    'benefits': 'преимущества',
+    'product': 'продукта',
+    'sales': 'продаж',
+    'question': 'вопрос',
+    'generally': 'в целом',
+    
+    // Common Russian sales phrases
+    'Your opening were clear': 'Ваше вступление было ясным',
+    'but lacked enthusiasm': 'но не хватало энтузиазма',
+    'or an engaging hook': 'или увлекательного крючка',
+    'Try to make': 'Попробуйте сделать',
+    'your opening statement': 'ваше вступительное заявление',
+    'more interesting': 'более интересным',
+    'to grab': 'чтобы захватить',
+    'the client\'s attention': 'внимание клиента',
+    'Discovery is about': 'Выяснение заключается в',
+    'understanding customer needs': 'понимании потребностей клиента',
+    'and situation': 'и ситуации',
+    'There is room': 'Есть место',
+    'for improvement here': 'для улучшения здесь',
+    'as you did not': 'как вы не',
+    'ask enough questions': 'задавали достаточно вопросов',
+    'about customer needs': 'о потребностях клиента',
+    'or situation': 'или ситуации',
+    'Always remember': 'Всегда помните',
+    'to ask open questions': 'задавать открытые вопросы',
+    'to gather more information': 'чтобы собрать больше информации',
+    'When presenting': 'При представлении',
+    'your products': 'ваших продуктов',
+    'it\'s important': 'важно',
+    'to provide clear': 'предоставлять ясную',
+    'concise and relevant': 'краткую и релевантную',
+    'information': 'информацию',
+    'Instead of saying': 'Вместо того чтобы говорить',
+    'everything': 'все',
+    'try to mention': 'попробуйте упомянуть',
+    'specific features': 'конкретные функции',
+    'of the TV packages': 'пакетов ТВ',
+    'that could benefit': 'которые могли бы принести пользу',
+    'the client': 'клиенту',
+    'You seemed to struggle': 'Вы казались борющимися',
+    'with handling objections': 'с обработкой возражений',
+    'or requests': 'или запросов',
+    'for more information': 'для получения дополнительной информации',
+    'Try to anticipate': 'Попробуйте предвидеть',
+    'common objections': 'общие возражения',
+    'and prepare': 'и подготовить',
+    'to answer them': 'ответы на них',
+    'If a customer needs': 'Если клиент нуждается',
+    'more information': 'в дополнительной информации',
+    'provide it': 'предоставьте ее',
+    'in a clear': 'в ясной',
+    'and detailed manner': 'и подробной манере',
+    'Your closing techniques': 'Ваши техники закрытия',
+    'could use': 'могли бы использовать',
+    'some improvement': 'некоторые улучшения',
+    'Instead of waiting': 'Вместо ожидания',
+    'for the customer': 'от клиента',
+    'to make a decision': 'принятия решения',
+    'try to guide them': 'попробуйте направить их',
+    'towards it': 'к нему',
+    'by summarizing': 'путем подведения итогов',
+    'the benefits': 'преимущества',
+    'of your product': 'вашего продукта',
+    'and asking': 'и спрашивая',
+    'for the sale': 'о продаже',
+    
     // More specific patterns for detailed feedback
     'Reio, your opening lines are a bit abrupt and lack context': 'Рейо, ваши открывающие строки немного резкие и не хватает контекста',
     'Hello pls buy my tv': 'Привет пожалуйста купи мой телевизор',
@@ -1406,6 +1934,11 @@ const aiContentTranslations = {
 const analyzeContentLanguage = (content: string, language: Language): 'english' | 'mixed' | 'target' | 'broken' => {
   if (language === 'en') return 'english';
   
+  // Handle undefined, null, or empty content
+  if (!content || typeof content !== 'string') {
+    return 'english';
+  }
+  
   const words = content.toLowerCase().split(/\s+/);
   
   // Estonian indicators
@@ -1421,11 +1954,11 @@ const analyzeContentLanguage = (content: string, language: Language): 'english' 
   const englishWords = ['the', 'and', 'but', 'is', 'are', 'was', 'were', 'has', 'have', 'will', 'would', 'should', 'could', 'must', 'can', 'do', 'does', 'did', 'a', 'an', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by'];
   
     // Broken Estonian indicators (common mistakes from translation)
-    const brokenEstonianWords = ['oniklik', 'mon', 'äronuhtluses', 'kõigon', 'vestlustes', 'fvõi', 'mvõie', 'thon', 'infvõimation', 'käsitlemont'];
+    const brokenEstonianWords = ['oniklik', 'mon', 'äronuhtluses', 'kõigon', 'vestlustes', 'fvõi', 'mvõie', 'thon', 'infvõimation', 'käsitlemont', 'straightfvõiward', 'suhtlemone', 'understja', 'doncovery', 'pone', 'prepon', 'infvõimatsiooni', 'vastuseid', 'fvõi', 'tehnikaid', 'sonsejuhatuss', 'üldinely', 'impvõitant', 'concone', 'hjaling', 'valmontuge', 'deconion', 'eeloneid', 'küsimont', 'mõonta', 'võiks', 'jaoks'];
   
-  const targetWords = language === 'et' ? estonianWords : 
-                     language === 'es' ? spanishWords : 
-                     language === 'ru' ? russianWords : [];
+  // const targetWords = language === 'et' ? estonianWords : 
+  //                    language === 'es' ? spanishWords : 
+  //                    language === 'ru' ? russianWords : [];
   
   const estonianCount = words.filter(word => estonianWords.includes(word)).length;
   const spanishCount = words.filter(word => spanishWords.includes(word)).length;
@@ -1449,16 +1982,49 @@ const analyzeContentLanguage = (content: string, language: Language): 'english' 
   // If only English, it's English
   if (englishCount > 0 && targetCount === 0) return 'english';
   
+  // If no clear language indicators but has some words, treat as mixed for safety
+  if (words.length > 3 && (englishCount === 0 && targetCount === 0)) {
+    return 'mixed';
+  }
+  
   return 'english';
 };
 
 // Function to translate AI-generated content
 export const translateAIContent = (content: string, language: Language): string => {
+  // Handle undefined, null, or empty content
+  if (!content || typeof content !== 'string') {
+    return content || '';
+  }
+  
   if (language === 'en') {
     return content; // No translation needed for English
   }
   
-  // Analyze the content language state
+  // For Estonian, always try to fix broken words first, then translate
+  if (language === 'et') {
+    // First fix any broken words
+    let fixed = fixBrokenTranslation(content, language);
+    
+    // Then translate English parts more carefully
+    const translations = aiContentTranslations[language];
+    if (translations) {
+      // Translate phrases first (longer matches), then individual words
+      const sortedKeys = Object.keys(translations).sort((a, b) => b.length - a.length);
+      
+      for (const key of sortedKeys) {
+        // Translate all words and phrases, but be careful with very short words
+        if (key.split(' ').length >= 2 || key.length >= 3) {
+          const regex = new RegExp('\\b' + key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b', 'gi');
+          fixed = fixed.replace(regex, translations[key]);
+        }
+      }
+    }
+    
+    return fixed;
+  }
+  
+  // For other languages, use the original logic
   const contentState = analyzeContentLanguage(content, language);
   
   // Handle different content states
@@ -1496,7 +2062,61 @@ const fixBrokenTranslation = (content: string, language: Language): string => {
       .replace(/\bthon\b/g, 'see')
       .replace(/\binfvõimation\b/g, 'informatsiooni')
       .replace(/\bkäsitlemont\b/g, 'käsitlemise')
-      .replace(/\bvestlustes\b/g, 'vestlustes'); // This one might be correct, keeping as is
+      .replace(/\bvestlustes\b/g, 'vestlustes')
+      // Additional broken patterns from the user's example
+      .replace(/\bstraightfvõiward\b/g, 'otsekohene')
+      .replace(/\bsuhtlemone\b/g, 'suhtlemise')
+      .replace(/\bmvõie\b/g, 'rohkem')
+      .replace(/\bunderstja\b/g, 'mõista')
+      .replace(/\bklienti\b/g, 'klientide')
+      .replace(/\bvajadusi\b/g, 'vajadusi')
+      .replace(/\bclear\b/g, 'selge')
+      .replace(/\bengaging\b/g, 'huvitav')
+      .replace(/\bvaried\b/g, 'mitmekesine')
+      .replace(/\bvocabulary\b/g, 'sõnavara')
+      .replace(/\bsentence\b/g, 'lausete')
+      .replace(/\bstructure\b/g, 'struktuur')
+      .replace(/\bconversations\b/g, 'vestlused')
+      .replace(/\binteresting\b/g, 'huvitavamad')
+      .replace(/\bDoncovery\b/g, 'Avastamine')
+      .replace(/\bpone\b/g, 'oskused')
+      .replace(/\bPresentation\b/g, 'Esitlus')
+      .replace(/\bproducts\b/g, 'toodete')
+      .replace(/\bVastuväidete\b/g, 'Vastuväidete')
+      .replace(/\bkäsitlemine\b/g, 'käsitlemine')
+      .replace(/\bClosing\b/g, 'Sulgemine')
+      .replace(/\btechnique\b/g, 'tehnikad')
+      .replace(/\bPractice\b/g, 'Harjuta')
+      .replace(/\basking\b/g, 'küsimuste')
+      .replace(/\bavatud\b/g, 'avatud')
+      .replace(/\bküsimusi\b/g, 'küsimusi')
+      .replace(/\bPrepon\b/g, 'Valmista')
+      .replace(/\bdetailed\b/g, 'üksikasjalik')
+      .replace(/\bproduct\b/g, 'toodete')
+      .replace(/\binfvõimatsiooni\b/g, 'informatsiooni')
+      .replace(/\bDevelop\b/g, 'Arenda')
+      .replace(/\bvastuseid\b/g, 'vastuseid')
+      .replace(/\bfvõi\b/g, 'tavalistele')
+      .replace(/\bcommon\b/g, 'tavalistele')
+      .replace(/\bobjections\b/g, 'vastuväidetele')
+      .replace(/\bÕpi\b/g, 'Õpi')
+      .replace(/\bja\b/g, 'ja')
+      .replace(/\bharjuta\b/g, 'harjuta')
+      .replace(/\bsulgemine\b/g, 'sulgemise')
+      .replace(/\btehnikaid\b/g, 'tehnikaid')
+      // Additional broken patterns from the user's latest example
+      .replace(/\bsonsejuhatuss\b/g, 'sissejuhatus')
+      .replace(/\büldinely\b/g, 'üldiselt')
+      .replace(/\bimpvõitant\b/g, 'oluline')
+      .replace(/\bconcone\b/g, 'konkreetne')
+      .replace(/\bhjaling\b/g, 'käsitlemine')
+      .replace(/\bvalmontuge\b/g, 'valmistuge')
+      .replace(/\bdeconion\b/g, 'otsuse')
+      .replace(/\beeloneid\b/g, 'eeliseid')
+      .replace(/\bküsimont\b/g, 'küsimust')
+      .replace(/\bmõonta\b/g, 'mitu')
+      .replace(/\bvõiks\b/g, 'võiks')
+      .replace(/\bjaoks\b/g, 'jaoks');
     return fixed;
   }
   return content;
@@ -1510,7 +2130,10 @@ const translateMixedContent = (content: string, language: Language): string => {
   
   let translatedContent = content;
   
-  // Translate sentence by sentence, being more conservative
+  // First, try to fix any broken words that might be present
+  translatedContent = fixBrokenTranslation(translatedContent, language);
+  
+  // Translate sentence by sentence, being more aggressive for mixed content
   const sentences = content.split(/[.!?]+/).filter(s => s.trim());
   
   for (const sentence of sentences) {
@@ -1522,14 +2145,14 @@ const translateMixedContent = (content: string, language: Language): string => {
       continue;
     }
     
-    // For mixed content, only translate if we're confident
+    // For mixed content, translate both phrases and individual words
     let translatedSentence = trimmedSentence;
     const sortedKeys = Object.keys(translations).sort((a, b) => b.length - a.length);
     
     for (const key of sortedKeys) {
-      // Only translate if it's a complete phrase (3+ words) to avoid breaking grammar
-      if (key.split(' ').length >= 3 && translatedSentence.includes(key)) {
-        translatedSentence = translatedSentence.replace(new RegExp(key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), translations[key]);
+      // Translate phrases (2+ words) and important single words
+      if (key.split(' ').length >= 2 || ['clear', 'engaging', 'interesting', 'detailed', 'specific', 'common', 'effective', 'professional', 'strong', 'good', 'better', 'improve', 'practice', 'develop', 'focus', 'work', 'ask', 'provide', 'mention', 'try', 'remember', 'anticipate', 'guide', 'summarize'].includes(key.toLowerCase())) {
+        translatedSentence = translatedSentence.replace(new RegExp(key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'), translations[key]);
       }
     }
     

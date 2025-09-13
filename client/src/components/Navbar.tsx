@@ -45,7 +45,7 @@ const Navbar: React.FC = () => {
                   <Link to="/conversation-summaries" className={getNavLinkClasses('/conversation-summaries')}>Summaries</Link>
                   <Link to="/profile" className={getNavLinkClasses('/profile')}>{t('profile')}</Link>
                   {user.companyId && (
-                    <Link to="/company" className={getNavLinkClasses('/company')}>Company</Link>
+                    <Link to="/company" className={getNavLinkClasses('/company')}>{t('companyNav')}</Link>
                   )}
                   {(user.role === 'super_admin' || user.role === 'admin' || user.isSuperAdmin || user.isAdmin) && (
                     <Link to="/admin" className={getNavLinkClasses('/admin')}>Admin</Link>
@@ -122,7 +122,7 @@ const Navbar: React.FC = () => {
                     <Link to="/conversation-summaries" className={getNavLinkClasses('/conversation-summaries')} onClick={() => setOpen(false)}>Summaries</Link>
                     <Link to="/profile" className={getNavLinkClasses('/profile')} onClick={() => setOpen(false)}>{t('profile')}</Link>
                     {user.companyId && (
-                      <Link to="/company" className={getNavLinkClasses('/company')} onClick={() => setOpen(false)}>Company</Link>
+                      <Link to="/company" className={getNavLinkClasses('/company')} onClick={() => setOpen(false)}>{t('companyNav')}</Link>
                     )}
                     {(user.role === 'super_admin' || user.role === 'admin' || user.isSuperAdmin || user.isAdmin) && (
                       <Link to="/admin" className={getNavLinkClasses('/admin')} onClick={() => setOpen(false)}>Admin</Link>
