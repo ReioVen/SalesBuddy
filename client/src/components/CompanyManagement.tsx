@@ -207,23 +207,23 @@ const CompanyManagement: React.FC = () => {
               {/* Stats Cards */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="bg-blue-50 rounded-lg p-4">
-                  <h3 className="text-lg font-semibold text-blue-900">Total Users</h3>
+                  <h3 className="text-lg font-semibold text-blue-900">{t('totalUsers')}</h3>
                   <p className="text-3xl font-bold text-blue-600">{company.users.length}</p>
-                  <p className="text-sm text-blue-700">Max: {company.subscription.maxUsers}</p>
+                  <p className="text-sm text-blue-700">{t('max')}: {company.subscription.maxUsers}</p>
                 </div>
                 <div className="bg-green-50 rounded-lg p-4">
-                  <h3 className="text-lg font-semibold text-green-900">Teams</h3>
+                  <h3 className="text-lg font-semibold text-green-900">{t('teams')}</h3>
                   <p className="text-3xl font-bold text-green-600">{company.teams.length}</p>
                 </div>
                 <div className="bg-purple-50 rounded-lg p-4">
-                  <h3 className="text-lg font-semibold text-purple-900">Subscription</h3>
+                  <h3 className="text-lg font-semibold text-purple-900">{t('subscription')}</h3>
                   <p className="text-2xl font-bold text-purple-600 capitalize">{company.subscription.plan}</p>
                 </div>
               </div>
 
               {/* Recent Users */}
               <div className="bg-gray-50 rounded-lg p-4">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Users</h3>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('recentUsers')}</h3>
                 <div className="overflow-x-auto">
                   <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
@@ -238,7 +238,7 @@ const CompanyManagement: React.FC = () => {
                           {t('role')}
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Joined
+                          {t('joined')}
                         </th>
                       </tr>
                     </thead>
@@ -276,9 +276,9 @@ const CompanyManagement: React.FC = () => {
 
               {/* Teams Overview */}
               <div className="bg-gray-50 rounded-lg p-4">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Teams</h3>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('teams')}</h3>
                 {company.teams.length === 0 ? (
-                  <p className="text-gray-500">No teams created yet.</p>
+                  <p className="text-gray-500">{t('noTeamsCreated')}</p>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {company.teams.map((team) => (
@@ -288,7 +288,7 @@ const CompanyManagement: React.FC = () => {
                           <p className="text-sm text-gray-500 mt-1">{team.description}</p>
                         )}
                         <p className="text-sm text-gray-500 mt-2">
-                          {team.members.length} member{team.members.length !== 1 ? 's' : ''}
+                          {team.members.length} {team.members.length !== 1 ? t('members') : t('member')}
                         </p>
                       </div>
                     ))}
@@ -301,7 +301,7 @@ const CompanyManagement: React.FC = () => {
           {activeTab === 'users' && (
             <div className="space-y-6">
               <div className="flex justify-between items-center">
-                <h2 className="text-xl font-semibold text-gray-900">Company Users</h2>
+                <h2 className="text-xl font-semibold text-gray-900">{t('companyUsers')}</h2>
                 {/* Only company admins can add users */}
                 {user?.role === 'company_admin' && (
                   <button 
@@ -339,19 +339,19 @@ const CompanyManagement: React.FC = () => {
                     <thead className="bg-gray-50">
                       <tr>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Name
+                          {t('name')}
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Email
+                          {t('email')}
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Role
+                          {t('role')}
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Team
+                          {t('team')}
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Actions
+                          {t('actions')}
                         </th>
                       </tr>
                     </thead>
@@ -374,13 +374,13 @@ const CompanyManagement: React.FC = () => {
                                 ? 'bg-blue-100 text-blue-800'
                                 : 'bg-gray-100 text-gray-800'
                             }`}>
-                              {companyUser.isCompanyAdmin ? 'Admin' : companyUser.isTeamLeader ? 'Team Leader' : 'User'}
+                              {companyUser.isCompanyAdmin ? t('admin') : companyUser.isTeamLeader ? t('teamLeader') : t('user')}
                             </span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                             {companyUser.teamId ? 
-                              (company.teams.find(team => team._id === companyUser.teamId)?.name?.substring(0, 10) || 'Unknown') 
-                              : 'No Team'
+                              (company.teams.find(team => team._id === companyUser.teamId)?.name?.substring(0, 10) || t('unknown')) 
+                              : t('noTeam')
                             }
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
@@ -391,7 +391,7 @@ const CompanyManagement: React.FC = () => {
                                   onClick={() => handleViewUser(companyUser)}
                                   className="text-green-600 hover:text-green-900"
                                 >
-                                  View Details
+                                  {t('viewDetails')}
                                 </button>
                               )}
                               
@@ -402,13 +402,13 @@ const CompanyManagement: React.FC = () => {
                                     onClick={() => handleEditUser(companyUser)}
                                     className="text-blue-600 hover:text-blue-900"
                                   >
-                                    Edit
+                                    {t('edit')}
                                   </button>
                                   <button 
                                     onClick={() => handleDeleteUser(companyUser._id)}
                                     className="text-red-600 hover:text-red-900"
                                   >
-                                    Delete
+                                    {t('delete')}
                                   </button>
                                 </>
                               )}
@@ -431,13 +431,13 @@ const CompanyManagement: React.FC = () => {
           {activeTab === 'teams' && (
             <div className="space-y-6">
               <div className="flex justify-between items-center">
-                <h2 className="text-xl font-semibold text-gray-900">Teams</h2>
+                <h2 className="text-xl font-semibold text-gray-900">{t('teams')}</h2>
                 {user?.role === 'company_admin' && (
                   <button 
                     onClick={() => setShowCreateTeam(!showCreateTeam)}
                     className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
                   >
-                    {showCreateTeam ? 'Cancel' : 'Create Team'}
+                    {showCreateTeam ? t('cancel') : t('createTeam')}
                   </button>
                 )}
               </div>
@@ -478,13 +478,13 @@ const CompanyManagement: React.FC = () => {
                               onClick={() => handleEditTeam(team)}
                               className="text-blue-600 hover:text-blue-900 text-sm"
                             >
-                              Edit
+                              {t('edit')}
                             </button>
                             <button 
                               onClick={() => handleDeleteTeam(team._id)}
                               className="text-red-600 hover:text-red-900 text-sm"
                             >
-                              Delete
+                              {t('delete')}
                             </button>
                           </div>
                         )}
@@ -492,7 +492,7 @@ const CompanyManagement: React.FC = () => {
                       
                       <div className="space-y-3">
                         <div>
-                          <h4 className="text-sm font-medium text-gray-700 mb-2">Team Leader</h4>
+                          <h4 className="text-sm font-medium text-gray-700 mb-2">{t('teamLeader')}</h4>
                           {team.teamLeader ? (
                             <div>
                               <p className="text-sm text-gray-900 font-medium">
@@ -501,14 +501,14 @@ const CompanyManagement: React.FC = () => {
                               <p className="text-xs text-gray-500">{team.teamLeader.email}</p>
                             </div>
                           ) : (
-                            <p className="text-sm text-gray-500">No team leader assigned</p>
+                            <p className="text-sm text-gray-500">{t('noTeamLeaderAssigned')}</p>
                           )}
                         </div>
                         
                         <div>
-                          <h4 className="text-sm font-medium text-gray-700 mb-2">Members ({team.members.length})</h4>
+                          <h4 className="text-sm font-medium text-gray-700 mb-2">{t('members')} ({team.members.length})</h4>
                           <p className="text-sm text-gray-600">
-                            {team.members.length} member{team.members.length !== 1 ? 's' : ''}
+                            {team.members.length} {team.members.length !== 1 ? t('members') : t('member')}
                           </p>
                         </div>
                         
@@ -519,7 +519,7 @@ const CompanyManagement: React.FC = () => {
                               onClick={() => setManagingTeam(team)}
                               className="text-blue-600 hover:text-blue-900 text-sm"
                             >
-                              Manage Members
+                              {t('manageMembers')}
                             </button>
                           </div>
                         )}
@@ -529,8 +529,8 @@ const CompanyManagement: React.FC = () => {
                   
                   {company.teams.length === 0 && (
                     <div className="col-span-full text-center py-12">
-                      <p className="text-gray-500">No teams created yet.</p>
-                      <p className="text-sm text-gray-400 mt-1">Create your first team to get started.</p>
+                      <p className="text-gray-500">{t('noTeamsCreated')}</p>
+                      <p className="text-sm text-gray-400 mt-1">{t('createFirstTeam')}</p>
                     </div>
                   )}
                 </div>

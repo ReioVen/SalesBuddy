@@ -348,6 +348,11 @@ router.post('/users', authenticateToken, canManageUsers, [
     // Add user to team if specified
     if (team) {
       await company.addUserToTeam(user._id, finalTeamName);
+      
+      // If user is a team leader, set them as the team leader
+      if (role === 'company_team_leader') {
+        await company.setTeamLeader(user._id, finalTeamName);
+      }
     }
 
     res.status(201).json({
@@ -741,6 +746,11 @@ router.post('/users/add', authenticateToken, requireCompanyAdmin, [
     // Add user to team if specified
     if (teamId) {
       await company.addUserToTeam(newUser._id, team.name);
+      
+      // If user is a team leader, set them as the team leader
+      if (role === 'company_team_leader') {
+        await company.setTeamLeader(newUser._id, team.name);
+      }
     }
 
     res.status(201).json({
