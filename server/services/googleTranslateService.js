@@ -55,24 +55,25 @@ class GoogleTranslateService {
       // Add context to improve translation quality
       const contextualText = this.addContext(text, context);
       
+      // For AI insights, ensure we're translating complete sentences
+      const finalText = this.ensureCompleteSentenceTranslation(contextualText, context);
+      
       console.log('Making Google Translate API request:', {
         url: this.baseUrl,
-        text: contextualText,
+        text: finalText,
         targetLanguage,
         context,
         apiKeyLength: this.apiKey ? this.apiKey.length : 0
       });
       
       const response = await axios.post(this.baseUrl, {
-        q: contextualText,
+        q: finalText,
         target: targetLanguage,
         source: 'en',
         format: 'text',
-        model: 'nmt' // Use Neural Machine Translation
+        model: 'nmt', // Use Neural Machine Translation
+        key: this.apiKey
       }, {
-        params: {
-          key: this.apiKey
-        },
         headers: {
           'Content-Type': 'application/json'
         }
@@ -117,11 +118,33 @@ class GoogleTranslateService {
       'improvement_suggestion': 'Improvement suggestion: ',
       'strength_comment': 'Strength comment: ',
       'stage_rating': 'Sales stage rating feedback: ',
+      'personalityInsights': 'Personality analysis: ',
+      'communicationStyle': 'Communication style analysis: ',
+      'recommendedFocus': 'Recommended focus area: ',
+      'nextSteps': 'Next step: ',
       'general': ''
     };
 
     const prefix = contextPrefixes[context] || '';
     return prefix + text;
+  }
+
+  /**
+   * Ensure complete sentence translation for AI insights
+   * @param {string} text - Text to prepare for translation
+   * @param {string} context - Context type
+   * @returns {string} Text prepared for complete translation
+   */
+  ensureCompleteSentenceTranslation(text, context) {
+    // For AI insights, add instructions to translate the entire text as one unit
+    const aiInsightContexts = ['personalityInsights', 'communicationStyle', 'recommendedFocus', 'nextSteps', 'sales_feedback', 'improvement_suggestion'];
+    
+    if (aiInsightContexts.includes(context)) {
+      // Add instruction to translate the complete text as one unit
+      return `Translate this complete text as one unit: ${text}`;
+    }
+    
+    return text;
   }
 
   /**
@@ -187,7 +210,21 @@ class GoogleTranslateService {
     if (!pattern) return false;
 
     // If text contains target language characters, it's likely already translated
-    return pattern.test(text);
+    const hasTargetChars = pattern.test(text);
+    
+    // Additional check: if more than 30% of characters are target language specific, consider it translated
+    if (hasTargetChars) {
+      const targetCharCount = (text.match(pattern) || []).length;
+      const totalChars = text.length;
+      const targetCharPercentage = (targetCharCount / totalChars) * 100;
+      
+      if (targetCharPercentage > 5) { // Lower threshold for better detection
+        console.log(`Text appears to be in ${targetLanguage} (${targetCharPercentage.toFixed(1)}% target chars): "${text}"`);
+        return true;
+      }
+    }
+
+    return false;
   }
 }
 

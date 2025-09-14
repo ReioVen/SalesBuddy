@@ -959,7 +959,7 @@ class MultiLanguageTranslationService {
 
     // For AI-generated content (personality insights, communication style, etc.), 
     // skip static translations and use Google Translate for full sentence translation
-    const aiContentContexts = ['sales_feedback', 'personalityInsights', 'communicationStyle', 'recommendedFocus', 'nextSteps'];
+    const aiContentContexts = ['sales_feedback', 'personalityInsights', 'communicationStyle', 'recommendedFocus', 'nextSteps', 'strength_comment', 'improvement_suggestion', 'stage_rating'];
     
     if (aiContentContexts.includes(context)) {
       console.log(`Using Google Translate for AI content: "${text}" (${targetLanguage}, context: ${context})`);

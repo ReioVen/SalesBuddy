@@ -436,14 +436,24 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, onClose }) => {
                                 {summary.aiAnalysis.personalityInsights && (
                                   <div className="bg-blue-50 rounded-lg p-3">
                                     <h5 className="text-sm font-medium text-blue-900 mb-1">{t('personalityInsights')}:</h5>
-                                    <p className="text-sm text-blue-800">{translateAIContent(summary.aiAnalysis.personalityInsights, language)}</p>
+                                    <p className="text-sm text-blue-800">
+                                      {summary.translations && summary.translations[language] && summary.translations[language].aiAnalysis?.personalityInsights 
+                                        ? summary.translations[language].aiAnalysis.personalityInsights
+                                        : translateAIContent(summary.aiAnalysis.personalityInsights, language)
+                                      }
+                                    </p>
                                   </div>
                                 )}
                                 
                                 {summary.aiAnalysis.communicationStyle && (
                                   <div className="bg-green-50 rounded-lg p-3">
                                     <h5 className="text-sm font-medium text-green-900 mb-1">{t('communicationStyle')}:</h5>
-                                    <p className="text-sm text-green-800">{translateAIContent(summary.aiAnalysis.communicationStyle, language)}</p>
+                                    <p className="text-sm text-green-800">
+                                      {summary.translations && summary.translations[language] && summary.translations[language].aiAnalysis?.communicationStyle 
+                                        ? summary.translations[language].aiAnalysis.communicationStyle
+                                        : translateAIContent(summary.aiAnalysis.communicationStyle, language)
+                                      }
+                                    </p>
                                   </div>
                                 )}
                                 
@@ -451,10 +461,13 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, onClose }) => {
                                   <div className="bg-yellow-50 rounded-lg p-3">
                                     <h5 className="text-sm font-medium text-yellow-900 mb-1">{t('recommendedFocusAreas')}:</h5>
                                     <ul className="text-sm text-yellow-800 space-y-1">
-                                      {summary.aiAnalysis.recommendedFocus.map((focus, index) => (
+                                      {(summary.translations && summary.translations[language] && summary.translations[language].aiAnalysis?.recommendedFocus 
+                                        ? summary.translations[language].aiAnalysis.recommendedFocus
+                                        : summary.aiAnalysis.recommendedFocus
+                                      ).map((focus, index) => (
                                         <li key={index} className="flex items-start">
                                           <span className="text-yellow-600 mr-2">•</span>
-                                          {translateAIContent(focus, language)}
+                                          {focus}
                                         </li>
                                       ))}
                                     </ul>
@@ -465,10 +478,13 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, onClose }) => {
                                   <div className="bg-purple-50 rounded-lg p-3">
                                     <h5 className="text-sm font-medium text-purple-900 mb-1">{t('nextSteps')}:</h5>
                                     <ul className="text-sm text-purple-800 space-y-1">
-                                      {summary.aiAnalysis.nextSteps.map((step, index) => (
+                                      {(summary.translations && summary.translations[language] && summary.translations[language].aiAnalysis?.nextSteps 
+                                        ? summary.translations[language].aiAnalysis.nextSteps
+                                        : summary.aiAnalysis.nextSteps
+                                      ).map((step, index) => (
                                         <li key={index} className="flex items-start">
                                           <span className="text-purple-600 mr-2">•</span>
-                                          {translateAIContent(step, language)}
+                                          {step}
                                         </li>
                                       ))}
                                     </ul>

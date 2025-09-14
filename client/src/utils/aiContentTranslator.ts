@@ -218,6 +218,23 @@ const aiContentTranslations = {
     'or': 'või',
     'an': 'üks',
     'engaging': 'põnev',
+    
+    // Additional English words that need Estonian translation
+    'professional': 'professionaalne',
+    'respectful': 'väärikas',
+    'suhtlemise stiil': 'suhtlemisstiil',
+    'direct': 'otse',
+    'approach': 'lähenemine',
+    'discovery': 'avastamine',
+    'küsimusi': 'küsimused',
+    'objection': 'vastuväide',
+    'vastuseid': 'vastused',
+    'study': 'õpi',
+    'work on': 'tööta',
+    'skills': 'oskused',
+    'sulgemine': 'sulgemine',
+    'practice': 'harjuta',
+    'techniques': 'tehnikad',
     'hook': 'külg',
     'Try': 'Proovi',
     'try': 'proovi',
@@ -2013,8 +2030,8 @@ export const translateAIContent = (content: string, language: Language): string 
       const sortedKeys = Object.keys(translations).sort((a, b) => b.length - a.length);
       
       for (const key of sortedKeys) {
-        // Translate all words and phrases, but be careful with very short words
-        if (key.split(' ').length >= 2 || key.length >= 3) {
+        // Translate all words and phrases, including short words for better coverage
+        if (key.split(' ').length >= 2 || key.length >= 2) {
           const regex = new RegExp('\\b' + key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b', 'gi');
           fixed = fixed.replace(regex, translations[key]);
         }
