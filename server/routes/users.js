@@ -2,6 +2,7 @@ const express = require('express');
 const { body, validationResult } = require('express-validator');
 const User = require('../models/User');
 const Conversation = require('../models/Conversation');
+const ConversationSummary = require('../models/ConversationSummary');
 const { authenticateToken } = require('../middleware/auth');
 
 const router = express.Router();
@@ -200,35 +201,47 @@ router.get('/export', authenticateToken, async (req, res) => {
   }
 });
 
-// Delete user account
-router.delete('/account', authenticateToken, [
-  body('password').notEmpty()
-], async (req, res) => {
+// Delete user account and all associated data
+router.delete('/delete-account', authenticateToken, async (req, res) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
+    const userId = req.user._id;
+    
+    console.log(`Starting account deletion for user: ${userId}`);
+
+    // Delete all user's conversations
+    const deletedConversations = await Conversation.deleteMany({ userId });
+    console.log(`Deleted ${deletedConversations.deletedCount} conversations`);
+
+    // Delete all user's conversation summaries
+    const deletedSummaries = await ConversationSummary.deleteMany({ userId });
+    console.log(`Deleted ${deletedSummaries.deletedCount} conversation summaries`);
+
+    // Delete the user account
+    const deletedUser = await User.findByIdAndDelete(userId);
+    if (!deletedUser) {
+      return res.status(404).json({ error: 'User not found' });
     }
+    console.log(`Deleted user account: ${deletedUser.email}`);
 
-    const { password } = req.body;
+    // Log the deletion for audit purposes
+    console.log(`Account deletion completed for user: ${userId} (${deletedUser.email})`);
 
-    // Verify password
-    const isPasswordValid = await req.user.comparePassword(password);
-    if (!isPasswordValid) {
-      return res.status(400).json({ error: 'Password is incorrect' });
-    }
-
-    // Soft delete user and conversations
-    await User.findByIdAndUpdate(req.user._id, { isActive: false });
-    await Conversation.updateMany(
-      { userId: req.user._id },
-      { isActive: false }
-    );
-
-    res.json({ message: 'Account deleted successfully' });
+    res.json({ 
+      success: true,
+      message: 'Account and all associated data deleted successfully',
+      deletedData: {
+        conversations: deletedConversations.deletedCount,
+        summaries: deletedSummaries.deletedCount,
+        user: true
+      }
+    });
   } catch (error) {
     console.error('Delete account error:', error);
-    res.status(500).json({ error: 'Failed to delete account' });
+    res.status(500).json({ 
+      success: false,
+      error: 'Failed to delete account',
+      message: 'An error occurred while deleting your account. Please try again or contact support.'
+    });
   }
 });
 

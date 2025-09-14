@@ -406,6 +406,19 @@ export const translations = {
     startPracticingNow: 'Start Practicing Now',
     startFreeTrial: 'Start Free Trial',
     viewPlans: 'View Plans',
+
+    // Account Deletion
+    deleteAccount: 'Delete Account',
+    deleteAccountDescription: 'Permanently delete your account and all associated data. This action cannot be undone.',
+    deleteAccountWarning: 'Warning: This will permanently delete your account, all conversations, summaries, and data. This action cannot be undone.',
+    confirmDeleteAccount: 'Confirm Account Deletion',
+    typeDeleteToConfirm: 'Type "DELETE" to confirm account deletion',
+    deleteAccountButton: 'Delete My Account',
+    accountDeletedSuccessfully: 'Account deleted successfully',
+    failedToDeleteAccount: 'Failed to delete account',
+    deleteAccountConfirmation: 'Are you absolutely sure you want to delete your account? This action cannot be undone and will permanently remove all your data.',
+    cancel: 'Cancel',
+    confirm: 'Confirm',
   },
   et: {
     // Navigation
@@ -812,6 +825,19 @@ export const translations = {
     startPracticingNow: 'Alusta Harjutamist Kohe',
     startFreeTrial: 'Alusta Tasuta Katsetust',
     viewPlans: 'Vaata Plaane',
+
+    // Account Deletion
+    deleteAccount: 'Kustuta Konto',
+    deleteAccountDescription: 'Kustuta oma konto ja kõik seotud andmed jäädavalt. Seda tegevust ei saa tagasi võtta.',
+    deleteAccountWarning: 'Hoiatus: See kustutab teie konto, kõik vestlused, kokkuvõtted ja andmed jäädavalt. Seda tegevust ei saa tagasi võtta.',
+    confirmDeleteAccount: 'Kinnita Konto Kustutamine',
+    typeDeleteToConfirm: 'Kirjuta "DELETE" konto kustutamise kinnitamiseks',
+    deleteAccountButton: 'Kustuta Minu Konto',
+    accountDeletedSuccessfully: 'Konto kustutatud edukalt',
+    failedToDeleteAccount: 'Konto kustutamine ebaõnnestus',
+    deleteAccountConfirmation: 'Kas olete kindel, et soovite oma konto kustutada? Seda tegevust ei saa tagasi võtta ja see eemaldab kõik teie andmed jäädavalt.',
+    cancel: 'Tühista',
+    confirm: 'Kinnita',
   },
   es: {
     // Navigation
@@ -1218,6 +1244,19 @@ export const translations = {
     startPracticingNow: 'Comenzar a Practicar Ahora',
     startFreeTrial: 'Comenzar Prueba Gratuita',
     viewPlans: 'Ver Planes',
+
+    // Account Deletion
+    deleteAccount: 'Eliminar Cuenta',
+    deleteAccountDescription: 'Eliminar permanentemente tu cuenta y todos los datos asociados. Esta acción no se puede deshacer.',
+    deleteAccountWarning: 'Advertencia: Esto eliminará permanentemente tu cuenta, todas las conversaciones, resúmenes y datos. Esta acción no se puede deshacer.',
+    confirmDeleteAccount: 'Confirmar Eliminación de Cuenta',
+    typeDeleteToConfirm: 'Escribe "DELETE" para confirmar la eliminación de la cuenta',
+    deleteAccountButton: 'Eliminar Mi Cuenta',
+    accountDeletedSuccessfully: 'Cuenta eliminada exitosamente',
+    failedToDeleteAccount: 'Error al eliminar la cuenta',
+    deleteAccountConfirmation: '¿Estás absolutamente seguro de que quieres eliminar tu cuenta? Esta acción no se puede deshacer y eliminará permanentemente todos tus datos.',
+    cancel: 'Cancelar',
+    confirm: 'Confirmar',
   },
   ru: {
     // Navigation
@@ -1624,6 +1663,19 @@ export const translations = {
     startPracticingNow: 'Начать Практику Сейчас',
     startFreeTrial: 'Начать Бесплатную Пробную Версию',
     viewPlans: 'Посмотреть Планы',
+
+    // Account Deletion
+    deleteAccount: 'Удалить Аккаунт',
+    deleteAccountDescription: 'Навсегда удалить ваш аккаунт и все связанные данные. Это действие нельзя отменить.',
+    deleteAccountWarning: 'Предупреждение: Это навсегда удалит ваш аккаунт, все разговоры, резюме и данные. Это действие нельзя отменить.',
+    confirmDeleteAccount: 'Подтвердить Удаление Аккаунта',
+    typeDeleteToConfirm: 'Введите "DELETE" для подтверждения удаления аккаунта',
+    deleteAccountButton: 'Удалить Мой Аккаунт',
+    accountDeletedSuccessfully: 'Аккаунт успешно удален',
+    failedToDeleteAccount: 'Не удалось удалить аккаунт',
+    deleteAccountConfirmation: 'Вы абсолютно уверены, что хотите удалить свой аккаунт? Это действие нельзя отменить и оно навсегда удалит все ваши данные.',
+    cancel: 'Отмена',
+    confirm: 'Подтвердить',
   },
 };
 

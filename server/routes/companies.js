@@ -99,13 +99,120 @@ router.post('/create', authenticateToken, [
   }
 });
 
+// Get company details (current user's company or all companies for super admin)
+router.get('/details', authenticateToken, async (req, res) => {
+  console.log('🔍 [COMPANIES] /details route hit');
+  console.log('🔍 [COMPANIES] User:', {
+    id: req.user._id,
+    email: req.user.email,
+    role: req.user.role,
+    companyId: req.user.companyId,
+    isSuperAdmin: req.user.isSuperAdmin
+  });
+  
+  try {
+    // If user is super admin, return all companies
+    if (req.user.isSuperAdminUser()) {
+      console.log('🔍 [COMPANIES] Super admin - fetching all companies');
+      const companies = await Company.find({})
+        .populate('admin', 'firstName lastName email')
+        .populate('users', 'firstName lastName email role teamId')
+        .populate('teams.members', 'firstName lastName email')
+        .populate('teams.teamLeader', 'firstName lastName email')
+        .sort({ createdAt: -1 });
+
+      console.log('✅ [COMPANIES] Found', companies.length, 'companies for super admin');
+
+      return res.json({
+        companies: companies.map(company => ({
+          id: company._id,
+          name: company.name,
+          companyId: company.companyId,
+          description: company.description,
+          industry: company.industry,
+          size: company.size,
+          admin: company.admin,
+          users: company.users,
+          teams: company.teams,
+          subscription: company.subscription,
+          settings: company.settings,
+          isActive: company.isActive,
+          createdAt: company.createdAt
+        }))
+      });
+    }
+
+    // Regular users - get their own company
+    if (!req.user.companyId) {
+      console.log('❌ [COMPANIES] User does not belong to any company');
+      return res.status(404).json({ error: 'User does not belong to any company' });
+    }
+    
+    console.log('🔍 [COMPANIES] Looking for company with ID:', req.user.companyId);
+
+    const company = await Company.findById(req.user.companyId)
+      .populate('admin', 'firstName lastName email')
+      .populate('users', 'firstName lastName email role teamId')
+      .populate('teams.members', 'firstName lastName email')
+      .populate('teams.teamLeader', 'firstName lastName email');
+
+    if (!company) {
+      console.log('❌ [COMPANIES] Company not found with ID:', req.user.companyId);
+      return res.status(404).json({ error: 'Company not found' });
+    }
+
+    console.log('✅ [COMPANIES] Company found:', {
+      id: company._id,
+      name: company.name,
+      companyId: company.companyId,
+      userCount: company.users?.length || 0,
+      teamCount: company.teams?.length || 0
+    });
+
+    res.json({
+      company: {
+        id: company._id,
+        name: company.name,
+        companyId: company.companyId,
+        description: company.description,
+        industry: company.industry,
+        size: company.size,
+        admin: company.admin,
+        users: company.users,
+        teams: company.teams,
+        subscription: company.subscription,
+        settings: company.settings,
+        isActive: company.isActive,
+        createdAt: company.createdAt
+      }
+    });
+  } catch (error) {
+    console.error('❌ [COMPANIES] Get company error:', error);
+    console.error('❌ [COMPANIES] Error details:', {
+      message: error.message,
+      stack: error.stack,
+      userCompanyId: req.user?.companyId
+    });
+    res.status(500).json({ error: 'Failed to get company details' });
+  }
+});
+
 // Get company details by ID (for company management)
 router.get('/:id', authenticateToken, async (req, res) => {
+  console.log('🔍 [COMPANIES] /:id route hit with ID:', req.params.id);
+  console.log('🔍 [COMPANIES] User:', {
+    id: req.user._id,
+    email: req.user.email,
+    role: req.user.role,
+    companyId: req.user.companyId
+  });
+  
   try {
     const companyId = req.params.id;
     
     // Check if user has access to this company
     if (req.user.companyId?.toString() !== companyId && !req.user.isSuperAdminUser() && !req.user.isAdminUser()) {
+      console.log('❌ [COMPANIES] Access denied to company:', companyId);
       return res.status(403).json({ error: 'Access denied to this company' });
     }
 
@@ -135,46 +242,6 @@ router.get('/:id', authenticateToken, async (req, res) => {
   } catch (error) {
     console.error('Get company error:', error);
     res.status(500).json({ error: 'Failed to fetch company data' });
-  }
-});
-
-// Get company details (current user's company)
-router.get('/details', authenticateToken, async (req, res) => {
-  try {
-    if (!req.user.companyId) {
-      return res.status(404).json({ error: 'User does not belong to any company' });
-    }
-
-    const company = await Company.findById(req.user.companyId)
-      .populate('admin', 'firstName lastName email')
-      .populate('users', 'firstName lastName email role teamId')
-      .populate('teams.members', 'firstName lastName email')
-      .populate('teams.teamLeader', 'firstName lastName email');
-
-    if (!company) {
-      return res.status(404).json({ error: 'Company not found' });
-    }
-
-    res.json({
-      company: {
-        id: company._id,
-        name: company.name,
-        companyId: company.companyId,
-        description: company.description,
-        industry: company.industry,
-        size: company.size,
-        admin: company.admin,
-        users: company.users,
-        teams: company.teams,
-        subscription: company.subscription,
-        settings: company.settings,
-        isActive: company.isActive,
-        createdAt: company.createdAt
-      }
-    });
-  } catch (error) {
-    console.error('Get company error:', error);
-    res.status(500).json({ error: 'Failed to get company details' });
   }
 });
 
@@ -636,16 +703,34 @@ router.delete('/users/:userId', authenticateToken, requireCompanyAdmin, async (r
     // Remove user from company
     await company.removeUser(userId);
 
-    // Delete user data completely (as requested)
-    // This includes conversations, settings, and all related data
-    await User.findByIdAndDelete(userId);
+    console.log(`Starting complete data deletion for user: ${userId} (${user.email})`);
 
-    // Also clean up any related data in other collections
-    // Note: You may want to add cleanup for conversations, analytics, etc.
-    // For now, we'll just delete the user record
+    // Delete all user's conversations
+    const deletedConversations = await Conversation.deleteMany({ userId });
+    console.log(`Deleted ${deletedConversations.deletedCount} conversations for user ${userId}`);
+
+    // Delete all user's conversation summaries
+    const deletedSummaries = await ConversationSummary.deleteMany({ userId });
+    console.log(`Deleted ${deletedSummaries.deletedCount} conversation summaries for user ${userId}`);
+
+    // Delete the user account completely
+    const deletedUser = await User.findByIdAndDelete(userId);
+    if (!deletedUser) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    console.log(`Deleted user account: ${deletedUser.email}`);
+
+    // Log the deletion for audit purposes
+    console.log(`Company user deletion completed for user: ${userId} (${deletedUser.email}) by admin: ${req.user.email}`);
 
     res.json({
-      message: 'User removed from company and all data deleted successfully'
+      success: true,
+      message: 'User removed from company and all data deleted successfully',
+      deletedData: {
+        conversations: deletedConversations.deletedCount,
+        summaries: deletedSummaries.deletedCount,
+        user: true
+      }
     });
   } catch (error) {
     console.error('Remove user error:', error);
@@ -1258,6 +1343,104 @@ router.delete('/teams/:teamId', authenticateToken, requireCompanyAdmin, async (r
   } catch (error) {
     console.error('Delete team error:', error);
     res.status(500).json({ error: 'Failed to delete team' });
+  }
+});
+
+// Delete company and all associated data (Super Admin only)
+router.delete('/:companyId', authenticateToken, async (req, res) => {
+  try {
+    const { companyId } = req.params;
+
+    // Only super admins can delete companies
+    if (!req.user.isSuperAdminUser()) {
+      return res.status(403).json({ error: 'Super admin access required' });
+    }
+
+    // Find the company
+    const company = await Company.findById(companyId);
+    if (!company) {
+      return res.status(404).json({ error: 'Company not found' });
+    }
+
+    console.log(`🗑️ [COMPANY DELETE] Starting deletion of company: ${company.name} (${companyId})`);
+
+    // Get the admin user (don't delete them)
+    const adminUser = await User.findById(company.admin);
+    console.log(`🗑️ [COMPANY DELETE] Preserving admin user: ${adminUser?.email} (${company.admin})`);
+
+    // Get all users in this company EXCEPT the admin
+    const companyUsers = await User.find({ 
+      companyId: companyId,
+      _id: { $ne: company.admin } // Exclude the admin user
+    });
+    const userIds = companyUsers.map(user => user._id);
+
+    console.log(`🗑️ [COMPANY DELETE] Found ${companyUsers.length} non-admin users to delete`);
+
+    // Delete all conversations for non-admin users in this company
+    const conversationResult = await Conversation.deleteMany({ 
+      userId: { $in: userIds } 
+    });
+    console.log(`🗑️ [COMPANY DELETE] Deleted ${conversationResult.deletedCount} conversations`);
+
+    // Delete all conversation summaries for non-admin users in this company
+    const summaryResult = await ConversationSummary.deleteMany({ 
+      userId: { $in: userIds } 
+    });
+    console.log(`🗑️ [COMPANY DELETE] Deleted ${summaryResult.deletedCount} conversation summaries`);
+
+    // Delete all non-admin users in this company
+    const userResult = await User.deleteMany({ 
+      companyId: companyId,
+      _id: { $ne: company.admin } // Exclude the admin user
+    });
+    console.log(`🗑️ [COMPANY DELETE] Deleted ${userResult.deletedCount} non-admin users`);
+
+    // Handle the admin user - make them a super admin if they aren't already
+    if (adminUser) {
+      if (!adminUser.isSuperAdmin) {
+        console.log(`🗑️ [COMPANY DELETE] Converting admin user to super admin: ${adminUser.email}`);
+        await User.findByIdAndUpdate(company.admin, {
+          role: 'super_admin',
+          isSuperAdmin: true,
+          isAdmin: true,
+          companyId: null, // Remove company association
+          adminPermissions: {
+            canManageCompanies: true,
+            canManageUsers: true,
+            canViewAnalytics: true,
+            canManageSubscriptions: true
+          }
+        });
+      } else {
+        // If already super admin, just remove company association
+        console.log(`🗑️ [COMPANY DELETE] Removing company association from super admin: ${adminUser.email}`);
+        await User.findByIdAndUpdate(company.admin, {
+          companyId: null
+        });
+      }
+    }
+
+    // Finally, delete the company itself
+    await Company.findByIdAndDelete(companyId);
+    console.log(`🗑️ [COMPANY DELETE] Deleted company: ${company.name}`);
+
+    res.json({
+      message: 'Company and all associated data deleted successfully',
+      deletedData: {
+        company: company.name,
+        users: userResult.deletedCount,
+        conversations: conversationResult.deletedCount,
+        summaries: summaryResult.deletedCount
+      },
+      adminUser: {
+        email: adminUser?.email,
+        action: adminUser?.isSuperAdmin ? 'removed_company_association' : 'converted_to_super_admin'
+      }
+    });
+  } catch (error) {
+    console.error('Delete company error:', error);
+    res.status(500).json({ error: 'Failed to delete company' });
   }
 });
 

@@ -71,6 +71,17 @@ mongoose.connect(mongoUri)
 .then(() => console.log(`Connected to MongoDB: ${mongoUri.includes('127.0.0.1') ? 'local' : 'remote'}`))
 .catch(err => console.error('MongoDB connection error:', err));
 
+// Request logging middleware
+app.use('/api', (req, res, next) => {
+  console.log('🌐 [SERVER] Incoming request:', {
+    method: req.method,
+    url: req.url,
+    path: req.path,
+    timestamp: new Date().toISOString()
+  });
+  next();
+});
+
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', authenticateToken, userRoutes);
@@ -103,6 +114,12 @@ app.use((err, req, res, next) => {
 
 // 404 handler
 app.use('*', (req, res) => {
+  console.log('❌ [SERVER] 404 - Route not found:', {
+    method: req.method,
+    url: req.url,
+    path: req.path,
+    timestamp: new Date().toISOString()
+  });
   res.status(404).json({ error: 'Route not found' });
 });
 
@@ -114,20 +131,71 @@ const server = app.listen(PORT, () => {
   console.log('Daily refresh service initialized');
 });
 
+// Handle server startup errors
+server.on('error', (err) => {
+  if (err.code === 'EADDRINUSE') {
+    console.error(`❌ Port ${PORT} is already in use. Please:`);
+    console.error(`   1. Kill the process using port ${PORT}`);
+    console.error(`   2. Or change the PORT environment variable`);
+    console.error(`   3. Or wait for the port to be released`);
+    console.error(`\nTo find and kill the process using port ${PORT}, run:`);
+    console.error(`   netstat -ano | findstr :${PORT}`);
+    console.error(`   taskkill /PID <PID> /F`);
+  } else {
+    console.error('Server startup error:', err);
+  }
+  process.exit(1);
+});
+
 // Graceful shutdown handling
 const gracefulShutdown = (signal) => {
   console.log(`\nReceived ${signal}. Starting graceful shutdown...`);
   
-  // Set a shorter timeout for development
-  const timeout = process.env.NODE_ENV === 'development' ? 3000 : 10000;
+  // Set a very short timeout for development
+  const timeout = process.env.NODE_ENV === 'development' ? 500 : 5000;
   
-  server.close((err) => {
-    if (err) {
-      console.error('Error during server shutdown:', err);
-      process.exit(1);
+  // Force close immediately in development
+  if (process.env.NODE_ENV === 'development') {
+    console.log('🚨 [DEV] Force closing server immediately');
+    
+    // Stop the daily refresh service
+    try {
+      dailyRefreshService.stopDailyRefresh();
+    } catch (err) {
+      console.log('Daily refresh service already stopped');
     }
     
-    console.log('HTTP server closed.');
+    // Close MongoDB connection
+    try {
+      mongoose.connection.close(false);
+    } catch (err) {
+      console.log('MongoDB connection already closed');
+    }
+    
+    // Force exit
+    process.exit(0);
+  }
+  
+  // Check if server is actually running before trying to close it
+  if (server && server.listening) {
+    server.close((err) => {
+      if (err) {
+        console.error('Error during server shutdown:', err);
+      } else {
+        console.log('HTTP server closed.');
+      }
+      
+      // Stop the daily refresh service
+      dailyRefreshService.stopDailyRefresh();
+      
+      // Close MongoDB connection
+      mongoose.connection.close(false, () => {
+        console.log('MongoDB connection closed.');
+        process.exit(0);
+      });
+    });
+  } else {
+    console.log('Server was not running, skipping server close.');
     
     // Stop the daily refresh service
     dailyRefreshService.stopDailyRefresh();
@@ -137,29 +205,68 @@ const gracefulShutdown = (signal) => {
       console.log('MongoDB connection closed.');
       process.exit(0);
     });
-  });
+  }
   
   // Force close after timeout
   setTimeout(() => {
-    console.error('Could not close connections in time, forcefully shutting down');
+    console.error('🚨 Could not close connections in time, forcefully shutting down');
     process.exit(1);
   }, timeout);
 };
 
+// Force exit on multiple signals (for development)
+let shutdownCount = 0;
+const forceShutdown = (signal) => {
+  shutdownCount++;
+  if (shutdownCount >= 2) {
+    console.log('🚨 [SERVER] Force shutdown after multiple signals');
+    process.exit(1);
+  } else {
+    gracefulShutdown(signal);
+  }
+};
+
+// Immediate force shutdown for development
+const immediateShutdown = () => {
+  console.log('🚨 [SERVER] Immediate force shutdown');
+  process.exit(1);
+};
+
 // Handle different termination signals
-process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
-process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+process.on('SIGTERM', () => forceShutdown('SIGTERM'));
+process.on('SIGINT', () => forceShutdown('SIGINT'));
+
+// Handle Windows termination signals
+process.on('SIGBREAK', () => forceShutdown('SIGBREAK'));
+process.on('SIGHUP', () => forceShutdown('SIGHUP'));
 
 // Handle uncaught exceptions
 process.on('uncaughtException', (err) => {
   console.error('Uncaught Exception:', err);
-  gracefulShutdown('uncaughtException');
+  if (process.env.NODE_ENV === 'development') {
+    console.log('🚨 [DEV] Force exit on uncaught exception');
+    process.exit(1);
+  } else {
+    gracefulShutdown('uncaughtException');
+  }
 });
 
 // Handle unhandled promise rejections
 process.on('unhandledRejection', (reason, promise) => {
   console.error('Unhandled Rejection at:', promise, 'reason:', reason);
-  gracefulShutdown('unhandledRejection');
+  if (process.env.NODE_ENV === 'development') {
+    console.log('🚨 [DEV] Force exit on unhandled rejection');
+    process.exit(1);
+  } else {
+    gracefulShutdown('unhandledRejection');
+  }
 });
+
+// Force exit on process exit (development only)
+if (process.env.NODE_ENV === 'development') {
+  process.on('exit', (code) => {
+    console.log(`🚨 [DEV] Process exiting with code: ${code}`);
+  });
+}
 
 module.exports = app; 

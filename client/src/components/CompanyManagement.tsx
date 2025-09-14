@@ -52,6 +52,8 @@ const CompanyManagement: React.FC = () => {
   const { user } = useAuth();
   const { t } = useTranslation();
   const [company, setCompany] = useState<Company | null>(null);
+  const [companies, setCompanies] = useState<Company[]>([]);
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'teams'>('overview');
@@ -61,17 +63,33 @@ const CompanyManagement: React.FC = () => {
   const [editingTeam, setEditingTeam] = useState<Team | null>(null);
   const [managingTeam, setManagingTeam] = useState<Team | null>(null);
   const [viewingUser, setViewingUser] = useState<CompanyUser | null>(null);
+  const [showDeleteCompany, setShowDeleteCompany] = useState(false);
+  const [deleteConfirmation, setDeleteConfirmation] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Fetch company data
   const fetchCompanyData = useCallback(async () => {
     try {
-      const response = await fetch(`/api/companies/${user?.companyId}`, {
+      const response = await fetch(`/api/companies/details`, {
         credentials: 'include'
       });
       
       if (response.ok) {
         const data = await response.json();
-        setCompany(data.company);
+        
+        // Check if user is super admin (gets companies array) or regular user (gets company object)
+        if (data.companies) {
+          // Super admin - got all companies
+          setCompanies(data.companies);
+          setIsSuperAdmin(true);
+          if (data.companies.length > 0) {
+            setCompany(data.companies[0]); // Set first company as default
+          }
+        } else if (data.company) {
+          // Regular user - got single company
+          setCompany(data.company);
+          setIsSuperAdmin(false);
+        }
       } else {
         setError('Failed to fetch company data');
       }
@@ -83,10 +101,10 @@ const CompanyManagement: React.FC = () => {
   }, [user?.companyId]);
 
   useEffect(() => {
-    if (user?.companyId) {
+    if (user?.companyId || user?.isSuperAdmin) {
       fetchCompanyData();
     }
-  }, [user?.companyId, fetchCompanyData]);
+  }, [user, fetchCompanyData]);
 
   // Handle user operations
   const handleEditUser = (user: CompanyUser) => {
@@ -146,6 +164,45 @@ const CompanyManagement: React.FC = () => {
     }
   };
 
+  // Handle company deletion
+  const handleDeleteCompany = async () => {
+    if (!company) return;
+
+    setIsDeleting(true);
+    try {
+      const response = await fetch(`/api/companies/${company.id}`, {
+        method: 'DELETE',
+        credentials: 'include'
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        const adminAction = result.adminUser?.action === 'converted_to_super_admin' 
+          ? `\n- Admin user "${result.adminUser.email}" converted to super admin`
+          : `\n- Admin user "${result.adminUser.email}" company association removed`;
+        
+        alert(`Company "${result.deletedData.company}" and all associated data deleted successfully!\n\nDeleted:\n- ${result.deletedData.users} users\n- ${result.deletedData.conversations} conversations\n- ${result.deletedData.summaries} summaries${adminAction}`);
+        
+        // Refresh the companies list for super admin
+        if (isSuperAdmin) {
+          fetchCompanyData();
+        } else {
+          // If not super admin, redirect to home or show message
+          window.location.href = '/';
+        }
+      } else {
+        const errorData = await response.json();
+        alert(errorData.error || 'Failed to delete company');
+      }
+    } catch (error) {
+      alert('Failed to delete company');
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteCompany(false);
+      setDeleteConfirmation('');
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
@@ -170,11 +227,52 @@ const CompanyManagement: React.FC = () => {
       <div className="bg-white rounded-lg shadow-md">
         {/* Header */}
         <div className="border-b border-gray-200 px-6 py-4">
-          <h1 className="text-2xl font-bold text-gray-900">{company.name}</h1>
-          <p className="text-gray-600">Company ID: {company.companyId}</p>
-          {company.description && (
-            <p className="text-gray-600 mt-1">{company.description}</p>
-          )}
+          <div className="flex justify-between items-start">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">{company.name}</h1>
+              <p className="text-gray-600">Company ID: {company.companyId}</p>
+              {company.description && (
+                <p className="text-gray-600 mt-1">{company.description}</p>
+              )}
+            </div>
+            
+            {/* Company Selector for Super Admin */}
+            {isSuperAdmin && companies.length > 1 && (
+              <div className="ml-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Select Company:
+                </label>
+                <select
+                  value={company.id}
+                  onChange={(e) => {
+                    const selectedCompany = companies.find(c => c.id === e.target.value);
+                    if (selectedCompany) {
+                      setCompany(selectedCompany);
+                    }
+                  }}
+                  className="block w-64 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                >
+                  {companies.map((comp) => (
+                    <option key={comp.id} value={comp.id}>
+                      {comp.name} ({comp.users.length} users)
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            {/* Delete Company Button for Super Admin */}
+            {isSuperAdmin && (
+              <div className="ml-4">
+                <button
+                  onClick={() => setShowDeleteCompany(true)}
+                  className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200"
+                >
+                  🗑️ Delete Company
+                </button>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Tabs */}
@@ -556,6 +654,80 @@ const CompanyManagement: React.FC = () => {
           user={viewingUser}
           onClose={() => setViewingUser(null)}
         />
+      )}
+
+      {/* Delete Company Confirmation Modal */}
+      {showDeleteCompany && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <div className="flex items-center mb-4">
+              <div className="flex-shrink-0">
+                <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
+                  <span className="text-red-600 text-lg">⚠️</span>
+                </div>
+              </div>
+              <div className="ml-3">
+                <h3 className="text-lg font-medium text-gray-900">
+                  Delete Company
+                </h3>
+              </div>
+            </div>
+            
+            <div className="mb-4">
+              <p className="text-sm text-gray-600 mb-3">
+                <strong>WARNING:</strong> This action will permanently delete the company <strong>"{company?.name}"</strong> and ALL associated data:
+              </p>
+              <ul className="text-sm text-gray-600 list-disc list-inside mb-3">
+                <li>All users in this company (except the admin)</li>
+                <li>All conversations</li>
+                <li>All conversation summaries</li>
+                <li>All teams and team data</li>
+                <li>The company itself</li>
+              </ul>
+              <div className="bg-blue-50 border border-blue-200 rounded-md p-3 mb-3">
+                <p className="text-sm text-blue-800">
+                  <strong>Note:</strong> The company admin will be preserved and converted to a super admin (if not already one).
+                </p>
+              </div>
+              <p className="text-sm text-red-600 font-medium">
+                This action cannot be undone!
+              </p>
+            </div>
+
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Type <strong>DELETE</strong> to confirm:
+              </label>
+              <input
+                type="text"
+                value={deleteConfirmation}
+                onChange={(e) => setDeleteConfirmation(e.target.value)}
+                placeholder="Type DELETE here"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-red-500 focus:border-red-500"
+              />
+            </div>
+
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={() => {
+                  setShowDeleteCompany(false);
+                  setDeleteConfirmation('');
+                }}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors duration-200"
+                disabled={isDeleting}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteCompany}
+                disabled={deleteConfirmation !== 'DELETE' || isDeleting}
+                className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 disabled:bg-gray-400 disabled:cursor-not-allowed rounded-md transition-colors duration-200"
+              >
+                {isDeleting ? 'Deleting...' : 'Delete Company'}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

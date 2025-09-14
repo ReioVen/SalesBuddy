@@ -2,6 +2,13 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
 const authenticateToken = async (req, res, next) => {
+  console.log('🔐 [AUTH] Authenticating request:', {
+    method: req.method,
+    url: req.url,
+    hasAuthHeader: !!req.headers['authorization'],
+    hasCookie: !!req.cookies?.['sb_token']
+  });
+  
   try {
     const authHeader = req.headers['authorization'];
     const bearerToken = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
@@ -9,6 +16,7 @@ const authenticateToken = async (req, res, next) => {
     const token = bearerToken || cookieToken;
 
     if (!token) {
+      console.log('❌ [AUTH] No token found');
       return res.status(401).json({ error: 'Access token required' });
     }
 
@@ -16,20 +24,30 @@ const authenticateToken = async (req, res, next) => {
     const user = await User.findById(decoded.userId).select('-password');
     
     if (!user) {
+      console.log('❌ [AUTH] User not found for token');
       return res.status(401).json({ error: 'Invalid token' });
     }
 
+    console.log('✅ [AUTH] User authenticated:', {
+      id: user._id,
+      email: user.email,
+      role: user.role,
+      companyId: user.companyId
+    });
 
     req.user = user;
     next();
   } catch (error) {
+    console.error('❌ [AUTH] Authentication error:', error);
     if (error.name === 'JsonWebTokenError') {
+      console.log('❌ [AUTH] Invalid JWT token');
       return res.status(401).json({ error: 'Invalid token' });
     }
     if (error.name === 'TokenExpiredError') {
+      console.log('❌ [AUTH] Token expired');
       return res.status(401).json({ error: 'Token expired' });
     }
-    console.error('Auth middleware error:', error);
+    console.error('❌ [AUTH] Unexpected auth error:', error);
     res.status(500).json({ error: 'Authentication error' });
   }
 };

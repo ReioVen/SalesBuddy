@@ -34,7 +34,7 @@ interface RecentCompany {
 }
 
 const AdminDashboard: React.FC = () => {
-  const { user, hasAdminAccess } = useAuth();
+  const { user, hasAdminAccess, loading: authLoading } = useAuth();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [recentUsers, setRecentUsers] = useState<RecentUser[]>([]);
   const [recentCompanies, setRecentCompanies] = useState<RecentCompany[]>([]);
@@ -47,10 +47,12 @@ const AdminDashboard: React.FC = () => {
   useEffect(() => {
     if (user && hasAdminAccess()) {
       fetchDashboardData();
-    } else {
+    } else if (user && !hasAdminAccess()) {
+      // User is loaded but doesn't have admin access
       setError('Admin access required');
       setLoading(false);
     }
+    // If user is null, keep loading (waiting for auth check to complete)
   }, [user, hasAdminAccess]);
 
   const fetchDashboardData = async () => {
@@ -74,7 +76,7 @@ const AdminDashboard: React.FC = () => {
     }
   };
 
-  if (loading) {
+  if (loading || authLoading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
