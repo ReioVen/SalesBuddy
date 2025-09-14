@@ -78,11 +78,17 @@ const staticTranslations = {
     
     // AI Insights specific content
     'professional and respectful communication style': 'Professionaalne ja lugupidav suhtlemisstiil',
+    'professional and respectful suhtlemisstiil': 'Professionaalne ja lugupidav suhtlemisstiil',
+    'professional and respectful': 'Professionaalne ja lugupidav',
+    'communication style': 'suhtlemisstiil',
     'clear and direct approach': 'Selge ja otsene lähenemine',
+    'clear and direct': 'Selge ja otsene',
     'discovery questions': 'Avastamise küsimused',
     'practice discovery techniques': 'Harjuta avastamise tehnikaid',
     'study objection responses': 'Õpi vastuväidetele vastama',
     'work on closing skills': 'Tööta sulgemise oskuste kallal',
+    'work on': 'Tööta',
+    'closing skills': 'sulgemise oskuste kallal',
     
     // Specific feedback content
     'professional communication': 'Professionaalne suhtlus',
@@ -614,6 +620,8 @@ class DatabaseTranslationService {
       return text;
     }
 
+    console.log(`Translating: "${text}" to ${language}`);
+
     // Try exact match in static translations
     if (staticTranslations[language] && staticTranslations[language][text]) {
       console.log(`Found static exact match for "${text}" -> "${staticTranslations[language][text]}"`);
@@ -627,10 +635,14 @@ class DatabaseTranslationService {
       return staticTranslations[language][lowerText];
     }
 
-    // Try partial matching for common terms
+    // Try partial matching for common terms (longest matches first)
     const translations = staticTranslations[language];
     if (translations) {
-      for (const [key, value] of Object.entries(translations)) {
+      // Sort keys by length (longest first) to prioritize longer, more specific matches
+      const sortedKeys = Object.keys(translations).sort((a, b) => b.length - a.length);
+      
+      for (const key of sortedKeys) {
+        const value = translations[key];
         if (text.toLowerCase().includes(key.toLowerCase())) {
           const result = text.replace(new RegExp(key, 'gi'), value);
           if (result !== text) {
