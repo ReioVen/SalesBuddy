@@ -42,7 +42,7 @@ const Navbar: React.FC = () => {
               {user ? (
                 <>
                   <Link to="/conversations" className={getNavLinkClasses('/conversations')}>{t('conversations')}</Link>
-                  <Link to="/conversation-summaries" className={getNavLinkClasses('/conversation-summaries')}>Summaries</Link>
+                  <Link to="/conversation-summaries" className={getNavLinkClasses('/conversation-summaries')}>{t('summaries')}</Link>
                   <Link to="/profile" className={getNavLinkClasses('/profile')}>{t('profile')}</Link>
                   {user.companyId && (
                     <Link to="/company" className={getNavLinkClasses('/company')}>{t('companyNav')}</Link>
@@ -119,7 +119,7 @@ const Navbar: React.FC = () => {
                 {user ? (
                   <>
                     <Link to="/conversations" className={getNavLinkClasses('/conversations')} onClick={() => setOpen(false)}>{t('conversations')}</Link>
-                    <Link to="/conversation-summaries" className={getNavLinkClasses('/conversation-summaries')} onClick={() => setOpen(false)}>Summaries</Link>
+                    <Link to="/conversation-summaries" className={getNavLinkClasses('/conversation-summaries')} onClick={() => setOpen(false)}>{t('summaries')}</Link>
                     <Link to="/profile" className={getNavLinkClasses('/profile')} onClick={() => setOpen(false)}>{t('profile')}</Link>
                     {user.companyId && (
                       <Link to="/company" className={getNavLinkClasses('/company')} onClick={() => setOpen(false)}>{t('companyNav')}</Link>

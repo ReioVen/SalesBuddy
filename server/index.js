@@ -20,6 +20,8 @@ const companyRoutes = require('./routes/companies');
 const passwordResetRoutes = require('./routes/passwordReset');
 const adminRoutes = require('./routes/admin');
 const conversationSummaryRoutes = require('./routes/conversationSummaries');
+const translationsRoutes = require('./routes/translations');
+const dynamicTranslationRoutes = require('./routes/dynamicTranslation');
 const { authenticateToken } = require('./middleware/auth');
 const dailyRefreshService = require('./services/dailyRefreshService');
 
@@ -81,6 +83,8 @@ app.use('/api/subscriptions', subscriptionRoutes);
 
 app.use('/api/ai', authenticateToken, aiRoutes);
 app.use('/api/conversation-summaries', authenticateToken, conversationSummaryRoutes);
+app.use('/api/translations', translationsRoutes);
+app.use('/api/dynamic-translation', dynamicTranslationRoutes);
 app.use('/api/enterprise', enterpriseRoutes);
 
 // Health check endpoint

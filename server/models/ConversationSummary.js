@@ -71,6 +71,104 @@ const conversationSummarySchema = new mongoose.Schema({
     recommendedFocus: [String],
     nextSteps: [String]
   },
+  translations: {
+    et: {
+      strengths: [String],
+      improvements: [String],
+      stageRatings: {
+        opening: {
+          rating: { type: Number, min: 1, max: 10 },
+          feedback: String
+        },
+        discovery: {
+          rating: { type: Number, min: 1, max: 10 },
+          feedback: String
+        },
+        presentation: {
+          rating: { type: Number, min: 1, max: 10 },
+          feedback: String
+        },
+        objectionHandling: {
+          rating: { type: Number, min: 1, max: 10 },
+          feedback: String
+        },
+        closing: {
+          rating: { type: Number, min: 1, max: 10 },
+          feedback: String
+        }
+      },
+      aiAnalysis: {
+        personalityInsights: String,
+        communicationStyle: String,
+        recommendedFocus: [String],
+        nextSteps: [String]
+      }
+    },
+    es: {
+      strengths: [String],
+      improvements: [String],
+      stageRatings: {
+        opening: {
+          rating: { type: Number, min: 1, max: 10 },
+          feedback: String
+        },
+        discovery: {
+          rating: { type: Number, min: 1, max: 10 },
+          feedback: String
+        },
+        presentation: {
+          rating: { type: Number, min: 1, max: 10 },
+          feedback: String
+        },
+        objectionHandling: {
+          rating: { type: Number, min: 1, max: 10 },
+          feedback: String
+        },
+        closing: {
+          rating: { type: Number, min: 1, max: 10 },
+          feedback: String
+        }
+      },
+      aiAnalysis: {
+        personalityInsights: String,
+        communicationStyle: String,
+        recommendedFocus: [String],
+        nextSteps: [String]
+      }
+    },
+    ru: {
+      strengths: [String],
+      improvements: [String],
+      stageRatings: {
+        opening: {
+          rating: { type: Number, min: 1, max: 10 },
+          feedback: String
+        },
+        discovery: {
+          rating: { type: Number, min: 1, max: 10 },
+          feedback: String
+        },
+        presentation: {
+          rating: { type: Number, min: 1, max: 10 },
+          feedback: String
+        },
+        objectionHandling: {
+          rating: { type: Number, min: 1, max: 10 },
+          feedback: String
+        },
+        closing: {
+          rating: { type: Number, min: 1, max: 10 },
+          feedback: String
+        }
+      },
+      aiAnalysis: {
+        personalityInsights: String,
+        communicationStyle: String,
+        recommendedFocus: [String],
+        nextSteps: [String]
+      }
+    }
+  },
   createdAt: {
     type: Date,
     default: Date.now

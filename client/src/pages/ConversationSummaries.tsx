@@ -5,6 +5,7 @@ import toast from 'react-hot-toast';
 import ConversationSummaryCard from '../components/ConversationSummaryCard.tsx';
 import { Award, TrendingUp, MessageSquare, Loader2 } from 'lucide-react';
 import { useTranslation } from '../hooks/useTranslation.ts';
+// Removed AI translation context - now using database translations
 
 interface ConversationSummary {
   _id: string;
@@ -41,7 +42,8 @@ interface ConversationSummary {
 
 const ConversationSummaries: React.FC = () => {
   const { user } = useAuth();
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
+  // Removed AI translation context - now using database translations
   const [summaries, setSummaries] = useState<ConversationSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -51,6 +53,8 @@ const ConversationSummaries: React.FC = () => {
       loadSummaries();
     }
   }, [user]);
+
+  // Database translations are handled automatically by each ConversationSummaryCard
 
   const loadSummaries = async () => {
     try {
@@ -189,6 +193,7 @@ const ConversationSummaries: React.FC = () => {
           </p>
         </div>
 
+
         {/* Summaries List */}
         {summaries.length === 0 ? (
           <div className="bg-white rounded-lg border border-gray-200 p-12 text-center">
@@ -212,8 +217,8 @@ const ConversationSummaries: React.FC = () => {
           </div>
         ) : (
           <div className="space-y-6">
-            {summaries.map((summary) => (
-              <ConversationSummaryCard key={summary._id} summary={summary} />
+            {summaries.map((summary, index) => (
+              <ConversationSummaryCard key={summary._id} summary={summary} index={index} />
             ))}
           </div>
         )}

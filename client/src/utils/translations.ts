@@ -5,6 +5,7 @@ export const translations = {
     // Navigation
     home: 'Home',
     conversations: 'Conversations',
+    summaries: 'Summaries',
     companyNav: 'Company',
     profile: 'Profile',
     settings: 'Settings',
@@ -364,6 +365,7 @@ export const translations = {
     // Navigation
     home: 'Kodu',
     conversations: 'Vestlused',
+    summaries: 'Kokkuvõtted',
     companyNav: 'Ettevõte',
     profile: 'Profiil',
     settings: 'Seaded',
@@ -723,6 +725,7 @@ export const translations = {
     // Navigation
     home: 'Inicio',
     conversations: 'Conversaciones',
+    summaries: 'Resúmenes',
     companyNav: 'Empresa',
     profile: 'Perfil',
     settings: 'Configuración',
@@ -1082,6 +1085,7 @@ export const translations = {
     // Navigation
     home: 'Главная',
     conversations: 'Разговоры',
+    summaries: 'Резюме',
     companyNav: 'Компания',
     profile: 'Профиль',
     settings: 'Настройки',

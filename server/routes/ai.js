@@ -2136,7 +2136,7 @@ async function generateConversationSummary(userId) {
     // Generate AI analysis using user's language preference
     const aiAnalysis = await generateConversationAnalysis(recentConversations, user, user.language || 'en');
     
-    // Create the summary
+    // Create the summary (translations will be generated on-demand when viewed)
     const summary = new ConversationSummary({
       userId,
       summaryNumber: nextSummaryNumber,
@@ -2317,6 +2317,7 @@ Be constructive, specific, and encouraging in your feedback.
     return generateFallbackAnalysis(conversations);
   }
 }
+
 
 // Fallback analysis if AI fails
 function generateFallbackAnalysis(conversations) {

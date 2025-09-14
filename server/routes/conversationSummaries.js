@@ -4,6 +4,7 @@ const ConversationSummary = require('../models/ConversationSummary');
 const Conversation = require('../models/Conversation');
 const User = require('../models/User');
 const axios = require('axios');
+const multiLanguageTranslationService = require('../services/multiLanguageTranslationService');
 
 const router = express.Router();
 
@@ -41,6 +42,75 @@ router.get('/:summaryId', authenticateToken, async (req, res) => {
   }
 });
 
+// Translate a specific summary to a target language (on-demand)
+router.post('/:summaryId/translate', authenticateToken, async (req, res) => {
+  try {
+    console.log('Translation request received:', {
+      summaryId: req.params.summaryId,
+      userId: req.user._id,
+      targetLanguage: req.body.targetLanguage,
+      authHeader: req.headers.authorization ? 'Present' : 'Missing'
+    });
+    
+    const { targetLanguage } = req.body;
+    
+    if (!targetLanguage || !['et', 'es', 'ru'].includes(targetLanguage)) {
+      return res.status(400).json({ error: 'Invalid target language. Must be et, es, or ru' });
+    }
+
+    const summary = await ConversationSummary.findOne({
+      _id: req.params.summaryId,
+      userId: req.user._id
+    });
+
+    if (!summary) {
+      return res.status(404).json({ error: 'Summary not found' });
+    }
+
+    // Check if translation already exists
+    // For latest summaries (summaryNumber >= 10), always force re-translation to ensure proper Google Translate results
+    const isLatestSummary = summary.summaryNumber >= 10; // Adjust this threshold as needed
+    
+    if (summary.translations && summary.translations[targetLanguage] && !isLatestSummary) {
+      console.log(`Translation for ${targetLanguage} already exists for summary ${req.params.summaryId}`);
+      return res.json({ 
+        success: true, 
+        translation: summary.translations[targetLanguage],
+        message: 'Translation already exists'
+      });
+    }
+    
+    if (isLatestSummary && summary.translations && summary.translations[targetLanguage]) {
+      console.log(`Latest summary ${req.params.summaryId} - forcing re-translation despite existing translation`);
+    }
+
+    console.log(`Generating on-demand translation for summary ${req.params.summaryId} to ${targetLanguage}`);
+
+    // Generate translation for the specific language
+    const translation = await generateSummaryTranslation(summary, targetLanguage);
+
+    // Save the translation to the database
+    if (!summary.translations) {
+      summary.translations = {};
+    }
+    summary.translations[targetLanguage] = translation;
+    
+    await summary.save();
+
+    console.log(`✅ Completed on-demand translation for summary ${req.params.summaryId} to ${targetLanguage}`);
+
+    res.json({ 
+      success: true, 
+      translation,
+      message: 'Translation generated successfully'
+    });
+
+  } catch (error) {
+    console.error('Error translating summary:', error);
+    res.status(500).json({ error: 'Failed to translate summary' });
+  }
+});
+
 // Generate a new conversation summary (triggered after 5 conversations)
 router.post('/generate', authenticateToken, async (req, res) => {
   try {
@@ -67,7 +137,12 @@ router.post('/generate', authenticateToken, async (req, res) => {
     // Generate AI analysis using user's language preference
     const aiAnalysis = await generateConversationAnalysis(recentConversations, req.user, req.user.language || 'en');
     
-    // Create the summary
+    // Generate translations for all supported languages
+    console.log('Generating translations for all languages...');
+    const translations = await multiLanguageTranslationService.generateAllTranslations(aiAnalysis);
+    console.log('Translations generated:', Object.keys(translations).filter(lang => translations[lang] !== null));
+    
+    // Create the summary with translations
     const summary = new ConversationSummary({
       userId,
       summaryNumber: nextSummaryNumber,
@@ -76,7 +151,8 @@ router.post('/generate', authenticateToken, async (req, res) => {
         startDate: recentConversations[recentConversations.length - 1].createdAt,
         endDate: recentConversations[0].createdAt
       },
-      ...aiAnalysis
+      ...aiAnalysis,
+      translations
     });
 
     await summary.save();
@@ -111,7 +187,7 @@ async function generateConversationAnalysis(conversations, user, userLanguage = 
     // Language-specific grading instructions
     const languageInstructions = {
       en: "IMPORTANT: Grade these conversations as if they were conducted in English. Evaluate English language proficiency, grammar, vocabulary, and natural expression in the sales context. Provide all feedback in English.",
-      et: "IMPORTANT: Grade these conversations as if they were conducted in Estonian. Evaluate Estonian language proficiency, grammar, vocabulary, and natural expression in the sales context. Consider Estonian business communication norms and cultural appropriateness. Provide all feedback in Estonian.",
+      et: "IMPORTANT: Grade these conversations as if they were conducted in Estonian. Evaluate Estonian language proficiency, grammar, vocabulary, and natural expression in the sales context. Consider Estonian business communication norms and cultural appropriateness. Provide ALL feedback, strengths, improvements, and analysis in proper Estonian language. Do not mix English and Estonian words. Use natural Estonian expressions and terminology. For example: 'Tugevused' not 'Strengths', 'Parandamise alad' not 'Areas for improvement', 'avastamise etapp' not 'discovery phase', 'toodete esitlus' not 'presentation of products', 'vastuväidete käsitlemine' not 'objection handling', 'sulgemise tehnikad' not 'closing techniques'.",
       es: "IMPORTANT: Grade these conversations as if they were conducted in Spanish. Evaluate Spanish language proficiency, grammar, vocabulary, and natural expression in the sales context. Consider Spanish business communication norms and cultural appropriateness. Provide all feedback in Spanish.",
       ru: "IMPORTANT: Grade these conversations as if they were conducted in Russian. Evaluate Russian language proficiency, grammar, vocabulary, and natural expression in the sales context. Consider Russian business communication norms and cultural appropriateness. Provide all feedback in Russian."
     };
@@ -193,6 +269,30 @@ IMPORTANT: When grading, consider that these conversations were conducted in ${a
 - Evaluate naturalness and fluency in ${analysisLanguage.toUpperCase()}
 - Provide feedback that is culturally appropriate for ${analysisLanguage.toUpperCase()} speakers
 - ALL FEEDBACK AND ANALYSIS MUST BE PROVIDED IN ${analysisLanguage.toUpperCase()}
+
+${analysisLanguage === 'et' ? `
+For Estonian language, use proper Estonian terminology:
+- Strengths: "Tugevused" (not "Strengths")
+- Areas for improvement: "Parandamise alad" (not "Areas for improvement") 
+- Discovery phase: "avastamise etapp" (not "discovery phase")
+- Presentation: "esitlus" (not "presentation")
+- Objection handling: "vastuväidete käsitlemine" (not "objection handling")
+- Closing techniques: "sulgemise tehnikad" (not "closing techniques")
+- Opening: "avamine" (not "opening")
+- Good communication: "hea suhtlemine" (not "good communication")
+- Professional approach: "professionaalne lähenemine" (not "professional approach")
+- Customer needs: "kliendi vajadused" (not "customer needs")
+- Product knowledge: "toote tundmine" (not "product knowledge")
+- Active listening: "aktiivne kuulamine" (not "active listening")
+- Rapport building: "suhtluse loomine" (not "rapport building")
+- Effective questioning: "tõhus küsimine" (not "effective questioning")
+- Clear explanations: "selged selgitused" (not "clear explanations")
+- Confident delivery: "enesekindel esitlus" (not "confident delivery")
+- Strong closing: "tugev sulgemine" (not "strong closing")
+- Good follow-up: "hea järelkontroll" (not "good follow-up")
+
+Use natural Estonian sentence structure and avoid mixing English words.
+` : ''}
 
 Be constructive, specific, and encouraging in your feedback.
 `;
@@ -302,6 +402,70 @@ function generateFallbackAnalysis(conversations) {
       nextSteps: ["Practice discovery techniques", "Study objection responses", "Work on closing skills"]
     }
   };
+}
+
+// Generate translation for a specific summary and language
+async function generateSummaryTranslation(summary, targetLanguage) {
+  try {
+    console.log(`Translating summary to ${targetLanguage}...`);
+    
+    // Translate strengths
+    const translatedStrengths = await Promise.all(
+      summary.strengths.map(strength => 
+        multiLanguageTranslationService.translateDynamicContent(strength, targetLanguage, 'strength_comment')
+      )
+    );
+
+    // Translate improvements
+    const translatedImprovements = await Promise.all(
+      summary.improvements.map(improvement => 
+        multiLanguageTranslationService.translateDynamicContent(improvement, targetLanguage, 'improvement_suggestion')
+      )
+    );
+
+    // Translate stage ratings feedback
+    const translatedStageRatings = {};
+    for (const [stage, rating] of Object.entries(summary.stageRatings)) {
+      translatedStageRatings[stage] = {
+        rating: rating.rating,
+        feedback: await multiLanguageTranslationService.translateStageFeedback(rating.feedback, targetLanguage)
+      };
+    }
+
+    // Translate AI analysis
+    const translatedAiAnalysis = {
+      personalityInsights: await multiLanguageTranslationService.translateAiAnalysis(
+        summary.aiAnalysis.personalityInsights, targetLanguage, 'personalityInsights'
+      ),
+      communicationStyle: await multiLanguageTranslationService.translateAiAnalysis(
+        summary.aiAnalysis.communicationStyle, targetLanguage, 'communicationStyle'
+      ),
+      recommendedFocus: await Promise.all(
+        summary.aiAnalysis.recommendedFocus.map(focus => 
+          multiLanguageTranslationService.translateAiAnalysis(focus, targetLanguage, 'recommendedFocus')
+        )
+      ),
+      nextSteps: await Promise.all(
+        summary.aiAnalysis.nextSteps.map(step => 
+          multiLanguageTranslationService.translateAiAnalysis(step, targetLanguage, 'nextSteps')
+        )
+      )
+    };
+
+    const translation = {
+      strengths: translatedStrengths,
+      improvements: translatedImprovements,
+      stageRatings: translatedStageRatings,
+      aiAnalysis: translatedAiAnalysis
+    };
+
+    console.log(`✅ Completed translation to ${targetLanguage}`);
+    return translation;
+    
+  } catch (error) {
+    console.error(`Error translating to ${targetLanguage}:`, error);
+    throw error;
+  }
 }
 
 module.exports = router;

@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { ChevronDown, ChevronUp, Star, TrendingUp, Target, MessageSquare, Award, Lightbulb } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { ChevronDown, ChevronUp, Star, TrendingUp, Target, MessageSquare, Award, Lightbulb, Loader2 } from 'lucide-react';
 import { useTranslation } from '../hooks/useTranslation.ts';
-import { translateAIContent, translateAIArray } from '../utils/aiContentTranslator.ts';
+import { databaseTranslationService } from '../services/databaseTranslationService.ts';
 
 interface StageRating {
   rating: number;
@@ -44,17 +44,273 @@ interface ConversationSummary {
   improvements: string[];
   exampleConversations: ExampleConversation[];
   aiAnalysis: AIAnalysis;
+  translations?: {
+    et?: {
+      strengths: string[];
+      improvements: string[];
+      stageRatings: StageRatings;
+      aiAnalysis: AIAnalysis;
+    };
+    es?: {
+      strengths: string[];
+      improvements: string[];
+      stageRatings: StageRatings;
+      aiAnalysis: AIAnalysis;
+    };
+    ru?: {
+      strengths: string[];
+      improvements: string[];
+      stageRatings: StageRatings;
+      aiAnalysis: AIAnalysis;
+    };
+  };
   createdAt: string;
 }
 
 interface ConversationSummaryCardProps {
   summary: ConversationSummary;
+  index: number;
 }
 
-const ConversationSummaryCard: React.FC<ConversationSummaryCardProps> = ({ summary }) => {
+const ConversationSummaryCard: React.FC<ConversationSummaryCardProps> = ({ summary, index }) => {
   const { t, language } = useTranslation();
   const [isExpanded, setIsExpanded] = useState(false);
   const [activeTab, setActiveTab] = useState<'overview' | 'stages' | 'examples' | 'insights'>('overview');
+  const [translatedSummary, setTranslatedSummary] = useState<ConversationSummary | null>(null);
+  const [isTranslating, setIsTranslating] = useState(false);
+  const [translationAttempted, setTranslationAttempted] = useState(false);
+
+  // Reset translation attempted flag when language changes
+  useEffect(() => {
+    setTranslationAttempted(false);
+  }, [language]);
+
+  // Use pre-translated content from database when language changes
+  useEffect(() => {
+    console.log('Translation useEffect triggered:', { language, hasSummary: !!summary, translationAttempted });
+    
+    if (language === 'en' || !summary) {
+      console.log('Setting translatedSummary to null (English or no summary)');
+      setTranslatedSummary(null);
+      setTranslationAttempted(false);
+      return;
+    }
+
+    // Reset translation attempted flag when language changes
+    if (translationAttempted) {
+      console.log('Translation already attempted, skipping');
+      return;
+    }
+
+    // Check if we have pre-translated content for this language
+    // For latest summaries (index < 2), always use Google Translate for proper content translation
+    const isLatestSummary = index < 2;
+    const hasPreTranslatedContent = summary.translations && summary.translations[language];
+    
+    if (hasPreTranslatedContent && !isLatestSummary) {
+      console.log('Using pre-translated content for language:', language);
+      const preTranslated = summary.translations[language];
+      
+      // Create a translated summary using pre-translated content
+      const translatedSummary = {
+        ...summary,
+        strengths: preTranslated.strengths || summary.strengths,
+        improvements: preTranslated.improvements || summary.improvements,
+        stageRatings: preTranslated.stageRatings || summary.stageRatings,
+        aiAnalysis: preTranslated.aiAnalysis || summary.aiAnalysis
+      };
+      
+      console.log('Pre-translated summary:', translatedSummary);
+      setTranslatedSummary(translatedSummary);
+      setTranslationAttempted(true);
+    } else {
+      // For latest summaries, always force re-translation to ensure proper Google Translate results
+      if (isLatestSummary) {
+        console.log('Latest summary - forcing re-translation with Google Translate');
+      }
+      // Determine if this summary should be translated automatically (latest 2) or on-demand
+      // Since summaries are sorted by summaryNumber descending (latest first),
+      // the first 2 summaries in the array (index 0 and 1) are the latest
+      const shouldTranslateAutomatically = isLatestSummary || isExpanded;
+      
+      console.log('Translation decision:', { 
+        summaryNumber: summary.summaryNumber, 
+        index,
+        isLatestSummary, 
+        isExpanded, 
+        shouldTranslateAutomatically 
+      });
+      
+      if (!shouldTranslateAutomatically) {
+        console.log('Summary not in latest 2 and not expanded, skipping automatic translation');
+        setTranslatedSummary(null);
+        setTranslationAttempted(true);
+        return;
+      }
+      
+      if (isLatestSummary) {
+        console.log('Latest summary - using Google Translate for proper content translation');
+      } else {
+        console.log('No pre-translated content, requesting on-demand translation for language:', language);
+      }
+      
+      const token = localStorage.getItem('token');
+      console.log('Token for translation request:', token ? 'Present' : 'Missing');
+      
+      // For latest summaries, always try Google Translate first, even without token
+      if (!token && !isLatestSummary) {
+        console.log('No token found, using static translation directly...');
+        setIsTranslating(true);
+        
+        const handleStaticTranslation = async () => {
+          try {
+            await databaseTranslationService.forceRefreshTranslations(language);
+            const translated = databaseTranslationService.translateSummaryContentSync(summary, language);
+            console.log('Static translation result:', translated);
+            console.log('Translated strengths:', translated.strengths);
+            console.log('Translated improvements:', translated.improvements);
+            setTranslatedSummary(translated);
+            setTranslationAttempted(true);
+          } catch (error) {
+            console.error('Error with static translation:', error);
+            setTranslatedSummary(null);
+            setTranslationAttempted(true);
+          } finally {
+            setIsTranslating(false);
+          }
+        };
+        
+        handleStaticTranslation();
+        return;
+      }
+      
+      // For latest summaries without token, use enhanced static translation with better AI content handling
+      if (!token && isLatestSummary) {
+        console.log('Latest summary without token - using enhanced static translation for AI content...');
+        setIsTranslating(true);
+        
+        const handleEnhancedStaticTranslation = async () => {
+          try {
+            // Try to refresh translations, but don't fail if it doesn't work
+            try {
+              await databaseTranslationService.forceRefreshTranslations(language);
+            } catch (refreshError) {
+              console.log('Could not refresh translations, using existing ones:', refreshError);
+            }
+            
+            // For AI insights, use a more comprehensive translation approach with fallback
+            const translatedSummary = {
+              ...summary,
+              strengths: summary.strengths.map(strength => 
+                databaseTranslationService.translateTextSyncPublic(strength, language)
+              ),
+              improvements: summary.improvements.map(improvement => 
+                databaseTranslationService.translateTextSyncPublic(improvement, language)
+              ),
+              stageRatings: Object.fromEntries(
+                Object.entries(summary.stageRatings).map(([stage, rating]) => [
+                  stage,
+                  {
+                    ...rating,
+                    feedback: databaseTranslationService.translateTextSyncPublic(rating.feedback, language)
+                  }
+                ])
+              ),
+              aiAnalysis: {
+                ...summary.aiAnalysis,
+                personalityInsights: databaseTranslationService.translateTextSyncPublic(summary.aiAnalysis.personalityInsights, language),
+                communicationStyle: databaseTranslationService.translateTextSyncPublic(summary.aiAnalysis.communicationStyle, language),
+                recommendedFocus: summary.aiAnalysis.recommendedFocus.map(focus => 
+                  databaseTranslationService.translateTextSyncPublic(focus, language)
+                ),
+                nextSteps: summary.aiAnalysis.nextSteps.map(step => 
+                  databaseTranslationService.translateTextSyncPublic(step, language)
+                )
+              }
+            };
+            
+            console.log('Enhanced static translation result:', translatedSummary);
+            setTranslatedSummary(translatedSummary);
+            setTranslationAttempted(true);
+          } catch (error) {
+            console.error('Error with enhanced static translation:', error);
+            setTranslatedSummary(null);
+            setTranslationAttempted(true);
+          } finally {
+            setIsTranslating(false);
+          }
+        };
+        
+        handleEnhancedStaticTranslation();
+        return;
+      }
+      
+      // Request on-demand translation for this summary
+      setIsTranslating(true);
+      
+      const requestTranslation = async () => {
+        try {
+          console.log('Requesting on-demand translation...');
+          
+          const response = await fetch(`/api/conversation-summaries/${summary._id}/translate`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ targetLanguage: language })
+          });
+
+          if (!response.ok) {
+            throw new Error(`Translation request failed: ${response.status}`);
+          }
+
+          const result = await response.json();
+          if (result.success && result.translation) {
+            console.log('On-demand translation received:', result.translation);
+            
+            // Create a translated summary using the received translation
+            const translatedSummary = {
+              ...summary,
+              strengths: result.translation.strengths || summary.strengths,
+              improvements: result.translation.improvements || summary.improvements,
+              stageRatings: result.translation.stageRatings || summary.stageRatings,
+              aiAnalysis: result.translation.aiAnalysis || summary.aiAnalysis
+            };
+            
+            setTranslatedSummary(translatedSummary);
+            setTranslationAttempted(true);
+          } else {
+            throw new Error('Translation request failed');
+          }
+        } catch (error) {
+          console.error('Error requesting on-demand translation:', error);
+          // Fall back to static translation
+          console.log('Falling back to static translation...');
+          await databaseTranslationService.forceRefreshTranslations(language);
+          const translated = databaseTranslationService.translateSummaryContentSync(summary, language);
+          console.log('Static translation result:', translated);
+          setTranslatedSummary(translated);
+          setTranslationAttempted(true);
+        } finally {
+          setIsTranslating(false);
+        }
+      };
+      
+      requestTranslation();
+    }
+  }, [summary, language, translationAttempted, isExpanded, index]);
+
+  // Trigger translation when summary is expanded (for summaries not in latest 2)
+  useEffect(() => {
+    if (isExpanded && language !== 'en' && summary && !translationAttempted) {
+      const isLatestSummary = index < 2; // First 2 summaries are the latest
+      if (!isLatestSummary) {
+        console.log('Summary expanded, triggering translation for summary:', summary.summaryNumber, 'index:', index);
+        setTranslationAttempted(false); // Reset to allow translation
+      }
+    }
+  }, [isExpanded, language, summary, translationAttempted, index]);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -75,6 +331,7 @@ const ConversationSummaryCard: React.FC<ConversationSummaryCardProps> = ({ summa
     if (rating >= 6) return '⭐';
     return '📈';
   };
+
 
   const stageNames = {
     opening: t('stageOpening'),
@@ -98,6 +355,9 @@ const ConversationSummaryCard: React.FC<ConversationSummaryCardProps> = ({ summa
               <h3 className="text-lg font-semibold text-gray-900">
                 {t('summaryNumber')}{summary.summaryNumber}
               </h3>
+              {isTranslating && (
+                <Loader2 className="w-4 h-4 animate-spin text-blue-600" />
+              )}
             </div>
             <div className="flex items-center gap-2">
               <span className={`px-3 py-1 rounded-full text-sm font-medium ${getRatingColor(summary.overallRating)}`}>
@@ -167,12 +427,23 @@ const ConversationSummaryCard: React.FC<ConversationSummaryCardProps> = ({ summa
                       {t('strengths')}
                     </h4>
                     <ul className="space-y-2">
-                      {summary.strengths.map((strength, index) => (
-                        <li key={index} className="flex items-start gap-2">
-                          <span className="text-green-500 mt-1">✓</span>
-                          <span className="text-gray-700">{translateAIContent(strength, language)}</span>
-                        </li>
-                      ))}
+                      {(translatedSummary?.strengths || summary.strengths).map((strength, index) => {
+                        console.log(`Strength ${index}:`, { 
+                          original: summary.strengths[index], 
+                          translated: translatedSummary?.strengths?.[index],
+                          final: strength,
+                          hasTranslatedSummary: !!translatedSummary,
+                          translatedSummaryStrengths: translatedSummary?.strengths
+                        });
+                        return (
+                          <li key={index} className="flex items-start gap-2">
+                            <span className="text-green-500 mt-1">✓</span>
+                            <span className="text-gray-700">
+                              {strength}
+                            </span>
+                          </li>
+                        );
+                      })}
                     </ul>
                   </div>
                   <div>
@@ -181,12 +452,22 @@ const ConversationSummaryCard: React.FC<ConversationSummaryCardProps> = ({ summa
                       {t('areasForImprovement')}
                     </h4>
                     <ul className="space-y-2">
-                      {summary.improvements.map((improvement, index) => (
-                        <li key={index} className="flex items-start gap-2">
-                          <span className="text-orange-500 mt-1">→</span>
-                          <span className="text-gray-700">{translateAIContent(improvement, language)}</span>
-                        </li>
-                      ))}
+                      {(translatedSummary?.improvements || summary.improvements).map((improvement, index) => {
+                        console.log(`Improvement ${index}:`, { 
+                          original: summary.improvements[index], 
+                          translated: translatedSummary?.improvements?.[index],
+                          final: improvement,
+                          hasTranslatedSummary: !!translatedSummary
+                        });
+                        return (
+                          <li key={index} className="flex items-start gap-2">
+                            <span className="text-orange-500 mt-1">→</span>
+                            <span className="text-gray-700">
+                              {improvement}
+                            </span>
+                          </li>
+                        );
+                      })}
                     </ul>
                   </div>
                 </div>
@@ -199,13 +480,24 @@ const ConversationSummaryCard: React.FC<ConversationSummaryCardProps> = ({ summa
                   <div key={stage} className="bg-gray-50 rounded-lg p-4">
                     <div className="flex items-center justify-between mb-2">
                       <h4 className="font-semibold text-gray-900">
-                        {stageNames[stage as keyof typeof stageNames] || translateAIContent(stage, language)}
+                        {stageNames[stage as keyof typeof stageNames] || stage}
                       </h4>
                       <span className={`px-3 py-1 rounded-full text-sm font-medium ${getRatingColor(rating.rating)}`}>
                         {rating.rating}/10
                       </span>
                     </div>
-                    <p className="text-gray-700">{translateAIContent(rating.feedback, language)}</p>
+                    <p className="text-gray-700">
+                      {(() => {
+                        const feedback = translatedSummary?.stageRatings?.[stage]?.feedback || rating.feedback;
+                        console.log(`Stage ${stage} feedback:`, { 
+                          original: rating.feedback, 
+                          translated: translatedSummary?.stageRatings?.[stage]?.feedback,
+                          final: feedback,
+                          hasTranslatedSummary: !!translatedSummary
+                        });
+                        return feedback;
+                      })()}
+                    </p>
                   </div>
                 ))}
               </div>
@@ -217,16 +509,16 @@ const ConversationSummaryCard: React.FC<ConversationSummaryCardProps> = ({ summa
                   <div key={index} className="bg-gray-50 rounded-lg p-4">
                     <div className="flex items-center gap-2 mb-2">
                       <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded">
-                        {translateAIContent(example.stage, language)}
+                        {example.stage}
                       </span>
                       <span className="text-sm text-gray-500">
                         {t('conversationTitle')} #{summary.summaryNumber}
                       </span>
                     </div>
                     <blockquote className="text-gray-700 italic mb-2">
-                      "{translateAIContent(example.excerpt, language)}"
+                      "{example.excerpt}"
                     </blockquote>
-                    <p className="text-sm text-gray-600">{translateAIContent(example.context, language)}</p>
+                    <p className="text-sm text-gray-600">{example.context}</p>
                   </div>
                 ))}
               </div>
@@ -236,18 +528,18 @@ const ConversationSummaryCard: React.FC<ConversationSummaryCardProps> = ({ summa
               <div className="space-y-6">
                 <div>
                   <h4 className="text-lg font-semibold text-gray-900 mb-3">{t('personalityInsights')}</h4>
-                  <p className="text-gray-700">{translateAIContent(summary.aiAnalysis.personalityInsights, language)}</p>
+                  <p className="text-gray-700">{(translatedSummary?.aiAnalysis?.personalityInsights || summary.aiAnalysis.personalityInsights)}</p>
                 </div>
                 <div>
                   <h4 className="text-lg font-semibold text-gray-900 mb-3">{t('communicationStyle')}</h4>
-                  <p className="text-gray-700">{translateAIContent(summary.aiAnalysis.communicationStyle, language)}</p>
+                  <p className="text-gray-700">{(translatedSummary?.aiAnalysis?.communicationStyle || summary.aiAnalysis.communicationStyle)}</p>
                 </div>
                 <div>
                   <h4 className="text-lg font-semibold text-gray-900 mb-3">{t('recommendedFocusAreas')}</h4>
                   <div className="flex flex-wrap gap-2">
-                    {summary.aiAnalysis.recommendedFocus.map((focus, index) => (
+                    {(translatedSummary?.aiAnalysis?.recommendedFocus || summary.aiAnalysis.recommendedFocus).map((focus, index) => (
                       <span key={index} className="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full">
-                        {translateAIContent(focus, language)}
+                        {focus}
                       </span>
                     ))}
                   </div>
@@ -255,10 +547,10 @@ const ConversationSummaryCard: React.FC<ConversationSummaryCardProps> = ({ summa
                 <div>
                   <h4 className="text-lg font-semibold text-gray-900 mb-3">{t('nextSteps')}</h4>
                   <ul className="space-y-2">
-                    {summary.aiAnalysis.nextSteps.map((step, index) => (
+                    {(translatedSummary?.aiAnalysis?.nextSteps || summary.aiAnalysis.nextSteps).map((step, index) => (
                       <li key={index} className="flex items-start gap-2">
                         <span className="text-blue-500 mt-1">→</span>
-                        <span className="text-gray-700">{translateAIContent(step, language)}</span>
+                        <span className="text-gray-700">{step}</span>
                       </li>
                     ))}
                   </ul>
