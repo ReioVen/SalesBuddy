@@ -258,7 +258,7 @@ const Conversations: React.FC = () => {
         language: language
       });
 
-      toast.success('Conversation started!');
+      toast.success(t('conversationStarted'));
       setShowNewChatForm(false);
       
       // Set the current conversation and open chat window
@@ -292,7 +292,7 @@ const Conversations: React.FC = () => {
       };
       setConversationHistory(prev => [newConversation, ...prev]);
     } catch (error: any) {
-      const message = error.response?.data?.error || 'Failed to start conversation';
+      const message = error.response?.data?.error || t('failedToStartConversation');
       
       // Check if user needs to upgrade their plan
       if (error.response?.data?.upgradeRequired) {
@@ -371,7 +371,7 @@ const Conversations: React.FC = () => {
       // No need to refresh conversation history after each message
       // The current conversation is already updated with the new message
     } catch (error: any) {
-      const message = error.response?.data?.error || 'Failed to send message';
+      const message = error.response?.data?.error || t('failedToSendMessage');
       toast.error(message);
     } finally {
       setSendingMessage(false);
@@ -480,7 +480,7 @@ const Conversations: React.FC = () => {
       refreshHistory();
       
     } catch (error: any) {
-      const message = error.response?.data?.error || 'Failed to end conversation';
+      const message = error.response?.data?.error || t('failedToEndConversation');
       toast.error(message);
     } finally {
       setEndingConversation(false);
@@ -489,7 +489,7 @@ const Conversations: React.FC = () => {
 
   const handleViewConversation = async (conversationId: string) => {
     if (!conversationId || conversationId === 'undefined') {
-      toast.error('Invalid conversation ID');
+      toast.error(t('invalidConversationId'));
       return;
     }
     
@@ -514,7 +514,7 @@ const Conversations: React.FC = () => {
       refreshUsageStatus();
     } catch (error: any) {
       console.error('Failed to load conversation details:', error);
-      toast.error('Failed to load conversation details');
+      toast.error(t('failedToLoadConversationDetails'));
     }
   };
 
@@ -588,9 +588,9 @@ const Conversations: React.FC = () => {
 
   const getDifficultyPhaseTranslation = (phase: string) => {
     switch (phase) {
-      case 'beginning_hard': return 'Beginning Hard';
-      case 'middle_hard': return 'Middle Hard';
-      case 'closing_hard': return 'Closing Hard';
+      case 'beginning_hard': return t('beginningHard');
+      case 'middle_hard': return t('middleHard');
+      case 'closing_hard': return t('closingHard');
       default: return phase;
     }
   };
@@ -623,20 +623,15 @@ const Conversations: React.FC = () => {
         <div>
           <h1 className="text-3xl font-bold text-gray-900">{t('conversations')}</h1>
           {/* Usage Status in Header */}
-          {usageStatus && (
+          {usageStatus && usageStatus.monthlyLimit > 0 && (
             <div className="mt-2 flex items-center gap-4 text-sm text-gray-600">
-              <span>
-                Conversations: {usageStatus.currentUsage} / {usageStatus.monthlyLimit === -1 ? '∞' : usageStatus.monthlyLimit}
+              <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                usageStatus.usagePercentage >= 90 ? 'bg-red-100 text-red-800' :
+                usageStatus.usagePercentage >= 75 ? 'bg-orange-100 text-orange-800' :
+                'bg-blue-100 text-blue-800'
+              }`}>
+                {usageStatus.usagePercentage}% used
               </span>
-              {usageStatus.monthlyLimit > 0 && (
-                <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                  usageStatus.usagePercentage >= 90 ? 'bg-red-100 text-red-800' :
-                  usageStatus.usagePercentage >= 75 ? 'bg-orange-100 text-orange-800' :
-                  'bg-blue-100 text-blue-800'
-                }`}>
-                  {usageStatus.usagePercentage}% used
-                </span>
-              )}
             </div>
           )}
         </div>
@@ -864,7 +859,7 @@ const Conversations: React.FC = () => {
                     disabled={loading}
                     className="flex-1 btn-primary py-3 disabled:opacity-50"
                   >
-                    {loading ? 'Starting...' : t('startChat')}
+                    {loading ? t('starting') : t('startChat')}
                   </button>
                 </div>
               </div>
@@ -885,7 +880,7 @@ const Conversations: React.FC = () => {
                 </div>
                 <div>
                   <h3 className="font-semibold text-gray-900">
-                    {t('chatWith')} {currentConversation.clientCustomization.name || 'Client'}
+                    {t('chatWith')} {currentConversation.clientCustomization.name || t('client')}
                   </h3>
                   <div className="flex items-center gap-2 text-sm text-gray-500">
                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${getDifficultyColor(currentConversation.clientCustomization.difficulty)}`}>
@@ -909,7 +904,7 @@ const Conversations: React.FC = () => {
                   {endingConversation ? (
                     <>
                       <div className="w-4 h-4 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin"></div>
-                      Ending...
+                      {t('ending')}
                     </>
                   ) : (
                     t('endConversation')
@@ -973,7 +968,7 @@ const Conversations: React.FC = () => {
               {currentConversation.messages.length === 0 ? (
                 <div className="text-center text-gray-500 py-8">
                   <MessageSquare className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                  <p>Start the conversation by introducing yourself!</p>
+                  <p>{t('startConversationIntro')}</p>
                 </div>
               ) : (
                 currentConversation.messages.map((message, index) => (
@@ -1013,7 +1008,7 @@ const Conversations: React.FC = () => {
                   onSendMessage={handleSendMessage}
                   disabled={sendingMessage}
                   placeholder={t('typeMessage')}
-                  language={language === 'en' ? 'en-US' : language === 'es' ? 'es-ES' : language === 'ru' ? 'ru-RU' : 'en-US'}
+                  language={language === 'en' ? 'en-US' : language === 'et' ? 'et-EE' : language === 'es' ? 'es-ES' : language === 'ru' ? 'ru-RU' : 'en-US'}
                 />
               ) : (
                 <div className="flex gap-3">
@@ -1047,12 +1042,19 @@ const Conversations: React.FC = () => {
                       onChange={(e) => setSpeechEnabled(e.target.checked)}
                       className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                     />
-                    Enable Voice Input
-                    {speechEnabled && currentConversation && currentConversation.messages.filter(msg => msg.role === 'user').length < 2 && (
-                      <span className="text-xs text-orange-600 ml-1">
-                        (Available after 2 messages)
-                      </span>
-                    )}
+                    {t('enableVoiceInput')}
+                    {speechEnabled && currentConversation && (() => {
+                      const userMessageCount = currentConversation.messages.filter(msg => msg.role === 'user').length;
+                      const messagesNeeded = 2 - userMessageCount;
+                      if (messagesNeeded > 0) {
+                        return (
+                          <span className="text-xs text-orange-600 ml-1">
+                            ({t('availableAfter')} {messagesNeeded} {messagesNeeded > 1 ? t('moreMessages') : t('moreMessage')})
+                          </span>
+                        );
+                      }
+                      return null;
+                    })()}
                   </label>
                   <label className="flex items-center gap-2 text-sm text-gray-600">
                     <input
@@ -1061,7 +1063,7 @@ const Conversations: React.FC = () => {
                       onChange={(e) => setVoiceCommandsEnabled(e.target.checked)}
                       className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                     />
-                    Voice Commands
+                    {t('voiceCommands')}
                   </label>
                 </div>
                 
@@ -1299,7 +1301,7 @@ const Conversations: React.FC = () => {
                       >
                         <p className="whitespace-pre-wrap">{message.content}</p>
                         <div className="text-xs opacity-70 mt-1">
-                          {message.role === 'user' ? 'You' : 'Client'} • {new Date(message.timestamp).toLocaleTimeString()}
+                          {message.role === 'user' ? t('you') : t('client')} • {new Date(message.timestamp).toLocaleTimeString()}
                         </div>
                       </div>
                     </div>

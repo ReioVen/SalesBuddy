@@ -166,7 +166,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   const hasAdminAccess = () => {
-    return user?.role === 'super_admin' || user?.role === 'admin' || user?.isSuperAdmin || user?.isAdmin || false;
+    return user?.role === 'super_admin' || user?.isSuperAdmin || false;
   };
 
   const value: AuthContextType = {

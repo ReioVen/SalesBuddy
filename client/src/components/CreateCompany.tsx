@@ -23,7 +23,7 @@ const CreateCompany: React.FC = () => {
   const [success, setSuccess] = useState(false);
 
   // Check if user is admin
-  const isAdmin = user?.role === 'super_admin' || user?.role === 'admin' || user?.isSuperAdmin || user?.isAdmin;
+  const isAdmin = user?.role === 'super_admin' || user?.isSuperAdmin;
   
   if (!isAdmin) {
     return (
@@ -72,7 +72,7 @@ const CreateCompany: React.FC = () => {
       
       // If this is an admin creating a company, don't update the current user's context
       // The admin should remain as admin, not become a company admin
-      if (user?.role !== 'super_admin' && user?.role !== 'admin' && !user?.isSuperAdmin && !user?.isAdmin) {
+      if (user?.role !== 'super_admin' && !user?.isSuperAdmin) {
         // Only update user context if this is a regular user creating their own company
         if (setUser) {
           setUser({
