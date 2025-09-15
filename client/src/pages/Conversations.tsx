@@ -6,6 +6,8 @@ import axios from 'axios';
 import toast from 'react-hot-toast';
 import { Plus, MessageSquare, User, Building, Briefcase, FileText, Send, X, Star } from 'lucide-react';
 import { translateAIContent } from '../utils/aiContentTranslator.ts';
+import SpeechInput from '../components/SpeechInput.tsx';
+import VoiceCommands from '../components/VoiceCommands.tsx';
 
 interface ClientCustomization {
   name: string;
@@ -86,6 +88,9 @@ const Conversations: React.FC = () => {
   const [currentConversation, setCurrentConversation] = useState<Conversation | null>(null);
   const [newMessage, setNewMessage] = useState('');
   const [sendingMessage, setSendingMessage] = useState(false);
+  const [endingConversation, setEndingConversation] = useState(false);
+  const [speechEnabled, setSpeechEnabled] = useState(true);
+  const [voiceCommandsEnabled, setVoiceCommandsEnabled] = useState(true);
   const [conversationHistory, setConversationHistory] = useState<Conversation[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
@@ -321,8 +326,9 @@ const Conversations: React.FC = () => {
     handleStartConversation();
   };
 
-  const handleSendMessage = async () => {
-    if (!newMessage.trim() || !currentConversation || sendingMessage) return;
+  const handleSendMessage = async (messageText?: string) => {
+    const messageToSend = messageText || newMessage.trim();
+    if (!messageToSend || !currentConversation || sendingMessage) return;
 
     // Check usage before sending message
     if (usageStatus && usageStatus.monthlyLimit > 0 && usageStatus.currentUsage >= usageStatus.monthlyLimit) {
@@ -332,7 +338,6 @@ const Conversations: React.FC = () => {
     }
 
     setSendingMessage(true);
-    const userMessage = newMessage.trim();
     setNewMessage('');
 
     // Add user message to conversation
@@ -340,7 +345,7 @@ const Conversations: React.FC = () => {
       ...currentConversation,
       messages: [...currentConversation.messages, {
         role: 'user' as const,
-        content: userMessage,
+        content: messageToSend,
         timestamp: new Date()
       }]
     };
@@ -349,7 +354,7 @@ const Conversations: React.FC = () => {
     try {
       const response = await axios.post('/api/ai/message', {
         conversationId: currentConversation.id,
-        message: userMessage,
+        message: messageToSend,
         language: language
       });
 
@@ -380,9 +385,33 @@ const Conversations: React.FC = () => {
     }
   };
 
+  // Handle voice commands
+  const handleVoiceCommand = (command: string) => {
+    switch (command) {
+      case 'send':
+        handleSendMessage();
+        break;
+      case 'clear':
+        setNewMessage('');
+        break;
+      case 'new':
+        setShowNewChatForm(true);
+        break;
+      case 'end':
+        handleEndConversation();
+        break;
+      case 'help':
+        toast.success('Voice commands: Send message, Clear text, New conversation, End conversation');
+        break;
+      default:
+        break;
+    }
+  };
+
   const handleCloseChatWindow = async () => {
-    if (!currentConversation) return;
+    if (!currentConversation || endingConversation) return;
     
+    setEndingConversation(true);
     try {
       // End the conversation and generate AI ratings (same as "End Conversation" button)
       await axios.post(`/api/ai/conversation/${currentConversation.id}/end`);
@@ -410,11 +439,13 @@ const Conversations: React.FC = () => {
       console.error('Failed to end conversation:', error);
       // Still close the window even if end fails
       setCurrentConversation(null);
+    } finally {
+      setEndingConversation(false);
     }
   };
 
   const handleEndConversation = async () => {
-    if (!currentConversation) return;
+    if (!currentConversation || endingConversation) return;
     
     // Check usage before ending conversation
     if (usageStatus && usageStatus.monthlyLimit > 0 && usageStatus.currentUsage >= usageStatus.monthlyLimit) {
@@ -423,6 +454,7 @@ const Conversations: React.FC = () => {
       return;
     }
     
+    setEndingConversation(true);
     try {
       await axios.post(`/api/ai/conversation/${currentConversation.id}/end`);
       toast.success(t('conversationEnded'));
@@ -450,6 +482,8 @@ const Conversations: React.FC = () => {
     } catch (error: any) {
       const message = error.response?.data?.error || 'Failed to end conversation';
       toast.error(message);
+    } finally {
+      setEndingConversation(false);
     }
   };
 
@@ -869,13 +903,22 @@ const Conversations: React.FC = () => {
               <div className="flex items-center gap-2">
                 <button
                   onClick={handleEndConversation}
-                  className="btn-secondary px-4 py-2 text-sm"
+                  disabled={endingConversation}
+                  className="btn-secondary px-4 py-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                 >
-                  {t('endConversation')}
+                  {endingConversation ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin"></div>
+                      Ending...
+                    </>
+                  ) : (
+                    t('endConversation')
+                  )}
                 </button>
                 <button
                   onClick={handleCloseChatWindow}
-                  className="text-gray-400 hover:text-gray-600"
+                  disabled={endingConversation}
+                  className="text-gray-400 hover:text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <X className="w-6 h-6" />
                 </button>
@@ -965,24 +1008,70 @@ const Conversations: React.FC = () => {
 
             {/* Message Input */}
             <div className="p-4 border-t border-gray-200">
-              <div className="flex gap-3">
-                <textarea
-                  value={newMessage}
-                  onChange={(e) => setNewMessage(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  placeholder={t('typeMessage')}
-                  rows={2}
-                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+              {speechEnabled && currentConversation && currentConversation.messages.filter(msg => msg.role === 'user').length >= 2 ? (
+                <SpeechInput
+                  onSendMessage={handleSendMessage}
                   disabled={sendingMessage}
+                  placeholder={t('typeMessage')}
+                  language={language === 'en' ? 'en-US' : language === 'es' ? 'es-ES' : language === 'ru' ? 'ru-RU' : 'en-US'}
                 />
-                <button
-                  onClick={handleSendMessage}
-                  disabled={!newMessage.trim() || sendingMessage}
-                  className="btn-primary px-6 py-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-                >
-                  <Send className="w-4 h-4" />
-                  {t('sendMessage')}
-                </button>
+              ) : (
+                <div className="flex gap-3">
+                  <textarea
+                    value={newMessage}
+                    onChange={(e) => setNewMessage(e.target.value)}
+                    onKeyPress={handleKeyPress}
+                    placeholder={t('typeMessage')}
+                    rows={2}
+                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                    disabled={sendingMessage}
+                  />
+                  <button
+                    onClick={() => handleSendMessage()}
+                    disabled={!newMessage.trim() || sendingMessage}
+                    className="btn-primary px-6 py-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                  >
+                    <Send className="w-4 h-4" />
+                    {t('sendMessage')}
+                  </button>
+                </div>
+              )}
+              
+              {/* Speech Controls */}
+              <div className="flex items-center justify-between mt-3">
+                <div className="flex items-center gap-4">
+                  <label className="flex items-center gap-2 text-sm text-gray-600">
+                    <input
+                      type="checkbox"
+                      checked={speechEnabled}
+                      onChange={(e) => setSpeechEnabled(e.target.checked)}
+                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    />
+                    Enable Voice Input
+                    {speechEnabled && currentConversation && currentConversation.messages.filter(msg => msg.role === 'user').length < 2 && (
+                      <span className="text-xs text-orange-600 ml-1">
+                        (Available after 2 messages)
+                      </span>
+                    )}
+                  </label>
+                  <label className="flex items-center gap-2 text-sm text-gray-600">
+                    <input
+                      type="checkbox"
+                      checked={voiceCommandsEnabled}
+                      onChange={(e) => setVoiceCommandsEnabled(e.target.checked)}
+                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    />
+                    Voice Commands
+                  </label>
+                </div>
+                
+                {voiceCommandsEnabled && speechEnabled && currentConversation && currentConversation.messages.filter(msg => msg.role === 'user').length >= 2 && (
+                  <VoiceCommands
+                    isListening={false} // This will be managed by SpeechInput
+                    onCommand={handleVoiceCommand}
+                    className="relative"
+                  />
+                )}
               </div>
             </div>
           </div>

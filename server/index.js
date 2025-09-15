@@ -22,6 +22,7 @@ const adminRoutes = require('./routes/admin');
 const conversationSummaryRoutes = require('./routes/conversationSummaries');
 const translationsRoutes = require('./routes/translations');
 const dynamicTranslationRoutes = require('./routes/dynamicTranslation');
+const speechRoutes = require('./routes/speech');
 const { authenticateToken } = require('./middleware/auth');
 const dailyRefreshService = require('./services/dailyRefreshService');
 
@@ -71,16 +72,16 @@ mongoose.connect(mongoUri)
 .then(() => console.log(`Connected to MongoDB: ${mongoUri.includes('127.0.0.1') ? 'local' : 'remote'}`))
 .catch(err => console.error('MongoDB connection error:', err));
 
-// Request logging middleware
-app.use('/api', (req, res, next) => {
-  console.log('🌐 [SERVER] Incoming request:', {
-    method: req.method,
-    url: req.url,
-    path: req.path,
-    timestamp: new Date().toISOString()
-  });
-  next();
-});
+// Request logging middleware (disabled in production)
+// app.use('/api', (req, res, next) => {
+//   console.log('🌐 [SERVER] Incoming request:', {
+//     method: req.method,
+//     url: req.url,
+//     path: req.path,
+//     timestamp: new Date().toISOString()
+//   });
+//   next();
+// });
 
 // Routes
 app.use('/api/auth', authRoutes);
@@ -96,6 +97,7 @@ app.use('/api/ai', authenticateToken, aiRoutes);
 app.use('/api/conversation-summaries', authenticateToken, conversationSummaryRoutes);
 app.use('/api/translations', translationsRoutes);
 app.use('/api/dynamic-translation', dynamicTranslationRoutes);
+app.use('/api/speech', authenticateToken, speechRoutes);
 app.use('/api/enterprise', enterpriseRoutes);
 
 // Health check endpoint

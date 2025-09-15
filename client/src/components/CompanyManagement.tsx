@@ -18,6 +18,7 @@ interface CompanyUser {
   isTeamLeader: boolean;
   teamId?: string;
   createdAt: string;
+  companyJoinedAt?: string;
 }
 
 interface Team {
@@ -353,17 +354,27 @@ const CompanyManagement: React.FC = () => {
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                              user.isCompanyAdmin 
+                              user.isSuperAdmin || user.isAdmin || user.isCompanyAdmin || user.role === 'super_admin' || user.role === 'admin' || user.role === 'company_admin'
                                 ? 'bg-red-100 text-red-800'
-                                : user.isTeamLeader
+                                : user.isTeamLeader || user.role === 'company_team_leader'
                                 ? 'bg-blue-100 text-blue-800'
                                 : 'bg-gray-100 text-gray-800'
                             }`}>
-                              {user.isCompanyAdmin ? t('admin') : user.isTeamLeader ? t('teamLeader') : t('user')}
+                              {user.isSuperAdmin || user.role === 'super_admin' 
+                                ? 'Super Admin' 
+                                : user.isAdmin || user.role === 'admin'
+                                ? 'Admin'
+                                : user.isCompanyAdmin || user.role === 'company_admin'
+                                ? t('admin')
+                                : user.isTeamLeader || user.role === 'company_team_leader'
+                                ? t('teamLeader')
+                                : t('user')}
                             </span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {new Date(user.createdAt).toLocaleDateString()}
+                            {user.isSuperAdmin || user.role === 'super_admin' ? '-' :
+                             user.companyJoinedAt ? new Date(user.companyJoinedAt).toLocaleDateString() : 
+                             user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}
                           </td>
                         </tr>
                       ))}

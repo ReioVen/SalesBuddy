@@ -101,27 +101,15 @@ router.post('/create', authenticateToken, [
 
 // Get company details (current user's company or all companies for super admin)
 router.get('/details', authenticateToken, async (req, res) => {
-  console.log('🔍 [COMPANIES] /details route hit');
-  console.log('🔍 [COMPANIES] User:', {
-    id: req.user._id,
-    email: req.user.email,
-    role: req.user.role,
-    companyId: req.user.companyId,
-    isSuperAdmin: req.user.isSuperAdmin
-  });
-  
   try {
     // If user is super admin, return all companies
     if (req.user.isSuperAdminUser()) {
-      console.log('🔍 [COMPANIES] Super admin - fetching all companies');
       const companies = await Company.find({})
         .populate('admin', 'firstName lastName email')
-        .populate('users', 'firstName lastName email role teamId')
+        .populate('users', 'firstName lastName email role teamId isTeamLeader isCompanyAdmin isAdmin isSuperAdmin createdAt companyJoinedAt')
         .populate('teams.members', 'firstName lastName email')
         .populate('teams.teamLeader', 'firstName lastName email')
         .sort({ createdAt: -1 });
-
-      console.log('✅ [COMPANIES] Found', companies.length, 'companies for super admin');
 
       return res.json({
         companies: companies.map(company => ({
@@ -144,30 +132,18 @@ router.get('/details', authenticateToken, async (req, res) => {
 
     // Regular users - get their own company
     if (!req.user.companyId) {
-      console.log('❌ [COMPANIES] User does not belong to any company');
       return res.status(404).json({ error: 'User does not belong to any company' });
     }
-    
-    console.log('🔍 [COMPANIES] Looking for company with ID:', req.user.companyId);
 
     const company = await Company.findById(req.user.companyId)
       .populate('admin', 'firstName lastName email')
-      .populate('users', 'firstName lastName email role teamId')
+      .populate('users', 'firstName lastName email role teamId isTeamLeader isCompanyAdmin isAdmin isSuperAdmin createdAt companyJoinedAt')
       .populate('teams.members', 'firstName lastName email')
       .populate('teams.teamLeader', 'firstName lastName email');
 
     if (!company) {
-      console.log('❌ [COMPANIES] Company not found with ID:', req.user.companyId);
       return res.status(404).json({ error: 'Company not found' });
     }
-
-    console.log('✅ [COMPANIES] Company found:', {
-      id: company._id,
-      name: company.name,
-      companyId: company.companyId,
-      userCount: company.users?.length || 0,
-      teamCount: company.teams?.length || 0
-    });
 
     res.json({
       company: {
@@ -199,20 +175,12 @@ router.get('/details', authenticateToken, async (req, res) => {
 
 // Get company details by ID (for company management)
 router.get('/:id', authenticateToken, async (req, res) => {
-  console.log('🔍 [COMPANIES] /:id route hit with ID:', req.params.id);
-  console.log('🔍 [COMPANIES] User:', {
-    id: req.user._id,
-    email: req.user.email,
-    role: req.user.role,
-    companyId: req.user.companyId
-  });
   
   try {
     const companyId = req.params.id;
     
     // Check if user has access to this company
     if (req.user.companyId?.toString() !== companyId && !req.user.isSuperAdminUser() && !req.user.isAdminUser()) {
-      console.log('❌ [COMPANIES] Access denied to company:', companyId);
       return res.status(403).json({ error: 'Access denied to this company' });
     }
 
@@ -387,6 +355,7 @@ router.post('/users', authenticateToken, canManageUsers, [
       firstName,
       lastName,
       companyId: company._id,
+      companyJoinedAt: new Date(), // Set the company join date
       role,
       teamId: team ? team._id : null,
       isTeamLeader: role === 'company_team_leader',
@@ -444,7 +413,7 @@ router.post('/users', authenticateToken, canManageUsers, [
 router.get('/users', authenticateToken, canManageUsers, async (req, res) => {
   try {
     const company = await Company.findById(req.user.companyId)
-      .populate('users', 'firstName lastName email role teamId isTeamLeader createdAt lastLogin')
+      .populate('users', 'firstName lastName email role teamId isTeamLeader isCompanyAdmin isAdmin isSuperAdmin createdAt companyJoinedAt lastLogin')
       .populate('teams.members', 'firstName lastName email')
       .populate('teams.teamLeader', 'firstName lastName email');
 
@@ -703,25 +672,17 @@ router.delete('/users/:userId', authenticateToken, requireCompanyAdmin, async (r
     // Remove user from company
     await company.removeUser(userId);
 
-    console.log(`Starting complete data deletion for user: ${userId} (${user.email})`);
-
     // Delete all user's conversations
     const deletedConversations = await Conversation.deleteMany({ userId });
-    console.log(`Deleted ${deletedConversations.deletedCount} conversations for user ${userId}`);
 
     // Delete all user's conversation summaries
     const deletedSummaries = await ConversationSummary.deleteMany({ userId });
-    console.log(`Deleted ${deletedSummaries.deletedCount} conversation summaries for user ${userId}`);
 
     // Delete the user account completely
     const deletedUser = await User.findByIdAndDelete(userId);
     if (!deletedUser) {
       return res.status(404).json({ error: 'User not found' });
     }
-    console.log(`Deleted user account: ${deletedUser.email}`);
-
-    // Log the deletion for audit purposes
-    console.log(`Company user deletion completed for user: ${userId} (${deletedUser.email}) by admin: ${req.user.email}`);
 
     res.json({
       success: true,
@@ -800,6 +761,7 @@ router.post('/users/add', authenticateToken, requireCompanyAdmin, [
       lastName,
       role,
       companyId,
+      companyJoinedAt: new Date(), // Set the company join date
       teamId: teamId || null,
       isCompanyAdmin: false,
       isTeamLeader: role === 'company_team_leader',

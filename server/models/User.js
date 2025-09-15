@@ -39,6 +39,10 @@ const userSchema = new mongoose.Schema({
     ref: 'Company',
     default: null
   },
+  companyJoinedAt: {
+    type: Date,
+    default: null
+  },
   // User language preference
   language: {
     type: String,

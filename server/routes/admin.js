@@ -277,6 +277,7 @@ router.post('/users/create', authenticateToken, canManageAllUsers, [
       lastName,
       role,
       companyId: companyId || null,
+      companyJoinedAt: companyId ? new Date() : null, // Set company join date if user belongs to company
       teamId: teamId || null,
       isCompanyAdmin: role === 'company_admin',
       isTeamLeader: role === 'company_team_leader',
