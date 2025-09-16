@@ -1253,45 +1253,77 @@ const analyzeConversationPhases = (messages) => {
     close: false
   };
 
-  // Check for introduction phase indicators
+  // Check for introduction phase indicators (more comprehensive)
   if (conversationText.includes('hello') || conversationText.includes('hi') || 
       conversationText.includes('this is') || conversationText.includes('calling from') ||
-      conversationText.includes('my name is') || conversationText.includes('i\'m')) {
+      conversationText.includes('my name is') || conversationText.includes('i\'m') ||
+      conversationText.includes('oh, hi') || conversationText.includes('oh, hello')) {
     phases.introduction = true;
   }
 
   // Check for mapping phase indicators (understanding needs, asking questions)
-  if (conversationText.includes('what do you') || conversationText.includes('how can i help') ||
-      conversationText.includes('tell me about') || conversationText.includes('what are your') ||
-      conversationText.includes('do you have') || conversationText.includes('what challenges') ||
-      conversationText.includes('what problems') || conversationText.includes('what issues')) {
+  // Must be salesperson asking questions, not just client asking
+  const salespersonMessages = messages.filter(msg => msg.role === 'user');
+  const salespersonText = salespersonMessages.map(msg => msg.content).join(' ').toLowerCase();
+  
+  if (salespersonText.includes('what do you') || salespersonText.includes('how can i help') ||
+      salespersonText.includes('tell me about') || salespersonText.includes('what are your') ||
+      salespersonText.includes('do you have') || salespersonText.includes('what challenges') ||
+      salespersonText.includes('what problems') || salespersonText.includes('what issues') ||
+      salespersonText.includes('what can i help') || salespersonText.includes('what do you need') ||
+      salespersonText.includes('what would you like') || salespersonText.includes('what are you looking') ||
+      salespersonText.includes('what kind of') || salespersonText.includes('how long have') ||
+      salespersonText.includes('what\'s your current') || salespersonText.includes('what are your goals')) {
     phases.mapping = true;
   }
 
-  // Check for product presentation phase indicators
-  if (conversationText.includes('our service') || conversationText.includes('our product') ||
-      conversationText.includes('we offer') || conversationText.includes('we provide') ||
-      conversationText.includes('this solution') || conversationText.includes('this service') ||
-      conversationText.includes('benefits') || conversationText.includes('features') ||
-      conversationText.includes('value') || conversationText.includes('help you')) {
+  // Check for product presentation phase indicators (must be salesperson presenting)
+  if (salespersonText.includes('our service') || salespersonText.includes('our product') ||
+      salespersonText.includes('we offer') || salespersonText.includes('we provide') ||
+      salespersonText.includes('this solution') || salespersonText.includes('this service') ||
+      salespersonText.includes('benefits') || salespersonText.includes('features') ||
+      salespersonText.includes('value') || salespersonText.includes('help you') ||
+      salespersonText.includes('what we do') || salespersonText.includes('what this is about') ||
+      salespersonText.includes('our company') || salespersonText.includes('we specialize') ||
+      salespersonText.includes('our team') || salespersonText.includes('we can help') ||
+      salespersonText.includes('this will help') || salespersonText.includes('our approach')) {
     phases.productPresentation = true;
   }
 
-  // Check for objection handling phase indicators
-  if (conversationText.includes('but') || conversationText.includes('however') ||
-      conversationText.includes('not interested') || conversationText.includes('don\'t need') ||
-      conversationText.includes('too expensive') || conversationText.includes('think about it') ||
-      conversationText.includes('concern') || conversationText.includes('worry') ||
-      conversationText.includes('objection') || conversationText.includes('hesitant')) {
+  // Check for objection handling phase indicators (must be salesperson responding to objections)
+  const clientMessages = messages.filter(msg => msg.role === 'assistant');
+  const clientText = clientMessages.map(msg => msg.content).join(' ').toLowerCase();
+  
+  // Check if client raised objections
+  const hasObjection = clientText.includes('but') || clientText.includes('however') ||
+      clientText.includes('not interested') || clientText.includes('don\'t need') ||
+      clientText.includes('too expensive') || clientText.includes('think about it') ||
+      clientText.includes('concern') || clientText.includes('worry') ||
+      clientText.includes('objection') || clientText.includes('hesitant') ||
+      clientText.includes('particular') || clientText.includes('decisions') ||
+      clientText.includes('busy') || clientText.includes('not right now');
+  
+  // Check if salesperson responded to objections
+  const hasResponse = salespersonText.includes('i understand') || salespersonText.includes('i hear you') ||
+      salespersonText.includes('let me address') || salespersonText.includes('that\'s a valid') ||
+      salespersonText.includes('i can see why') || salespersonText.includes('many people feel') ||
+      salespersonText.includes('however') || salespersonText.includes('but consider') ||
+      salespersonText.includes('what if') || salespersonText.includes('let me explain');
+  
+  if (hasObjection && hasResponse) {
     phases.objectionHandling = true;
   }
 
-  // Check for close phase indicators
-  if (conversationText.includes('next step') || conversationText.includes('schedule') ||
-      conversationText.includes('follow up') || conversationText.includes('meeting') ||
-      conversationText.includes('call back') || conversationText.includes('send information') ||
-      conversationText.includes('proposal') || conversationText.includes('contract') ||
-      conversationText.includes('sign up') || conversationText.includes('get started')) {
+  // Check for close phase indicators (must be salesperson attempting to close)
+  if (salespersonText.includes('next step') || salespersonText.includes('schedule') ||
+      salespersonText.includes('follow up') || salespersonText.includes('meeting') ||
+      salespersonText.includes('call back') || salespersonText.includes('send information') ||
+      salespersonText.includes('proposal') || salespersonText.includes('contract') ||
+      salespersonText.includes('sign up') || salespersonText.includes('get started') ||
+      salespersonText.includes('when can we') || salespersonText.includes('would you like to') ||
+      salespersonText.includes('shall we') || salespersonText.includes('let\'s set up') ||
+      salespersonText.includes('are you ready') || salespersonText.includes('shall we proceed') ||
+      salespersonText.includes('would you be interested') || salespersonText.includes('can we move forward')) {
     phases.close = true;
   }
 
@@ -1309,14 +1341,14 @@ const createRatingPrompt = (messages) => {
   const totalMessages = messages.length;
   
   // Determine if conversation ended too early
-  const endedEarly = totalMessages < 6; // Less than 3 exchanges (6 messages total)
+  const endedEarly = totalMessages < 4; // Less than 2 exchanges (4 messages total)
   const earlyTerminationReason = endedEarly ? 
     (conversationText.toLowerCase().includes('not interested') ? 'Client declined early' :
      conversationText.toLowerCase().includes('busy') ? 'Client was too busy' :
      conversationText.toLowerCase().includes('hang up') ? 'Client hung up' :
      'Conversation ended abruptly') : null;
 
-  let prompt = `You are an expert sales trainer analyzing a sales conversation. 
+  let prompt = `You are an expert sales trainer analyzing a sales conversation. Be fair and constructive in your evaluation.
 
 CONVERSATION:
 ${conversationText}
@@ -1333,11 +1365,25 @@ PHASES THAT OCCURRED:
 - Objection Handling: ${occurredPhases.objectionHandling ? 'YES' : 'NO'}
 - Close: ${occurredPhases.close ? 'YES' : 'NO'}
 
+RATING GUIDELINES:
+- 1-3: Poor execution, major issues, unprofessional
+- 4-6: Average execution, room for improvement, basic competency
+- 7-8: Good execution, minor improvements needed, professional
+- 9-10: Excellent execution, professional quality, exceptional
+
+STRICT EVALUATION CRITERIA:
+- Introduction (1-10): Did salesperson properly introduce themselves and company?
+- Mapping (1-10): Did salesperson ask discovery questions to understand client needs?
+- Product Presentation (1-10): Did salesperson clearly present product/service benefits?
+- Objection Handling (1-10): Did salesperson address client concerns professionally?
+- Close (1-10): Did salesperson attempt to move toward next steps or closing?
+
 INSTRUCTIONS:
 1. Rate ONLY the phases that actually occurred in the conversation (1-10 scale)
 2. Give a rating of 0 for phases that did NOT occur
-3. If the conversation ended early, explain why and provide specific feedback about what went wrong
-4. Be fair but critical. Consider industry best practices for sales conversations.
+3. Be strict and realistic - don't give high scores for minimal effort
+4. A phase must show actual sales skill, not just basic conversation
+5. Consider industry standards for professional sales conversations
 
 Respond in this exact JSON format:
 {
@@ -1346,7 +1392,7 @@ Respond in this exact JSON format:
   "productPresentation": ${occurredPhases.productPresentation ? '[number 1-10]' : '0'},
   "objectionHandling": ${occurredPhases.objectionHandling ? '[number 1-10]' : '0'},
   "close": ${occurredPhases.close ? '[number 1-10]' : '0'},
-  "feedback": "[Provide specific feedback about what went wrong and suggestions for improvement. If conversation ended early, explain why and what could have been done differently. Use 'you' instead of 'the salesperson' throughout the feedback.]"
+  "feedback": "[Provide constructive feedback highlighting what was done well and specific suggestions for improvement. Be encouraging while being honest about areas for growth. Use 'you' instead of 'the salesperson' throughout the feedback.]"
 }`;
 
   return prompt;

@@ -110,36 +110,111 @@ export const useSpeechToText = (options: SpeechToTextOptions = {}): SpeechToText
   }, [language, continuous, interimResults, maxAlternatives, onResult, onError, onStart, onEnd]);
 
   const startListening = useCallback(() => {
-    if (recognitionRef.current && !isListening && !isStarting) {
+    // Prevent multiple rapid starts
+    if (isStarting) {
+      return;
+    }
+    
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (SpeechRecognition) {
       try {
-        setIsStarting(true);
-        finalTranscriptRef.current = '';
-        setTranscript('');
-        setError(null);
-        recognitionRef.current.start();
+        // Always stop any existing recognition first
+        if (recognitionRef.current) {
+          try {
+            recognitionRef.current.stop();
+          } catch (e) {
+            // Ignore errors when stopping
+          }
+        }
+        
+        // Add a longer delay to ensure the previous recognition is fully stopped
+        setTimeout(() => {
+          try {
+            // Create a completely fresh recognition instance
+            const recognition = new SpeechRecognition();
+            recognition.continuous = false; // Set to false to prevent conflicts
+            recognition.interimResults = interimResults;
+            recognition.lang = language;
+            recognition.maxAlternatives = maxAlternatives;
+
+            recognition.onstart = () => {
+              setIsListening(true);
+              setIsStarting(false);
+              setError(null);
+              onStart?.();
+              onWaveformChange?.(true);
+            };
+
+            recognition.onend = () => {
+              setIsListening(false);
+              setIsStarting(false);
+              onEnd?.();
+              onWaveformChange?.(false);
+            };
+
+            recognition.onerror = (event) => {
+              const errorMessage = getErrorMessage(event.error);
+              setError(errorMessage);
+              setIsListening(false);
+              setIsStarting(false);
+              onError?.(errorMessage);
+            };
+
+            recognition.onresult = (event) => {
+              let interimTranscript = '';
+              let finalTranscript = finalTranscriptRef.current;
+
+              for (let i = event.resultIndex; i < event.results.length; i++) {
+                const result = event.results[i];
+                
+                if (result.isFinal) {
+                  finalTranscript += result[0].transcript;
+                  setConfidence(result[0].confidence || 0);
+                } else {
+                  interimTranscript += result[0].transcript;
+                }
+              }
+
+              const fullTranscript = finalTranscript + interimTranscript;
+              setTranscript(fullTranscript);
+              finalTranscriptRef.current = finalTranscript;
+
+              onResult?.(fullTranscript, event.results[event.results.length - 1]?.isFinal || false);
+            };
+
+            recognitionRef.current = recognition;
+            
+            setIsStarting(true);
+            finalTranscriptRef.current = '';
+            setTranscript('');
+            setError(null);
+            recognition.start();
+          } catch (err) {
+            setError('Failed to start speech recognition');
+            setIsStarting(false);
+          }
+        }, 1000); // 1 second delay to ensure proper cleanup
       } catch (err) {
         setError('Failed to start speech recognition');
         setIsStarting(false);
       }
     }
-  }, [isListening, isStarting]);
+  }, [continuous, interimResults, language, maxAlternatives, onResult, onError, onStart, onEnd, onWaveformChange, isListening, isStarting]);
 
   const stopListening = useCallback(() => {
-    if (recognitionRef.current && (isListening || isStarting)) {
+    if (recognitionRef.current) {
       try {
         recognitionRef.current.stop();
-        // Force set listening state to false immediately
-        setIsListening(false);
-        setIsStarting(false);
-        onWaveformChange?.(false);
       } catch (err) {
-        console.error('Error stopping speech recognition:', err);
-        setIsListening(false);
-        setIsStarting(false);
-        onWaveformChange?.(false);
+        // Ignore errors when stopping
       }
     }
-  }, [isListening, isStarting, onWaveformChange]);
+    // Always reset states to ensure clean state
+    setIsListening(false);
+    setIsStarting(false);
+    setError(null);
+    onWaveformChange?.(false);
+  }, [onWaveformChange]);
 
   const resetTranscript = useCallback(() => {
     setTranscript('');
@@ -175,7 +250,7 @@ function getErrorMessage(error: string): string {
     case 'service-not-allowed':
       return 'Speech recognition service is not allowed.';
     case 'aborted':
-      return 'Please send your current message before starting a new voice message.';
+      return 'Speech recognition was stopped. You can start a new voice message now.';
     default:
       return `Speech recognition error: ${error}`;
   }

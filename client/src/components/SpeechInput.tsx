@@ -79,12 +79,21 @@ const SpeechInput: React.FC<SpeechInputProps> = ({
         resetTranscript();
       } else if (lowerTranscript.includes('stop listening') || lowerTranscript.includes('stop')) {
         stopListening();
+      } else {
+        // Set text input from transcript if it's not a voice command
+        setTextInput(transcript);
       }
     }
   }, [transcript, textInput, isManualTyping, resetTranscript, stopListening]);
 
   const handleSendMessage = () => {
     if (textInput.trim()) {
+      // Stop speech recognition first if active
+      if (isListening || isStarting) {
+        stopListening();
+        setWaveformAnimation(false);
+      }
+      
       onSendMessage(textInput.trim());
       setTextInput('');
       resetTranscript();
@@ -106,12 +115,14 @@ const SpeechInput: React.FC<SpeechInputProps> = ({
 
   const handleMicClick = () => {
     if (isListening || isStarting) {
-      console.log('Stopping speech recognition...');
       stopListening();
       // Force stop animation immediately
       setWaveformAnimation(false);
     } else {
-      console.log('Starting speech recognition...');
+      // Clear any existing text and reset manual typing flag before starting
+      setTextInput('');
+      setIsManualTyping(false);
+      resetTranscript();
       startListening();
     }
   };
@@ -211,8 +222,8 @@ const SpeechInput: React.FC<SpeechInputProps> = ({
 
       {/* Error Display */}
       {error && (
-        <div className="mb-3 p-3 bg-red-50 border border-red-200 rounded-lg">
-          <div className="flex items-center gap-2 text-red-800">
+        <div className="mb-3 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+          <div className="flex items-center gap-2 text-red-800 dark:text-red-300">
             <VolumeX className="w-4 h-4" />
             <span className="text-sm">{error}</span>
           </div>
@@ -229,7 +240,7 @@ const SpeechInput: React.FC<SpeechInputProps> = ({
             onKeyPress={handleKeyPress}
             placeholder={placeholder}
             rows={2}
-            className="w-full px-4 py-2 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+            className="w-full px-4 py-2 pr-12 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none placeholder-gray-500 dark:placeholder-gray-400"
             disabled={disabled}
           />
           
@@ -251,8 +262,8 @@ const SpeechInput: React.FC<SpeechInputProps> = ({
             disabled={!isSupported || disabled}
             className={`p-3 rounded-lg border-2 transition-all ${
               (isListening || isStarting)
-                ? 'bg-red-100 border-red-300 text-red-600 hover:bg-red-200'
-                : 'bg-gray-100 border-gray-300 text-gray-600 hover:bg-gray-200'
+                ? 'bg-red-100 dark:bg-red-900/20 border-red-300 dark:border-red-700 text-red-600 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/30'
+                : 'bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
             } ${!isSupported || disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
             title={(isListening || isStarting) ? 'Stop listening' : 'Start voice input'}
           >
@@ -276,14 +287,14 @@ const SpeechInput: React.FC<SpeechInputProps> = ({
 
       {/* Browser Support Warning */}
       {!isSupported && (
-        <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded text-xs text-yellow-800">
+        <div className="mt-2 p-2 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded text-xs text-yellow-800 dark:text-yellow-300">
           ⚠️ Speech recognition is not supported in your browser. Please use Chrome, Edge, or Safari for voice input.
         </div>
       )}
 
       {/* Live Transcript Display */}
       {transcript && !isManualTyping && (
-        <div className="mt-2 p-2 bg-gray-50 border border-gray-200 rounded text-sm text-gray-700">
+        <div className="mt-2 p-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded text-sm text-gray-700 dark:text-gray-300">
           <div className="flex items-center gap-2 mb-1">
             <Volume2 className="w-3 h-3" />
             <span className="font-medium">Live Transcript:</span>

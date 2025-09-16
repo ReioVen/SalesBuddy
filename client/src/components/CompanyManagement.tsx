@@ -7,6 +7,7 @@ import EditUser from './EditUser.tsx';
 import EditTeam from './EditTeam.tsx';
 import TeamMemberManagement from './TeamMemberManagement.tsx';
 import UserDetailModal from './UserDetailModal.tsx';
+import Leaderboard from './Leaderboard.tsx';
 
 interface CompanyUser {
   _id: string;
@@ -57,7 +58,7 @@ const CompanyManagement: React.FC = () => {
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'teams'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'teams' | 'leaderboard'>('overview');
   const [showAddUser, setShowAddUser] = useState(false);
   const [showCreateTeam, setShowCreateTeam] = useState(false);
   const [editingUser, setEditingUser] = useState<CompanyUser | null>(null);
@@ -282,7 +283,8 @@ const CompanyManagement: React.FC = () => {
             {[
               { id: 'overview', label: t('overview') },
               { id: 'users', label: t('users') },
-              { id: 'teams', label: t('teams') }
+              { id: 'teams', label: t('teams') },
+              { id: 'leaderboard', label: t('leaderboard') }
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -644,6 +646,12 @@ const CompanyManagement: React.FC = () => {
                   )}
                 </div>
               )}
+            </div>
+          )}
+
+          {activeTab === 'leaderboard' && (
+            <div className="space-y-6">
+              <Leaderboard companyId={company._id} />
             </div>
           )}
         </div>

@@ -1308,6 +1308,102 @@ router.delete('/teams/:teamId', authenticateToken, requireCompanyAdmin, async (r
   }
 });
 
+// Get company leaderboard (Company users only)
+router.get('/leaderboard', authenticateToken, async (req, res) => {
+  try {
+    // Check if user belongs to a company
+    if (!req.user.companyId) {
+      return res.status(404).json({ error: 'User does not belong to any company' });
+    }
+
+    const company = await Company.findById(req.user.companyId)
+      .populate('users', 'firstName lastName email role teamId isTeamLeader isCompanyAdmin');
+    
+    if (!company) {
+      return res.status(404).json({ error: 'Company not found' });
+    }
+
+    // Get all users in the company (excluding super admins and admins)
+    const companyUsers = company.users.filter(user => 
+      user.role !== 'super_admin' && 
+      user.role !== 'admin' && 
+      user.role !== 'company_admin'
+    );
+
+    const leaderboardData = [];
+
+    // Calculate average scores for each user based on their last 5 conversations
+    for (const user of companyUsers) {
+      // Get user's last 5 conversations with AI ratings
+      const conversations = await Conversation.find({
+        userId: user._id,
+        isActive: true,
+        'aiRatings.totalScore': { $exists: true, $gt: 0 }
+      })
+      .sort({ updatedAt: -1 })
+      .limit(5)
+      .select('aiRatings updatedAt');
+
+      if (conversations.length > 0) {
+        // Calculate average total score
+        const totalScore = conversations.reduce((sum, conv) => sum + (conv.aiRatings.totalScore || 0), 0);
+        const averageScore = totalScore / conversations.length;
+
+        // Calculate average scores for each phase
+        const phaseAverages = {
+          introduction: conversations.reduce((sum, conv) => sum + (conv.aiRatings.introduction || 0), 0) / conversations.length,
+          mapping: conversations.reduce((sum, conv) => sum + (conv.aiRatings.mapping || 0), 0) / conversations.length,
+          productPresentation: conversations.reduce((sum, conv) => sum + (conv.aiRatings.productPresentation || 0), 0) / conversations.length,
+          objectionHandling: conversations.reduce((sum, conv) => sum + (conv.aiRatings.objectionHandling || 0), 0) / conversations.length,
+          close: conversations.reduce((sum, conv) => sum + (conv.aiRatings.close || 0), 0) / conversations.length
+        };
+
+        // Find user's team name
+        const userTeam = company.teams.find(team => 
+          team.members.some(memberId => memberId.toString() === user._id.toString())
+        );
+
+        leaderboardData.push({
+          userId: user._id,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          email: user.email,
+          role: user.role,
+          isTeamLeader: user.isTeamLeader,
+          teamName: userTeam ? userTeam.name : null,
+          averageScore: Math.round(averageScore * 10) / 10, // Round to 1 decimal place
+          phaseAverages: {
+            introduction: Math.round(phaseAverages.introduction * 10) / 10,
+            mapping: Math.round(phaseAverages.mapping * 10) / 10,
+            productPresentation: Math.round(phaseAverages.productPresentation * 10) / 10,
+            objectionHandling: Math.round(phaseAverages.objectionHandling * 10) / 10,
+            close: Math.round(phaseAverages.close * 10) / 10
+          },
+          conversationCount: conversations.length,
+          lastConversationDate: conversations[0]?.updatedAt
+        });
+      }
+    }
+
+    // Sort by average score (highest first)
+    leaderboardData.sort((a, b) => b.averageScore - a.averageScore);
+
+    // Add rank to each entry
+    leaderboardData.forEach((entry, index) => {
+      entry.rank = index + 1;
+    });
+
+    res.json({
+      leaderboard: leaderboardData,
+      totalUsers: leaderboardData.length,
+      companyName: company.name
+    });
+  } catch (error) {
+    console.error('Get leaderboard error:', error);
+    res.status(500).json({ error: 'Failed to get leaderboard data' });
+  }
+});
+
 // Delete company and all associated data (Super Admin only)
 router.delete('/:companyId', authenticateToken, async (req, res) => {
   try {

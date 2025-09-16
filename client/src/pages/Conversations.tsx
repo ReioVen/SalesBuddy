@@ -920,18 +920,18 @@ const Conversations: React.FC = () => {
       {/* Chat Window */}
       {currentConversation && (
         <div className="fixed top-0 left-0 right-0 bottom-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999] p-4">
-          <div className="bg-white rounded-xl max-w-4xl w-full h-[80vh] flex flex-col relative z-[10000]">
+          <div className="bg-white dark:bg-gray-800 rounded-xl max-w-4xl w-full h-[80vh] flex flex-col relative z-[10000]">
             {/* Chat Header */}
-            <div className="flex items-center justify-between p-4 border-b border-gray-200">
+            <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                  <User className="w-5 h-5 text-blue-600" />
+                <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
+                  <User className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-900">
+                  <h3 className="font-semibold text-gray-900 dark:text-white">
                     {t('chatWith')} {currentConversation.clientCustomization.name || t('client')}
                   </h3>
-                  <div className="flex items-center gap-2 text-sm text-gray-500">
+                  <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${getDifficultyColor(currentConversation.clientCustomization.difficulty)}`}>
                       {getDifficultyIcon(currentConversation.clientCustomization.difficulty)} {t(currentConversation.clientCustomization.difficulty)}
                     </span>
@@ -976,7 +976,7 @@ const Conversations: React.FC = () => {
               currentConversation.clientCustomization.contentInterest ||
               currentConversation.clientCustomization.familyType ||
               currentConversation.clientCustomization.difficultyPhase) && (
-              <div className="px-4 py-3 bg-gray-50 border-b border-gray-200">
+              <div className="px-4 py-3 bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
                 <div className="flex flex-wrap gap-3 text-sm">
                   {currentConversation.clientCustomization.familySize && (
                     <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full">
@@ -1015,8 +1015,8 @@ const Conversations: React.FC = () => {
             {/* Messages */}
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
               {currentConversation.messages.length === 0 ? (
-                <div className="text-center text-gray-500 py-8">
-                  <MessageSquare className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+                <div className="text-center text-gray-500 dark:text-gray-400 py-8">
+                  <MessageSquare className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
                   <p>{t('startConversationIntro')}</p>
                 </div>
               ) : (
@@ -1029,7 +1029,7 @@ const Conversations: React.FC = () => {
                       className={`max-w-[70%] p-3 rounded-lg ${
                         message.role === 'user'
                           ? 'bg-blue-600 text-white'
-                          : 'bg-gray-100 text-gray-900'
+                          : 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white'
                       }`}
                     >
                       <p className="whitespace-pre-wrap">{message.content}</p>
@@ -1039,9 +1039,9 @@ const Conversations: React.FC = () => {
               )}
               {sendingMessage && (
                 <div className="flex justify-start">
-                  <div className="bg-gray-100 p-3 rounded-lg">
-                    <div className="flex items-center gap-2 text-gray-500">
-                      <div className="animate-spin w-4 h-4 border-2 border-gray-300 border-t-gray-600 rounded-full"></div>
+                  <div className="bg-gray-100 dark:bg-gray-700 p-3 rounded-lg">
+                    <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
+                      <div className="animate-spin w-4 h-4 border-2 border-gray-300 dark:border-gray-600 border-t-gray-600 dark:border-t-gray-400 rounded-full"></div>
                       {t('loading')}...
                     </div>
                   </div>
@@ -1051,8 +1051,8 @@ const Conversations: React.FC = () => {
             </div>
 
             {/* Message Input */}
-            <div className="p-4 border-t border-gray-200">
-              {speechEnabled && currentConversation && currentConversation.messages.filter(msg => msg.role === 'user').length >= 2 ? (
+            <div className="p-4 border-t border-gray-200 dark:border-gray-700">
+              {speechEnabled && currentConversation ? (
                 <SpeechInput
                   onSendMessage={handleSendMessage}
                   disabled={sendingMessage}
@@ -1067,7 +1067,7 @@ const Conversations: React.FC = () => {
                     onKeyPress={handleKeyPress}
                     placeholder={t('typeMessage')}
                     rows={2}
-                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                    className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none placeholder-gray-500 dark:placeholder-gray-400"
                     disabled={sendingMessage}
                   />
                   <button
@@ -1092,18 +1092,6 @@ const Conversations: React.FC = () => {
                       className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                     />
                     {t('enableVoiceInput')}
-                    {speechEnabled && currentConversation && (() => {
-                      const userMessageCount = currentConversation.messages.filter(msg => msg.role === 'user').length;
-                      const messagesNeeded = 2 - userMessageCount;
-                      if (messagesNeeded > 0) {
-                        return (
-                          <span className="text-xs text-orange-600 ml-1">
-                            ({t('availableAfter')} {messagesNeeded} {messagesNeeded > 1 ? t('moreMessages') : t('moreMessage')})
-                          </span>
-                        );
-                      }
-                      return null;
-                    })()}
                   </label>
                   <label className="flex items-center gap-2 text-sm text-gray-600">
                     <input
@@ -1216,8 +1204,8 @@ const Conversations: React.FC = () => {
                     {conversation.aiRatings && (
                       <div className="mb-3">
                         <div className="flex items-center gap-4 text-sm">
-                          <span className="font-medium text-gray-700">
-                            {t('totalScore')}: <span className="text-lg font-bold text-blue-600">{calculateTotalPoints(conversation.aiRatings)}/50</span>
+                          <span className="font-medium text-gray-700 dark:text-white">
+                            {t('totalScore')}: <span className="text-lg font-bold text-blue-600 dark:text-blue-300">{calculateTotalPoints(conversation.aiRatings)}/50</span>
                           </span>
                           <div className="flex gap-2">
                         {conversation.aiRatings && Object.entries(conversation.aiRatings)
@@ -1350,8 +1338,8 @@ const Conversations: React.FC = () => {
                   {selectedConversation.aiRatings && (
                     <div className="space-y-3">
                       <div>
-                        <span className="font-medium text-gray-700 dark:text-gray-300">{t('totalScore')}:</span>
-                        <span className="ml-2 text-2xl font-bold text-blue-600 dark:text-blue-400">{calculateTotalPoints(selectedConversation.aiRatings)}/50</span>
+                        <span className="font-medium text-gray-700 dark:text-white">{t('totalScore')}:</span>
+                        <span className="ml-2 text-2xl font-bold text-blue-600 dark:text-blue-300">{calculateTotalPoints(selectedConversation.aiRatings)}/50</span>
                       </div>
                       <div className="space-y-2">
                         {selectedConversation.aiRatings && Object.entries(selectedConversation.aiRatings)
@@ -1379,7 +1367,7 @@ const Conversations: React.FC = () => {
 
               {/* Messages Section */}
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('fullConversation')}</h3>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">{t('fullConversation')}</h3>
                 <div className="space-y-4">
                   {selectedConversation.messages?.map((message, index) => (
                     <div
@@ -1390,7 +1378,7 @@ const Conversations: React.FC = () => {
                         className={`max-w-[70%] p-3 rounded-lg ${
                           message.role === 'user'
                             ? 'bg-blue-600 text-white'
-                            : 'bg-gray-100 text-gray-900'
+                            : 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white'
                         }`}
                       >
                         <p className="whitespace-pre-wrap">{message.content}</p>
