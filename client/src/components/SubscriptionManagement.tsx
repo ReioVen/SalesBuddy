@@ -146,16 +146,16 @@ const SubscriptionManagement: React.FC<SubscriptionManagementProps> = ({ onClose
   };
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-6">
+    <div className="bg-white dark:bg-dark-800 rounded-xl border border-gray-200 dark:border-dark-700 p-6">
       <div className="flex items-center justify-between mb-6">
-        <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
           <CreditCard className="w-5 h-5" />
           {t('subscriptionManagement')}
         </h3>
         {onClose && (
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
+            className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
           >
             <XCircle className="w-5 h-5" />
           </button>
@@ -163,11 +163,11 @@ const SubscriptionManagement: React.FC<SubscriptionManagementProps> = ({ onClose
       </div>
 
       {/* Current Plan Info */}
-      <div className="bg-gray-50 rounded-lg p-4 mb-6">
+      <div className="bg-gray-50 dark:bg-dark-700 rounded-lg p-4 mb-6">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-gray-700">{t('currentPlan')}:</span>
-            <span className="text-lg font-semibold capitalize text-gray-900">
+            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('currentPlan')}:</span>
+            <span className="text-lg font-semibold capitalize text-gray-900 dark:text-white">
               {subscription?.plan || 'free'}
             </span>
           </div>
@@ -180,24 +180,24 @@ const SubscriptionManagement: React.FC<SubscriptionManagementProps> = ({ onClose
         </div>
 
         {subscription?.currentPeriodEnd && (
-          <div className="flex items-center gap-2 text-sm text-gray-600">
+          <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
             <Calendar className="w-4 h-4" />
             <span>{t('nextBillingDate')}: {formatDate(subscription.currentPeriodEnd)}</span>
           </div>
         )}
         
         {/* Usage Information */}
-        <div className="mt-3 pt-3 border-t border-gray-200">
+        <div className="mt-3 pt-3 border-t border-gray-200 dark:border-dark-600">
           <div className="flex items-center justify-between text-sm">
-            <span className="text-gray-600">AI Conversations:</span>
-            <span className="font-medium text-gray-900">
+            <span className="text-gray-600 dark:text-gray-300">AI Conversations:</span>
+            <span className="font-medium text-gray-900 dark:text-white">
               {user.usage?.aiConversations || 0} / {subscription?.plan === 'enterprise' ? (user.usage?.dailyLimit || '∞') : (user.usage?.monthlyLimit || '∞')}
             </span>
           </div>
           {subscription?.plan === 'enterprise' ? (
             user.usage?.dailyLimit && user.usage.dailyLimit > 0 && (
               <div className="mt-2">
-                <div className="w-full bg-gray-200 rounded-full h-2">
+                <div className="w-full bg-gray-200 dark:bg-dark-600 rounded-full h-2">
                   <div 
                     className="bg-green-600 h-2 rounded-full transition-all duration-300"
                     style={{ 
@@ -205,7 +205,7 @@ const SubscriptionManagement: React.FC<SubscriptionManagementProps> = ({ onClose
                     }}
                   ></div>
                 </div>
-                <div className="text-xs text-gray-500 mt-1 text-right">
+                <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 text-right">
                   {Math.round(((user.usage?.aiConversations || 0) / user.usage.dailyLimit) * 100)}% used (daily)
                 </div>
               </div>
@@ -213,7 +213,7 @@ const SubscriptionManagement: React.FC<SubscriptionManagementProps> = ({ onClose
           ) : (
             user.usage?.monthlyLimit && user.usage.monthlyLimit > 0 && (
               <div className="mt-2">
-                <div className="w-full bg-gray-200 rounded-full h-2">
+                <div className="w-full bg-gray-200 dark:bg-dark-600 rounded-full h-2">
                   <div 
                     className="bg-blue-600 h-2 rounded-full transition-all duration-300"
                     style={{ 
@@ -221,7 +221,7 @@ const SubscriptionManagement: React.FC<SubscriptionManagementProps> = ({ onClose
                     }}
                   ></div>
                 </div>
-                <div className="text-xs text-gray-500 mt-1 text-right">
+                <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 text-right">
                   {Math.round(((user.usage?.aiConversations || 0) / user.usage.monthlyLimit) * 100)}% used
                 </div>
               </div>

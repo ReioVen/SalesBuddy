@@ -215,9 +215,9 @@ const CompanyManagement: React.FC = () => {
   if (error || !company) {
     return (
       <div className="max-w-6xl mx-auto p-6">
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-          <h2 className="text-lg font-semibold text-red-800 mb-2">Error</h2>
-          <p className="text-red-600">{error || 'Company not found'}</p>
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+          <h2 className="text-lg font-semibold text-red-800 dark:text-red-200 mb-2">Error</h2>
+          <p className="text-red-600 dark:text-red-300">{error || 'Company not found'}</p>
         </div>
       </div>
     );
@@ -225,22 +225,22 @@ const CompanyManagement: React.FC = () => {
 
   return (
     <div className="max-w-7xl mx-auto p-6">
-      <div className="bg-white rounded-lg shadow-md">
+      <div className="bg-white dark:bg-dark-800 rounded-lg shadow-md">
         {/* Header */}
-        <div className="border-b border-gray-200 px-6 py-4">
+        <div className="border-b border-gray-200 dark:border-dark-700 px-6 py-4">
           <div className="flex justify-between items-start">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">{company.name}</h1>
-              <p className="text-gray-600">Company ID: {company.companyId}</p>
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{company.name}</h1>
+              <p className="text-gray-600 dark:text-gray-300">Company ID: {company.companyId}</p>
               {company.description && (
-                <p className="text-gray-600 mt-1">{company.description}</p>
+                <p className="text-gray-600 dark:text-gray-300 mt-1">{company.description}</p>
               )}
             </div>
             
             {/* Company Selector for Super Admin */}
             {isSuperAdmin && companies.length > 1 && (
               <div className="ml-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Select Company:
                 </label>
                 <select
@@ -251,7 +251,7 @@ const CompanyManagement: React.FC = () => {
                       setCompany(selectedCompany);
                     }
                   }}
-                  className="block w-64 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  className="block w-64 px-3 py-2 border border-gray-300 dark:border-dark-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-dark-700 text-gray-900 dark:text-white"
                 >
                   {companies.map((comp) => (
                     <option key={comp.id} value={comp.id}>
@@ -277,7 +277,7 @@ const CompanyManagement: React.FC = () => {
         </div>
 
         {/* Tabs */}
-        <div className="border-b border-gray-200">
+        <div className="border-b border-gray-200 dark:border-dark-700">
           <nav className="flex space-x-8 px-6">
             {[
               { id: 'overview', label: t('overview') },
@@ -289,8 +289,8 @@ const CompanyManagement: React.FC = () => {
                 onClick={() => setActiveTab(tab.id as any)}
                 className={`py-4 px-1 border-b-2 font-medium text-sm ${
                   activeTab === tab.id
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                    : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-dark-600'
                 }`}
               >
                 {tab.label}
@@ -305,60 +305,60 @@ const CompanyManagement: React.FC = () => {
             <div className="space-y-6">
               {/* Stats Cards */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="bg-blue-50 rounded-lg p-4">
-                  <h3 className="text-lg font-semibold text-blue-900">{t('totalUsers')}</h3>
-                  <p className="text-3xl font-bold text-blue-600">{company.users.length}</p>
-                  <p className="text-sm text-blue-700">{t('max')}: {company.subscription.maxUsers}</p>
+                <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
+                  <h3 className="text-lg font-semibold text-blue-900 dark:text-blue-200">{t('totalUsers')}</h3>
+                  <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">{company.users.length}</p>
+                  <p className="text-sm text-blue-700 dark:text-blue-300">{t('max')}: {company.subscription.maxUsers}</p>
                 </div>
-                <div className="bg-green-50 rounded-lg p-4">
-                  <h3 className="text-lg font-semibold text-green-900">{t('teams')}</h3>
-                  <p className="text-3xl font-bold text-green-600">{company.teams.length}</p>
+                <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4">
+                  <h3 className="text-lg font-semibold text-green-900 dark:text-green-200">{t('teams')}</h3>
+                  <p className="text-3xl font-bold text-green-600 dark:text-green-400">{company.teams.length}</p>
                 </div>
-                <div className="bg-purple-50 rounded-lg p-4">
-                  <h3 className="text-lg font-semibold text-purple-900">{t('subscription')}</h3>
-                  <p className="text-2xl font-bold text-purple-600 capitalize">{company.subscription.plan}</p>
+                <div className="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-4">
+                  <h3 className="text-lg font-semibold text-purple-900 dark:text-purple-200">{t('subscription')}</h3>
+                  <p className="text-2xl font-bold text-purple-600 dark:text-purple-400 capitalize">{company.subscription.plan}</p>
                 </div>
               </div>
 
               {/* Recent Users */}
-              <div className="bg-gray-50 rounded-lg p-4">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('recentUsers')}</h3>
+              <div className="bg-gray-50 dark:bg-dark-700 rounded-lg p-4">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">{t('recentUsers')}</h3>
                 <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
+                  <table className="min-w-full divide-y divide-gray-200 dark:divide-dark-600">
+                    <thead className="bg-gray-50 dark:bg-dark-600">
                       <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                           {t('name')}
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                           {t('email')}
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                           {t('role')}
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                           {t('joined')}
                         </th>
                       </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
+                    <tbody className="bg-white dark:bg-dark-800 divide-y divide-gray-200 dark:divide-dark-600">
                       {company.users.slice(0, 5).map((user) => (
                         <tr key={user._id}>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="text-sm font-medium text-gray-900">
+                            <div className="text-sm font-medium text-gray-900 dark:text-white">
                               {user.firstName} {user.lastName}
                             </div>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                             {user.email}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                               user.isSuperAdmin || user.isAdmin || user.isCompanyAdmin || user.role === 'super_admin' || user.role === 'admin' || user.role === 'company_admin'
-                                ? 'bg-red-100 text-red-800'
+                                ? 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200'
                                 : user.isTeamLeader || user.role === 'company_team_leader'
-                                ? 'bg-blue-100 text-blue-800'
-                                : 'bg-gray-100 text-gray-800'
+                                ? 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200'
+                                : 'bg-gray-100 dark:bg-dark-600 text-gray-800 dark:text-gray-200'
                             }`}>
                               {user.isSuperAdmin || user.role === 'super_admin' 
                                 ? 'Super Admin' 
@@ -384,19 +384,19 @@ const CompanyManagement: React.FC = () => {
               </div>
 
               {/* Teams Overview */}
-              <div className="bg-gray-50 rounded-lg p-4">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('teams')}</h3>
+              <div className="bg-gray-50 dark:bg-dark-700 rounded-lg p-4">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">{t('teams')}</h3>
                 {company.teams.length === 0 ? (
-                  <p className="text-gray-500">{t('noTeamsCreated')}</p>
+                  <p className="text-gray-500 dark:text-gray-400">{t('noTeamsCreated')}</p>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {company.teams.map((team) => (
-                      <div key={team._id} className="bg-white rounded-lg p-4 border border-gray-200">
-                        <h4 className="font-medium text-gray-900">{team.name}</h4>
+                      <div key={team._id} className="bg-white dark:bg-dark-800 rounded-lg p-4 border border-gray-200 dark:border-dark-600">
+                        <h4 className="font-medium text-gray-900 dark:text-white">{team.name}</h4>
                         {team.description && (
-                          <p className="text-sm text-gray-500 mt-1">{team.description}</p>
+                          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{team.description}</p>
                         )}
-                        <p className="text-sm text-gray-500 mt-2">
+                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
                           {team.members.length} {team.members.length !== 1 ? t('members') : t('member')}
                         </p>
                       </div>
@@ -638,8 +638,8 @@ const CompanyManagement: React.FC = () => {
                   
                   {company.teams.length === 0 && (
                     <div className="col-span-full text-center py-12">
-                      <p className="text-gray-500">{t('noTeamsCreated')}</p>
-                      <p className="text-sm text-gray-400 mt-1">{t('createFirstTeam')}</p>
+                      <p className="text-gray-500 dark:text-gray-400">{t('noTeamsCreated')}</p>
+                      <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">{t('createFirstTeam')}</p>
                     </div>
                   )}
                 </div>

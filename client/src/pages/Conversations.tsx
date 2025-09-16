@@ -4,10 +4,11 @@ import { useAuth } from '../contexts/AuthContext.tsx';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import toast from 'react-hot-toast';
-import { Plus, MessageSquare, User, Building, Briefcase, FileText, Send, X, Star } from 'lucide-react';
+import { Plus, MessageSquare, User, Building, Briefcase, FileText, Send, X, Star, Lightbulb } from 'lucide-react';
 import { translateAIContent } from '../utils/aiContentTranslator.ts';
 import SpeechInput from '../components/SpeechInput.tsx';
 import VoiceCommands from '../components/VoiceCommands.tsx';
+import AITips from '../components/AITips.tsx';
 
 interface ClientCustomization {
   name: string;
@@ -101,6 +102,20 @@ const Conversations: React.FC = () => {
   // Add flags to track if data has been loaded to prevent unnecessary re-fetching
   const [dataLoaded, setDataLoaded] = useState(false);
   const [usageStatusLoaded, setUsageStatusLoaded] = useState(false);
+  
+  // AI Tips state
+  const [showAITips, setShowAITips] = useState(false);
+  const [aiTipsMinimized, setAiTipsMinimized] = useState(false);
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const conversationsPerPage = 5;
+  
+  // Pagination calculations
+  const totalPages = Math.ceil(conversationHistory.length / conversationsPerPage);
+  const startIndex = (currentPage - 1) * conversationsPerPage;
+  const endIndex = startIndex + conversationsPerPage;
+  const currentConversations = conversationHistory.slice(startIndex, endIndex);
   
   const [clientCustomization, setClientCustomization] = useState<ClientCustomization>({
     name: '',
@@ -291,6 +306,7 @@ const Conversations: React.FC = () => {
         messages: response.data.conversation.messages || []
       };
       setConversationHistory(prev => [newConversation, ...prev]);
+      setCurrentPage(1); // Reset to first page when new conversation is added
     } catch (error: any) {
       const message = error.response?.data?.error || t('failedToStartConversation');
       
@@ -608,40 +624,73 @@ const Conversations: React.FC = () => {
 
   if (!user) {
     return (
-      <div className="max-w-6xl mx-auto px-4 py-10">
-        <h1 className="text-2xl font-bold mb-4">{t('conversations')}</h1>
-        <div className="rounded-xl border border-gray-200 bg-white p-6 text-gray-600 text-center">
-          {t('pleaseLogIn')}
+      <div className="min-h-screen bg-gray-50 dark:bg-dark-900">
+        <div className="max-w-6xl mx-auto px-4 py-10">
+          <h1 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white">{t('conversations')}</h1>
+          <div className="rounded-xl border border-gray-200 dark:border-dark-700 bg-white dark:bg-dark-800 p-6 text-gray-600 dark:text-gray-300 text-center">
+            {t('pleaseLogIn')}
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-10">
+    <div className="min-h-screen bg-gray-50 dark:bg-dark-900">
+      <div className="flex min-h-screen">
+        {/* AI Tips Sidebar */}
+        <AITips 
+          isOpen={showAITips}
+          onToggle={() => {
+            console.log('AITips onToggle called, current state:', showAITips);
+            setShowAITips(!showAITips);
+          }}
+          isMinimized={aiTipsMinimized}
+          onToggleMinimize={() => setAiTipsMinimized(!aiTipsMinimized)}
+        />
+        
+        {/* Main Content */}
+        <div className={`flex-1 transition-all duration-300 ${showAITips && !aiTipsMinimized ? 'ml-80' : showAITips && aiTipsMinimized ? 'ml-12' : 'ml-0'}`}>
+          <div className="max-w-6xl mx-auto px-4 py-10">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">{t('conversations')}</h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{t('conversations')}</h1>
           {/* Usage Status in Header */}
           {usageStatus && usageStatus.monthlyLimit > 0 && (
-            <div className="mt-2 flex items-center gap-4 text-sm text-gray-600">
+            <div className="mt-2 flex items-center gap-4 text-sm text-gray-600 dark:text-gray-300">
               <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                usageStatus.usagePercentage >= 90 ? 'bg-red-100 text-red-800' :
-                usageStatus.usagePercentage >= 75 ? 'bg-orange-100 text-orange-800' :
-                'bg-blue-100 text-blue-800'
+                usageStatus.usagePercentage >= 90 ? 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200' :
+                usageStatus.usagePercentage >= 75 ? 'bg-orange-100 dark:bg-orange-900 text-orange-800 dark:text-orange-200' :
+                'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200'
               }`}>
                 {usageStatus.usagePercentage}% used
               </span>
             </div>
           )}
         </div>
-        <button
-          onClick={() => setShowNewChatForm(true)}
-          className="btn-primary flex items-center gap-2 px-6 py-3"
-        >
-          <Plus className="w-5 h-5" />
-          {t('newChat')}
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => {
+              console.log('AI Tips button clicked, current state:', showAITips);
+              setShowAITips(!showAITips);
+            }}
+            className={`flex items-center gap-2 px-6 py-3 rounded-lg transition-colors ${
+              showAITips 
+                ? 'bg-blue-600 text-white' 
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            }`}
+          >
+            <Lightbulb className="w-5 h-5" />
+            {t('aiTips') || 'AI Tips'}
+          </button>
+          <button
+            onClick={() => setShowNewChatForm(true)}
+            className="btn-primary flex items-center gap-2 px-6 py-3"
+          >
+            <Plus className="w-5 h-5" />
+            {t('newChat')}
+          </button>
+        </div>
       </div>
 
       {/* Usage Warning Banner */}
@@ -692,13 +741,13 @@ const Conversations: React.FC = () => {
       {/* New Chat Form Modal */}
       {showNewChatForm && (
         <div className="fixed top-0 left-0 right-0 bottom-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999] p-4">
-          <div className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto relative z-[10000]">
+          <div className="bg-white dark:bg-dark-800 rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto relative z-[10000]">
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold text-gray-900">{t('startNewConversation')}</h2>
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{t('startNewConversation')}</h2>
                 <button
                   onClick={() => setShowNewChatForm(false)}
-                  className="text-gray-400 hover:text-gray-600"
+                  className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
                 >
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -709,7 +758,7 @@ const Conversations: React.FC = () => {
               <div className="space-y-6">
                 <div className="text-center">
                   <MessageSquare className="w-12 h-12 text-blue-600 mx-auto mb-4" />
-                  <p className="text-gray-600 mb-6">
+                  <p className="text-gray-600 dark:text-gray-300 mb-6">
                     Customize your AI client to practice with different types of customers, or use the default client.
                   </p>
                   
@@ -717,21 +766,21 @@ const Conversations: React.FC = () => {
 
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       <User className="w-4 h-4 inline mr-2" />
-                      {t('clientName')} <span className="text-gray-400">({t('optional')})</span>
+                      {t('clientName')} <span className="text-gray-400 dark:text-gray-500">({t('optional')})</span>
                     </label>
                     <input
                       type="text"
                       value={clientCustomization.name}
                       onChange={(e) => setClientCustomization(prev => ({ ...prev, name: e.target.value }))}
                       placeholder="e.g., Sarah Johnson"
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-dark-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-dark-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       <MessageSquare className="w-4 h-4 inline mr-2" />
                       {t('scenario')}
                     </label>
@@ -748,12 +797,12 @@ const Conversations: React.FC = () => {
                           onClick={() => setClientCustomization(prev => ({ ...prev, scenario: scenario.value }))}
                           className={`p-3 rounded-lg border-2 text-left transition-all ${
                             clientCustomization.scenario === scenario.value
-                              ? 'border-blue-500 bg-blue-50 text-blue-700'
-                              : 'border-gray-200 hover:border-gray-300'
+                              ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300'
+                              : 'border-gray-200 dark:border-dark-600 hover:border-gray-300 dark:hover:border-dark-500 bg-white dark:bg-dark-700'
                           }`}
                         >
-                          <div className="font-medium">{scenario.label}</div>
-                          <div className="text-xs text-gray-500 mt-1">
+                          <div className="font-medium text-gray-900 dark:text-white">{scenario.label}</div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                             {scenario.description}
                           </div>
                         </button>
@@ -1083,14 +1132,14 @@ const Conversations: React.FC = () => {
       {/* Conversations List */}
       <div className="space-y-4">
         {loadingHistory ? (
-          <div className="rounded-xl border border-gray-200 bg-white p-8 text-center text-gray-600">
-            <div className="animate-spin w-8 h-8 border-2 border-gray-300 border-t-blue-600 rounded-full mx-auto mb-4"></div>
+          <div className="rounded-xl border border-gray-200 dark:border-dark-700 bg-white dark:bg-dark-800 p-8 text-center text-gray-600 dark:text-gray-300">
+            <div className="animate-spin w-8 h-8 border-2 border-gray-300 dark:border-dark-600 border-t-blue-600 rounded-full mx-auto mb-4"></div>
             <p>Loading conversation history...</p>
           </div>
         ) : conversationHistory.length === 0 ? (
-          <div className="rounded-xl border border-gray-200 bg-white p-8 text-center text-gray-600">
-            <MessageSquare className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium mb-2">No conversations yet</h3>
+          <div className="rounded-xl border border-gray-200 dark:border-dark-700 bg-white dark:bg-dark-800 p-8 text-center text-gray-600 dark:text-gray-300">
+            <MessageSquare className="w-12 h-12 text-gray-400 dark:text-gray-500 mx-auto mb-4" />
+            <h3 className="text-lg font-medium mb-2 text-gray-900 dark:text-white">No conversations yet</h3>
             <p className="mb-4">Start your first conversation to practice your sales skills with AI!</p>
             <button
               onClick={() => setShowNewChatForm(true)}
@@ -1100,17 +1149,18 @@ const Conversations: React.FC = () => {
             </button>
           </div>
         ) : (
-          <div className="grid gap-4">
-            {conversationHistory.map((conversation) => (
+          <div className="space-y-4">
+            <div className="grid gap-4">
+              {currentConversations.map((conversation) => (
               <div
                 key={conversation.id}
-                className="rounded-xl border border-gray-200 bg-white p-6 hover:shadow-md transition-shadow cursor-pointer"
+                className="rounded-xl border border-gray-200 dark:border-dark-700 bg-white dark:bg-dark-800 p-6 hover:shadow-md transition-shadow cursor-pointer"
                 onClick={() => handleViewConversation(conversation.id)}
               >
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
-                    <h3 className="font-semibold text-gray-900 mb-2">{conversation.title}</h3>
-                    <div className="flex items-center gap-3 text-sm text-gray-500 mb-3">
+                    <h3 className="font-semibold text-gray-900 dark:text-white mb-2">{conversation.title}</h3>
+                    <div className="flex items-center gap-3 text-sm text-gray-500 dark:text-gray-400 mb-3">
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${getDifficultyColor(conversation.clientCustomization?.difficulty || 'medium')}`}>
                         {getDifficultyIcon(conversation.clientCustomization?.difficulty || 'medium')} {t(conversation.clientCustomization?.difficulty || 'medium')}
                       </span>
@@ -1183,7 +1233,7 @@ const Conversations: React.FC = () => {
                           </div>
                         </div>
                         {conversation.aiRatingFeedback && (
-                          <p className="text-sm text-gray-600 mt-2 italic">"{translateAIContent(conversation.aiRatingFeedback, language)}"</p>
+                          <p className="text-sm text-gray-600 dark:text-gray-300 mt-2 italic">"{translateAIContent(conversation.aiRatingFeedback, language)}"</p>
                         )}
                       </div>
                     )}
@@ -1198,6 +1248,50 @@ const Conversations: React.FC = () => {
                 </div>
               </div>
             ))}
+            </div>
+            
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-center gap-4 mt-6">
+                <button
+                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                  disabled={currentPage === 1}
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-300 dark:border-dark-600 bg-white dark:bg-dark-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                  Previous
+                </button>
+                
+                <div className="flex items-center gap-2">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                    <button
+                      key={page}
+                      onClick={() => setCurrentPage(page)}
+                      className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                        currentPage === page
+                          ? 'bg-blue-600 text-white'
+                          : 'bg-white dark:bg-dark-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-dark-600 hover:bg-gray-50 dark:hover:bg-dark-700'
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  ))}
+                </div>
+                
+                <button
+                  onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                  disabled={currentPage === totalPages}
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-300 dark:border-dark-600 bg-white dark:bg-dark-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  Next
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -1205,16 +1299,16 @@ const Conversations: React.FC = () => {
       {/* Conversation Detail Modal */}
       {showConversationDetail && selectedConversation && (
         <div className="fixed top-0 left-0 right-0 bottom-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999] p-4">
-          <div className="bg-white rounded-xl max-w-4xl w-full h-[90vh] flex flex-col relative z-[10000]">
+          <div className="bg-white dark:bg-dark-800 rounded-xl max-w-4xl w-full h-[90vh] flex flex-col relative z-[10000]">
             {/* Modal Header */}
-            <div className="flex items-center justify-between p-4 border-b border-gray-200">
-              <h2 className="text-xl font-bold text-gray-900">{t('conversationDetails')}</h2>
+            <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-dark-700">
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white">{t('conversationDetails')}</h2>
               <button
                 onClick={() => {
                   setShowConversationDetail(false);
                   setSelectedConversation(null);
                 }}
-                className="text-gray-400 hover:text-gray-600"
+                className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
               >
                 <X className="w-6 h-6" />
               </button>
@@ -1224,40 +1318,40 @@ const Conversations: React.FC = () => {
             <div className="flex-1 overflow-y-auto p-6">
               {/* Summary Section */}
               <div className="mb-8">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('conversationSummary')}</h3>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">{t('conversationSummary')}</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-3">
                     <div>
-                      <span className="font-medium text-gray-700">{t('title')}:</span>
-                      <span className="ml-2 text-gray-900">{selectedConversation.title}</span>
+                      <span className="font-medium text-gray-700 dark:text-gray-300">{t('title')}:</span>
+                      <span className="ml-2 text-gray-900 dark:text-white">{selectedConversation.title}</span>
                     </div>
                     <div>
-                      <span className="font-medium text-gray-700">{t('scenario')}:</span>
-                      <span className="ml-2 text-gray-900">{selectedConversation.scenario}</span>
+                      <span className="font-medium text-gray-700 dark:text-gray-300">{t('scenario')}:</span>
+                      <span className="ml-2 text-gray-900 dark:text-white">{selectedConversation.scenario}</span>
                     </div>
                     <div>
-                      <span className="font-medium text-gray-700">{t('difficulty')}:</span>
+                      <span className="font-medium text-gray-700 dark:text-gray-300">{t('difficulty')}:</span>
                       <span className={`ml-2 px-2 py-1 rounded-full text-xs font-medium ${getDifficultyColor(selectedConversation.clientCustomization?.difficulty || 'medium')}`}>
                         {getDifficultyIcon(selectedConversation.clientCustomization?.difficulty || 'medium')} {t(selectedConversation.clientCustomization?.difficulty || 'medium')}
                       </span>
                     </div>
                     {selectedConversation.duration && (
                       <div>
-                        <span className="font-medium text-gray-700">{t('duration')}:</span>
-                        <span className="ml-2 text-gray-900">{Math.floor(selectedConversation.duration / 60)}m {selectedConversation.duration % 60}s</span>
+                        <span className="font-medium text-gray-700 dark:text-gray-300">{t('duration')}:</span>
+                        <span className="ml-2 text-gray-900 dark:text-white">{Math.floor(selectedConversation.duration / 60)}m {selectedConversation.duration % 60}s</span>
                       </div>
                     )}
                     <div>
-                      <span className="font-medium text-gray-700">{t('messages')}:</span>
-                      <span className="ml-2 text-gray-900">{selectedConversation.messages?.length || 0}</span>
+                      <span className="font-medium text-gray-700 dark:text-gray-300">{t('messages')}:</span>
+                      <span className="ml-2 text-gray-900 dark:text-white">{selectedConversation.messages?.length || 0}</span>
                     </div>
                   </div>
 
                   {selectedConversation.aiRatings && (
                     <div className="space-y-3">
                       <div>
-                        <span className="font-medium text-gray-700">{t('totalScore')}:</span>
-                        <span className="ml-2 text-2xl font-bold text-blue-600">{calculateTotalPoints(selectedConversation.aiRatings)}/50</span>
+                        <span className="font-medium text-gray-700 dark:text-gray-300">{t('totalScore')}:</span>
+                        <span className="ml-2 text-2xl font-bold text-blue-600 dark:text-blue-400">{calculateTotalPoints(selectedConversation.aiRatings)}/50</span>
                       </div>
                       <div className="space-y-2">
                         {selectedConversation.aiRatings && Object.entries(selectedConversation.aiRatings)
@@ -1267,15 +1361,15 @@ const Conversations: React.FC = () => {
                           })
                           .map(([phase, rating]) => (
                             <div key={phase} className="flex items-center justify-between">
-                              <span className="font-medium text-gray-700">{translateStageName(phase)}:</span>
+                              <span className="font-medium text-gray-700 dark:text-gray-300">{translateStageName(phase)}:</span>
                               <span className={`text-lg font-semibold ${getRatingColor(rating)}`}>{rating}/10</span>
                             </div>
                           ))}
                       </div>
                       {selectedConversation.aiRatingFeedback && (
-                        <div className="mt-4 p-3 bg-gray-50 rounded-lg">
-                          <span className="font-medium text-gray-700">{t('aiFeedback')}:</span>
-                          <p className="text-gray-600 mt-1 italic">"{translateAIContent(selectedConversation.aiRatingFeedback, language)}"</p>
+                        <div className="mt-4 p-3 bg-gray-50 dark:bg-dark-700 rounded-lg">
+                          <span className="font-medium text-gray-700 dark:text-gray-300">{t('aiFeedback')}:</span>
+                          <p className="text-gray-600 dark:text-gray-300 mt-1 italic">"{translateAIContent(selectedConversation.aiRatingFeedback, language)}"</p>
                         </div>
                       )}
                     </div>
@@ -1312,6 +1406,9 @@ const Conversations: React.FC = () => {
           </div>
         </div>
       )}
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

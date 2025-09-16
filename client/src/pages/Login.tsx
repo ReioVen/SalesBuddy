@@ -30,21 +30,21 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-start justify-center pt-56 pb-16 px-4">
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl ring-1 ring-gray-200 border border-gray-100 p-5">
-        <h1 className="text-2xl font-bold mb-6 text-center">Welcome back</h1>
+    <div className="min-h-screen bg-gray-50 dark:bg-dark-900 flex items-start justify-center pt-56 pb-16 px-4">
+      <div className="w-full max-w-md bg-white dark:bg-dark-800 rounded-2xl shadow-2xl ring-1 ring-gray-200 dark:ring-dark-700 border border-gray-100 dark:border-dark-700 p-5">
+        <h1 className="text-2xl font-bold mb-6 text-center text-gray-900 dark:text-white">Welcome back</h1>
         <form onSubmit={onSubmit} className="space-y-4">
           <input className="input-field" name="email" type="email" placeholder="Email" value={form.email} onChange={onChange} required />
           <input className="input-field" name="password" type="password" placeholder="Password" value={form.password} onChange={onChange} required />
           {error && <p className="text-sm text-red-600">{error}</p>}
           <button type="submit" disabled={loading} className="btn-primary w-full">{loading ? 'Signing in...' : 'Sign in'}</button>
         </form>
-        <div className="text-center text-sm text-gray-600 mt-4 space-y-2">
+        <div className="text-center text-sm text-gray-600 dark:text-gray-300 mt-4 space-y-2">
           <p>
-            New here? <Link to="/register" className="text-blue-600 hover:underline">Create an account</Link>
+            New here? <Link to="/register" className="text-blue-600 dark:text-blue-400 hover:underline">Create an account</Link>
           </p>
           <p>
-            <Link to="/forgot-password" className="text-blue-600 hover:underline">Forgot your password?</Link>
+            <Link to="/forgot-password" className="text-blue-600 dark:text-blue-400 hover:underline">Forgot your password?</Link>
           </p>
         </div>
       </div>

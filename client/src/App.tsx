@@ -13,6 +13,7 @@ import Profile from './pages/Profile.tsx';
 import Settings from './pages/Settings.tsx';
 import Company from './pages/Company.tsx';
 import AdminDashboard from './pages/AdminDashboard.tsx';
+import { ThemeProvider } from './contexts/ThemeContext.tsx';
 
 // Component that renders all pages simultaneously and shows/hides based on route
 const PageRenderer: React.FC = () => {
@@ -131,12 +132,14 @@ const PageRenderer: React.FC = () => {
 
 const App: React.FC = () => {
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Navbar />
-      <main className="pt-14">
-        <PageRenderer />
-      </main>
-    </div>
+    <ThemeProvider>
+      <div className="min-h-screen bg-gray-50 dark:bg-dark-900 transition-colors">
+        <Navbar />
+        <main className="pt-14">
+          <PageRenderer />
+        </main>
+      </div>
+    </ThemeProvider>
   );
 };
 

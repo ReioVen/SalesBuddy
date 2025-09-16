@@ -57,7 +57,7 @@ const Profile: React.FC = () => {
   if (!user) {
     return (
       <div className="max-w-4xl mx-auto px-4 py-10">
-        <div className="rounded-xl border border-gray-200 bg-white p-6 text-gray-600">
+        <div className="rounded-xl border border-gray-200 dark:border-dark-700 bg-white dark:bg-dark-800 p-6 text-gray-600 dark:text-gray-300">
           {t('pleaseLogIn')}
         </div>
       </div>
@@ -66,24 +66,24 @@ const Profile: React.FC = () => {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-10">
-      <h1 className="text-2xl font-bold mb-4">{t('profile')}</h1>
-      <div className="rounded-xl border border-gray-200 bg-white p-6">
+      <h1 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white">{t('profile')}</h1>
+      <div className="rounded-xl border border-gray-200 dark:border-dark-700 bg-white dark:bg-dark-800 p-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
           <div>
-            <div className="text-gray-500">{t('name')}</div>
-            <div className="font-medium">{user.firstName} {user.lastName}</div>
+            <div className="text-gray-500 dark:text-gray-400">{t('name')}</div>
+            <div className="font-medium text-gray-900 dark:text-white">{user.firstName} {user.lastName}</div>
           </div>
           <div>
-            <div className="text-gray-500">{t('email')}</div>
-            <div className="font-medium">{user.email}</div>
+            <div className="text-gray-500 dark:text-gray-400">{t('email')}</div>
+            <div className="font-medium text-gray-900 dark:text-white">{user.email}</div>
           </div>
           <div>
-            <div className="text-gray-500">{t('company')}</div>
-            <div className="font-medium">{user.company || '-'}</div>
+            <div className="text-gray-500 dark:text-gray-400">{t('company')}</div>
+            <div className="font-medium text-gray-900 dark:text-white">{user.company || '-'}</div>
           </div>
           <div>
-            <div className="text-gray-500">{t('plan')}</div>
-            <div className="font-medium capitalize">{user.subscription?.plan}</div>
+            <div className="text-gray-500 dark:text-gray-400">{t('plan')}</div>
+            <div className="font-medium capitalize text-gray-900 dark:text-white">{user.subscription?.plan}</div>
           </div>
         </div>
       </div>

@@ -103,22 +103,22 @@ const Home: React.FC = () => {
       </section>
 
       {/* Features Section */}
-      <section className="py-20 bg-white">
+      <section className="py-20 bg-white dark:bg-dark-800">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold mb-4">{t('whyChooseSalesBuddy')}</h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            <h2 className="text-4xl font-bold mb-4 text-gray-900 dark:text-white">{t('whyChooseSalesBuddy')}</h2>
+            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
               {t('homeFeaturesDescription')}
             </p>
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             {features.map((feature, index) => (
-              <div key={index} className="text-center p-6 rounded-lg hover:shadow-lg transition-shadow duration-300">
-                <div className="w-12 h-12 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center mx-auto mb-4">
+              <div key={index} className="text-center p-6 rounded-lg hover:shadow-lg transition-shadow duration-300 bg-gray-50 dark:bg-dark-700">
+                <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400 rounded-lg flex items-center justify-center mx-auto mb-4">
                   {feature.icon}
                 </div>
-                <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
-                <p className="text-gray-600">{feature.description}</p>
+                <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">{feature.title}</h3>
+                <p className="text-gray-600 dark:text-gray-300">{feature.description}</p>
               </div>
             ))}
           </div>
@@ -126,57 +126,57 @@ const Home: React.FC = () => {
       </section>
 
       {/* How It Works Section */}
-      <section className="py-20 bg-gray-50">
+      <section className="py-20 bg-gray-50 dark:bg-dark-900">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold mb-4">{t('howItWorks')}</h2>
-            <p className="text-xl text-gray-600">{t('howItWorksDescription')}</p>
+            <h2 className="text-4xl font-bold mb-4 text-gray-900 dark:text-white">{t('howItWorks')}</h2>
+            <p className="text-xl text-gray-600 dark:text-gray-300">{t('howItWorksDescription')}</p>
           </div>
           <div className="grid md:grid-cols-3 gap-8">
             <div className="text-center">
               <div className="w-16 h-16 bg-blue-600 text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">
                 1
               </div>
-              <h3 className="text-xl font-semibold mb-2">{t('signUpChoosePlan')}</h3>
-              <p className="text-gray-600">{t('signUpChoosePlanDesc')}</p>
+              <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">{t('signUpChoosePlan')}</h3>
+              <p className="text-gray-600 dark:text-gray-300">{t('signUpChoosePlanDesc')}</p>
             </div>
             <div className="text-center">
               <div className="w-16 h-16 bg-blue-600 text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">
                 2
               </div>
-              <h3 className="text-xl font-semibold mb-2">{t('startConversation')}</h3>
-              <p className="text-gray-600">{t('startConversationDesc')}</p>
+              <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">{t('startConversation')}</h3>
+              <p className="text-gray-600 dark:text-gray-300">{t('startConversationDesc')}</p>
             </div>
             <div className="text-center">
               <div className="w-16 h-16 bg-blue-600 text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">
                 3
               </div>
-              <h3 className="text-xl font-semibold mb-2">{t('improveTrackProgress')}</h3>
-              <p className="text-gray-600">{t('improveTrackProgressDesc')}</p>
+              <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">{t('improveTrackProgress')}</h3>
+              <p className="text-gray-600 dark:text-gray-300">{t('improveTrackProgressDesc')}</p>
             </div>
           </div>
         </div>
       </section>
 
       {/* Testimonials Section */}
-      <section className="py-20 bg-white">
+      <section className="py-20 bg-white dark:bg-dark-800">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold mb-4">{t('whatOurUsersSay')}</h2>
-            <p className="text-xl text-gray-600">{t('whatOurUsersSayDescription')}</p>
+            <h2 className="text-4xl font-bold mb-4 text-gray-900 dark:text-white">{t('whatOurUsersSay')}</h2>
+            <p className="text-xl text-gray-600 dark:text-gray-300">{t('whatOurUsersSayDescription')}</p>
           </div>
           <div className="grid md:grid-cols-3 gap-8">
             {testimonials.map((testimonial, index) => (
-              <div key={index} className="bg-gray-50 p-6 rounded-lg">
+              <div key={index} className="bg-gray-50 dark:bg-dark-700 p-6 rounded-lg">
                 <div className="flex mb-4">
                   {[...Array(testimonial.rating)].map((_, i) => (
                     <Star key={i} className="w-5 h-5 text-yellow-400 fill-current" />
                   ))}
                 </div>
-                <p className="text-gray-700 mb-4">"{testimonial.content}"</p>
+                <p className="text-gray-700 dark:text-gray-300 mb-4">"{testimonial.content}"</p>
                 <div>
-                  <p className="font-semibold">{testimonial.name}</p>
-                  <p className="text-gray-600">{testimonial.role} at {testimonial.company}</p>
+                  <p className="font-semibold text-gray-900 dark:text-white">{testimonial.name}</p>
+                  <p className="text-gray-600 dark:text-gray-400">{testimonial.role} at {testimonial.company}</p>
                 </div>
               </div>
             ))}

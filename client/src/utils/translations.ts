@@ -62,6 +62,13 @@ export const translations = {
     save: 'Save',
     saving: 'Saving...',
     appliesToDevice: 'Applies to this device.',
+    theme: 'Theme',
+    lightMode: 'Light Mode',
+    darkMode: 'Dark Mode',
+    themePreference: 'Theme Preference',
+    light: 'Light',
+    dark: 'Dark',
+    system: 'System',
     
     // Common
     pleaseLogIn: 'Please log in to view your profile.',
@@ -167,6 +174,22 @@ export const translations = {
     comedy: 'Comedy',
     action: 'Action',
     romance: 'Romance',
+
+    // AI Tips
+    aiTips: 'AI Tips',
+    salesAssistant: 'Sales Assistant',
+    aiTipsWelcome: 'Hello! I\'m your sales assistant. I can help you with sales strategies, objection handling, closing techniques, and any other sales-related questions. What would you like to know?',
+    askSalesQuestion: 'Ask a sales question...',
+    thinking: 'Thinking...',
+    failedToGetTips: 'Failed to get AI tips',
+    aiTipsError: 'I\'m sorry, I\'m having trouble responding right now. Please try again in a moment.',
+    expandAITips: 'Expand AI Tips',
+    closeAITips: 'Close AI Tips',
+    minimizeAITips: 'Minimize AI Tips',
+    objectionHandlingTips: 'How do I handle price objections?',
+    closingTechniquesTips: 'What are effective closing techniques?',
+    coldCallTips: 'Give me cold calling best practices',
+    clear: 'Clear',
 
     // Company Management
     companyManagement: 'Company Management',

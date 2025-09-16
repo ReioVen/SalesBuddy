@@ -342,7 +342,7 @@ const ConversationSummaryCard: React.FC<ConversationSummaryCardProps> = ({ summa
   };
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+    <div className="bg-white dark:bg-dark-800 rounded-lg border border-gray-200 dark:border-dark-700 shadow-sm hover:shadow-md transition-shadow">
       {/* Header */}
       <div 
         className="p-6 cursor-pointer"
@@ -352,7 +352,7 @@ const ConversationSummaryCard: React.FC<ConversationSummaryCardProps> = ({ summa
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
               <Award className="w-6 h-6 text-blue-600" />
-              <h3 className="text-lg font-semibold text-gray-900">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                 {t('summaryNumber')}{summary.summaryNumber}
               </h3>
               {isTranslating && (
@@ -366,10 +366,10 @@ const ConversationSummaryCard: React.FC<ConversationSummaryCardProps> = ({ summa
             </div>
           </div>
           <div className="flex items-center gap-4">
-            <div className="text-sm text-gray-500">
+            <div className="text-sm text-gray-500 dark:text-gray-400">
               {summary.conversationCount} {t('conversations')}
             </div>
-            <div className="text-sm text-gray-500">
+            <div className="text-sm text-gray-500 dark:text-gray-400">
               {formatDate(summary.dateRange.startDate)} - {formatDate(summary.dateRange.endDate)}
             </div>
             {isExpanded ? (
@@ -383,9 +383,9 @@ const ConversationSummaryCard: React.FC<ConversationSummaryCardProps> = ({ summa
 
       {/* Expanded Content */}
       {isExpanded && (
-        <div className="border-t border-gray-200">
+        <div className="border-t border-gray-200 dark:border-dark-700">
           {/* Tabs */}
-          <div className="flex border-b border-gray-200">
+          <div className="flex border-b border-gray-200 dark:border-dark-700">
             {[
               { id: 'overview', label: t('overview'), icon: TrendingUp },
               { id: 'stages', label: t('stageRatings'), icon: Target },
@@ -397,8 +397,8 @@ const ConversationSummaryCard: React.FC<ConversationSummaryCardProps> = ({ summa
                 onClick={() => setActiveTab(id as any)}
                 className={`flex items-center gap-2 px-6 py-3 text-sm font-medium border-b-2 transition-colors ${
                   activeTab === id
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                    ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                    : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
                 }`}
               >
                 <Icon className="w-4 h-4" />
@@ -413,16 +413,16 @@ const ConversationSummaryCard: React.FC<ConversationSummaryCardProps> = ({ summa
               <div className="space-y-6">
                 {/* Overall Rating */}
                 <div className="text-center">
-                  <div className="text-4xl font-bold text-gray-900 mb-2">
+                  <div className="text-4xl font-bold text-gray-900 dark:text-white mb-2">
                     {summary.overallRating}/10
                   </div>
-                  <div className="text-lg text-gray-600">{t('overallPerformance')}</div>
+                  <div className="text-lg text-gray-600 dark:text-gray-300">{t('overallPerformance')}</div>
                 </div>
 
                 {/* Strengths and Improvements */}
                 <div className="grid md:grid-cols-2 gap-6">
                   <div>
-                    <h4 className="text-lg font-semibold text-green-700 mb-3 flex items-center gap-2">
+                    <h4 className="text-lg font-semibold text-green-700 dark:text-green-400 mb-3 flex items-center gap-2">
                       <Star className="w-5 h-5" />
                       {t('strengths')}
                     </h4>
@@ -438,7 +438,7 @@ const ConversationSummaryCard: React.FC<ConversationSummaryCardProps> = ({ summa
                         return (
                           <li key={index} className="flex items-start gap-2">
                             <span className="text-green-500 mt-1">✓</span>
-                            <span className="text-gray-700">
+                            <span className="text-gray-700 dark:text-gray-300">
                               {strength}
                             </span>
                           </li>
@@ -447,7 +447,7 @@ const ConversationSummaryCard: React.FC<ConversationSummaryCardProps> = ({ summa
                     </ul>
                   </div>
                   <div>
-                    <h4 className="text-lg font-semibold text-orange-700 mb-3 flex items-center gap-2">
+                    <h4 className="text-lg font-semibold text-orange-700 dark:text-orange-400 mb-3 flex items-center gap-2">
                       <TrendingUp className="w-5 h-5" />
                       {t('areasForImprovement')}
                     </h4>
@@ -462,7 +462,7 @@ const ConversationSummaryCard: React.FC<ConversationSummaryCardProps> = ({ summa
                         return (
                           <li key={index} className="flex items-start gap-2">
                             <span className="text-orange-500 mt-1">→</span>
-                            <span className="text-gray-700">
+                            <span className="text-gray-700 dark:text-gray-300">
                               {improvement}
                             </span>
                           </li>
@@ -477,16 +477,16 @@ const ConversationSummaryCard: React.FC<ConversationSummaryCardProps> = ({ summa
             {activeTab === 'stages' && (
               <div className="space-y-4">
                 {Object.entries(summary.stageRatings).map(([stage, rating]) => (
-                  <div key={stage} className="bg-gray-50 rounded-lg p-4">
+                  <div key={stage} className="bg-gray-50 dark:bg-dark-700 rounded-lg p-4">
                     <div className="flex items-center justify-between mb-2">
-                      <h4 className="font-semibold text-gray-900">
+                      <h4 className="font-semibold text-gray-900 dark:text-white">
                         {stageNames[stage as keyof typeof stageNames] || stage}
                       </h4>
                       <span className={`px-3 py-1 rounded-full text-sm font-medium ${getRatingColor(rating.rating)}`}>
                         {rating.rating}/10
                       </span>
                     </div>
-                    <p className="text-gray-700">
+                    <p className="text-gray-700 dark:text-gray-300">
                       {(() => {
                         const feedback = translatedSummary?.stageRatings?.[stage]?.feedback || rating.feedback;
                         console.log(`Stage ${stage} feedback:`, { 
@@ -506,19 +506,19 @@ const ConversationSummaryCard: React.FC<ConversationSummaryCardProps> = ({ summa
             {activeTab === 'examples' && (
               <div className="space-y-4">
                 {summary.exampleConversations.map((example, index) => (
-                  <div key={index} className="bg-gray-50 rounded-lg p-4">
+                  <div key={index} className="bg-gray-50 dark:bg-dark-700 rounded-lg p-4">
                     <div className="flex items-center gap-2 mb-2">
-                      <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded">
+                      <span className="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs font-medium rounded">
                         {example.stage}
                       </span>
-                      <span className="text-sm text-gray-500">
+                      <span className="text-sm text-gray-500 dark:text-gray-400">
                         {t('conversationTitle')} #{summary.summaryNumber}
                       </span>
                     </div>
-                    <blockquote className="text-gray-700 italic mb-2">
+                    <blockquote className="text-gray-700 dark:text-gray-300 italic mb-2">
                       "{example.excerpt}"
                     </blockquote>
-                    <p className="text-sm text-gray-600">{example.context}</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">{example.context}</p>
                   </div>
                 ))}
               </div>
@@ -527,30 +527,30 @@ const ConversationSummaryCard: React.FC<ConversationSummaryCardProps> = ({ summa
             {activeTab === 'insights' && (
               <div className="space-y-6">
                 <div>
-                  <h4 className="text-lg font-semibold text-gray-900 mb-3">{t('personalityInsights')}</h4>
-                  <p className="text-gray-700">{(translatedSummary?.aiAnalysis?.personalityInsights || summary.aiAnalysis.personalityInsights)}</p>
+                  <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">{t('personalityInsights')}</h4>
+                  <p className="text-gray-700 dark:text-gray-300">{(translatedSummary?.aiAnalysis?.personalityInsights || summary.aiAnalysis.personalityInsights)}</p>
                 </div>
                 <div>
-                  <h4 className="text-lg font-semibold text-gray-900 mb-3">{t('communicationStyle')}</h4>
-                  <p className="text-gray-700">{(translatedSummary?.aiAnalysis?.communicationStyle || summary.aiAnalysis.communicationStyle)}</p>
+                  <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">{t('communicationStyle')}</h4>
+                  <p className="text-gray-700 dark:text-gray-300">{(translatedSummary?.aiAnalysis?.communicationStyle || summary.aiAnalysis.communicationStyle)}</p>
                 </div>
                 <div>
-                  <h4 className="text-lg font-semibold text-gray-900 mb-3">{t('recommendedFocusAreas')}</h4>
+                  <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">{t('recommendedFocusAreas')}</h4>
                   <div className="flex flex-wrap gap-2">
                     {(translatedSummary?.aiAnalysis?.recommendedFocus || summary.aiAnalysis.recommendedFocus).map((focus, index) => (
-                      <span key={index} className="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full">
+                      <span key={index} className="px-3 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-sm rounded-full">
                         {focus}
                       </span>
                     ))}
                   </div>
                 </div>
                 <div>
-                  <h4 className="text-lg font-semibold text-gray-900 mb-3">{t('nextSteps')}</h4>
+                  <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">{t('nextSteps')}</h4>
                   <ul className="space-y-2">
                     {(translatedSummary?.aiAnalysis?.nextSteps || summary.aiAnalysis.nextSteps).map((step, index) => (
                       <li key={index} className="flex items-start gap-2">
-                        <span className="text-blue-500 mt-1">→</span>
-                        <span className="text-gray-700">{step}</span>
+                        <span className="text-blue-500 dark:text-blue-400 mt-1">→</span>
+                        <span className="text-gray-700 dark:text-gray-300">{step}</span>
                       </li>
                     ))}
                   </ul>

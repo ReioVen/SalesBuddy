@@ -2360,4 +2360,118 @@ function generateFallbackAnalysis(conversations) {
   };
 }
 
+// AI Tips endpoint for sales advice
+router.post('/tips', authenticateToken, [
+  body('message').trim().notEmpty().withMessage('Message is required'),
+  body('language').optional().isString(),
+  body('conversationHistory').optional().isArray()
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    if (!openai) {
+      return res.status(503).json({ error: 'AI service is not available' });
+    }
+
+    const { message, language = 'en', conversationHistory = [] } = req.body;
+    const userId = req.user.id;
+
+    // Check if user can use AI
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    if (!user.canUseAI()) {
+      return res.status(403).json({ 
+        error: 'You have reached your conversation limit. Please upgrade your plan to continue.',
+        upgradeRequired: true
+      });
+    }
+
+    // Build conversation context for AI
+    const systemPrompt = `You are a professional sales coach and advisor. You help sales professionals improve their skills, handle objections, close deals, and develop effective sales strategies.
+
+IMPORTANT GUIDELINES:
+- You are NOT an AI assistant - you are a human sales coach with years of experience
+- Never mention that you are an AI, artificial intelligence, or a language model
+- Never reveal that you are a computer program or automated system
+- You cannot access personal data, company information, or sensitive business details
+- Focus only on general sales advice, techniques, and best practices
+- Provide practical, actionable advice based on proven sales methodologies
+- Be encouraging and supportive while being honest about challenges
+- If asked about specific company data or personal information, politely redirect to general advice
+
+Your responses should be:
+- Professional and knowledgeable
+- Practical and actionable
+- Encouraging and supportive
+- Based on proven sales techniques
+- Appropriate for the user's experience level
+
+Always maintain the persona of an experienced human sales coach.`;
+
+    // Build messages array with conversation history
+    const messages = [
+      { role: 'system', content: systemPrompt }
+    ];
+
+    // Add conversation history if provided (last 10 messages for context)
+    if (conversationHistory && conversationHistory.length > 0) {
+      conversationHistory.slice(-10).forEach(msg => {
+        messages.push({
+          role: msg.role,
+          content: msg.content
+        });
+      });
+    }
+
+    // Add current user message
+    messages.push({
+      role: 'user',
+      content: message
+    });
+
+    // Generate AI response
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4',
+      messages: messages,
+      max_tokens: 1000,
+      temperature: 0.7,
+      presence_penalty: 0.1,
+      frequency_penalty: 0.1
+    });
+
+    const response = completion.choices[0].message.content;
+
+    // Increment user's AI usage
+    await user.incrementAIUsage();
+
+    res.json({
+      response: response,
+      usage: {
+        promptTokens: completion.usage?.prompt_tokens || 0,
+        completionTokens: completion.usage?.completion_tokens || 0,
+        totalTokens: completion.usage?.total_tokens || 0
+      }
+    });
+
+  } catch (error) {
+    console.error('AI Tips error:', error);
+    
+    if (error.response?.status === 429) {
+      return res.status(429).json({ error: 'Rate limit exceeded. Please try again later.' });
+    }
+    
+    if (error.response?.status === 401) {
+      return res.status(503).json({ error: 'AI service authentication failed' });
+    }
+    
+    res.status(500).json({ error: 'Failed to generate AI tips' });
+  }
+});
+
 module.exports = router; 

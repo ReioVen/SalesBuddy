@@ -88,12 +88,12 @@ const ConversationSummaries: React.FC = () => {
 
   if (loading && summaries.length === 0) {
     return (
-      <div className="min-h-screen bg-gray-50 py-8">
+      <div className="min-h-screen bg-gray-50 dark:bg-dark-900 py-8">
         <div className="max-w-4xl mx-auto px-4">
           <div className="flex items-center justify-center h-64">
             <div className="flex items-center gap-3">
               <Loader2 className="w-6 h-6 animate-spin text-blue-600" />
-              <span className="text-gray-600">{t('loadingConversationSummaries')}</span>
+              <span className="text-gray-600 dark:text-gray-300">{t('loadingConversationSummaries')}</span>
             </div>
           </div>
         </div>
@@ -103,11 +103,11 @@ const ConversationSummaries: React.FC = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 py-8">
+      <div className="min-h-screen bg-gray-50 dark:bg-dark-900 py-8">
         <div className="max-w-4xl mx-auto px-4">
-          <div className="bg-red-50 border border-red-200 rounded-lg p-6">
-            <h2 className="text-lg font-semibold text-red-800 mb-2">{t('errorLoadingSummaries')}</h2>
-            <p className="text-red-600 mb-4">{error}</p>
+          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-6">
+            <h2 className="text-lg font-semibold text-red-800 dark:text-red-200 mb-2">{t('errorLoadingSummaries')}</h2>
+            <p className="text-red-600 dark:text-red-300 mb-4">{error}</p>
             <button
               onClick={loadSummaries}
               className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
@@ -121,15 +121,15 @@ const ConversationSummaries: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-gray-50 dark:bg-dark-900 py-8">
       <div className="max-w-4xl mx-auto px-4">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-4">
             <Award className="w-8 h-8 text-blue-600" />
-            <h1 className="text-3xl font-bold text-gray-900">{t('conversationSummaries')}</h1>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{t('conversationSummaries')}</h1>
           </div>
-          <p className="text-gray-600 text-lg">
+          <p className="text-gray-600 dark:text-gray-300 text-lg">
             {t('aiPoweredAnalysis')}
           </p>
         </div>
@@ -137,37 +137,37 @@ const ConversationSummaries: React.FC = () => {
         {/* Stats */}
         {summaries.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div className="bg-white rounded-lg border border-gray-200 p-6">
+            <div className="bg-white dark:bg-dark-800 rounded-lg border border-gray-200 dark:border-dark-700 p-6">
               <div className="flex items-center gap-3">
                 <Award className="w-8 h-8 text-blue-600" />
                 <div>
-                  <div className="text-2xl font-bold text-gray-900">{summaries.length}</div>
-                  <div className="text-gray-600">{t('totalSummaries')}</div>
+                  <div className="text-2xl font-bold text-gray-900 dark:text-white">{summaries.length}</div>
+                  <div className="text-gray-600 dark:text-gray-300">{t('totalSummaries')}</div>
                 </div>
               </div>
             </div>
-            <div className="bg-white rounded-lg border border-gray-200 p-6">
+            <div className="bg-white dark:bg-dark-800 rounded-lg border border-gray-200 dark:border-dark-700 p-6">
               <div className="flex items-center gap-3">
                 <MessageSquare className="w-8 h-8 text-green-600" />
                 <div>
-                  <div className="text-2xl font-bold text-gray-900">
+                  <div className="text-2xl font-bold text-gray-900 dark:text-white">
                     {summaries.reduce((total, summary) => total + summary.conversationCount, 0)}
                   </div>
-                  <div className="text-gray-600">{t('conversationsAnalyzed')}</div>
+                  <div className="text-gray-600 dark:text-gray-300">{t('conversationsAnalyzed')}</div>
                 </div>
               </div>
             </div>
-            <div className="bg-white rounded-lg border border-gray-200 p-6">
+            <div className="bg-white dark:bg-dark-800 rounded-lg border border-gray-200 dark:border-dark-700 p-6">
               <div className="flex items-center gap-3">
                 <TrendingUp className="w-8 h-8 text-purple-600" />
                 <div>
-                  <div className="text-2xl font-bold text-gray-900">
+                  <div className="text-2xl font-bold text-gray-900 dark:text-white">
                     {summaries.length > 0 
                       ? (summaries.reduce((total, summary) => total + summary.overallRating, 0) / summaries.length).toFixed(1)
                       : '0.0'
                     }
                   </div>
-                  <div className="text-gray-600">{t('averageRating')}</div>
+                  <div className="text-gray-600 dark:text-gray-300">{t('averageRating')}</div>
                 </div>
               </div>
             </div>

@@ -2,12 +2,15 @@ import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext.tsx';
 import { useTranslation } from '../hooks/useTranslation.ts';
+import { useTheme } from '../contexts/ThemeContext.tsx';
 import { type Language } from '../utils/translations.ts';
+import { Sun, Moon } from 'lucide-react';
 
 const Navbar: React.FC = () => {
   const [open, setOpen] = useState(false);
   const { user } = useAuth();
   const { t, language } = useTranslation();
+  const { actualTheme, toggleTheme } = useTheme();
   const location = useLocation();
 
   const handleLanguageChange = (newLanguage: Language) => {
@@ -20,17 +23,17 @@ const Navbar: React.FC = () => {
     const isActive = location.pathname === path;
     return `relative px-3 py-2 text-sm font-medium transition-colors ${
       isActive
-        ? 'text-blue-700'
-        : 'text-gray-700 hover:text-gray-900'
+        ? 'text-blue-700 dark:text-blue-400'
+        : 'text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'
     }`;
   };
 
   return (
-    <header className="fixed top-0 inset-x-0">
+    <header className="fixed top-0 inset-x-0 z-50">
       <div className="mx-auto max-w-7xl px-4">
-        <div className="mt-3 rounded-xl border border-gray-200 bg-white/80 backdrop-blur shadow-sm">
+        <div className="mt-3 rounded-xl border border-gray-200 dark:border-dark-700 bg-white/80 dark:bg-dark-800/80 backdrop-blur shadow-sm">
           <div className="h-14 px-3 md:px-4 grid grid-cols-3 items-center">
-            <Link to="/" className="flex items-center gap-2 font-semibold text-gray-900">
+            <Link to="/" className="flex items-center gap-2 font-semibold text-gray-900 dark:text-white">
               <span className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-gradient-to-tr from-blue-600 to-cyan-400 text-white text-xs font-bold">
                 SB
               </span>
@@ -60,11 +63,24 @@ const Navbar: React.FC = () => {
             </nav>
 
             <div className="hidden md:flex items-center gap-3 justify-end">
+              {/* Dark Mode Toggle */}
+              <button
+                onClick={toggleTheme}
+                className="p-2 rounded-lg border border-gray-300 dark:border-dark-600 bg-white dark:bg-dark-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-600 transition-colors"
+                title={actualTheme === 'light' ? 'Switch to dark mode' : 'Switch to light mode'}
+              >
+                {actualTheme === 'light' ? (
+                  <Moon className="w-4 h-4" />
+                ) : (
+                  <Sun className="w-4 h-4" />
+                )}
+              </button>
+
               {/* Language Selector */}
               <select
                 value={language}
                 onChange={(e) => handleLanguageChange(e.target.value as Language)}
-                className="text-sm border border-gray-300 rounded-md px-2 py-1 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="text-sm border border-gray-300 dark:border-dark-600 rounded-md px-2 py-1 bg-white dark:bg-dark-700 text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="en">🇺🇸 EN</option>
                 <option value="et">🇪🇪 ET</option>
