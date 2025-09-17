@@ -61,6 +61,12 @@ export const useSpeechToText = (options: SpeechToTextOptions = {}): SpeechToText
     recognition.maxAlternatives = maxAlternatives;
 
     recognition.onstart = () => {
+      // If user has explicitly stopped, don't start
+      if (isExplicitlyStoppedRef.current) {
+        recognition.stop();
+        return;
+      }
+      
       setIsListening(true);
       setIsStarting(false);
       setError(null);
@@ -73,6 +79,7 @@ export const useSpeechToText = (options: SpeechToTextOptions = {}): SpeechToText
       if (recognition !== recognitionRef.current) {
         return;
       }
+      
       
       if (!continuous || isExplicitlyStoppedRef.current) {
         setIsListening(false);
@@ -125,6 +132,11 @@ export const useSpeechToText = (options: SpeechToTextOptions = {}): SpeechToText
     };
 
     recognition.onresult = (event) => {
+      // If user has explicitly stopped, ignore all results
+      if (isExplicitlyStoppedRef.current) {
+        return;
+      }
+      
       let interimTranscript = '';
       let finalTranscript = finalTranscriptRef.current;
 
@@ -213,9 +225,10 @@ export const useSpeechToText = (options: SpeechToTextOptions = {}): SpeechToText
     if (recognitionRef.current) {
       try {
         recognitionRef.current.stop();
-        recognitionRef.current = null; // Clear the reference
+        // Don't clear the reference immediately - let onend handle it
       } catch (err) {
-        // Ignore errors when stopping
+        // If stop() fails, force clear the reference
+        recognitionRef.current = null;
       }
     }
     

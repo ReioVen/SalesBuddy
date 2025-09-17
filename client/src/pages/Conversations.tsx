@@ -4,11 +4,12 @@ import { useAuth } from '../contexts/AuthContext.tsx';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import toast from 'react-hot-toast';
-import { Plus, MessageSquare, User, Building, Briefcase, FileText, Send, X, Star, Lightbulb } from 'lucide-react';
+import { Plus, MessageSquare, User, Building, Briefcase, FileText, Send, X, Star, Lightbulb, Volume2, VolumeX } from 'lucide-react';
 import { translateAIContent } from '../utils/aiContentTranslator.ts';
 import SpeechInput from '../components/SpeechInput.tsx';
 import VoiceCommands from '../components/VoiceCommands.tsx';
 import AITips from '../components/AITips.tsx';
+import { useTextToSpeech } from '../hooks/useTextToSpeech.ts';
 
 interface ClientCustomization {
   name: string;
@@ -18,6 +19,8 @@ interface ClientCustomization {
   role: string;
   customPrompt: string;
   difficulty: 'easy' | 'medium' | 'hard';
+  selectedVoice?: SpeechSynthesisVoice | null;
+  ttsVolume?: number;
   familySize?: number;
   income?: string;
   incomeRange?: string;
@@ -92,6 +95,27 @@ const Conversations: React.FC = () => {
   const [endingConversation, setEndingConversation] = useState(false);
   const [speechEnabled, setSpeechEnabled] = useState(true);
   const [voiceCommandsEnabled, setVoiceCommandsEnabled] = useState(true);
+  const [handsFreeMode, setHandsFreeMode] = useState(false);
+  const [speakAIResponse, setSpeakAIResponse] = useState<((response: string) => void) | null>(null);
+  const speakAIResponseRef = useRef<((response: string) => void) | null>(null);
+  const [ttsVolume, setTtsVolume] = useState(0.7); // Default volume at 70%
+  
+  // Text-to-speech functionality for voice selection
+  const { voices, speak: testVoice } = useTextToSpeech();
+  
+  // Function to reconstruct SpeechSynthesisVoice from saved data
+  const reconstructVoice = useCallback((savedVoice: any) => {
+    if (!savedVoice || !voices.length) return null;
+    
+    // Find the voice by name and language
+    const voice = voices.find(v => 
+      v.name === savedVoice.name && 
+      v.lang === savedVoice.lang
+    );
+    
+    return voice || null;
+  }, [voices]);
+  
   const [conversationHistory, setConversationHistory] = useState<Conversation[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
@@ -124,8 +148,16 @@ const Conversations: React.FC = () => {
     industry: '',
     role: '',
     customPrompt: '',
-    difficulty: 'medium'
+    difficulty: 'medium',
+    selectedVoice: null
   });
+
+  // Initialize ttsVolume from clientCustomization when it changes
+  useEffect(() => {
+    if (clientCustomization.ttsVolume !== undefined) {
+      setTtsVolume(clientCustomization.ttsVolume);
+    }
+  }, [clientCustomization.ttsVolume]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -262,6 +294,7 @@ const Conversations: React.FC = () => {
 
     setLoading(true);
     try {
+      const volumeToSend = clientCustomization.ttsVolume || ttsVolume;
       const response = await axios.post('/api/ai/conversation', {
         scenario: clientCustomization.scenario,
         clientName: clientCustomization.name || undefined,
@@ -270,7 +303,13 @@ const Conversations: React.FC = () => {
         clientRole: clientCustomization.role || undefined,
         customPrompt: clientCustomization.customPrompt || undefined,
         difficulty: clientCustomization.difficulty,
-        language: language
+        language: language,
+        selectedVoice: clientCustomization.selectedVoice ? {
+          name: clientCustomization.selectedVoice.name,
+          lang: clientCustomization.selectedVoice.lang,
+          voiceURI: clientCustomization.selectedVoice.voiceURI
+        } : undefined,
+        ttsVolume: volumeToSend
       });
 
       toast.success(t('conversationStarted'));
@@ -292,7 +331,8 @@ const Conversations: React.FC = () => {
         industry: '',
         role: '',
         customPrompt: '',
-        difficulty: 'medium'
+        difficulty: 'medium',
+        selectedVoice: null
       });
 
       // Refresh usage status after starting conversation
@@ -343,7 +383,7 @@ const Conversations: React.FC = () => {
   };
 
   const handleSendMessage = async (messageText?: string) => {
-    const messageToSend = messageText || newMessage.trim();
+    const messageToSend = messageText || (newMessage ? newMessage.trim() : '');
     if (!messageToSend || !currentConversation || sendingMessage) return;
 
     // Check usage before sending message
@@ -375,14 +415,20 @@ const Conversations: React.FC = () => {
       });
 
       // Add AI response to conversation
+      const aiResponse = response.data.response;
       setCurrentConversation(prev => prev ? {
         ...prev,
         messages: [...prev.messages, {
           role: 'assistant' as const,
-          content: response.data.response,
+          content: aiResponse,
           timestamp: new Date()
         }]
       } : null);
+
+      // Speak AI response if hands-free mode is enabled
+      if (handsFreeMode && speakAIResponseRef.current && aiResponse) {
+        speakAIResponseRef.current(aiResponse);
+      }
 
       // No need to refresh conversation history after each message
       // The current conversation is already updated with the new message
@@ -880,6 +926,81 @@ const Conversations: React.FC = () => {
                     </div>
                   </div>
 
+                  {/* Voice Selection */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      <MessageSquare className="w-4 h-4 inline mr-2" />
+                      Voice Selection <span className="text-gray-400">({t('optional')})</span>
+                    </label>
+                    <div className="space-y-3">
+                      <div className="flex gap-2">
+                        <select
+                          value={clientCustomization.selectedVoice?.name || 'default'}
+                          onChange={(e) => {
+                            const voiceName = e.target.value;
+                            const voice = voices.find(v => v.name === voiceName) || null;
+                            setClientCustomization(prev => ({ ...prev, selectedVoice: voice }));
+                          }}
+                          className="flex-1 px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                        >
+                          <option value="default">Default Voice</option>
+                          {voices.map((voice, index) => (
+                            <option key={index} value={voice.name}>
+                              {voice.name} ({voice.lang})
+                            </option>
+                          ))}
+                        </select>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const testText = "Hello, this is a test of the selected voice.";
+                            const currentVolume = clientCustomization.ttsVolume || ttsVolume;
+                            testVoice(testText, { voice: clientCustomization.selectedVoice, volume: currentVolume });
+                          }}
+                          className="px-3 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+                        >
+                          Test
+                        </button>
+                      </div>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                        Choose a voice for text-to-speech in hands-free mode. This voice will read both your messages and AI responses.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Volume Control */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      <Volume2 className="w-4 h-4 inline mr-2" />
+                      Volume Control <span className="text-gray-400">({t('optional')})</span>
+                    </label>
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-3">
+                        <VolumeX className="w-4 h-4 text-gray-400" />
+                        <input
+                          type="range"
+                          min="0"
+                          max="1"
+                          step="0.1"
+                          value={clientCustomization.ttsVolume || ttsVolume}
+                          onChange={(e) => {
+                            const newVolume = parseFloat(e.target.value);
+                            setTtsVolume(newVolume);
+                            setClientCustomization(prev => ({ ...prev, ttsVolume: newVolume }));
+                          }}
+                          className="flex-1 h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer slider"
+                        />
+                        <Volume2 className="w-4 h-4 text-gray-400" />
+                        <span className="text-sm text-gray-600 dark:text-gray-400 min-w-[3rem] text-center">
+                          {Math.round((clientCustomization.ttsVolume || ttsVolume) * 100)}%
+                        </span>
+                      </div>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                        Adjust the volume for text-to-speech in hands-free mode. Default is 70%.
+                      </p>
+                    </div>
+                  </div>
+
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       <FileText className="w-4 h-4 inline mr-2" />
@@ -1058,6 +1179,21 @@ const Conversations: React.FC = () => {
                   disabled={sendingMessage}
                   placeholder={t('typeMessage')}
                   language={language === 'en' ? 'en-US' : language === 'et' ? 'et-EE' : language === 'es' ? 'es-ES' : language === 'ru' ? 'ru-RU' : 'en-US'}
+                  handsFreeMode={handsFreeMode}
+                  autoSendDelay={3000}
+                  onAIResponse={(callback) => {
+                    setSpeakAIResponse(callback);
+                    speakAIResponseRef.current = callback;
+                  }}
+                  selectedVoice={(() => {
+                    const savedVoice = currentConversation?.clientCustomization?.selectedVoice;
+                    const reconstructedVoice = reconstructVoice(savedVoice);
+                    return reconstructedVoice;
+                  })()}
+                  ttsVolume={(() => {
+                    const volume = currentConversation?.clientCustomization?.ttsVolume || 0.7;
+                    return volume;
+                  })()}
                 />
               ) : (
                 <div className="flex gap-3">
@@ -1102,6 +1238,17 @@ const Conversations: React.FC = () => {
                     />
                     {t('voiceCommands')}
                   </label>
+                  {speechEnabled && (
+                    <label className="flex items-center gap-2 text-sm text-gray-600">
+                      <input
+                        type="checkbox"
+                        checked={handsFreeMode}
+                        onChange={(e) => setHandsFreeMode(e.target.checked)}
+                        className="rounded border-gray-300 text-green-600 focus:ring-green-500"
+                      />
+                      Hands-Free Mode
+                    </label>
+                  )}
                 </div>
                 
                 {voiceCommandsEnabled && speechEnabled && currentConversation && currentConversation.messages.filter(msg => msg.role === 'user').length >= 2 && (

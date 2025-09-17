@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Mic, MicOff, Send, X, Volume2, VolumeX } from 'lucide-react';
+import { Mic, MicOff, Send, X, Volume2, VolumeX, Headphones } from 'lucide-react';
 import { useSpeechToText } from '../hooks/useSpeechToText.ts';
+import { useTextToSpeech } from '../hooks/useTextToSpeech.ts';
 
 interface SpeechInputProps {
   onSendMessage: (message: string) => void;
@@ -8,6 +9,11 @@ interface SpeechInputProps {
   placeholder?: string;
   language?: string;
   className?: string;
+  handsFreeMode?: boolean;
+  autoSendDelay?: number; // in milliseconds
+  onAIResponse?: (speakFunction: (response: string) => void) => void; // Callback to receive the speak function
+  selectedVoice?: SpeechSynthesisVoice | null; // Voice selected in conversation creation
+  ttsVolume?: number; // Volume for text-to-speech (0.0 to 1.0)
 }
 
 const SpeechInput: React.FC<SpeechInputProps> = ({
@@ -15,7 +21,12 @@ const SpeechInput: React.FC<SpeechInputProps> = ({
   disabled = false,
   placeholder = "Type or speak your message...",
   language = 'en-US',
-  className = ''
+  className = '',
+  handsFreeMode = false,
+  autoSendDelay = 3000, // 3 seconds default
+  onAIResponse,
+  selectedVoice = null,
+  ttsVolume = 0.7
 }) => {
   const [textInput, setTextInput] = useState('');
   const [isManualTyping, setIsManualTyping] = useState(false);
@@ -25,12 +36,29 @@ const SpeechInput: React.FC<SpeechInputProps> = ({
     'Clear text',
     'Stop listening',
     'Start new conversation',
-    'End conversation'
+    'End conversation',
+    'Stop speaking',
+    'Repeat that'
   ]);
   
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const waveformRef = useRef<HTMLDivElement>(null);
   const [waveformAnimation, setWaveformAnimation] = useState(false);
+  const autoSendTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const [userExplicitlyStopped, setUserExplicitlyStopped] = useState(false);
+  
+  // Text-to-speech functionality
+  const { isSpeaking, isSupported: ttsSupported, speak, stop: stopTTS } = useTextToSpeech();
+  const lastAIResponseRef = useRef<string>('');
+
+  // Function to speak AI responses
+  const speakAIResponse = useCallback((response: string) => {
+    if (ttsSupported && response && response.trim()) {
+      lastAIResponseRef.current = response;
+      // Use selectedVoice if available, otherwise use default
+      speak(response, { language, rate: 0.9, voice: selectedVoice || undefined, volume: ttsVolume }); // Slightly slower for better comprehension
+    }
+  }, [ttsSupported, speak, language, selectedVoice, ttsVolume]);
 
   const {
     transcript,
@@ -66,19 +94,123 @@ const SpeechInput: React.FC<SpeechInputProps> = ({
   });
 
   const handleSendMessage = useCallback(() => {
-    if (textInput.trim()) {
+    if (textInput && textInput.trim()) {
+      const messageToSend = textInput.trim();
+      
       // Stop speech recognition first if active
       if (isListening || isStarting) {
         stopListening();
         setWaveformAnimation(false);
       }
       
-      onSendMessage(textInput.trim());
-      setTextInput('');
-      resetTranscript();
-      setIsManualTyping(false);
+      // Clear auto-send timer
+      if (autoSendTimerRef.current) {
+        clearTimeout(autoSendTimerRef.current);
+        autoSendTimerRef.current = null;
+      }
+      
+      // In hands-free mode, speak the client's message before sending
+      if (handsFreeMode && ttsSupported) {
+        speak(messageToSend, { language, rate: 0.9, voice: selectedVoice || undefined, volume: ttsVolume });
+        
+        // Wait for TTS to finish before sending message and restarting speech recognition
+        const checkTTS = () => {
+          if (!isSpeaking) {
+            // TTS finished, now send the message
+            onSendMessage(messageToSend);
+            setTextInput('');
+            resetTranscript();
+            setIsManualTyping(false);
+            
+            // Restart speech recognition after a short delay
+            setTimeout(() => {
+              startListening();
+            }, 1000);
+          } else {
+            // Still speaking, check again in 100ms
+            setTimeout(checkTTS, 100);
+          }
+        };
+        
+        // Start checking after a short delay to ensure TTS has started
+        setTimeout(checkTTS, 200);
+      } else {
+        // Normal mode - send immediately
+        onSendMessage(messageToSend);
+        setTextInput('');
+        resetTranscript();
+        setIsManualTyping(false);
+        
+        // In hands-free mode, restart speech recognition after sending message
+        if (handsFreeMode) {
+          console.log('Hands-free mode: restarting speech recognition after sending message');
+          setTimeout(() => {
+            startListening();
+          }, 1000);
+        }
+      }
     }
-  }, [textInput, isListening, isStarting, stopListening, onSendMessage, resetTranscript]);
+  }, [textInput, isListening, isStarting, stopListening, onSendMessage, resetTranscript, handsFreeMode, startListening, ttsSupported, speak, language, isSpeaking]);
+
+  // Auto-send functionality for hands-free mode
+  const startAutoSendTimer = useCallback(() => {
+    if (!handsFreeMode || !textInput || !textInput.trim() || !isListening) return;
+    
+    // In hands-free mode, ignore manual typing flag if speech recognition has ended
+    // This allows auto-send to work even if user was typing before
+    if (isManualTyping) {
+      return;
+    }
+    
+    // Clear existing timer
+    if (autoSendTimerRef.current) {
+      clearTimeout(autoSendTimerRef.current);
+    }
+    
+    // Start new timer
+    autoSendTimerRef.current = setTimeout(() => {
+      if (textInput && textInput.trim()) {
+        // Stop speech recognition first
+        if (isListening || isStarting) {
+          stopListening();
+          setWaveformAnimation(false);
+        }
+        
+        // Clear the timer
+        if (autoSendTimerRef.current) {
+          clearTimeout(autoSendTimerRef.current);
+          autoSendTimerRef.current = null;
+        }
+        
+        // Send the message
+        onSendMessage(textInput.trim());
+        setTextInput('');
+        resetTranscript();
+        setIsManualTyping(false);
+      }
+    }, autoSendDelay);
+  }, [handsFreeMode, textInput, isManualTyping, isListening, isStarting, autoSendDelay, stopListening, onSendMessage, resetTranscript, selectedVoice]);
+
+  // Clear auto-send timer when needed
+  const clearAutoSendTimer = useCallback(() => {
+    if (autoSendTimerRef.current) {
+      clearTimeout(autoSendTimerRef.current);
+      autoSendTimerRef.current = null;
+    }
+  }, []);
+
+  // Effect to handle auto-send timer - start timer when we have text and speech recognition is active
+  useEffect(() => {
+    
+    if (handsFreeMode && textInput && textInput.trim() && isListening) {
+      // Start timer when we have text and are listening (this will trigger after silence)
+      startAutoSendTimer();
+    } else {
+      clearAutoSendTimer();
+    }
+    
+    return () => clearAutoSendTimer();
+  }, [handsFreeMode, textInput, isManualTyping, isListening, startAutoSendTimer, clearAutoSendTimer]);
 
   // Handle voice commands
   useEffect(() => {
@@ -86,7 +218,7 @@ const SpeechInput: React.FC<SpeechInputProps> = ({
       const lowerTranscript = transcript.toLowerCase();
       
       if (lowerTranscript.includes('send message') || lowerTranscript.includes('send')) {
-        if (textInput.trim()) {
+        if (textInput && textInput.trim()) {
           handleSendMessage();
         }
       } else if (lowerTranscript.includes('clear text') || lowerTranscript.includes('clear')) {
@@ -95,12 +227,48 @@ const SpeechInput: React.FC<SpeechInputProps> = ({
         resetTranscript();
       } else if (lowerTranscript.includes('stop listening') || lowerTranscript.includes('stop')) {
         stopListening();
+        setUserExplicitlyStopped(true);
+      } else if (lowerTranscript.includes('stop speaking')) {
+        stopTTS();
+      } else if (lowerTranscript.includes('repeat that') && lastAIResponseRef.current) {
+        speakAIResponse(lastAIResponseRef.current);
       } else {
         // Set text input from transcript if it's not a voice command
         setTextInput(transcript);
       }
     }
-  }, [transcript, textInput, isManualTyping, resetTranscript, stopListening, handleSendMessage]);
+  }, [transcript, textInput, isManualTyping, resetTranscript, stopListening, handleSendMessage, stopTTS, speakAIResponse]);
+
+  // Expose speakAIResponse function to parent component
+  useEffect(() => {
+    if (onAIResponse && speakAIResponse) {
+      onAIResponse(speakAIResponse);
+    }
+  }, [onAIResponse, speakAIResponse]);
+
+  // In hands-free mode, restart speech recognition when AI finishes speaking
+  useEffect(() => {
+    if (handsFreeMode && !isSpeaking && !isListening && !isStarting && !userExplicitlyStopped) {
+      // Small delay to ensure TTS has fully finished
+      setTimeout(() => {
+        startListening();
+      }, 500);
+    }
+  }, [handsFreeMode, isSpeaking, isListening, isStarting, userExplicitlyStopped, startListening]);
+
+  // Start speech recognition when hands-free mode is enabled (but don't stop when disabled)
+  useEffect(() => {
+    if (handsFreeMode) {
+      // Clear the explicitly stopped flag when hands-free mode is enabled
+      setUserExplicitlyStopped(false);
+      
+      if (!isListening && !isStarting && !isSpeaking) {
+        startListening();
+      }
+    }
+    // Note: We don't stop speech recognition when hands-free mode is disabled
+    // because the user might have manually started it for normal speech-to-text
+  }, [handsFreeMode, isListening, isStarting, isSpeaking, startListening]);
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -127,10 +295,14 @@ const SpeechInput: React.FC<SpeechInputProps> = ({
       stopListening();
       // Force stop animation immediately
       setWaveformAnimation(false);
+      // Mark that user explicitly stopped the microphone
+      setUserExplicitlyStopped(true);
     } else {
       // Reset manual typing flag before starting (but don't clear existing text)
       setIsManualTyping(false);
       resetTranscript();
+      // Clear the explicitly stopped flag when user starts again
+      setUserExplicitlyStopped(false);
       startListening();
     }
   };
@@ -148,7 +320,46 @@ const SpeechInput: React.FC<SpeechInputProps> = ({
   };
 
   return (
-    <div className={`speech-input-container ${className}`}>
+    <>
+
+      <div className={`speech-input-container ${className}`}>
+      {/* Hands-Free Mode Indicator */}
+      {handsFreeMode && (
+        <div className="mb-3 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+          <div className="flex items-center gap-2">
+            <Headphones className="w-4 h-4 text-green-600 dark:text-green-400" />
+            <span className="text-sm font-medium text-green-800 dark:text-green-200">
+              Hands-Free Mode Active
+            </span>
+            {autoSendTimerRef.current && textInput.trim() && !isManualTyping && (
+              <span className="text-xs text-green-600 dark:text-green-400">
+                (Auto-send in {Math.ceil(autoSendDelay / 1000)}s)
+              </span>
+            )}
+          </div>
+        </div>
+      )}
+
+
+
+      {/* Text-to-Speech Status */}
+      {isSpeaking && (
+        <div className="mb-3 p-3 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg">
+          <div className="flex items-center gap-2">
+            <Volume2 className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+            <span className="text-sm font-medium text-purple-800 dark:text-purple-200">
+              AI is speaking...
+            </span>
+            <button
+              onClick={stopTTS}
+              className="ml-auto text-xs text-purple-600 dark:text-purple-400 hover:text-purple-800 dark:hover:text-purple-200 underline"
+            >
+              Stop
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Voice Commands Help */}
       {showVoiceCommands && (
         <div className="mb-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
@@ -201,6 +412,7 @@ const SpeechInput: React.FC<SpeechInputProps> = ({
                   console.log('Stop button clicked');
                   stopListening();
                   setWaveformAnimation(false);
+                  setUserExplicitlyStopped(true);
                 }}
                 className="text-xs text-green-600 hover:text-green-800 underline"
               >
@@ -210,15 +422,19 @@ const SpeechInput: React.FC<SpeechInputProps> = ({
           </div>
           
           {/* Animated Waveform */}
-          <div ref={waveformRef} className="mt-2 flex items-center gap-1">
+          <div ref={waveformRef} className="mt-2 flex items-center justify-center gap-1">
             {Array.from({ length: 8 }).map((_, index) => (
               <div
                 key={index}
-                className={`w-1 bg-green-400 rounded-full ${
-                  waveformAnimation ? 'animate-pulse' : ''
+                className={`w-1 rounded-full transition-all ${
+                  waveformAnimation 
+                    ? 'bg-red-400 animate-pulse' 
+                    : 'bg-gray-300 dark:bg-gray-600'
                 }`}
                 style={{
-                  height: `${Math.random() * 20 + 8}px`,
+                  height: waveformAnimation 
+                    ? `${Math.random() * 20 + 8}px` 
+                    : '4px',
                   animationDelay: `${index * 0.1}s`,
                   animationDuration: '0.8s'
                 }}
@@ -282,6 +498,7 @@ const SpeechInput: React.FC<SpeechInputProps> = ({
             )}
           </button>
 
+
           {/* Send Button */}
           <button
             onClick={handleSendMessage}
@@ -310,7 +527,8 @@ const SpeechInput: React.FC<SpeechInputProps> = ({
           <p className="italic">{transcript}</p>
         </div>
       )}
-    </div>
+      </div>
+    </>
   );
 };
 

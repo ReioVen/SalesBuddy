@@ -1410,9 +1410,12 @@ Respond in this exact JSON format:
    body('clientRole').optional().trim().isLength({ max: 100 }),
    body('customPrompt').optional().trim().isLength({ max: 1000 }),
    body('difficulty').optional().isIn(['easy', 'medium', 'hard']),
-   body('language').optional().isIn(['en', 'et', 'es', 'ru'])
+   body('language').optional().isIn(['en', 'et', 'es', 'ru']),
+   body('ttsVolume').optional().isFloat({ min: 0, max: 1 }),
+   body('selectedVoice').optional().isObject()
   ], async (req, res) => {
    try {
+    
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
@@ -1476,7 +1479,9 @@ Respond in this exact JSON format:
         industry: clientIndustry,
         role: clientRole,
         customPrompt: customPrompt,
-        difficulty: difficulty
+        difficulty: difficulty,
+        ttsVolume: req.body.ttsVolume,
+        selectedVoice: req.body.selectedVoice
       };
          } else {
        // Generate random client profile with difficulty-based selling points
@@ -1589,7 +1594,9 @@ Respond in this exact JSON format:
             personalityShifts: randomProfile.personalityShifts,
             emotionalTriggers: randomProfile.emotionalTriggers,
             randomAddOns: randomProfile.randomAddOns,
-            memoryRecall: randomProfile.memoryRecall
+            memoryRecall: randomProfile.memoryRecall,
+            ttsVolume: req.body.ttsVolume,
+            selectedVoice: req.body.selectedVoice
           };
        
        // Update title to include random client name
@@ -1599,6 +1606,7 @@ Respond in this exact JSON format:
     
     
          // Create new conversation
+     
      const conversation = new Conversation({
        userId: req.user._id,
        scenario,
@@ -1650,6 +1658,7 @@ Respond in this exact JSON format:
     }
 
          // For lead calls only, show the specific details you want
+     
      let clientInfo = conversation.clientCustomization;
            if (scenario === 'lead_call') {
         clientInfo = {
@@ -1686,16 +1695,21 @@ Respond in this exact JSON format:
           personalityShifts: conversation.clientCustomization.personalityShifts,
           emotionalTriggers: conversation.clientCustomization.emotionalTriggers,
           randomAddOns: conversation.clientCustomization.randomAddOns,
-          memoryRecall: conversation.clientCustomization.memoryRecall
+          memoryRecall: conversation.clientCustomization.memoryRecall,
+          selectedVoice: conversation.clientCustomization.selectedVoice,
+          ttsVolume: conversation.clientCustomization.ttsVolume
         };
      } else {
        // For all other scenarios (including cold calls), only show basic info
        clientInfo = {
          name: conversation.clientCustomization.name,
-         scenario: conversation.scenario
+         scenario: conversation.scenario,
+         selectedVoice: conversation.clientCustomization.selectedVoice,
+         ttsVolume: conversation.clientCustomization.ttsVolume
        };
      }
 
+    
     res.json({
       message: 'Conversation started',
       conversation: {

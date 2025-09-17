@@ -87,10 +87,8 @@ const ConversationSummaryCard: React.FC<ConversationSummaryCardProps> = ({ summa
 
   // Use pre-translated content from database when language changes
   useEffect(() => {
-    console.log('Translation useEffect triggered:', { language, hasSummary: !!summary, translationAttempted });
     
     if (language === 'en' || !summary) {
-      console.log('Setting translatedSummary to null (English or no summary)');
       setTranslatedSummary(null);
       setTranslationAttempted(false);
       return;
@@ -98,7 +96,6 @@ const ConversationSummaryCard: React.FC<ConversationSummaryCardProps> = ({ summa
 
     // Reset translation attempted flag when language changes
     if (translationAttempted) {
-      console.log('Translation already attempted, skipping');
       return;
     }
 
@@ -108,7 +105,6 @@ const ConversationSummaryCard: React.FC<ConversationSummaryCardProps> = ({ summa
     const hasPreTranslatedContent = summary.translations && summary.translations[language];
     
     if (hasPreTranslatedContent && !isLatestSummary) {
-      console.log('Using pre-translated content for language:', language);
       const preTranslated = summary.translations[language];
       
       // Create a translated summary using pre-translated content
@@ -120,55 +116,33 @@ const ConversationSummaryCard: React.FC<ConversationSummaryCardProps> = ({ summa
         aiAnalysis: preTranslated.aiAnalysis || summary.aiAnalysis
       };
       
-      console.log('Pre-translated summary:', translatedSummary);
       setTranslatedSummary(translatedSummary);
       setTranslationAttempted(true);
     } else {
       // For latest summaries, always force re-translation to ensure proper Google Translate results
-      if (isLatestSummary) {
-        console.log('Latest summary - forcing re-translation with Google Translate');
-      }
       // Determine if this summary should be translated automatically (latest 2) or on-demand
       // Since summaries are sorted by summaryNumber descending (latest first),
       // the first 2 summaries in the array (index 0 and 1) are the latest
       const shouldTranslateAutomatically = isLatestSummary || isExpanded;
       
-      console.log('Translation decision:', { 
-        summaryNumber: summary.summaryNumber, 
-        index,
-        isLatestSummary, 
-        isExpanded, 
-        shouldTranslateAutomatically 
-      });
       
       if (!shouldTranslateAutomatically) {
-        console.log('Summary not in latest 2 and not expanded, skipping automatic translation');
         setTranslatedSummary(null);
         setTranslationAttempted(true);
         return;
       }
       
-      if (isLatestSummary) {
-        console.log('Latest summary - using Google Translate for proper content translation');
-      } else {
-        console.log('No pre-translated content, requesting on-demand translation for language:', language);
-      }
       
       const token = localStorage.getItem('token');
-      console.log('Token for translation request:', token ? 'Present' : 'Missing');
       
       // For latest summaries, always try Google Translate first, even without token
       if (!token && !isLatestSummary) {
-        console.log('No token found, using static translation directly...');
         setIsTranslating(true);
         
         const handleStaticTranslation = async () => {
           try {
             await databaseTranslationService.forceRefreshTranslations(language);
             const translated = databaseTranslationService.translateSummaryContentSync(summary, language);
-            console.log('Static translation result:', translated);
-            console.log('Translated strengths:', translated.strengths);
-            console.log('Translated improvements:', translated.improvements);
             setTranslatedSummary(translated);
             setTranslationAttempted(true);
           } catch (error) {
@@ -186,7 +160,6 @@ const ConversationSummaryCard: React.FC<ConversationSummaryCardProps> = ({ summa
       
       // For latest summaries without token, use enhanced static translation with better AI content handling
       if (!token && isLatestSummary) {
-        console.log('Latest summary without token - using enhanced static translation for AI content...');
         setIsTranslating(true);
         
         const handleEnhancedStaticTranslation = async () => {
@@ -195,7 +168,7 @@ const ConversationSummaryCard: React.FC<ConversationSummaryCardProps> = ({ summa
             try {
               await databaseTranslationService.forceRefreshTranslations(language);
             } catch (refreshError) {
-              console.log('Could not refresh translations, using existing ones:', refreshError);
+              // Could not refresh translations, using existing ones
             }
             
             // For AI insights, use a more comprehensive translation approach with fallback
@@ -229,7 +202,6 @@ const ConversationSummaryCard: React.FC<ConversationSummaryCardProps> = ({ summa
               }
             };
             
-            console.log('Enhanced static translation result:', translatedSummary);
             setTranslatedSummary(translatedSummary);
             setTranslationAttempted(true);
           } catch (error) {
@@ -250,7 +222,6 @@ const ConversationSummaryCard: React.FC<ConversationSummaryCardProps> = ({ summa
       
       const requestTranslation = async () => {
         try {
-          console.log('Requesting on-demand translation...');
           
           const response = await fetch(`/api/conversation-summaries/${summary._id}/translate`, {
             method: 'POST',
@@ -267,7 +238,6 @@ const ConversationSummaryCard: React.FC<ConversationSummaryCardProps> = ({ summa
 
           const result = await response.json();
           if (result.success && result.translation) {
-            console.log('On-demand translation received:', result.translation);
             
             // Create a translated summary using the received translation
             const translatedSummary = {
@@ -286,10 +256,8 @@ const ConversationSummaryCard: React.FC<ConversationSummaryCardProps> = ({ summa
         } catch (error) {
           console.error('Error requesting on-demand translation:', error);
           // Fall back to static translation
-          console.log('Falling back to static translation...');
           await databaseTranslationService.forceRefreshTranslations(language);
           const translated = databaseTranslationService.translateSummaryContentSync(summary, language);
-          console.log('Static translation result:', translated);
           setTranslatedSummary(translated);
           setTranslationAttempted(true);
         } finally {
@@ -299,14 +267,13 @@ const ConversationSummaryCard: React.FC<ConversationSummaryCardProps> = ({ summa
       
       requestTranslation();
     }
-  }, [summary, language, translationAttempted, isExpanded, index]);
+  }, [summary, language, isExpanded, index]);
 
   // Trigger translation when summary is expanded (for summaries not in latest 2)
   useEffect(() => {
     if (isExpanded && language !== 'en' && summary && !translationAttempted) {
       const isLatestSummary = index < 2; // First 2 summaries are the latest
       if (!isLatestSummary) {
-        console.log('Summary expanded, triggering translation for summary:', summary.summaryNumber, 'index:', index);
         setTranslationAttempted(false); // Reset to allow translation
       }
     }

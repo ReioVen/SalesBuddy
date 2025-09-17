@@ -90,7 +90,19 @@ const conversationSchema = new mongoose.Schema({
      personalityShifts: String,
      emotionalTriggers: String,
      randomAddOns: String,
-     memoryRecall: String
+     memoryRecall: String,
+     // TTS settings
+     ttsVolume: {
+       type: Number,
+       min: 0,
+       max: 1,
+       default: 0.7
+     },
+     selectedVoice: {
+       name: String,
+       lang: String,
+       voiceURI: String
+     }
   },
   messages: [messageSchema],
   totalTokens: {
