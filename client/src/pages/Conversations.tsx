@@ -775,7 +775,7 @@ const Conversations: React.FC = () => {
                       value={clientCustomization.name}
                       onChange={(e) => setClientCustomization(prev => ({ ...prev, name: e.target.value }))}
                       placeholder="e.g., Sarah Johnson"
-                      className="w-full px-4 py-2 border border-gray-300 dark:border-dark-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-dark-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-dark-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-dark-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
                     />
                   </div>
 
@@ -811,7 +811,7 @@ const Conversations: React.FC = () => {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       {t('clientPersonality')} <span className="text-gray-400">({t('optional')})</span>
                     </label>
                     <input
@@ -819,12 +819,12 @@ const Conversations: React.FC = () => {
                       value={clientCustomization.personality}
                       onChange={(e) => setClientCustomization(prev => ({ ...prev, personality: e.target.value }))}
                       placeholder={t('examplePersonality')}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-dark-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-dark-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       <Building className="w-4 h-4 inline mr-2" />
                       {t('clientIndustry')} <span className="text-gray-400">({t('optional')})</span>
                     </label>
@@ -833,12 +833,12 @@ const Conversations: React.FC = () => {
                       value={clientCustomization.industry}
                       onChange={(e) => setClientCustomization(prev => ({ ...prev, industry: e.target.value }))}
                       placeholder={t('exampleIndustry')}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-dark-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-dark-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       <Briefcase className="w-4 h-4 inline mr-2" />
                       {t('clientRole')} <span className="text-gray-400">({t('optional')})</span>
                     </label>
@@ -847,12 +847,12 @@ const Conversations: React.FC = () => {
                       value={clientCustomization.role}
                       onChange={(e) => setClientCustomization(prev => ({ ...prev, role: e.target.value }))}
                       placeholder={t('exampleRole')}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-dark-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-dark-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       <Star className="w-4 h-4 inline mr-2" />
                       {t('difficulty')}
                     </label>
@@ -864,13 +864,13 @@ const Conversations: React.FC = () => {
                           onClick={() => setClientCustomization(prev => ({ ...prev, difficulty: level }))}
                           className={`p-3 rounded-lg border-2 text-center transition-all ${
                             clientCustomization.difficulty === level
-                              ? 'border-blue-500 bg-blue-50 text-blue-700'
-                              : 'border-gray-200 hover:border-gray-300'
+                              ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300'
+                              : 'border-gray-200 dark:border-dark-600 hover:border-gray-300 dark:hover:border-dark-500 bg-white dark:bg-dark-800'
                           }`}
                         >
                           <div className="text-2xl mb-1">{getDifficultyIcon(level)}</div>
-                          <div className="font-medium">{t(level)}</div>
-                          <div className="text-xs text-gray-500 mt-1">
+                          <div className="font-medium text-gray-900 dark:text-white">{t(level)}</div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                             {level === 'easy' && t('difficultyEasy')}
                             {level === 'medium' && t('difficultyMedium')}
                             {level === 'hard' && t('difficultyHard')}
@@ -881,7 +881,7 @@ const Conversations: React.FC = () => {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       <FileText className="w-4 h-4 inline mr-2" />
                       {t('customPrompt')} <span className="text-gray-400">({t('optional')})</span>
                     </label>
@@ -890,7 +890,7 @@ const Conversations: React.FC = () => {
                       onChange={(e) => setClientCustomization(prev => ({ ...prev, customPrompt: e.target.value }))}
                       placeholder={t('examplePrompt')}
                       rows={3}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-dark-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none bg-white dark:bg-dark-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
                     />
                   </div>
                 </div>

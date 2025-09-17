@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Mic, MicOff, Send, X, Volume2, VolumeX } from 'lucide-react';
 import { useSpeechToText } from '../hooks/useSpeechToText.ts';
 
@@ -65,28 +65,7 @@ const SpeechInput: React.FC<SpeechInputProps> = ({
     }
   });
 
-  // Handle voice commands
-  useEffect(() => {
-    if (transcript && !isManualTyping) {
-      const lowerTranscript = transcript.toLowerCase();
-      
-      if (lowerTranscript.includes('send message') || lowerTranscript.includes('send')) {
-        if (textInput.trim()) {
-          handleSendMessage();
-        }
-      } else if (lowerTranscript.includes('clear text') || lowerTranscript.includes('clear')) {
-        setTextInput('');
-        resetTranscript();
-      } else if (lowerTranscript.includes('stop listening') || lowerTranscript.includes('stop')) {
-        stopListening();
-      } else {
-        // Set text input from transcript if it's not a voice command
-        setTextInput(transcript);
-      }
-    }
-  }, [transcript, textInput, isManualTyping, resetTranscript, stopListening]);
-
-  const handleSendMessage = () => {
+  const handleSendMessage = useCallback(() => {
     if (textInput.trim()) {
       // Stop speech recognition first if active
       if (isListening || isStarting) {
@@ -99,7 +78,29 @@ const SpeechInput: React.FC<SpeechInputProps> = ({
       resetTranscript();
       setIsManualTyping(false);
     }
-  };
+  }, [textInput, isListening, isStarting, stopListening, onSendMessage, resetTranscript]);
+
+  // Handle voice commands
+  useEffect(() => {
+    if (transcript && !isManualTyping) {
+      const lowerTranscript = transcript.toLowerCase();
+      
+      if (lowerTranscript.includes('send message') || lowerTranscript.includes('send')) {
+        if (textInput.trim()) {
+          handleSendMessage();
+        }
+      } else if (lowerTranscript.includes('clear text') || lowerTranscript.includes('clear')) {
+        setTextInput('');
+        setIsManualTyping(false); // Reset manual typing flag when clearing
+        resetTranscript();
+      } else if (lowerTranscript.includes('stop listening') || lowerTranscript.includes('stop')) {
+        stopListening();
+      } else {
+        // Set text input from transcript if it's not a voice command
+        setTextInput(transcript);
+      }
+    }
+  }, [transcript, textInput, isManualTyping, resetTranscript, stopListening, handleSendMessage]);
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -109,8 +110,16 @@ const SpeechInput: React.FC<SpeechInputProps> = ({
   };
 
   const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setTextInput(e.target.value);
-    setIsManualTyping(e.target.value.length > 0);
+    const newValue = e.target.value;
+    setTextInput(newValue);
+    
+    // Only set manual typing if user is actively typing (not just clearing text)
+    // Allow deletion of speech-to-text content
+    if (newValue.length === 0) {
+      setIsManualTyping(false); // Allow speech-to-text to work again after clearing
+    } else if (newValue !== transcript) {
+      setIsManualTyping(true); // User is manually typing different content
+    }
   };
 
   const handleMicClick = () => {
@@ -119,8 +128,7 @@ const SpeechInput: React.FC<SpeechInputProps> = ({
       // Force stop animation immediately
       setWaveformAnimation(false);
     } else {
-      // Clear any existing text and reset manual typing flag before starting
-      setTextInput('');
+      // Reset manual typing flag before starting (but don't clear existing text)
       setIsManualTyping(false);
       resetTranscript();
       startListening();

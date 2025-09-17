@@ -100,7 +100,7 @@ const CompanyManagement: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [user?.companyId]);
+  }, []);
 
   useEffect(() => {
     if (user?.companyId || user?.isSuperAdmin) {
