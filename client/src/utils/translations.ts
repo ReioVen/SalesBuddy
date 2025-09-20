@@ -468,6 +468,109 @@ export const translations = {
     deleteAccountConfirmation: 'Are you absolutely sure you want to delete your account? This action cannot be undone and will permanently remove all your data.',
     cancel: 'Cancel',
     confirm: 'Confirm',
+
+    // FAQ Section
+    frequentlyAskedQuestions: 'Frequently Asked Questions',
+    faqTitle: 'Have Questions? We Have Answers',
+    faqDescription: 'Find answers to common questions about SalesBuddy and our AI-powered sales training platform.',
+    faqQuestion1: 'How does the AI training work?',
+    faqAnswer1: 'Our AI acts as a realistic customer, engaging in natural conversations while providing feedback on your sales techniques, objection handling, and closing skills.',
+    faqQuestion2: 'What scenarios can I practice?',
+    faqAnswer2: 'You can practice cold calls, lead nurturing, objection handling, and general sales conversations with customizable client personalities and difficulty levels.',
+    faqQuestion3: 'How is my performance evaluated?',
+    faqAnswer3: 'Our AI evaluates you on key sales stages including opening, discovery, presentation, objection handling, and closing, providing detailed feedback and improvement suggestions.',
+    faqQuestion4: 'Can I customize the AI client?',
+    faqAnswer4: 'Yes! You can customize client personality, industry, role, and even create custom prompts to practice with specific types of customers.',
+    faqQuestion5: 'Is there a free trial available?',
+    faqAnswer5: 'Yes, we offer a free trial so you can experience our AI-powered sales training before committing to a subscription.',
+    faqQuestion6: 'Do you offer team management features?',
+    faqAnswer6: 'Yes, our Enterprise and Unlimited plans include team management, leaderboards, and company-wide analytics for sales managers and directors.',
+    faqQuestion7: 'What languages does SalesBuddy support?',
+    faqAnswer7: 'SalesBuddy currently supports English, Estonian, Spanish, and Russian. We plan to add more languages in the future based on user demand.',
+    faqQuestion8: 'How accurate is the AI feedback?',
+    faqAnswer8: 'Our AI provides highly accurate feedback based on proven sales methodologies. The system evaluates your performance across key sales stages and provides actionable insights to help you improve.',
+    faqQuestion9: 'Can I export my conversation data?',
+    faqAnswer9: 'Yes, users can export their conversation history and performance analytics. This feature is available in all paid plans and helps you track your progress over time.',
+    faqQuestion10: 'Is my data secure and private?',
+    faqAnswer10: 'Absolutely. We use enterprise-grade security measures to protect your data. All conversations are encrypted in transit and at rest, and we never share your personal information with third parties.',
+    faqQuestion11: 'What happens if I cancel my subscription?',
+    faqAnswer11: 'You can continue using your account until the end of your current billing period. After cancellation, you\'ll lose access to premium features but can reactivate anytime.',
+    faqQuestion12: 'Do you offer volume discounts for large teams?',
+    faqAnswer12: 'Yes, we offer custom pricing for enterprise teams with 50+ users. Contact our sales team at reio.vendelin3@gmail.com to discuss volume discounts and custom features.',
+
+    // Terms of Service Section
+    termsOfService: 'Terms of Service',
+    termsTitle: 'Terms of Service',
+    termsDescription: 'Please read these terms carefully before using our service.',
+    termsLastUpdated: 'Last updated: December 2024',
+    termsContent: `
+      <div class="terms-content">
+        <h3>1. Acceptance of Terms</h3>
+        <p>By accessing and using SalesBuddy ("Service"), you accept and agree to be bound by the terms and provision of this agreement. If you do not agree to abide by the above, please do not use this service.</p>
+        
+        <h3>2. Description of Service</h3>
+        <p>SalesBuddy is an AI-powered sales training platform that provides conversational training scenarios, performance analytics, and feedback to help users improve their sales skills. The service includes but is not limited to AI-generated conversations, performance tracking, and educational content.</p>
+        
+        <h3>3. User Accounts and Registration</h3>
+        <p>To access certain features of the Service, you must register for an account. You agree to provide accurate, current, and complete information during registration and to update such information to keep it accurate, current, and complete. You are responsible for maintaining the confidentiality of your account credentials and for all activities that occur under your account.</p>
+        
+        <h3>4. Acceptable Use Policy</h3>
+        <p>You agree not to use the Service to:</p>
+        <ul>
+          <li>Violate any applicable laws or regulations</li>
+          <li>Transmit or upload any content that is unlawful, harmful, threatening, abusive, defamatory, or otherwise objectionable</li>
+          <li>Attempt to gain unauthorized access to any part of the Service or other users' accounts</li>
+          <li>Use the Service for any commercial purpose without explicit written consent</li>
+          <li>Reverse engineer, decompile, or disassemble any part of the Service</li>
+          <li>Interfere with or disrupt the Service or servers connected to the Service</li>
+          <li>Use automated scripts or bots to access the Service</li>
+        </ul>
+        
+        <h3>5. Intellectual Property Rights</h3>
+        <p>The Service and its original content, features, and functionality are and will remain the exclusive property of SalesBuddy and its licensors. The Service is protected by copyright, trademark, and other laws. Our trademarks and trade dress may not be used in connection with any product or service without our prior written consent.</p>
+        
+        <h3>6. User Content and Data</h3>
+        <p>You retain ownership of any content you submit to the Service ("User Content"). By submitting User Content, you grant us a worldwide, non-exclusive, royalty-free license to use, reproduce, modify, and distribute your User Content solely for the purpose of providing and improving the Service. We may collect and analyze usage data, conversation patterns, and performance metrics to improve our AI models and service quality.</p>
+        
+        <h3>7. Privacy and Data Protection</h3>
+        <p>Your privacy is important to us. Our Privacy Policy explains how we collect, use, and protect your information when you use our Service. By using our Service, you agree to the collection and use of information in accordance with our Privacy Policy.</p>
+        
+        <h3>8. Payment Terms and Billing</h3>
+        <p>Certain features of the Service require payment. By subscribing to a paid plan, you agree to pay all charges associated with your account. All fees are non-refundable unless otherwise stated. We reserve the right to change our pricing with 30 days' notice. Failure to pay may result in suspension or termination of your account.</p>
+        
+        <h3>9. Service Availability and Modifications</h3>
+        <p>We strive to maintain high service availability but do not guarantee uninterrupted access. We reserve the right to modify, suspend, or discontinue any part of the Service at any time with or without notice. We may also impose limits on certain features or restrict your access to parts or all of the Service without notice.</p>
+        
+        <h3>10. Termination</h3>
+        <p>Either party may terminate this agreement at any time. We may terminate or suspend your account immediately, without prior notice, for conduct that we believe violates these Terms or is harmful to other users, us, or third parties, or for any other reason at our sole discretion.</p>
+        
+        <h3>11. Disclaimers and Warranties</h3>
+        <p>THE SERVICE IS PROVIDED ON AN "AS IS" AND "AS AVAILABLE" BASIS. WE EXPRESSLY DISCLAIM ALL WARRANTIES OF ANY KIND, WHETHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT. WE MAKE NO WARRANTY THAT THE SERVICE WILL MEET YOUR REQUIREMENTS OR BE AVAILABLE ON AN UNINTERRUPTED, SECURE, OR ERROR-FREE BASIS.</p>
+        
+        <h3>12. Limitation of Liability</h3>
+        <p>IN NO EVENT SHALL SALESBUDDY, ITS DIRECTORS, EMPLOYEES, OR AGENTS BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, INCLUDING WITHOUT LIMITATION, LOSS OF PROFITS, DATA, USE, GOODWILL, OR OTHER INTANGIBLE LOSSES, RESULTING FROM YOUR USE OF THE SERVICE. OUR TOTAL LIABILITY SHALL NOT EXCEED THE AMOUNT YOU PAID US IN THE 12 MONTHS PRECEDING THE CLAIM.</p>
+        
+        <h3>13. Indemnification</h3>
+        <p>You agree to defend, indemnify, and hold harmless SalesBuddy and its affiliates from and against any claims, damages, obligations, losses, liabilities, costs, or debt, and expenses (including attorney's fees) arising from your use of the Service or violation of these Terms.</p>
+        
+        <h3>14. Governing Law and Dispute Resolution</h3>
+        <p>These Terms shall be governed by and construed in accordance with the laws of the State of Delaware, without regard to its conflict of law provisions. Any disputes arising under these Terms shall be resolved through binding arbitration in accordance with the rules of the American Arbitration Association.</p>
+        
+        <h3>15. Changes to Terms</h3>
+        <p>We reserve the right to modify these Terms at any time. We will notify users of material changes via email or through the Service. Your continued use of the Service after such modifications constitutes acceptance of the updated Terms.</p>
+        
+        <h3>16. Severability</h3>
+        <p>If any provision of these Terms is held to be invalid or unenforceable, the remaining provisions shall remain in full force and effect.</p>
+        
+        <h3>17. Contact Information</h3>
+        <p>If you have any questions about these Terms, please contact us at reio.vendelin3@gmail.com.</p>
+      </div>
+    `,
+    privacyPolicy: 'Privacy Policy',
+    privacyPolicyDescription: 'Learn how we protect and handle your personal information.',
+    contactUs: 'Contact Us',
+    contactUsDescription: 'Have questions not answered in our FAQ? We\'re here to help.',
+    supportEmail: 'reio.vendelin3@gmail.com',
   },
   et: {
     // Navigation
@@ -915,6 +1018,35 @@ export const translations = {
     deleteAccountConfirmation: 'Kas olete kindel, et soovite oma konto kustutada? Seda tegevust ei saa tagasi võtta ja see eemaldab kõik teie andmed jäädavalt.',
     cancel: 'Tühista',
     confirm: 'Kinnita',
+
+    // FAQ Section
+    frequentlyAskedQuestions: 'Korduma Kippuvad Küsimused',
+    faqTitle: 'Kas Teil on Küsimusi? Meil on Vastused',
+    faqDescription: 'Leidke vastused tavalistele küsimustele SalesBuddy ja meie AI-põhise müügikoolitusplatvormi kohta.',
+    faqQuestion1: 'Kuidas AI koolitus toimib?',
+    faqAnswer1: 'Meie AI toimib realistliku kliendina, osaleb loomulikes vestlustes ja annab tagasisidet teie müügitehnikate, vastuväidete käsitlemise ja sulgemise oskuste kohta.',
+    faqQuestion2: 'Milliste stsenaariumidega saan harjutada?',
+    faqAnswer2: 'Saate harjutada külmade kõnede, juhtide kasvatamise, vastuväidete käsitlemise ja üldiste müügivestluste tegemist kohandatavate kliendi iseloomu ja raskusastmetega.',
+    faqQuestion3: 'Kuidas minu jõudlust hinnatakse?',
+    faqAnswer3: 'Meie AI hindab teid peamistel müügi etappidel, sealhulgas avamine, avastamine, esitlus, vastuväidete käsitlemine ja sulgemine, pakkudes üksikasjalikku tagasisidet ja parandamise soovitusi.',
+    faqQuestion4: 'Kas saan AI klienti kohandada?',
+    faqAnswer4: 'Jah! Saate kohandada kliendi iseloomu, tööstust, rolli ja isegi luua kohandatud küsimusi konkreetsete klientide tüüpidega harjutamiseks.',
+    faqQuestion5: 'Kas tasuta katsetust on saadaval?',
+    faqAnswer5: 'Jah, pakume tasuta katsetust, et saaksite kogeda meie AI-põhist müügikoolitust enne tellimuse tegemist.',
+    faqQuestion6: 'Kas pakute meeskonna haldamise funktsioone?',
+    faqAnswer6: 'Jah, meie Enterprise ja Unlimited plaanid sisaldavad meeskonna haldamist, edetabeleid ja ettevõtte laiast analüütikat müügijuhtidele ja direktoritele.',
+
+    // Terms of Service Section
+    termsOfService: 'Kasutustingimused',
+    termsTitle: 'Kasutustingimused',
+    termsDescription: 'Palun lugege neid tingimusi hoolikalt enne meie teenuse kasutamist.',
+    termsLastUpdated: 'Viimati uuendatud: Detsember 2024',
+    termsContent: 'SalesBuddy kasutamisega nõustute meie kasutustingimustega. See hõlmab, kuid ei piirdu õige meie AI koolitusplatvormi kasutamisega, intellektuaalomandi õiguste austamisega ja sobiva käitumise säilitamisega koolitussessioonide ajal. Meil on õigus neid tingimusi igal ajal muuta ja teatame kasutajatele olulistest muudatustest.',
+    privacyPolicy: 'Privaatsuspoliitika',
+    privacyPolicyDescription: 'Uurige, kuidas me kaitsteme ja käsitleme teie isikuandmeid.',
+    contactUs: 'Võtke Ühendust',
+    contactUsDescription: 'Kas teil on küsimusi, millele ei vastata meie KKK-s? Oleme siin, et aidata.',
+    supportEmail: 'tugi@salesbuddy.ai',
   },
   es: {
     // Navigation
@@ -1362,6 +1494,35 @@ export const translations = {
     deleteAccountConfirmation: '¿Estás absolutamente seguro de que quieres eliminar tu cuenta? Esta acción no se puede deshacer y eliminará permanentemente todos tus datos.',
     cancel: 'Cancelar',
     confirm: 'Confirmar',
+
+    // FAQ Section
+    frequentlyAskedQuestions: 'Preguntas Frecuentes',
+    faqTitle: '¿Tienes Preguntas? Tenemos Respuestas',
+    faqDescription: 'Encuentra respuestas a preguntas comunes sobre SalesBuddy y nuestra plataforma de entrenamiento de ventas impulsada por IA.',
+    faqQuestion1: '¿Cómo funciona el entrenamiento con IA?',
+    faqAnswer1: 'Nuestra IA actúa como un cliente realista, participando en conversaciones naturales mientras proporciona retroalimentación sobre tus técnicas de ventas, manejo de objeciones y habilidades de cierre.',
+    faqQuestion2: '¿Qué escenarios puedo practicar?',
+    faqAnswer2: 'Puedes practicar llamadas frías, nutrir leads, manejo de objeciones y conversaciones de ventas generales con personalidades de clientes personalizables y niveles de dificultad.',
+    faqQuestion3: '¿Cómo se evalúa mi rendimiento?',
+    faqAnswer3: 'Nuestra IA te evalúa en etapas clave de ventas incluyendo apertura, descubrimiento, presentación, manejo de objeciones y cierre, proporcionando retroalimentación detallada y sugerencias de mejora.',
+    faqQuestion4: '¿Puedo personalizar el cliente de IA?',
+    faqAnswer4: '¡Sí! Puedes personalizar la personalidad del cliente, industria, rol e incluso crear prompts personalizados para practicar con tipos específicos de clientes.',
+    faqQuestion5: '¿Hay una prueba gratuita disponible?',
+    faqAnswer5: 'Sí, ofrecemos una prueba gratuita para que puedas experimentar nuestro entrenamiento de ventas impulsado por IA antes de comprometerte con una suscripción.',
+    faqQuestion6: '¿Ofrecen funciones de gestión de equipos?',
+    faqAnswer6: 'Sí, nuestros planes Enterprise e Unlimited incluyen gestión de equipos, tablas de posiciones y análisis a nivel de empresa para gerentes y directores de ventas.',
+
+    // Terms of Service Section
+    termsOfService: 'Términos de Servicio',
+    termsTitle: 'Términos de Servicio',
+    termsDescription: 'Por favor lee estos términos cuidadosamente antes de usar nuestro servicio.',
+    termsLastUpdated: 'Última actualización: Diciembre 2024',
+    termsContent: 'Al usar SalesBuddy, aceptas nuestros términos de servicio. Esto incluye pero no se limita al uso adecuado de nuestra plataforma de entrenamiento de IA, respetar los derechos de propiedad intelectual y mantener una conducta apropiada durante las sesiones de entrenamiento. Nos reservamos el derecho de modificar estos términos en cualquier momento y notificaremos a los usuarios de cambios significativos.',
+    privacyPolicy: 'Política de Privacidad',
+    privacyPolicyDescription: 'Aprende cómo protegemos y manejamos tu información personal.',
+    contactUs: 'Contáctanos',
+    contactUsDescription: '¿Tienes preguntas que no se responden en nuestro FAQ? Estamos aquí para ayudar.',
+    supportEmail: 'soporte@salesbuddy.ai',
   },
   ru: {
     // Navigation
@@ -1809,6 +1970,35 @@ export const translations = {
     deleteAccountConfirmation: 'Вы абсолютно уверены, что хотите удалить свой аккаунт? Это действие нельзя отменить и оно навсегда удалит все ваши данные.',
     cancel: 'Отмена',
     confirm: 'Подтвердить',
+
+    // FAQ Section
+    frequentlyAskedQuestions: 'Часто Задаваемые Вопросы',
+    faqTitle: 'Есть Вопросы? У Нас Есть Ответы',
+    faqDescription: 'Найдите ответы на распространенные вопросы о SalesBuddy и нашей платформе обучения продажам на основе ИИ.',
+    faqQuestion1: 'Как работает обучение с ИИ?',
+    faqAnswer1: 'Наш ИИ действует как реалистичный клиент, участвуя в естественных разговорах и предоставляя обратную связь по вашим техникам продаж, работе с возражениями и навыкам закрытия сделок.',
+    faqQuestion2: 'Какие сценарии я могу практиковать?',
+    faqAnswer2: 'Вы можете практиковать холодные звонки, работу с лидами, обработку возражений и общие разговоры о продажах с настраиваемыми личностями клиентов и уровнями сложности.',
+    faqQuestion3: 'Как оценивается моя производительность?',
+    faqAnswer3: 'Наш ИИ оценивает вас по ключевым этапам продаж, включая начало, исследование, презентацию, работу с возражениями и закрытие, предоставляя подробную обратную связь и предложения по улучшению.',
+    faqQuestion4: 'Могу ли я настроить ИИ клиента?',
+    faqAnswer4: 'Да! Вы можете настроить личность клиента, отрасль, роль и даже создать пользовательские запросы для практики с определенными типами клиентов.',
+    faqQuestion5: 'Доступна ли бесплатная пробная версия?',
+    faqAnswer5: 'Да, мы предлагаем бесплатную пробную версию, чтобы вы могли испытать наше обучение продажам на основе ИИ перед подпиской.',
+    faqQuestion6: 'Предлагаете ли вы функции управления командами?',
+    faqAnswer6: 'Да, наши планы Enterprise и Unlimited включают управление командами, таблицы лидеров и аналитику на уровне компании для менеджеров и директоров по продажам.',
+
+    // Terms of Service Section
+    termsOfService: 'Условия Использования',
+    termsTitle: 'Условия Использования',
+    termsDescription: 'Пожалуйста, внимательно прочитайте эти условия перед использованием нашего сервиса.',
+    termsLastUpdated: 'Последнее обновление: Декабрь 2024',
+    termsContent: 'Используя SalesBuddy, вы соглашаетесь с нашими условиями использования. Это включает, но не ограничивается правильным использованием нашей платформы обучения ИИ, соблюдением прав интеллектуальной собственности и поддержанием надлежащего поведения во время тренировочных сессий. Мы оставляем за собой право изменять эти условия в любое время и уведомим пользователей о значительных изменениях.',
+    privacyPolicy: 'Политика Конфиденциальности',
+    privacyPolicyDescription: 'Узнайте, как мы защищаем и обрабатываем вашу личную информацию.',
+    contactUs: 'Свяжитесь с Нами',
+    contactUsDescription: 'Есть вопросы, на которые не ответили в нашем FAQ? Мы здесь, чтобы помочь.',
+    supportEmail: 'поддержка@salesbuddy.ai',
   },
 };
 

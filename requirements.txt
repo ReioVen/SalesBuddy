@@ -1,0 +1,27 @@
+# SalesBuddy Admin Panel Dependencies
+# Core database and GUI libraries
+pymongo==4.6.0
+tkinter-tooltip==2.0.0
+
+# Optional: For enhanced GUI features
+pillow==10.1.0
+matplotlib==3.8.2
+pandas==2.1.4
+
+# Environment and configuration
+python-dotenv==1.0.0
+
+# Date and time utilities
+python-dateutil==2.8.2
+
+# JSON handling (built-in, but listing for completeness)
+# json - built-in module
+
+# Threading (built-in)
+# threading - built-in module
+
+# Type hints (built-in in Python 3.5+)
+# typing - built-in module
+
+# BSON for MongoDB ObjectId handling
+# bson - comes with pymongo

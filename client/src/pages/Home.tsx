@@ -9,12 +9,20 @@ import {
   Users, 
   ArrowRight,
   Play,
-  Star
+  Star,
+  ChevronDown,
+  ChevronUp,
+  Mail,
+  FileText,
+  Shield
 } from 'lucide-react';
 
 const Home: React.FC = () => {
   const { user } = useAuth();
   const { t } = useTranslation();
+  const [openFaqIndex, setOpenFaqIndex] = React.useState<number | null>(null);
+  const [isTermsOpen, setIsTermsOpen] = React.useState<boolean>(false);
+  const [isFaqOpen, setIsFaqOpen] = React.useState<boolean>(false);
 
   const features = [
     {
@@ -63,8 +71,90 @@ const Home: React.FC = () => {
     }
   ];
 
+  const faqItems = [
+    {
+      question: t('faqQuestion1'),
+      answer: t('faqAnswer1')
+    },
+    {
+      question: t('faqQuestion2'),
+      answer: t('faqAnswer2')
+    },
+    {
+      question: t('faqQuestion3'),
+      answer: t('faqAnswer3')
+    },
+    {
+      question: t('faqQuestion4'),
+      answer: t('faqAnswer4')
+    },
+    {
+      question: t('faqQuestion5'),
+      answer: t('faqAnswer5')
+    },
+    {
+      question: t('faqQuestion6'),
+      answer: t('faqAnswer6')
+    },
+    {
+      question: t('faqQuestion7'),
+      answer: t('faqAnswer7')
+    },
+    {
+      question: t('faqQuestion8'),
+      answer: t('faqAnswer8')
+    },
+    {
+      question: t('faqQuestion9'),
+      answer: t('faqAnswer9')
+    },
+    {
+      question: t('faqQuestion10'),
+      answer: t('faqAnswer10')
+    },
+    {
+      question: t('faqQuestion11'),
+      answer: t('faqAnswer11')
+    },
+    {
+      question: t('faqQuestion12'),
+      answer: t('faqAnswer12')
+    }
+  ];
+
+  const toggleFaq = (index: number) => {
+    setOpenFaqIndex(openFaqIndex === index ? null : index);
+  };
+
   return (
     <div className="min-h-screen">
+      <style jsx>{`
+        .terms-html-content h3 {
+          font-size: 1.125rem;
+          font-weight: 600;
+          color: #1f2937;
+          margin-top: 1.5rem;
+          margin-bottom: 0.75rem;
+        }
+        .dark .terms-html-content h3 {
+          color: #f9fafb;
+        }
+        .terms-html-content p {
+          margin-bottom: 1rem;
+          line-height: 1.6;
+        }
+        .terms-html-content ul {
+          margin: 0.75rem 0;
+          padding-left: 1.5rem;
+        }
+        .terms-html-content li {
+          margin-bottom: 0.5rem;
+          line-height: 1.6;
+        }
+        .terms-html-content h3:first-child {
+          margin-top: 0;
+        }
+      `}</style>
       {/* Hero Section */}
       <section className="gradient-bg text-white py-20">
         <div className="container mx-auto px-4 text-center">
@@ -206,6 +296,134 @@ const Home: React.FC = () => {
                 </Link>
               </>
             )}
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <section className="py-20 bg-gray-50 dark:bg-dark-900">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto">
+            <div className="bg-white dark:bg-dark-800 rounded-lg shadow-sm">
+              <button
+                className="w-full px-8 py-8 text-left flex justify-between items-center hover:bg-gray-50 dark:hover:bg-dark-700 rounded-lg transition-colors duration-200"
+                onClick={() => setIsFaqOpen(!isFaqOpen)}
+              >
+                <div>
+                  <h2 className="text-4xl font-bold mb-6 text-gray-900 dark:text-white">{t('frequentlyAskedQuestions')}</h2>
+                  <p className="text-xl text-gray-600 dark:text-gray-300">
+                    {t('faqDescription')}
+                  </p>
+                </div>
+                {isFaqOpen ? (
+                  <ChevronUp className="w-6 h-6 text-gray-500" />
+                ) : (
+                  <ChevronDown className="w-6 h-6 text-gray-500" />
+                )}
+              </button>
+              {isFaqOpen && (
+                <div className="px-8 pb-8">
+                  <div className="space-y-6 mt-6">
+                    {faqItems.map((item, index) => (
+                      <div key={index} className="bg-gray-50 dark:bg-dark-700 rounded-lg shadow-sm">
+                        <button
+                          className="w-full px-8 py-6 text-left flex justify-between items-center hover:bg-gray-100 dark:hover:bg-dark-600 rounded-lg transition-colors duration-200"
+                          onClick={() => toggleFaq(index)}
+                        >
+                          <span className="font-semibold text-gray-900 dark:text-white pr-4">{item.question}</span>
+                          {openFaqIndex === index ? (
+                            <ChevronUp className="w-5 h-5 text-gray-500 flex-shrink-0" />
+                          ) : (
+                            <ChevronDown className="w-5 h-5 text-gray-500 flex-shrink-0" />
+                          )}
+                        </button>
+                        {openFaqIndex === index && (
+                          <div className="px-8 pb-6">
+                            <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
+                              {item.answer}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Terms of Service Section */}
+      <section className="py-20 bg-white dark:bg-dark-800">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto">
+            <div className="text-center mb-12">
+              <h2 className="text-4xl font-bold mb-4 text-gray-900 dark:text-white">{t('termsOfService')}</h2>
+              <p className="text-xl text-gray-600 dark:text-gray-300">
+                {t('termsDescription')}
+              </p>
+            </div>
+            
+            <div className="bg-gray-50 dark:bg-dark-700 rounded-lg shadow-sm mb-8">
+              <button
+                className="w-full px-8 py-6 text-left flex justify-between items-center hover:bg-gray-100 dark:hover:bg-dark-600 rounded-lg transition-colors duration-200"
+                onClick={() => setIsTermsOpen(!isTermsOpen)}
+              >
+                <div className="flex items-start space-x-4">
+                  <FileText className="w-6 h-6 text-blue-600 dark:text-blue-400 mt-1" />
+                  <div>
+                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">{t('termsTitle')}</h3>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">{t('termsLastUpdated')}</p>
+                  </div>
+                </div>
+                {isTermsOpen ? (
+                  <ChevronUp className="w-5 h-5 text-gray-500" />
+                ) : (
+                  <ChevronDown className="w-5 h-5 text-gray-500" />
+                )}
+              </button>
+              {isTermsOpen && (
+                <div className="px-8 pb-8">
+                  <div 
+                    className="text-gray-600 dark:text-gray-300 leading-relaxed max-w-none terms-html-content"
+                    dangerouslySetInnerHTML={{ __html: t('termsContent') }}
+                  />
+                </div>
+              )}
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-6">
+              <div className="text-center p-6 bg-gray-50 dark:bg-dark-700 rounded-lg">
+                <Shield className="w-8 h-8 text-green-600 dark:text-green-400 mx-auto mb-4" />
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">{t('privacyPolicy')}</h3>
+                <p className="text-gray-600 dark:text-gray-300 text-sm">
+                  {t('privacyPolicyDescription')}
+                </p>
+              </div>
+              
+              <div className="text-center p-6 bg-gray-50 dark:bg-dark-700 rounded-lg">
+                <Mail className="w-8 h-8 text-blue-600 dark:text-blue-400 mx-auto mb-4" />
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">{t('contactUs')}</h3>
+                <p className="text-gray-600 dark:text-gray-300 text-sm mb-3">
+                  {t('contactUsDescription')}
+                </p>
+                <a 
+                  href={`mailto:${t('supportEmail')}`}
+                  className="text-blue-600 dark:text-blue-400 hover:underline text-sm font-medium"
+                >
+                  {t('supportEmail')}
+                </a>
+              </div>
+              
+              <div className="text-center p-6 bg-gray-50 dark:bg-dark-700 rounded-lg">
+                <Star className="w-8 h-8 text-yellow-600 dark:text-yellow-400 mx-auto mb-4" />
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Customer Support</h3>
+                <p className="text-gray-600 dark:text-gray-300 text-sm">
+                  Get help from our dedicated support team whenever you need assistance.
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </section>
