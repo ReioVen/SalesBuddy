@@ -69,3 +69,9 @@ function killPort(port) {
 
 console.log(`Killing processes on port ${PORT}...`);
 killPort(PORT);
+
+// Exit after a short delay to allow processes to be killed
+setTimeout(() => {
+  console.log(`Port ${PORT} cleanup completed`);
+  process.exit(0);
+}, 2000);

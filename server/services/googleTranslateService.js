@@ -84,6 +84,31 @@ class GoogleTranslateService {
         // Clean up the translation by removing the translated instruction prefix
         translation = this.cleanupTranslation(translation, targetLanguage, context);
         
+        // If cleanup resulted in empty string (instruction only), try without instruction
+        if (!translation || translation.trim() === '') {
+          console.warn('Translation cleanup resulted in empty string, retrying without instruction');
+          // Try translating without the instruction prefix
+          const response2 = await axios.post(`${this.baseUrl}?key=${this.apiKey}`, {
+            q: text, // Use original text without instruction
+            target: targetLanguage,
+            source: 'en',
+            format: 'text',
+            model: 'nmt'
+          }, {
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          });
+
+          if (response2.data && response2.data.data && response2.data.data.translations) {
+            translation = response2.data.data.translations[0].translatedText;
+            console.log(`Google Translate (retry without instruction): "${text}" -> "${translation}" (${targetLanguage})`);
+          } else {
+            console.error('Retry translation also failed');
+            return text; // Return original text
+          }
+        }
+        
         // Cache the result
         this.cache.set(cacheKey, {
           translation,
@@ -138,12 +163,13 @@ class GoogleTranslateService {
    * @returns {string} Text prepared for complete translation
    */
   ensureCompleteSentenceTranslation(text, context) {
-    // For AI insights, add instructions to translate the entire text as one unit
+    // For AI insights, add context but avoid instruction text that might get translated
     const aiInsightContexts = ['personalityInsights', 'communicationStyle', 'recommendedFocus', 'nextSteps', 'sales_feedback', 'improvement_suggestion'];
     
     if (aiInsightContexts.includes(context)) {
-      // Add instruction to translate the complete text as one unit
-      return `Translate this complete text as one unit: ${text}`;
+      // Instead of adding instruction text, just return the original text
+      // Google Translate works better with clean text
+      return text;
     }
     
     return text;
@@ -162,6 +188,8 @@ class GoogleTranslateService {
       'et': [
         'Tõlkige kogu tekst ühe ühikuna:',
         'Tõlgi kogu tekst ühe ühikuna:',
+        'Tõlkige kogu tekst ühe üksusena:',
+        'Tõlgi kogu tekst ühe üksusena:',
         'Müügi tagasiside:',
         'Parandamise soovitus:',
         'Tugevuse kommentaar:',
@@ -204,6 +232,33 @@ class GoogleTranslateService {
       if (translation.startsWith(prefix)) {
         translation = translation.substring(prefix.length).trim();
         break;
+      }
+    }
+
+    // Check if the entire translation is just an instruction (no actual content)
+    const instructionOnlyPatterns = {
+      'et': [
+        /^tõlkige kogu tekst ühe üksusena$/i,
+        /^tõlgi kogu tekst ühe üksusena$/i,
+        /^tõlkige kogu tekst ühe ühikuna$/i,
+        /^tõlgi kogu tekst ühe ühikuna$/i
+      ],
+      'es': [
+        /^traduce este texto completo como una unidad$/i,
+        /^traducir este texto completo como una unidad$/i
+      ],
+      'ru': [
+        /^переведите весь этот текст как единое целое$/i,
+        /^переводите весь этот текст как единое целое$/i
+      ]
+    };
+
+    const patterns = instructionOnlyPatterns[targetLanguage] || [];
+    for (const pattern of patterns) {
+      if (pattern.test(translation.trim())) {
+        console.warn(`Translation appears to be instruction only: "${translation}"`);
+        // Return empty string - this indicates the API didn't translate properly
+        return '';
       }
     }
 

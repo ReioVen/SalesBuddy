@@ -2,10 +2,14 @@
   "watch": ["."],
   "ext": "js,json",
   "ignore": ["node_modules/", "*.test.js"],
-  "delay": 1000,
+  "delay": 500,
   "env": {
     "NODE_ENV": "development"
   },
-  "signal": "SIGTERM",
-  "killTimeout": 5000
+  "signal": "SIGKILL",
+  "killTimeout": 1000,
+  "restartable": "rs",
+  "legacyWatch": true,
+  "verbose": true,
+  "forceKillTimeout": 1000
 }

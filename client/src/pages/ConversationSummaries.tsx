@@ -62,6 +62,52 @@ const ConversationSummaries: React.FC = () => {
     }
   }, [user]);
 
+  // Check if user is on free plan and show lock screen
+  if (user && user.subscription?.plan === 'free') {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-dark-900 py-20">
+        <div className="container mx-auto px-4 max-w-4xl">
+          <div className="text-center">
+            <div className="w-24 h-24 bg-gray-100 dark:bg-dark-800 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Award className="w-12 h-12 text-gray-400 dark:text-gray-600" />
+            </div>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+              {t('summariesLocked') || 'Summaries Locked'}
+            </h1>
+            <p className="text-xl text-gray-600 dark:text-gray-400 mb-8">
+              {t('summariesLockedDescription') || 'Upgrade your plan to unlock conversation summaries and detailed performance analytics.'}
+            </p>
+            <div className="bg-white dark:bg-dark-800 rounded-lg shadow-lg p-8 mb-8">
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+                {t('whatYouGet') || 'What you get with an upgrade:'}
+              </h2>
+              <ul className="space-y-3 text-left max-w-md mx-auto">
+                <li className="flex items-center text-gray-700 dark:text-gray-300">
+                  <Award className="w-5 h-5 text-green-500 mr-3 flex-shrink-0" />
+                  {t('conversationSummaries') || 'Conversation summaries'}
+                </li>
+                <li className="flex items-center text-gray-700 dark:text-gray-300">
+                  <TrendingUp className="w-5 h-5 text-green-500 mr-3 flex-shrink-0" />
+                  {t('performanceAnalytics') || 'Performance analytics'}
+                </li>
+                <li className="flex items-center text-gray-700 dark:text-gray-300">
+                  <MessageSquare className="w-5 h-5 text-green-500 mr-3 flex-shrink-0" />
+                  {t('detailedFeedback') || 'Detailed feedback'}
+                </li>
+              </ul>
+            </div>
+            <a
+              href="/pricing"
+              className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-8 rounded-lg transition-colors duration-200"
+            >
+              {t('upgradePlan') || 'Upgrade Plan'}
+            </a>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   // Database translations are handled automatically by each ConversationSummaryCard
 
   const loadSummaries = async () => {

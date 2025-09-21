@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import { Plus, MessageSquare, User, Building, Briefcase, FileText, Send, X, Star, Lightbulb, Volume2, VolumeX } from 'lucide-react';
-import { translateAIContent } from '../utils/aiContentTranslator.ts';
+import ConversationAIFeedback from '../components/ConversationAIFeedback.tsx';
 import SpeechInput from '../components/SpeechInput.tsx';
 import VoiceCommands from '../components/VoiceCommands.tsx';
 import AITips from '../components/AITips.tsx';
@@ -1368,7 +1368,13 @@ const Conversations: React.FC = () => {
                           </div>
                         </div>
                         {conversation.aiRatingFeedback && (
-                          <p className="text-sm text-gray-600 dark:text-gray-300 mt-2 italic">"{translateAIContent(conversation.aiRatingFeedback, language)}"</p>
+                          <ConversationAIFeedback
+                            feedback={conversation.aiRatingFeedback}
+                            language={language}
+                            conversationIndex={conversationHistory.findIndex(conv => conv.id === conversation.id)}
+                            totalConversations={conversationHistory.length}
+                            className="mt-2"
+                          />
                         )}
                       </div>
                     )}
@@ -1504,7 +1510,13 @@ const Conversations: React.FC = () => {
                       {selectedConversation.aiRatingFeedback && (
                         <div className="mt-4 p-3 bg-gray-50 dark:bg-dark-700 rounded-lg">
                           <span className="font-medium text-gray-700 dark:text-gray-300">{t('aiFeedback')}:</span>
-                          <p className="text-gray-600 dark:text-gray-300 mt-1 italic">"{translateAIContent(selectedConversation.aiRatingFeedback, language)}"</p>
+                          <ConversationAIFeedback
+                            feedback={selectedConversation.aiRatingFeedback}
+                            language={language}
+                            conversationIndex={conversationHistory.findIndex(conv => conv.id === selectedConversation.id)}
+                            totalConversations={conversationHistory.length}
+                            className="mt-1"
+                          />
                         </div>
                       )}
                     </div>

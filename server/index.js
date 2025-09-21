@@ -175,7 +175,7 @@ const gracefulShutdown = (signal) => {
   console.log(`\nReceived ${signal}. Starting graceful shutdown...`);
   
   // Set a very short timeout for development
-  const timeout = process.env.NODE_ENV === 'development' ? 500 : 5000;
+  const timeout = process.env.NODE_ENV === 'development' ? 100 : 5000;
   
   // Force close immediately in development
   if (process.env.NODE_ENV === 'development') {
@@ -195,8 +195,21 @@ const gracefulShutdown = (signal) => {
       console.log('MongoDB connection already closed');
     }
     
-    // Force exit
-    process.exit(0);
+    // Force close the server immediately
+    if (server) {
+      server.close(() => {
+        console.log('Server forcefully closed');
+        process.exit(0);
+      });
+      
+      // Force exit after 100ms if server doesn't close
+      setTimeout(() => {
+        console.log('Force exiting - server close timeout');
+        process.exit(0);
+      }, 100);
+    } else {
+      process.exit(0);
+    }
   }
   
   // Check if server is actually running before trying to close it

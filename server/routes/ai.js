@@ -1647,10 +1647,15 @@ Respond in this exact JSON format:
     try {
       const totalConversations = await Conversation.countDocuments({ userId: req.user._id });
       if (totalConversations % 5 === 0 && totalConversations > 0) {
-        // Trigger summary generation in the background
-        generateConversationSummary(req.user._id).catch(error => {
-          console.error('Error generating conversation summary:', error);
-        });
+        // Check if user can generate a summary (5 per day limit applies to auto-generated summaries too)
+        if (req.user.canGenerateSummary()) {
+          // Trigger summary generation in the background
+          generateConversationSummary(req.user._id).catch(error => {
+            console.error('Error generating conversation summary:', error);
+          });
+        } else {
+          console.log(`Skipping automatic summary generation for user ${req.user._id} - daily limit reached`);
+        }
       }
     } catch (summaryError) {
       console.error('Error checking for summary generation:', summaryError);
@@ -2183,6 +2188,12 @@ async function generateConversationSummary(userId) {
       return;
     }
 
+    // Double-check if user can generate a summary (in case limit was reached between check and generation)
+    if (!user.canGenerateSummary()) {
+      console.log(`Skipping automatic summary generation for user ${userId} - daily limit reached during generation`);
+      return;
+    }
+
     // Generate AI analysis using user's language preference
     const aiAnalysis = await generateConversationAnalysis(recentConversations, user, user.language || 'en');
     
@@ -2199,6 +2210,10 @@ async function generateConversationSummary(userId) {
     });
 
     await summary.save();
+    
+    // Increment user's summary generation count for automatic summaries too
+    await user.incrementSummaryUsage();
+    
     console.log(`Generated conversation summary #${nextSummaryNumber} for user ${userId}`);
     
   } catch (error) {
@@ -2452,6 +2467,17 @@ router.post('/tips', authenticateToken, [
       });
     }
 
+    // Check AI Tips usage limit
+    if (!user.canUseAiTips()) {
+      const aiTipsStatus = user.getAiTipsUsageStatus();
+      return res.status(429).json({ 
+        error: 'AI Tips monthly limit reached',
+        message: `You have reached your monthly AI Tips limit (${aiTipsStatus.monthlyLimit}). Please upgrade your plan to continue.`,
+        aiTipsStatus,
+        upgradeRequired: true
+      });
+    }
+
     // Build conversation context for AI
     const systemPrompt = `You are a professional sales coach and advisor. You help sales professionals improve their skills, handle objections, close deals, and develop effective sales strategies.
 
@@ -2507,8 +2533,12 @@ Always maintain the persona of an experienced human sales coach.`;
 
     const response = completion.choices[0].message.content;
 
-    // Increment user's AI usage
+    // Increment user's AI usage and AI Tips usage
     await user.incrementAIUsage();
+    await user.incrementAiTipsUsage();
+
+    // Get updated usage status
+    const aiTipsStatus = user.getAiTipsUsageStatus();
 
     res.json({
       response: response,
@@ -2516,7 +2546,8 @@ Always maintain the persona of an experienced human sales coach.`;
         promptTokens: completion.usage?.prompt_tokens || 0,
         completionTokens: completion.usage?.completion_tokens || 0,
         totalTokens: completion.usage?.total_tokens || 0
-      }
+      },
+      aiTipsStatus
     });
 
   } catch (error) {
@@ -2531,6 +2562,49 @@ Always maintain the persona of an experienced human sales coach.`;
     }
     
     res.status(500).json({ error: 'Failed to generate AI tips' });
+  }
+});
+
+// Get AI Tips usage status
+router.get('/tips/usage', authenticateToken, async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const aiTipsStatus = user.getAiTipsUsageStatus();
+    res.json({ aiTipsStatus });
+  } catch (error) {
+    console.error('Get AI Tips usage error:', error);
+    res.status(500).json({ error: 'Failed to get AI Tips usage status' });
+  }
+});
+
+// Get comprehensive usage status (AI conversations, summaries, AI Tips)
+router.get('/usage', authenticateToken, async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const usageStatus = user.getUsageStatus();
+    const summaryStatus = user.getSummaryStatus();
+    const aiTipsStatus = user.getAiTipsUsageStatus();
+
+    res.json({
+      usageStatus,
+      summaryStatus,
+      aiTipsStatus,
+      subscription: {
+        plan: user.subscription.plan,
+        status: user.subscription.status
+      }
+    });
+  } catch (error) {
+    console.error('Get usage status error:', error);
+    res.status(500).json({ error: 'Failed to get usage status' });
   }
 });
 

@@ -150,6 +150,19 @@ const userSchema = new mongoose.Schema({
     lastSummaryResetDate: {
       type: Date,
       default: Date.now
+    },
+    // AI Tips usage tracking
+    aiTipsUsed: {
+      type: Number,
+      default: 0
+    },
+    aiTipsUsedThisMonth: {
+      type: Number,
+      default: 0
+    },
+    lastAiTipsResetDate: {
+      type: Date,
+      default: Date.now
     }
   },
   settings: {
@@ -286,8 +299,13 @@ userSchema.methods.incrementAIUsage = function() {
   return this.save();
 };
 
-// Check if user can generate a summary (5 per day limit)
+// Check if user can generate a summary (5 per day limit, and not free plan)
 userSchema.methods.canGenerateSummary = function() {
+  // Free plan users cannot generate summaries
+  if (!this.canAccessSummaries()) {
+    return false;
+  }
+  
   const now = new Date();
   const lastSummaryReset = new Date(this.usage.lastSummaryResetDate);
   
@@ -330,6 +348,83 @@ userSchema.methods.incrementSummaryUsage = function() {
   return this.save();
 };
 
+// Check if user can use AI Tips
+userSchema.methods.canUseAiTips = function() {
+  const now = new Date();
+  const lastReset = new Date(this.usage.lastAiTipsResetDate);
+  
+  // Check if it's a new month
+  const isNewMonth = now.getMonth() !== lastReset.getMonth() || now.getFullYear() !== lastReset.getFullYear();
+  
+  // If it's a new month, reset the monthly count
+  if (isNewMonth) {
+    this.usage.aiTipsUsedThisMonth = 0;
+    this.usage.lastAiTipsResetDate = now;
+    this.save(); // Save the reset
+  }
+  
+  // Get subscription limits
+  const limits = this.getSubscriptionLimits();
+  const aiTipsLimit = limits.aiTips;
+  
+  // Check if user has reached the monthly limit
+  return this.usage.aiTipsUsedThisMonth < aiTipsLimit;
+};
+
+// Increment AI Tips usage
+userSchema.methods.incrementAiTipsUsage = function() {
+  const now = new Date();
+  const lastReset = new Date(this.usage.lastAiTipsResetDate);
+  
+  // Check if it's a new month
+  const isNewMonth = now.getMonth() !== lastReset.getMonth() || now.getFullYear() !== lastReset.getFullYear();
+  
+  // If it's a new month, reset the monthly count
+  if (isNewMonth) {
+    this.usage.aiTipsUsedThisMonth = 0;
+    this.usage.lastAiTipsResetDate = now;
+  }
+  
+  // Increment both total and monthly counts
+  this.usage.aiTipsUsed += 1;
+  this.usage.aiTipsUsedThisMonth += 1;
+  
+  return this.save();
+};
+
+// Get AI Tips usage status
+userSchema.methods.getAiTipsUsageStatus = function() {
+  const now = new Date();
+  const lastReset = new Date(this.usage.lastAiTipsResetDate);
+  
+  // Check if it's a new month
+  const isNewMonth = now.getMonth() !== lastReset.getMonth() || now.getFullYear() !== lastReset.getFullYear();
+  
+  // If it's a new month, reset the monthly count
+  if (isNewMonth) {
+    this.usage.aiTipsUsedThisMonth = 0;
+    this.usage.lastAiTipsResetDate = now;
+    this.save(); // Save the reset
+  }
+  
+  const limits = this.getSubscriptionLimits();
+  const aiTipsLimit = limits.aiTips;
+  
+  return {
+    aiTipsUsedThisMonth: this.usage.aiTipsUsedThisMonth,
+    totalAiTipsUsed: this.usage.aiTipsUsed,
+    monthlyLimit: aiTipsLimit,
+    remainingThisMonth: Math.max(0, aiTipsLimit - this.usage.aiTipsUsedThisMonth),
+    canUseAiTips: this.canUseAiTips(),
+    plan: this.subscription.plan
+  };
+};
+
+// Check if user can access summaries (not free plan)
+userSchema.methods.canAccessSummaries = function() {
+  return this.subscription.plan !== 'free';
+};
+
 // Get summary generation status
 userSchema.methods.getSummaryStatus = function() {
   const now = new Date();
@@ -359,11 +454,11 @@ userSchema.methods.getSummaryStatus = function() {
 // Get subscription limits
 userSchema.methods.getSubscriptionLimits = function() {
   const limits = {
-    free: { conversations: 50, features: ['basic_ai'], period: 'monthly' },
-    basic: { conversations: 200, features: ['basic_ai', 'tips_lessons'], period: 'monthly' },
-    pro: { conversations: 500, features: ['basic_ai', 'tips_lessons', 'client_customization', 'summary_feedback'], period: 'monthly' },
-    unlimited: { conversations: -1, features: ['basic_ai', 'tips_lessons', 'summary', 'client_customization', 'summary_feedback'], period: 'monthly' },
-    enterprise: { conversations: 50, features: ['basic_ai', 'tips_lessons', 'summary', 'client_customization', 'summary_feedback', 'team_management'], period: 'daily' }
+    free: { conversations: 10, aiTips: 0, features: ['basic_ai'], period: 'monthly' },
+    basic: { conversations: 30, aiTips: 10, features: ['basic_ai', 'tips_lessons'], period: 'monthly' },
+    pro: { conversations: 50, aiTips: 25, features: ['basic_ai', 'tips_lessons', 'summary', 'client_customization', 'summary_feedback'], period: 'monthly' },
+    unlimited: { conversations: 200, aiTips: 50, features: ['basic_ai', 'tips_lessons', 'summary', 'client_customization', 'summary_feedback'], period: 'monthly' },
+    enterprise: { conversations: 50, aiTips: 50, features: ['basic_ai', 'tips_lessons', 'summary', 'client_customization', 'summary_feedback', 'team_management', 'leaderboard', 'sso_integration', 'custom_branding', 'advanced_analytics', 'api_access', 'dedicated_support'], period: 'daily' }
   };
   
   return limits[this.subscription.plan] || limits.free;

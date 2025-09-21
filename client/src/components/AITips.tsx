@@ -18,12 +18,22 @@ interface AITipsProps {
   onToggleMinimize: () => void;
 }
 
+interface AiTipsUsageStatus {
+  aiTipsUsedThisMonth: number;
+  totalAiTipsUsed: number;
+  monthlyLimit: number;
+  remainingThisMonth: number;
+  canUseAiTips: boolean;
+  plan: string;
+}
+
 const AITips: React.FC<AITipsProps> = ({ isOpen, onToggle, isMinimized, onToggleMinimize }) => {
   const { t, language } = useTranslation();
   const { user } = useAuth();
   const [messages, setMessages] = useState<AITipMessage[]>([]);
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [usageStatus, setUsageStatus] = useState<AiTipsUsageStatus | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -33,6 +43,22 @@ const AITips: React.FC<AITipsProps> = ({ isOpen, onToggle, isMinimized, onToggle
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  // Fetch usage status when component opens
+  useEffect(() => {
+    const fetchUsageStatus = async () => {
+      if (isOpen && user) {
+        try {
+          const response = await axios.get('/api/ai/tips/usage');
+          setUsageStatus(response.data.aiTipsStatus);
+        } catch (error) {
+          console.error('Failed to fetch AI Tips usage status:', error);
+        }
+      }
+    };
+
+    fetchUsageStatus();
+  }, [isOpen, user]);
 
   // Initialize with welcome message
   useEffect(() => {
@@ -48,6 +74,12 @@ const AITips: React.FC<AITipsProps> = ({ isOpen, onToggle, isMinimized, onToggle
 
   const handleSendMessage = async () => {
     if (!inputMessage.trim() || isLoading || !user) return;
+
+    // Check if user can use AI Tips
+    if (usageStatus && !usageStatus.canUseAiTips) {
+      toast.error(`You've reached your monthly AI Tips limit (${usageStatus.monthlyLimit}). Please upgrade your plan to continue.`);
+      return;
+    }
 
     const userMessage: AITipMessage = {
       role: 'user',
@@ -73,9 +105,23 @@ const AITips: React.FC<AITipsProps> = ({ isOpen, onToggle, isMinimized, onToggle
       };
 
       setMessages(prev => [...prev, assistantMessage]);
+
+      // Update usage status from response
+      if (response.data.aiTipsStatus) {
+        setUsageStatus(response.data.aiTipsStatus);
+      }
     } catch (error: any) {
       console.error('Failed to get AI tips:', error);
-      toast.error(error.response?.data?.error || t('failedToGetTips') || 'Failed to get AI tips');
+      
+      if (error.response?.status === 429) {
+        // AI Tips limit reached
+        toast.error(error.response?.data?.message || 'AI Tips monthly limit reached');
+        if (error.response?.data?.aiTipsStatus) {
+          setUsageStatus(error.response.data.aiTipsStatus);
+        }
+      } else {
+        toast.error(error.response?.data?.error || t('failedToGetTips') || 'Failed to get AI tips');
+      }
       
       // Add error message
       const errorMessage: AITipMessage = {
@@ -139,6 +185,11 @@ const AITips: React.FC<AITipsProps> = ({ isOpen, onToggle, isMinimized, onToggle
               <div>
                 <h3 className="font-semibold text-gray-900 dark:text-white text-sm">{t('aiTips') || 'AI Tips'}</h3>
                 <p className="text-xs text-gray-500 dark:text-gray-400">{t('salesAssistant') || 'Sales Assistant'}</p>
+                {usageStatus && (
+                  <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
+                    {usageStatus.remainingThisMonth}/{usageStatus.monthlyLimit} remaining
+                  </p>
+                )}
               </div>
             </div>
             <div className="flex items-center gap-1">
@@ -215,7 +266,7 @@ const AITips: React.FC<AITipsProps> = ({ isOpen, onToggle, isMinimized, onToggle
               />
               <button
                 onClick={handleSendMessage}
-                disabled={!inputMessage.trim() || isLoading}
+                disabled={!inputMessage.trim() || isLoading || (usageStatus && !usageStatus.canUseAiTips)}
                 className="btn-primary px-3 py-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
               >
                 <Send className="w-4 h-4" />
@@ -226,19 +277,22 @@ const AITips: React.FC<AITipsProps> = ({ isOpen, onToggle, isMinimized, onToggle
             <div className="mt-3 flex flex-wrap gap-2">
               <button
                 onClick={() => setInputMessage(t('objectionHandlingTips') || 'How do I handle price objections?')}
-                className="text-xs px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors"
+                disabled={usageStatus && !usageStatus.canUseAiTips}
+                className="text-xs px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {t('objectionHandling') || 'Objections'}
               </button>
               <button
                 onClick={() => setInputMessage(t('closingTechniquesTips') || 'What are effective closing techniques?')}
-                className="text-xs px-2 py-1 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 rounded hover:bg-green-200 dark:hover:bg-green-800 transition-colors"
+                disabled={usageStatus && !usageStatus.canUseAiTips}
+                className="text-xs px-2 py-1 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 rounded hover:bg-green-200 dark:hover:bg-green-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {t('closing') || 'Closing'}
               </button>
               <button
                 onClick={() => setInputMessage(t('coldCallTips') || 'Give me cold calling best practices')}
-                className="text-xs px-2 py-1 bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 rounded hover:bg-purple-200 dark:hover:bg-purple-800 transition-colors"
+                disabled={usageStatus && !usageStatus.canUseAiTips}
+                className="text-xs px-2 py-1 bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 rounded hover:bg-purple-200 dark:hover:bg-purple-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {t('coldCall') || 'Cold Call'}
               </button>

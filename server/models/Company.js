@@ -227,11 +227,11 @@ companySchema.methods.canAddUser = async function() {
 // Get subscription limits
 companySchema.methods.getSubscriptionLimits = function() {
   const limits = {
-    free: { maxUsers: 5, features: ['basic_ai'] },
-    basic: { maxUsers: 25, features: ['basic_ai', 'tips_lessons'] },
-    pro: { maxUsers: 100, features: ['basic_ai', 'tips_lessons', 'client_customization', 'summary_feedback'] },
-    unlimited: { maxUsers: 500, features: ['basic_ai', 'tips_lessons', 'summary', 'client_customization', 'summary_feedback'] },
-    enterprise: { maxUsers: -1, features: ['basic_ai', 'tips_lessons', 'summary', 'client_customization', 'summary_feedback', 'team_management', 'advanced_analytics'] }
+    free: { maxUsers: 5, aiTips: 0, features: ['basic_ai'] },
+    basic: { maxUsers: 25, aiTips: 10, features: ['basic_ai', 'tips_lessons'] },
+    pro: { maxUsers: 100, aiTips: 25, features: ['basic_ai', 'tips_lessons', 'summary', 'client_customization', 'summary_feedback'] },
+    unlimited: { maxUsers: 500, aiTips: 50, features: ['basic_ai', 'tips_lessons', 'summary', 'client_customization', 'summary_feedback'] },
+    enterprise: { maxUsers: -1, aiTips: 50, features: ['basic_ai', 'tips_lessons', 'summary', 'client_customization', 'summary_feedback', 'team_management', 'leaderboard', 'sso_integration', 'custom_branding', 'advanced_analytics', 'api_access', 'dedicated_support'] }
   };
   
   return limits[this.subscription.plan] || limits.free;

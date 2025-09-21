@@ -88,7 +88,6 @@ const staticTranslations = {
     'professional and respectful communication style': 'Professionaalne ja lugupidav suhtlemisstiil',
     'professional and respectful suhtlemisstiil': 'Professionaalne ja lugupidav suhtlemisstiil',
     'professional and respectful': 'Professionaalne ja lugupidav',
-    'communication style': 'suhtlemisstiil',
     'clear and direct approach': 'Selge ja otsene lähenemine',
     'clear and direct': 'Selge ja otsene',
     'discovery questions': 'Avastamise küsimused',
@@ -450,6 +449,7 @@ class DatabaseTranslationService {
   private lastTranslationRequest = 0;
   private readonly CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
   private readonly MIN_REQUEST_INTERVAL = 1000; // 1 second between requests
+  private batchTranslationInProgress: { [language: string]: boolean } = {}; // Prevent concurrent batch translations
 
   /**
    * Get all translations for a specific language
@@ -765,6 +765,12 @@ class DatabaseTranslationService {
       return texts;
     }
 
+    // Wait if batch translation is already in progress for this language
+    while (this.batchTranslationInProgress[language]) {
+      console.log(`Batch translation in progress for ${language}, waiting...`);
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
+
     // Filter out texts that are already cached
     const uncachedTexts: string[] = [];
     const results: string[] = [];
@@ -781,15 +787,36 @@ class DatabaseTranslationService {
 
     // If all texts are cached, return results
     if (uncachedTexts.length === 0) {
+      console.log('All texts cached, returning cached results:', results);
       return results;
     }
 
+    // Mark batch translation as in progress
+    this.batchTranslationInProgress[language] = true;
+
     try {
       // Batch translate uncached texts
+      console.log('Batch translation request:', {
+        textsCount: uncachedTexts.length,
+        targetLanguage: language,
+        usingCookies: true
+      });
+      
       const response = await axios.post('/api/dynamic-translation/batch-translate', {
         texts: uncachedTexts,
         targetLanguage: language,
         context: 'sales_feedback'
+      }, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      console.log('Batch translation response:', {
+        success: response.data.success,
+        translationsCount: response.data.translations ? response.data.translations.length : 0,
+        method: response.data.method,
+        firstTranslation: response.data.translations ? response.data.translations[0] : 'none'
       });
       
       if (response.data.success && response.data.translations) {
@@ -798,6 +825,7 @@ class DatabaseTranslationService {
         for (let i = 0; i < texts.length; i++) {
           if (!this.cache[language] || !this.cache[language][texts[i]]) {
             const translatedText = response.data.translations[uncachedIndex];
+            console.log(`Updating cache for "${texts[i]}" -> "${translatedText}"`);
             if (translatedText) {
               if (!this.cache[language]) {
                 this.cache[language] = {};
@@ -808,10 +836,14 @@ class DatabaseTranslationService {
             uncachedIndex++;
           }
         }
+        console.log('Final results after cache update:', results);
       }
     } catch (error) {
       console.error('Batch translation error:', error);
       // Return original texts if translation fails
+    } finally {
+      // Mark batch translation as complete
+      this.batchTranslationInProgress[language] = false;
     }
 
     return results;
@@ -949,6 +981,148 @@ class DatabaseTranslationService {
   }
 
   /**
+   * Clear cache for a specific language to prevent cross-contamination
+   */
+  clearLanguageCache(language: Language) {
+    delete this.cache[language];
+    delete this.cacheTimestamp[language];
+    console.log(`Cleared cache for language: ${language}`);
+  }
+
+  /**
+   * Smart translation function that uses Google Translate for latest conversations
+   * and static translations for older conversations
+   */
+  async translateConversationFeedbackSmart(
+    feedback: string, 
+    language: Language, 
+    conversationIndex: number,
+    totalConversations: number
+  ): Promise<string> {
+    if (!feedback || language === 'en') {
+      return feedback;
+    }
+
+    // Determine if this is one of the latest 3 conversations
+    // Conversations are typically ordered with newest first (index 0 is newest)
+    const isLatestConversation = conversationIndex < 3;
+    
+    console.log(`Translating conversation feedback (index: ${conversationIndex}/${totalConversations}, isLatest: ${isLatestConversation}):`, feedback);
+
+    if (isLatestConversation) {
+      // Use Google Translate for latest 3 conversations
+      return await this.translateConversationFeedback(feedback, language);
+    } else {
+      // Use static translations for older conversations
+      return this.translateConversationFeedbackStatic(feedback, language);
+    }
+  }
+
+  /**
+   * Translate AI feedback for conversations using Google Translate
+   * This is used for the latest 3 conversations to ensure fresh, accurate translations
+   */
+  async translateConversationFeedback(feedback: string, language: Language): Promise<string> {
+    if (!feedback || language === 'en') {
+      return feedback;
+    }
+
+    // Check cache first
+    const cacheKey = `conversation_feedback_${feedback}_${language}`;
+    if (this.translationCache[cacheKey]) {
+      console.log(`Using cached conversation feedback translation for: "${feedback}"`);
+      return this.translationCache[cacheKey];
+    }
+
+    try {
+      // Rate limiting: wait if requests are too frequent
+      const now = Date.now();
+      const timeSinceLastRequest = now - this.lastTranslationRequest;
+      if (timeSinceLastRequest < this.MIN_REQUEST_INTERVAL) {
+        const waitTime = this.MIN_REQUEST_INTERVAL - timeSinceLastRequest;
+        console.log(`Rate limiting: waiting ${waitTime}ms before next conversation feedback request`);
+        await new Promise(resolve => setTimeout(resolve, waitTime));
+      }
+      this.lastTranslationRequest = Date.now();
+
+      const response = await fetch('/api/dynamic-translation/translate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include', // Include cookies for authentication
+        body: JSON.stringify({
+          text: feedback,
+          targetLanguage: language,
+          context: 'sales_feedback'
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Conversation feedback translation API error: ${response.status}`);
+      }
+
+      const result = await response.json();
+      
+      if (result.success) {
+        console.log(`Conversation feedback translation: "${feedback}" -> "${result.translatedText}" (${language})`);
+        // Cache the result
+        this.translationCache[cacheKey] = result.translatedText;
+        return result.translatedText;
+      } else {
+        console.error('Conversation feedback translation failed:', result.message);
+        return feedback;
+      }
+    } catch (error) {
+      console.error('Conversation feedback translation error:', error);
+      return feedback;
+    }
+  }
+
+  /**
+   * Translate AI feedback using static translations for older conversations
+   */
+  private translateConversationFeedbackStatic(feedback: string, language: Language): string {
+    if (!feedback || language === 'en') {
+      return feedback;
+    }
+
+    // Use the existing static translations from the staticTranslations object
+    const translations = staticTranslations[language];
+    if (!translations) {
+      return feedback;
+    }
+
+    // Try exact match first
+    if (translations[feedback]) {
+      return translations[feedback];
+    }
+
+    // Try case-insensitive match
+    const lowerFeedback = feedback.toLowerCase();
+    if (translations[lowerFeedback]) {
+      return translations[lowerFeedback];
+    }
+
+    // Try partial matching for common terms
+    let translatedFeedback = feedback;
+    const sortedKeys = Object.keys(translations).sort((a, b) => b.length - a.length);
+    
+    for (const key of sortedKeys) {
+      const value = translations[key];
+      if (feedback.toLowerCase().includes(key.toLowerCase())) {
+        const result = feedback.replace(new RegExp(key, 'gi'), value);
+        if (result !== feedback) {
+          translatedFeedback = result;
+          break;
+        }
+      }
+    }
+
+    return translatedFeedback;
+  }
+
+  /**
    * Clear translation cache
    */
   clearTranslationCache() {
@@ -985,9 +1159,9 @@ class DatabaseTranslationService {
       const response = await fetch('/api/dynamic-translation/translate', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Content-Type': 'application/json'
         },
+        credentials: 'include', // Include cookies for authentication
         body: JSON.stringify({
           text,
           targetLanguage: language,
@@ -1051,9 +1225,9 @@ class DatabaseTranslationService {
       const response = await fetch('/api/dynamic-translation/translate-stage-feedback', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Content-Type': 'application/json'
         },
+        credentials: 'include', // Include cookies for authentication
         body: JSON.stringify({
           feedback,
           targetLanguage: language

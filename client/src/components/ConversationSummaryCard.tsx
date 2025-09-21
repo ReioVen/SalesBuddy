@@ -83,6 +83,8 @@ const ConversationSummaryCard: React.FC<ConversationSummaryCardProps> = ({ summa
   // Reset translation attempted flag when language changes
   useEffect(() => {
     setTranslationAttempted(false);
+    // Clear cache to prevent cross-language contamination
+    databaseTranslationService.clearLanguageCache(language);
   }, [language]);
 
   // Use pre-translated content from database when language changes
@@ -133,33 +135,8 @@ const ConversationSummaryCard: React.FC<ConversationSummaryCardProps> = ({ summa
       }
       
       
-      const token = localStorage.getItem('token');
-      
-      // For latest summaries, always try Google Translate first, even without token
-      if (!token && !isLatestSummary) {
-        setIsTranslating(true);
-        
-        const handleStaticTranslation = async () => {
-          try {
-            await databaseTranslationService.forceRefreshTranslations(language);
-            const translated = databaseTranslationService.translateSummaryContentSync(summary, language);
-            setTranslatedSummary(translated);
-            setTranslationAttempted(true);
-          } catch (error) {
-            console.error('Error with static translation:', error);
-            setTranslatedSummary(null);
-            setTranslationAttempted(true);
-          } finally {
-            setIsTranslating(false);
-          }
-        };
-        
-        handleStaticTranslation();
-        return;
-      }
-      
-      // For latest summaries without token, use enhanced static translation with better AI content handling
-      if (!token && isLatestSummary) {
+      // For latest summaries, use enhanced static translation with better AI content handling
+      if (isLatestSummary) {
         setIsTranslating(true);
         
         const handleEnhancedStaticTranslation = async () => {
@@ -184,32 +161,63 @@ const ConversationSummaryCard: React.FC<ConversationSummaryCardProps> = ({ summa
             ];
 
             // Batch translate all texts at once
+            console.log('Original texts to translate:', allTexts);
             const translatedTexts = await databaseTranslationService.batchTranslateTexts(allTexts, language);
+            console.log('Translated texts result:', translatedTexts);
 
             // Reconstruct the translated summary
             let textIndex = 0;
             const translatedSummary = {
               ...summary,
-              strengths: summary.strengths.map(() => translatedTexts[textIndex++]),
-              improvements: summary.improvements.map(() => translatedTexts[textIndex++]),
+              strengths: summary.strengths.map((originalText) => {
+                const translated = translatedTexts[textIndex++];
+                console.log(`Mapping strength: "${originalText}" -> "${translated}"`);
+                return translated;
+              }),
+              improvements: summary.improvements.map((originalText) => {
+                const translated = translatedTexts[textIndex++];
+                console.log(`Mapping improvement: "${originalText}" -> "${translated}"`);
+                return translated;
+              }),
               stageRatings: Object.fromEntries(
-                Object.entries(summary.stageRatings).map(([stage, rating]) => [
-                  stage,
-                  {
-                    ...rating,
-                    feedback: translatedTexts[textIndex++]
-                  }
-                ])
+                Object.entries(summary.stageRatings).map(([stage, rating]) => {
+                  const translated = translatedTexts[textIndex++];
+                  console.log(`Mapping stage ${stage} feedback: "${rating.feedback}" -> "${translated}"`);
+                  return [
+                    stage,
+                    {
+                      ...rating,
+                      feedback: translated
+                    }
+                  ];
+                })
               ),
               aiAnalysis: {
                 ...summary.aiAnalysis,
-                personalityInsights: translatedTexts[textIndex++],
-                communicationStyle: translatedTexts[textIndex++],
-                recommendedFocus: summary.aiAnalysis.recommendedFocus.map(() => translatedTexts[textIndex++]),
-                nextSteps: summary.aiAnalysis.nextSteps.map(() => translatedTexts[textIndex++])
+                personalityInsights: (() => {
+                  const translated = translatedTexts[textIndex++];
+                  console.log(`Mapping personality insights: "${summary.aiAnalysis.personalityInsights}" -> "${translated}"`);
+                  return translated;
+                })(),
+                communicationStyle: (() => {
+                  const translated = translatedTexts[textIndex++];
+                  console.log(`Mapping communication style: "${summary.aiAnalysis.communicationStyle}" -> "${translated}"`);
+                  return translated;
+                })(),
+                recommendedFocus: summary.aiAnalysis.recommendedFocus.map((originalText) => {
+                  const translated = translatedTexts[textIndex++];
+                  console.log(`Mapping recommended focus: "${originalText}" -> "${translated}"`);
+                  return translated;
+                }),
+                nextSteps: summary.aiAnalysis.nextSteps.map((originalText) => {
+                  const translated = translatedTexts[textIndex++];
+                  console.log(`Mapping next step: "${originalText}" -> "${translated}"`);
+                  return translated;
+                })
               }
             };
             
+            console.log('Setting translatedSummary:', translatedSummary);
             setTranslatedSummary(translatedSummary);
             setTranslationAttempted(true);
           } catch (error) {
@@ -234,9 +242,9 @@ const ConversationSummaryCard: React.FC<ConversationSummaryCardProps> = ({ summa
           const response = await fetch(`/api/conversation-summaries/${summary._id}/translate`, {
             method: 'POST',
             headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}`
+              'Content-Type': 'application/json'
             },
+            credentials: 'include', // Include cookies for authentication
             body: JSON.stringify({ targetLanguage: language })
           });
 
@@ -408,7 +416,9 @@ const ConversationSummaryCard: React.FC<ConversationSummaryCardProps> = ({ summa
                           translated: translatedSummary?.strengths?.[index],
                           final: strength,
                           hasTranslatedSummary: !!translatedSummary,
-                          translatedSummaryStrengths: translatedSummary?.strengths
+                          translatedSummaryStrengths: translatedSummary?.strengths,
+                          usingTranslatedSummary: !!translatedSummary?.strengths,
+                          language: language
                         });
                         return (
                           <li key={index} className="flex items-start gap-2">
@@ -432,7 +442,9 @@ const ConversationSummaryCard: React.FC<ConversationSummaryCardProps> = ({ summa
                           original: summary.improvements[index], 
                           translated: translatedSummary?.improvements?.[index],
                           final: improvement,
-                          hasTranslatedSummary: !!translatedSummary
+                          hasTranslatedSummary: !!translatedSummary,
+                          usingTranslatedSummary: !!translatedSummary?.improvements,
+                          language: language
                         });
                         return (
                           <li key={index} className="flex items-start gap-2">
@@ -468,7 +480,9 @@ const ConversationSummaryCard: React.FC<ConversationSummaryCardProps> = ({ summa
                           original: rating.feedback, 
                           translated: translatedSummary?.stageRatings?.[stage]?.feedback,
                           final: feedback,
-                          hasTranslatedSummary: !!translatedSummary
+                          hasTranslatedSummary: !!translatedSummary,
+                          usingTranslatedSummary: !!translatedSummary?.stageRatings?.[stage],
+                          language: language
                         });
                         return feedback;
                       })()}
