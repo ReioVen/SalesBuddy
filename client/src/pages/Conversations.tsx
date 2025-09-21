@@ -805,7 +805,7 @@ const Conversations: React.FC = () => {
                 <div className="text-center">
                   <MessageSquare className="w-12 h-12 text-blue-600 mx-auto mb-4" />
                   <p className="text-gray-600 dark:text-gray-300 mb-6">
-                    Customize your AI client to practice with different types of customers, or use the default client.
+                    {t('customizeClientDescription')}
                   </p>
                   
                 </div>

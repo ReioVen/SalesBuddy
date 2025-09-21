@@ -56,20 +56,20 @@ const EditTeam: React.FC<EditTeamProps> = ({
   };
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg p-6">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">Edit Team</h3>
+    <div className="bg-white dark:bg-dark-800 border border-gray-200 dark:border-dark-600 rounded-lg p-6">
+      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Edit Team</h3>
       
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 mb-6">
           <div className="flex">
             <div className="flex-shrink-0">
-              <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+              <svg className="h-5 w-5 text-red-400 dark:text-red-300" viewBox="0 0 20 20" fill="currentColor">
                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
               </svg>
             </div>
             <div className="ml-3">
-              <h3 className="text-sm font-medium text-red-800">Error</h3>
-              <p className="mt-1 text-sm text-red-700">{error}</p>
+              <h3 className="text-sm font-medium text-red-800 dark:text-red-200">Error</h3>
+              <p className="mt-1 text-sm text-red-700 dark:text-red-300">{error}</p>
             </div>
           </div>
         </div>
@@ -77,7 +77,7 @@ const EditTeam: React.FC<EditTeamProps> = ({
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Team Name *
           </label>
           <input
@@ -86,13 +86,13 @@ const EditTeam: React.FC<EditTeamProps> = ({
             required
             value={form.name}
             onChange={(e) => setForm({ ...form, name: e.target.value })}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full border border-gray-300 dark:border-dark-600 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-dark-700 text-gray-900 dark:text-white"
             placeholder="Enter team name"
           />
         </div>
 
         <div>
-          <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Description
           </label>
           <textarea
@@ -100,7 +100,7 @@ const EditTeam: React.FC<EditTeamProps> = ({
             value={form.description}
             onChange={(e) => setForm({ ...form, description: e.target.value })}
             rows={3}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full border border-gray-300 dark:border-dark-600 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-dark-700 text-gray-900 dark:text-white"
             placeholder="Enter team description (optional)"
           />
         </div>
@@ -109,14 +109,14 @@ const EditTeam: React.FC<EditTeamProps> = ({
           <button
             type="button"
             onClick={onCancel}
-            className="flex-1 bg-gray-300 text-gray-700 py-2 px-4 rounded-lg font-medium hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+            className="flex-1 bg-gray-300 dark:bg-dark-600 text-gray-700 dark:text-gray-300 py-2 px-4 rounded-lg font-medium hover:bg-gray-400 dark:hover:bg-dark-500 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
           >
             Cancel
           </button>
           <button
             type="submit"
             disabled={loading}
-            className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex-1 bg-blue-600 dark:bg-blue-700 text-white py-2 px-4 rounded-lg font-medium hover:bg-blue-700 dark:hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? 'Updating Team...' : 'Update Team'}
           </button>

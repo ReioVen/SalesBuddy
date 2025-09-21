@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const User = require('./User');
 
 const teamSchema = new mongoose.Schema({
   name: {
@@ -212,9 +213,15 @@ companySchema.methods.setTeamLeader = function(userId, teamName) {
   return this.save();
 };
 
-// Check if company can add more users
-companySchema.methods.canAddUser = function() {
-  return this.users.length < this.subscription.maxUsers;
+// Check if company can add more users (excluding super admins from count)
+companySchema.methods.canAddUser = async function() {
+  // Count only non-super-admin users
+  const nonSuperAdminCount = await User.countDocuments({
+    companyId: this._id,
+    role: { $ne: 'super_admin' },
+    isSuperAdmin: { $ne: true }
+  });
+  return nonSuperAdminCount < this.subscription.maxUsers;
 };
 
 // Get subscription limits

@@ -16,6 +16,16 @@ const dailyRefreshService = require('../services/dailyRefreshService');
 
 const router = express.Router();
 
+// Generate a secure temporary password
+const generateTempPassword = () => {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let result = '';
+  for (let i = 0; i < 12; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
+};
+
 // Get admin dashboard data
 router.get('/dashboard', authenticateToken, requireAdmin, async (req, res) => {
   try {
@@ -131,8 +141,8 @@ router.post('/companies', authenticateToken, canManageCompanies, [
       size 
     } = req.body;
 
-    // Check if admin email already exists
-    const existingUser = await User.findOne({ email: adminEmail });
+    // Check if admin email already exists (case-insensitive)
+    const existingUser = await User.findByEmail(adminEmail);
     if (existingUser) {
       return res.status(400).json({ error: 'Admin email already exists' });
     }
@@ -255,8 +265,8 @@ router.post('/users/create', authenticateToken, canManageAllUsers, [
 
     const { email, password, firstName, lastName, role, companyId, teamId } = req.body;
 
-    // Check if user already exists
-    const existingUser = await User.findOne({ email });
+    // Check if user already exists (case-insensitive)
+    const existingUser = await User.findByEmail(email);
     if (existingUser) {
       return res.status(400).json({ error: 'Email already registered' });
     }
@@ -269,10 +279,13 @@ router.post('/users/create', authenticateToken, canManageAllUsers, [
       }
     }
 
+    // Use the provided password for all users (company admins set temporary passwords)
+    console.log('Using provided password for', email);
+    
     // Create new user - assign enterprise plan if they belong to a company
     const newUser = new User({
       email,
-      password,
+      password: password, // Use the password provided by the admin
       firstName,
       lastName,
       role,
@@ -281,6 +294,7 @@ router.post('/users/create', authenticateToken, canManageAllUsers, [
       teamId: teamId || null,
       isCompanyAdmin: role === 'company_admin',
       isTeamLeader: role === 'company_team_leader',
+      needsPasswordSetup: companyId ? true : false, // Flag company users to set up their password on first login
       subscription: {
         plan: companyId ? 'enterprise' : 'free', // Enterprise for company users, free for individual users
         status: 'active',
@@ -357,8 +371,8 @@ router.post('/admins', authenticateToken, requireSuperAdmin, [
 
     const { email, password, firstName, lastName, role, permissions = {} } = req.body;
 
-    // Check if user already exists
-    const existingUser = await User.findOne({ email });
+    // Check if user already exists (case-insensitive)
+    const existingUser = await User.findByEmail(email);
     if (existingUser) {
       return res.status(400).json({ error: 'Email already exists' });
     }

@@ -172,33 +172,41 @@ const ConversationSummaryCard: React.FC<ConversationSummaryCardProps> = ({ summa
             }
             
             // For AI insights, use a more comprehensive translation approach with fallback
+            // Collect all texts that need translation
+            const allTexts: string[] = [
+              ...summary.strengths,
+              ...summary.improvements,
+              ...Object.values(summary.stageRatings).map(rating => rating.feedback),
+              summary.aiAnalysis.personalityInsights,
+              summary.aiAnalysis.communicationStyle,
+              ...summary.aiAnalysis.recommendedFocus,
+              ...summary.aiAnalysis.nextSteps
+            ];
+
+            // Batch translate all texts at once
+            const translatedTexts = await databaseTranslationService.batchTranslateTexts(allTexts, language);
+
+            // Reconstruct the translated summary
+            let textIndex = 0;
             const translatedSummary = {
               ...summary,
-              strengths: summary.strengths.map(strength => 
-                databaseTranslationService.translateTextSyncPublic(strength, language)
-              ),
-              improvements: summary.improvements.map(improvement => 
-                databaseTranslationService.translateTextSyncPublic(improvement, language)
-              ),
+              strengths: summary.strengths.map(() => translatedTexts[textIndex++]),
+              improvements: summary.improvements.map(() => translatedTexts[textIndex++]),
               stageRatings: Object.fromEntries(
                 Object.entries(summary.stageRatings).map(([stage, rating]) => [
                   stage,
                   {
                     ...rating,
-                    feedback: databaseTranslationService.translateTextSyncPublic(rating.feedback, language)
+                    feedback: translatedTexts[textIndex++]
                   }
                 ])
               ),
               aiAnalysis: {
                 ...summary.aiAnalysis,
-                personalityInsights: databaseTranslationService.translateTextSyncPublic(summary.aiAnalysis.personalityInsights, language),
-                communicationStyle: databaseTranslationService.translateTextSyncPublic(summary.aiAnalysis.communicationStyle, language),
-                recommendedFocus: summary.aiAnalysis.recommendedFocus.map(focus => 
-                  databaseTranslationService.translateTextSyncPublic(focus, language)
-                ),
-                nextSteps: summary.aiAnalysis.nextSteps.map(step => 
-                  databaseTranslationService.translateTextSyncPublic(step, language)
-                )
+                personalityInsights: translatedTexts[textIndex++],
+                communicationStyle: translatedTexts[textIndex++],
+                recommendedFocus: summary.aiAnalysis.recommendedFocus.map(() => translatedTexts[textIndex++]),
+                nextSteps: summary.aiAnalysis.nextSteps.map(() => translatedTexts[textIndex++])
               }
             };
             

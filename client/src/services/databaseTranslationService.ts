@@ -36,6 +36,14 @@ const staticTranslations = {
     'handles objections well': 'Käsitleb vastuväiteid hästi',
     'builds rapport': 'Loob kontakti',
     
+    // Additional common phrases
+    'improving clarity of communication': 'Suhtluse selguse parandamine',
+    'sales process understanding': 'Müügiprotsessi mõistmine',
+    'assertiveness': 'Enesekindlus',
+    'practice opening statements': 'Harjuta avamise väiteid',
+    'learn about discovery techniques': 'Õpi avastamise tehnikaid',
+    'study closing techniques': 'Uuri sulgemise tehnikaid',
+    
     // Improvement areas
     'needs better discovery': 'Vajab paremat avastamist',
     'improve presentation skills': 'Paranda esitluse oskusi',
@@ -622,6 +630,14 @@ class DatabaseTranslationService {
 
     console.log(`Translating: "${text}" to ${language}`);
 
+    // For longer sentences (more than 50 characters), return as-is and trigger async translation
+    if (text.length > 50) {
+      console.log(`Long text detected (${text.length} chars), triggering Google Translate`);
+      // Trigger async translation for future use
+      this.translateLongTextAsync(text, language);
+      return text; // Return original for now
+    }
+
     // Try exact match in static translations
     if (staticTranslations[language] && staticTranslations[language][text]) {
       console.log(`Found static exact match for "${text}" -> "${staticTranslations[language][text]}"`);
@@ -656,6 +672,149 @@ class DatabaseTranslationService {
 
     console.log(`No translation found for: "${text}"`);
     return text;
+  }
+
+  /**
+   * Smart translation that uses Google Translate for longer sentences
+   */
+  public async translateTextSmart(text: string, language: Language): Promise<string> {
+    if (!text || language === 'en') {
+      return text;
+    }
+
+    // For longer sentences, use Google Translate
+    if (text.length > 50) {
+      return await this.translateLongTextSync(text, language);
+    }
+
+    // For shorter text, use static translations
+    return this.translateTextSyncPublic(text, language);
+  }
+
+  /**
+   * Translate longer text using Google Translate asynchronously
+   */
+  private async translateLongTextAsync(text: string, language: Language): Promise<void> {
+    try {
+      const response = await axios.post('/api/dynamic-translation/translate', {
+        text: text,
+        targetLanguage: language,
+        context: 'sales_feedback'
+      });
+      
+      if (response.data.success && response.data.translatedText) {
+        console.log(`Google Translate result: "${text}" -> "${response.data.translatedText}"`);
+        // Store in cache for future use
+        if (!this.cache[language]) {
+          this.cache[language] = {};
+        }
+        this.cache[language][text] = response.data.translatedText;
+      }
+    } catch (error) {
+      console.error('Google Translate error:', error);
+    }
+  }
+
+  // Rate limiting for Google Translate
+  private translationQueue: Array<{text: string, language: Language, resolve: Function, reject: Function}> = [];
+  private isProcessingQueue = false;
+  private lastTranslationTime = 0;
+  private readonly TRANSLATION_DELAY = 1000; // 1 second between requests
+
+  /**
+   * Translate longer text using Google Translate with rate limiting
+   */
+  public async translateLongTextSync(text: string, language: Language): Promise<string> {
+    if (!text || language === 'en') {
+      return text;
+    }
+
+    // Check cache first
+    if (this.cache[language] && this.cache[language][text]) {
+      return this.cache[language][text];
+    }
+
+    try {
+      const response = await axios.post('/api/dynamic-translation/translate', {
+        text: text,
+        targetLanguage: language,
+        context: 'sales_feedback'
+      });
+      
+      if (response.data.success && response.data.translatedText) {
+        console.log(`Google Translate result: "${text}" -> "${response.data.translatedText}"`);
+        // Store in cache for future use
+        if (!this.cache[language]) {
+          this.cache[language] = {};
+        }
+        this.cache[language][text] = response.data.translatedText;
+        return response.data.translatedText;
+      }
+    } catch (error) {
+      console.error('Google Translate error:', error);
+    }
+
+    return text; // Return original if translation fails
+  }
+
+  /**
+   * Batch translate multiple texts to reduce API calls
+   */
+  public async batchTranslateTexts(texts: string[], language: Language): Promise<string[]> {
+    if (!texts || texts.length === 0 || language === 'en') {
+      return texts;
+    }
+
+    // Filter out texts that are already cached
+    const uncachedTexts: string[] = [];
+    const results: string[] = [];
+    
+    for (let i = 0; i < texts.length; i++) {
+      const text = texts[i];
+      if (this.cache[language] && this.cache[language][text]) {
+        results[i] = this.cache[language][text];
+      } else {
+        uncachedTexts.push(text);
+        results[i] = text; // Default to original
+      }
+    }
+
+    // If all texts are cached, return results
+    if (uncachedTexts.length === 0) {
+      return results;
+    }
+
+    try {
+      // Batch translate uncached texts
+      const response = await axios.post('/api/dynamic-translation/batch-translate', {
+        texts: uncachedTexts,
+        targetLanguage: language,
+        context: 'sales_feedback'
+      });
+      
+      if (response.data.success && response.data.translations) {
+        // Update cache and results
+        let uncachedIndex = 0;
+        for (let i = 0; i < texts.length; i++) {
+          if (!this.cache[language] || !this.cache[language][texts[i]]) {
+            const translatedText = response.data.translations[uncachedIndex];
+            if (translatedText) {
+              if (!this.cache[language]) {
+                this.cache[language] = {};
+              }
+              this.cache[language][texts[i]] = translatedText;
+              results[i] = translatedText;
+            }
+            uncachedIndex++;
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Batch translation error:', error);
+      // Return original texts if translation fails
+    }
+
+    return results;
   }
 
   /**

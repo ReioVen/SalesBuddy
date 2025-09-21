@@ -66,13 +66,12 @@ class GoogleTranslateService {
         apiKeyLength: this.apiKey ? this.apiKey.length : 0
       });
       
-      const response = await axios.post(this.baseUrl, {
+      const response = await axios.post(`${this.baseUrl}?key=${this.apiKey}`, {
         q: finalText,
         target: targetLanguage,
         source: 'en',
         format: 'text',
-        model: 'nmt', // Use Neural Machine Translation
-        key: this.apiKey
+        model: 'nmt' // Use Neural Machine Translation
       }, {
         headers: {
           'Content-Type': 'application/json'
@@ -80,7 +79,10 @@ class GoogleTranslateService {
       });
 
       if (response.data && response.data.data && response.data.data.translations) {
-        const translation = response.data.data.translations[0].translatedText;
+        let translation = response.data.data.translations[0].translatedText;
+        
+        // Clean up the translation by removing the translated instruction prefix
+        translation = this.cleanupTranslation(translation, targetLanguage, context);
         
         // Cache the result
         this.cache.set(cacheKey, {
@@ -145,6 +147,87 @@ class GoogleTranslateService {
     }
     
     return text;
+  }
+
+  /**
+   * Clean up translation by removing translated instruction prefixes
+   * @param {string} translation - Raw translation from Google Translate
+   * @param {string} targetLanguage - Target language code
+   * @param {string} context - Context type
+   * @returns {string} Cleaned translation
+   */
+  cleanupTranslation(translation, targetLanguage, context) {
+    // Define translated instruction prefixes for different languages
+    const instructionPrefixes = {
+      'et': [
+        'Tõlkige kogu tekst ühe ühikuna:',
+        'Tõlgi kogu tekst ühe ühikuna:',
+        'Müügi tagasiside:',
+        'Parandamise soovitus:',
+        'Tugevuse kommentaar:',
+        'Müügi etapi hinnangu tagasiside:',
+        'Isiksuse analüüs:',
+        'Suhtlusstiili analüüs:',
+        'Soovitatav fookuse ala:',
+        'Järgmine samm:'
+      ],
+      'es': [
+        'Traduce este texto completo como una unidad:',
+        'Traducir este texto completo como una unidad:',
+        'Comentarios de ventas:',
+        'Sugerencia de mejora:',
+        'Comentario de fortaleza:',
+        'Comentarios de calificación de etapa de ventas:',
+        'Análisis de personalidad:',
+        'Análisis de estilo de comunicación:',
+        'Área de enfoque recomendada:',
+        'Siguiente paso:'
+      ],
+      'ru': [
+        'Переведите весь этот текст как единое целое:',
+        'Переводите весь этот текст как единое целое:',
+        'Отзыв о продажах:',
+        'Предложение по улучшению:',
+        'Комментарий о сильных сторонах:',
+        'Отзыв о рейтинге этапа продаж:',
+        'Анализ личности:',
+        'Анализ стиля общения:',
+        'Рекомендуемая область фокуса:',
+        'Следующий шаг:'
+      ]
+    };
+
+    const prefixes = instructionPrefixes[targetLanguage] || [];
+    
+    // Remove instruction prefixes
+    for (const prefix of prefixes) {
+      if (translation.startsWith(prefix)) {
+        translation = translation.substring(prefix.length).trim();
+        break;
+      }
+    }
+
+    // Remove any remaining context prefixes that might have been translated
+    const contextPrefixes = {
+      'sales_feedback': ['Müügi tagasiside:', 'Comentarios de ventas:', 'Отзыв о продажах:'],
+      'improvement_suggestion': ['Parandamise soovitus:', 'Sugerencia de mejora:', 'Предложение по улучшению:'],
+      'strength_comment': ['Tugevuse kommentaar:', 'Comentario de fortaleza:', 'Комментарий о сильных сторонах:'],
+      'stage_rating': ['Müügi etapi hinnangu tagasiside:', 'Comentarios de calificación de etapa de ventas:', 'Отзыв о рейтинге этапа продаж:'],
+      'personalityInsights': ['Isiksuse analüüs:', 'Análisis de personalidad:', 'Анализ личности:'],
+      'communicationStyle': ['Suhtlusstiili analüüs:', 'Análisis de estilo de comunicación:', 'Анализ стиля общения:'],
+      'recommendedFocus': ['Soovitatav fookuse ala:', 'Área de enfoque recomendada:', 'Рекомендуемая область фокуса:'],
+      'nextSteps': ['Järgmine samm:', 'Siguiente paso:', 'Следующий шаг:']
+    };
+
+    const contextPrefixesToRemove = contextPrefixes[context] || [];
+    for (const prefix of contextPrefixesToRemove) {
+      if (translation.startsWith(prefix)) {
+        translation = translation.substring(prefix.length).trim();
+        break;
+      }
+    }
+
+    return translation;
   }
 
   /**

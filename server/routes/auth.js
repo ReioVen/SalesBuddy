@@ -45,8 +45,8 @@ router.post('/register', [
 
     const { email, password, firstName, lastName, company } = req.body;
 
-    // Check if user already exists
-    const existingUser = await User.findOne({ email });
+    // Check if user already exists (case-insensitive)
+    const existingUser = await User.findByEmail(email);
     if (existingUser) {
       return res.status(400).json({ error: 'Email already registered' });
     }
@@ -97,7 +97,7 @@ router.post('/register', [
 
 // Login user
 router.post('/login', [
-  body('email').isEmail().normalizeEmail(),
+  body('email').isEmail(),
   body('password').notEmpty()
 ], async (req, res) => {
   try {
@@ -108,14 +108,56 @@ router.post('/login', [
 
     const { email, password } = req.body;
 
-    // Find user
-    const user = await User.findOne({ email });
+    // Find user (case-insensitive)
+    const user = await User.findByEmail(email);
+    
     if (!user) {
+      console.log('User not found for email:', email);
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
-    // Check password
+    // Check if user needs password setup
+    if (user.needsPasswordSetup) {
+      // For users who need password setup, allow login with temporary password
+      const isPasswordValid = await user.comparePassword(password);
+      
+      if (!isPasswordValid) {
+        return res.status(401).json({ error: 'Incorrect email or password' });
+      }
+
+      // Generate token for password setup flow
+      const token = generateToken(user._id);
+      setAuthCookie(res, token);
+
+      res.json({
+        message: 'Login successful - password setup required',
+        user: {
+          id: user._id,
+          email: user.email,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          company: user.company,
+          companyPermissions: user.companyPermissions,
+          companyId: user.companyId,
+          role: user.role,
+          teamId: user.teamId,
+          isCompanyAdmin: user.isCompanyAdmin,
+          isTeamLeader: user.isTeamLeader,
+          isSuperAdmin: user.isSuperAdmin,
+          isAdmin: user.isAdmin,
+          adminPermissions: user.adminPermissions,
+          subscription: user.subscription,
+          usage: user.usage,
+          settings: user.settings,
+          needsPasswordSetup: user.needsPasswordSetup
+        }
+      });
+      return;
+    }
+
+    // Regular login for users who don't need password setup
     const isPasswordValid = await user.comparePassword(password);
+    
     if (!isPasswordValid) {
       return res.status(401).json({ error: 'Incorrect email or password' });
     }
@@ -147,7 +189,8 @@ router.post('/login', [
         adminPermissions: user.adminPermissions,
         subscription: user.subscription,
         usage: user.usage,
-        settings: user.settings
+        settings: user.settings,
+        needsPasswordSetup: user.needsPasswordSetup
       }
     });
   } catch (error) {
@@ -179,6 +222,7 @@ router.get('/me', authenticateToken, async (req, res) => {
         usage: req.user.usage,
         settings: req.user.settings,
         isEmailVerified: req.user.isEmailVerified,
+        needsPasswordSetup: req.user.needsPasswordSetup,
         lastLogin: req.user.lastLogin,
         createdAt: req.user.createdAt
       }
@@ -288,6 +332,52 @@ router.put('/change-password', authenticateToken, [
   } catch (error) {
     console.error('Password change error:', error);
     res.status(500).json({ error: 'Password change failed' });
+  }
+});
+
+// Setup password for new company users
+router.post('/setup-password', authenticateToken, [
+  body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
+  body('confirmPassword').custom((value, { req }) => {
+    if (value !== req.body.password) {
+      throw new Error('Passwords do not match');
+    }
+    return true;
+  })
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { password } = req.body;
+
+    // Check if user needs password setup
+    if (!req.user.needsPasswordSetup) {
+      return res.status(400).json({ error: 'Password setup not required' });
+    }
+
+    // Update user's password and clear the setup flag
+    req.user.password = password;
+    req.user.needsPasswordSetup = false;
+    await req.user.save();
+
+    res.json({ 
+      message: 'Password set up successfully',
+      user: {
+        id: req.user._id,
+        email: req.user.email,
+        firstName: req.user.firstName,
+        lastName: req.user.lastName,
+        companyId: req.user.companyId,
+        role: req.user.role,
+        needsPasswordSetup: false
+      }
+    });
+  } catch (error) {
+    console.error('Password setup error:', error);
+    res.status(500).json({ error: 'Password setup failed' });
   }
 });
 

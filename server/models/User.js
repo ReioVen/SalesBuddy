@@ -137,6 +137,19 @@ const userSchema = new mongoose.Schema({
     lastDailyResetDate: {
       type: Date,
       default: Date.now
+    },
+    // Summary generation tracking
+    summariesGenerated: {
+      type: Number,
+      default: 0
+    },
+    summariesGeneratedToday: {
+      type: Number,
+      default: 0
+    },
+    lastSummaryResetDate: {
+      type: Date,
+      default: Date.now
     }
   },
   settings: {
@@ -149,6 +162,10 @@ const userSchema = new mongoose.Schema({
     }
   },
   isEmailVerified: {
+    type: Boolean,
+    default: false
+  },
+  needsPasswordSetup: {
     type: Boolean,
     default: false
   },
@@ -181,6 +198,11 @@ userSchema.pre('save', async function(next) {
 // Compare password method
 userSchema.methods.comparePassword = async function(candidatePassword) {
   return bcrypt.compare(candidatePassword, this.password);
+};
+
+// Static method to find user by email (case-insensitive)
+userSchema.statics.findByEmail = function(email) {
+  return this.findOne({ email: email.toLowerCase() });
 };
 
 // Check if user has active subscription
@@ -264,6 +286,76 @@ userSchema.methods.incrementAIUsage = function() {
   return this.save();
 };
 
+// Check if user can generate a summary (5 per day limit)
+userSchema.methods.canGenerateSummary = function() {
+  const now = new Date();
+  const lastSummaryReset = new Date(this.usage.lastSummaryResetDate);
+  
+  // Check if it's a new day
+  const isNewDay = now.getDate() !== lastSummaryReset.getDate() || 
+                   now.getMonth() !== lastSummaryReset.getMonth() || 
+                   now.getFullYear() !== lastSummaryReset.getFullYear();
+  
+  // If it's a new day, reset the daily count
+  if (isNewDay) {
+    this.usage.summariesGeneratedToday = 0;
+    this.usage.lastSummaryResetDate = now;
+    this.save(); // Save the reset
+  }
+  
+  // Check if user has reached the daily limit (5 summaries per day)
+  return this.usage.summariesGeneratedToday < 5;
+};
+
+// Increment summary generation count
+userSchema.methods.incrementSummaryUsage = function() {
+  const now = new Date();
+  const lastSummaryReset = new Date(this.usage.lastSummaryResetDate);
+  
+  // Check if it's a new day
+  const isNewDay = now.getDate() !== lastSummaryReset.getDate() || 
+                   now.getMonth() !== lastSummaryReset.getMonth() || 
+                   now.getFullYear() !== lastSummaryReset.getFullYear();
+  
+  // If it's a new day, reset the daily count
+  if (isNewDay) {
+    this.usage.summariesGeneratedToday = 0;
+    this.usage.lastSummaryResetDate = now;
+  }
+  
+  // Increment both total and daily counts
+  this.usage.summariesGenerated += 1;
+  this.usage.summariesGeneratedToday += 1;
+  
+  return this.save();
+};
+
+// Get summary generation status
+userSchema.methods.getSummaryStatus = function() {
+  const now = new Date();
+  const lastSummaryReset = new Date(this.usage.lastSummaryResetDate);
+  
+  // Check if it's a new day
+  const isNewDay = now.getDate() !== lastSummaryReset.getDate() || 
+                   now.getMonth() !== lastSummaryReset.getMonth() || 
+                   now.getFullYear() !== lastSummaryReset.getFullYear();
+  
+  // If it's a new day, reset the daily count
+  if (isNewDay) {
+    this.usage.summariesGeneratedToday = 0;
+    this.usage.lastSummaryResetDate = now;
+    this.save(); // Save the reset
+  }
+  
+  return {
+    summariesGeneratedToday: this.usage.summariesGeneratedToday,
+    totalSummariesGenerated: this.usage.summariesGenerated,
+    dailyLimit: 5,
+    remainingToday: Math.max(0, 5 - this.usage.summariesGeneratedToday),
+    canGenerate: this.canGenerateSummary()
+  };
+};
+
 // Get subscription limits
 userSchema.methods.getSubscriptionLimits = function() {
   const limits = {
@@ -313,12 +405,8 @@ userSchema.methods.isTeamLeaderUser = function() {
   return this.role === 'company_team_leader' || this.isTeamLeader;
 };
 
-userSchema.methods.canManageUsers = function() {
-  return this.role === 'company_admin';
-};
-
 userSchema.methods.canCreateTeams = function() {
-  return this.role === 'company_admin';
+  return this.role === 'company_admin' || this.isCompanyAdmin;
 };
 
 userSchema.methods.canManageOwnTeam = function() {
@@ -326,13 +414,18 @@ userSchema.methods.canManageOwnTeam = function() {
 };
 
 userSchema.methods.canCreateTeamLeaders = function() {
-  return this.role === 'company_admin';
+  return this.role === 'company_admin' || this.isCompanyAdmin;
+};
+
+// Check if user can manage users in their company
+userSchema.methods.canManageUsers = function() {
+  return this.role === 'company_admin' || this.isCompanyAdmin;
 };
 
 // Check if user can edit/delete a specific user
 userSchema.methods.canEditUser = function(targetUser) {
   // Only company admins can edit users
-  if (this.role !== 'company_admin') {
+  if (!(this.role === 'company_admin' || this.isCompanyAdmin)) {
     return false;
   }
   
@@ -343,7 +436,7 @@ userSchema.methods.canEditUser = function(targetUser) {
 // Check if user can delete a specific user
 userSchema.methods.canDeleteUser = function(targetUser) {
   // Only company admins can delete users
-  if (this.role !== 'company_admin') {
+  if (!(this.role === 'company_admin' || this.isCompanyAdmin)) {
     return false;
   }
   
@@ -361,7 +454,7 @@ userSchema.methods.canManageTeamMembers = function(targetUser) {
   }
   
   // Company admins can manage all users in their company
-  if (this.role === 'company_admin') {
+  if (this.role === 'company_admin' || this.isCompanyAdmin) {
     return targetUser.companyId && targetUser.companyId.equals(this.companyId);
   }
   

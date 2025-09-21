@@ -287,8 +287,8 @@ const SubscriptionManagement: React.FC<SubscriptionManagementProps> = ({ onClose
             <div className="flex items-start gap-2">
               <CheckCircle className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
               <div className="text-sm text-green-800">
-                <p className="font-medium">Enterprise Subscription</p>
-                <p>Your enterprise subscription is fully managed by your company. All features are included with 50 daily AI conversations.</p>
+                <p className="font-medium">{t('enterpriseSubscription')}</p>
+                <p>{t('enterpriseSubscriptionDescription')}</p>
               </div>
             </div>
           </div>

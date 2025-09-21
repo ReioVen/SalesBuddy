@@ -40,6 +40,7 @@ interface User {
     salesRole?: string;
     experienceLevel?: string;
   };
+  needsPasswordSetup?: boolean;
 }
 
 interface AuthContextType {
@@ -95,7 +96,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       
       try {
         const response = await axios.get('/api/auth/me');
-        setUser(response.data.user);
+        const user = response.data.user;
+        setUser(user);
+        
+        // Password setup is now handled by a modal in App.tsx
       } catch (error) {
         setUser(null);
       }
@@ -103,7 +107,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     };
 
     checkAuth();
-  }, []);
+  }, []); // Remove navigate dependency to prevent infinite redirects
 
   const login = async (email: string, password: string) => {
     try {
@@ -111,6 +115,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const { user } = response.data;
       setUser(user);
       
+      // Password setup is now handled by a modal in App.tsx
       toast.success('Login successful!');
       return { success: true } as const;
     } catch (error: any) {

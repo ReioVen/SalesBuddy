@@ -8,10 +8,20 @@ const { authenticateToken } = require('../middleware/auth');
 
 const router = express.Router();
 
+// Generate a secure temporary password
+const generateTempPassword = () => {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let result = '';
+  for (let i = 0; i < 12; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
+};
+
 // Middleware to check if user is company admin
 const requireCompanyAdmin = async (req, res, next) => {
   try {
-    if (req.user.role !== 'company_admin') {
+    if (!(req.user.role === 'company_admin' || req.user.isCompanyAdmin)) {
       return res.status(403).json({ error: 'Company admin access required' });
     }
     next();
@@ -104,12 +114,16 @@ router.get('/details', authenticateToken, async (req, res) => {
   try {
     // If user is super admin, return all companies
     if (req.user.isSuperAdminUser()) {
-      const companies = await Company.find({})
-        .populate('admin', 'firstName lastName email')
-        .populate('users', 'firstName lastName email role teamId isTeamLeader isCompanyAdmin isAdmin isSuperAdmin createdAt companyJoinedAt')
-        .populate('teams.members', 'firstName lastName email')
-        .populate('teams.teamLeader', 'firstName lastName email')
-        .sort({ createdAt: -1 });
+    const companies = await Company.find({})
+      .populate('admin', 'firstName lastName email')
+      .populate({
+        path: 'users',
+        select: 'firstName lastName email role teamId isTeamLeader isCompanyAdmin isAdmin isSuperAdmin createdAt companyJoinedAt',
+        match: { role: { $ne: 'super_admin' }, isSuperAdmin: { $ne: true } }
+      })
+      .populate('teams.members', 'firstName lastName email')
+      .populate('teams.teamLeader', 'firstName lastName email')
+      .sort({ createdAt: -1 });
 
       return res.json({
         companies: companies.map(company => ({
@@ -137,7 +151,11 @@ router.get('/details', authenticateToken, async (req, res) => {
 
     const company = await Company.findById(req.user.companyId)
       .populate('admin', 'firstName lastName email')
-      .populate('users', 'firstName lastName email role teamId isTeamLeader isCompanyAdmin isAdmin isSuperAdmin createdAt companyJoinedAt')
+      .populate({
+        path: 'users',
+        select: 'firstName lastName email role teamId isTeamLeader isCompanyAdmin isAdmin isSuperAdmin createdAt companyJoinedAt',
+        match: { role: { $ne: 'super_admin' }, isSuperAdmin: { $ne: true } }
+      })
       .populate('teams.members', 'firstName lastName email')
       .populate('teams.teamLeader', 'firstName lastName email');
 
@@ -186,7 +204,11 @@ router.get('/:id', authenticateToken, async (req, res) => {
 
     const company = await Company.findById(companyId)
       .populate('admin', 'firstName lastName email')
-      .populate('users', 'firstName lastName email role isCompanyAdmin isTeamLeader teamId createdAt')
+      .populate({
+        path: 'users',
+        select: 'firstName lastName email role isCompanyAdmin isTeamLeader teamId createdAt',
+        match: { role: { $ne: 'super_admin' }, isSuperAdmin: { $ne: true } }
+      })
       .populate('teams.members', 'firstName lastName email')
       .populate('teams.teamLeader', 'firstName lastName email');
 
@@ -326,12 +348,12 @@ router.post('/users', authenticateToken, canManageUsers, [
     }
 
     // Check if company can add more users
-    if (!company.canAddUser()) {
+    if (!(await company.canAddUser())) {
       return res.status(400).json({ error: 'Company user limit reached' });
     }
 
-    // Check if user already exists
-    const existingUser = await User.findOne({ email });
+    // Check if user already exists (case-insensitive)
+    const existingUser = await User.findByEmail(email);
     if (existingUser) {
       return res.status(400).json({ error: 'Email already registered' });
     }
@@ -348,10 +370,12 @@ router.post('/users', authenticateToken, canManageUsers, [
       }
     }
 
+    // Use the password provided by the admin as the temporary password
+    
     // Create new user with enterprise plan
     const user = new User({
       email,
-      password,
+      password: password, // Use the password provided by the admin
       firstName,
       lastName,
       companyId: company._id,
@@ -359,6 +383,7 @@ router.post('/users', authenticateToken, canManageUsers, [
       role,
       teamId: team ? team._id : null,
       isTeamLeader: role === 'company_team_leader',
+      needsPasswordSetup: true, // Flag user to set up their password on first login
       subscription: {
         plan: 'enterprise',
         status: 'active',
@@ -413,7 +438,11 @@ router.post('/users', authenticateToken, canManageUsers, [
 router.get('/users', authenticateToken, canManageUsers, async (req, res) => {
   try {
     const company = await Company.findById(req.user.companyId)
-      .populate('users', 'firstName lastName email role teamId isTeamLeader isCompanyAdmin isAdmin isSuperAdmin createdAt companyJoinedAt lastLogin')
+      .populate({
+        path: 'users',
+        select: 'firstName lastName email role teamId isTeamLeader isCompanyAdmin isAdmin isSuperAdmin createdAt companyJoinedAt lastLogin',
+        match: { role: { $ne: 'super_admin' }, isSuperAdmin: { $ne: true } }
+      })
       .populate('teams.members', 'firstName lastName email')
       .populate('teams.teamLeader', 'firstName lastName email');
 
@@ -669,6 +698,16 @@ router.delete('/users/:userId', authenticateToken, requireCompanyAdmin, async (r
       return res.status(400).json({ error: 'Cannot remove company admin' });
     }
 
+    // Don't allow removing any company admin account
+    if (user.isCompanyAdmin || user.role === 'company_admin') {
+      return res.status(400).json({ error: 'Cannot remove company admin accounts' });
+    }
+
+    // Don't allow users to delete themselves
+    if (user._id.equals(req.user._id)) {
+      return res.status(400).json({ error: 'You cannot delete your own account' });
+    }
+
     // Remove user from company
     await company.removeUser(userId);
 
@@ -728,8 +767,8 @@ router.post('/users/add', authenticateToken, requireCompanyAdmin, [
       return res.status(403).json({ error: 'Access denied to this company' });
     }
 
-    // Check if user already exists
-    const existingUser = await User.findOne({ email });
+    // Check if user already exists (case-insensitive)
+    const existingUser = await User.findByEmail(email);
     if (existingUser) {
       return res.status(400).json({ error: 'Email already registered' });
     }
@@ -740,7 +779,7 @@ router.post('/users/add', authenticateToken, requireCompanyAdmin, [
       return res.status(404).json({ error: 'Company not found' });
     }
 
-    if (!company.canAddUser()) {
+    if (!(await company.canAddUser())) {
       return res.status(400).json({ error: 'Company has reached maximum user limit' });
     }
 
@@ -753,10 +792,13 @@ router.post('/users/add', authenticateToken, requireCompanyAdmin, [
       }
     }
 
+    // Use the password provided by the admin as the temporary password
+    console.log('Using admin-provided password for', email);
+    
     // Create new user with enterprise plan
     const newUser = new User({
       email,
-      password,
+      password: password, // Use the password provided by the admin
       firstName,
       lastName,
       role,
@@ -765,6 +807,7 @@ router.post('/users/add', authenticateToken, requireCompanyAdmin, [
       teamId: teamId || null,
       isCompanyAdmin: false,
       isTeamLeader: role === 'company_team_leader',
+      needsPasswordSetup: true, // Flag user to set up their password on first login
       subscription: {
         plan: 'enterprise',
         status: 'active',
@@ -921,7 +964,7 @@ router.put('/users/:userId', authenticateToken, requireCompanyAdmin, [
 
     // Check if email is being changed and if it's already taken
     if (email !== user.email) {
-      const existingUser = await User.findOne({ email, _id: { $ne: userId } });
+      const existingUser = await User.findOne({ email: email.toLowerCase(), _id: { $ne: userId } });
       if (existingUser) {
         return res.status(400).json({ error: 'Email already registered' });
       }
@@ -1317,7 +1360,11 @@ router.get('/leaderboard', authenticateToken, async (req, res) => {
     }
 
     const company = await Company.findById(req.user.companyId)
-      .populate('users', 'firstName lastName email role teamId isTeamLeader isCompanyAdmin');
+      .populate({
+        path: 'users',
+        select: 'firstName lastName email role teamId isTeamLeader isCompanyAdmin',
+        match: { role: { $ne: 'super_admin' }, isSuperAdmin: { $ne: true } }
+      });
     
     if (!company) {
       return res.status(404).json({ error: 'Company not found' });

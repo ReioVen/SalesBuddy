@@ -1,13 +1,23 @@
 const express = require('express');
 const { body, validationResult } = require('express-validator');
+const rateLimit = require('express-rate-limit');
 const User = require('../models/User');
 const PasswordReset = require('../models/PasswordReset');
 const { sendPasswordResetEmail, testEmailConnection } = require('../services/emailService');
 
 const router = express.Router();
 
+// Rate limiting for password reset requests (5 requests per minute per IP)
+const passwordResetLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 5, // limit each IP to 5 requests per windowMs
+  message: 'Too many password reset requests. Please try again in a minute.',
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 // Request password reset
-router.post('/forgot-password', [
+router.post('/forgot-password', passwordResetLimiter, [
   body('email').isEmail().withMessage('Please enter a valid email').normalizeEmail()
 ], async (req, res) => {
   try {
@@ -18,8 +28,8 @@ router.post('/forgot-password', [
 
     const { email } = req.body;
 
-    // Check if user exists
-    const user = await User.findOne({ email });
+    // Check if user exists (case-insensitive)
+    const user = await User.findByEmail(email);
     if (!user) {
       // Don't reveal if email exists or not for security
       return res.json({
@@ -29,6 +39,7 @@ router.post('/forgot-password', [
 
     // Create password reset request
     const resetRequest = await PasswordReset.createResetRequest(email);
+    console.log('Created password reset request for:', email, 'Token:', resetRequest.token ? `${resetRequest.token.substring(0, 8)}...` : 'null');
 
     // Send reset email
     const emailResult = await sendPasswordResetEmail(
@@ -57,12 +68,14 @@ router.post('/forgot-password', [
 router.get('/verify-reset-token/:token', async (req, res) => {
   try {
     const { token } = req.params;
+    console.log('Verifying reset token:', token ? `${token.substring(0, 8)}...` : 'null');
 
     if (!token) {
       return res.status(400).json({ error: 'Reset token is required' });
     }
 
-    const verification = await PasswordReset.verifyAndConsumeToken(token);
+    const verification = await PasswordReset.verifyToken(token);
+    console.log('Token verification result:', { valid: verification.valid, error: verification.error });
 
     if (!verification.valid) {
       return res.status(400).json({ error: verification.error });
@@ -104,8 +117,8 @@ router.post('/reset-password', [
       return res.status(400).json({ error: verification.error });
     }
 
-    // Find user
-    const user = await User.findOne({ email: verification.email });
+    // Find user (case-insensitive)
+    const user = await User.findByEmail(verification.email);
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
@@ -141,7 +154,7 @@ router.post('/check-email', [
 
     const { email } = req.body;
 
-    const user = await User.findOne({ email });
+    const user = await User.findByEmail(email);
     
     // Don't reveal if email exists for security
     res.json({

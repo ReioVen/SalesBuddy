@@ -23,6 +23,17 @@ router.get('/', authenticateToken, async (req, res) => {
   }
 });
 
+// Get summary generation status for the current user
+router.get('/status', authenticateToken, async (req, res) => {
+  try {
+    const summaryStatus = req.user.getSummaryStatus();
+    res.json({ summaryStatus });
+  } catch (error) {
+    console.error('Error getting summary status:', error);
+    res.status(500).json({ error: 'Failed to get summary status' });
+  }
+});
+
 // Get a specific conversation summary
 router.get('/:summaryId', authenticateToken, async (req, res) => {
   try {
@@ -116,6 +127,15 @@ router.post('/generate', authenticateToken, async (req, res) => {
   try {
     const userId = req.user._id;
     
+    // Check if user can generate a summary (5 per day limit)
+    if (!req.user.canGenerateSummary()) {
+      const summaryStatus = req.user.getSummaryStatus();
+      return res.status(429).json({ 
+        error: 'Daily summary limit reached. You can generate up to 5 summaries per day.',
+        summaryStatus
+      });
+    }
+    
     // Get the latest summary number
     const latestSummary = await ConversationSummary.findOne({ userId })
       .sort({ summaryNumber: -1 });
@@ -156,6 +176,9 @@ router.post('/generate', authenticateToken, async (req, res) => {
     });
 
     await summary.save();
+    
+    // Increment user's summary generation count
+    await req.user.incrementSummaryUsage();
     
     // Populate the summary with conversation details
     await summary.populate('exampleConversations.conversationId', 'title createdAt');

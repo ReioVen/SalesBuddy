@@ -128,7 +128,7 @@ const Home: React.FC = () => {
 
   return (
     <div className="min-h-screen">
-      <style jsx>{`
+      <style>{`
         .terms-html-content h3 {
           font-size: 1.125rem;
           font-weight: 600;

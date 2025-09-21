@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
+import { useTheme } from '../contexts/ThemeContext.tsx';
 
 const ResetPassword: React.FC = () => {
+  const { actualTheme } = useTheme();
   const [searchParams] = useSearchParams();
   const [token, setToken] = useState('');
   const [email, setEmail] = useState('');
@@ -87,14 +89,14 @@ const ResetPassword: React.FC = () => {
 
   if (verifying) {
     return (
-      <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+      <div className="min-h-screen bg-gray-50 dark:bg-dark-900 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
         <div className="sm:mx-auto sm:w-full sm:max-w-md">
           <div className="flex justify-center">
             <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-tr from-blue-600 to-cyan-400 text-white text-xl font-bold">
               SB
             </div>
           </div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-white">
             Verifying reset link...
           </h2>
           <div className="mt-8 flex justify-center">
@@ -107,21 +109,21 @@ const ResetPassword: React.FC = () => {
 
   if (message) {
     return (
-      <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+      <div className="min-h-screen bg-gray-50 dark:bg-dark-900 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
         <div className="sm:mx-auto sm:w-full sm:max-w-md">
           <div className="flex justify-center">
             <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-tr from-blue-600 to-cyan-400 text-white text-xl font-bold">
               SB
             </div>
           </div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-white">
             Password Reset Successful
           </h2>
-          <div className="mt-8 bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+          <div className="mt-8 bg-white dark:bg-dark-800 py-8 px-4 shadow sm:rounded-lg sm:px-10">
             <div className="text-center">
-              <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100 mb-4">
+              <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100 dark:bg-green-900 mb-4">
                 <svg
-                  className="h-6 w-6 text-green-600"
+                  className="h-6 w-6 text-green-600 dark:text-green-400"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -134,10 +136,10 @@ const ResetPassword: React.FC = () => {
                   />
                 </svg>
               </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
                 All set!
               </h3>
-              <p className="text-sm text-gray-600 mb-6">
+              <p className="text-sm text-gray-600 dark:text-gray-300 mb-6">
                 {message}
               </p>
               <Link
@@ -154,28 +156,28 @@ const ResetPassword: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-50 dark:bg-dark-900 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="flex justify-center">
           <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-tr from-blue-600 to-cyan-400 text-white text-xl font-bold">
             SB
           </div>
         </div>
-        <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+        <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-white">
           Reset your password
         </h2>
-        <p className="mt-2 text-center text-sm text-gray-600">
+        <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-300">
           Enter your new password below
         </p>
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+        <div className="bg-white dark:bg-dark-800 py-8 px-4 shadow sm:rounded-lg sm:px-10">
           {error ? (
             <div className="text-center">
-              <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
+              <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 dark:bg-red-900 mb-4">
                 <svg
-                  className="h-6 w-6 text-red-600"
+                  className="h-6 w-6 text-red-600 dark:text-red-400"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -188,10 +190,10 @@ const ResetPassword: React.FC = () => {
                   />
                 </svg>
               </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
                 Reset Link Invalid
               </h3>
-              <p className="text-sm text-gray-600 mb-6">
+              <p className="text-sm text-gray-600 dark:text-gray-300 mb-6">
                 {error}
               </p>
               <Link
@@ -204,7 +206,7 @@ const ResetPassword: React.FC = () => {
           ) : (
             <form className="space-y-6" onSubmit={handleSubmit}>
               <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                   Email address
                 </label>
                 <div className="mt-1">
@@ -214,13 +216,13 @@ const ResetPassword: React.FC = () => {
                     type="email"
                     value={email}
                     disabled
-                    className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-500 sm:text-sm"
+                    className="appearance-none block w-full px-3 py-2 border border-gray-300 dark:border-dark-600 rounded-md bg-gray-50 dark:bg-dark-700 text-gray-500 dark:text-gray-400 sm:text-sm"
                   />
                 </div>
               </div>
 
               <div>
-                <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700">
+                <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                   New password
                 </label>
                 <div className="mt-1">
@@ -232,17 +234,17 @@ const ResetPassword: React.FC = () => {
                     required
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
-                    className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    className="appearance-none block w-full px-3 py-2 border border-gray-300 dark:border-dark-600 rounded-md placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-dark-700 text-gray-900 dark:text-white"
                     placeholder="Enter your new password"
                   />
                 </div>
-                <p className="mt-1 text-xs text-gray-500">
+                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                   Password must be 8-64 characters with uppercase, lowercase, number, and special character.
                 </p>
               </div>
 
               <div>
-                <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
+                <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                   Confirm new password
                 </label>
                 <div className="mt-1">
@@ -254,18 +256,18 @@ const ResetPassword: React.FC = () => {
                     required
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    className="appearance-none block w-full px-3 py-2 border border-gray-300 dark:border-dark-600 rounded-md placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-dark-700 text-gray-900 dark:text-white"
                     placeholder="Confirm your new password"
                   />
                 </div>
               </div>
 
               {error && (
-                <div className="rounded-md bg-red-50 p-4">
+                <div className="rounded-md bg-red-50 dark:bg-red-900/20 p-4">
                   <div className="flex">
                     <div className="flex-shrink-0">
                       <svg
-                        className="h-5 w-5 text-red-400"
+                        className="h-5 w-5 text-red-400 dark:text-red-300"
                         viewBox="0 0 20 20"
                         fill="currentColor"
                       >
@@ -277,8 +279,8 @@ const ResetPassword: React.FC = () => {
                       </svg>
                     </div>
                     <div className="ml-3">
-                      <h3 className="text-sm font-medium text-red-800">Error</h3>
-                      <div className="mt-2 text-sm text-red-700">
+                      <h3 className="text-sm font-medium text-red-800 dark:text-red-200">Error</h3>
+                      <div className="mt-2 text-sm text-red-700 dark:text-red-300">
                         <p>{error}</p>
                       </div>
                     </div>
@@ -299,7 +301,7 @@ const ResetPassword: React.FC = () => {
               <div className="text-center">
                 <Link
                   to="/login"
-                  className="text-sm text-blue-600 hover:text-blue-500"
+                  className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300"
                 >
                   Back to login
                 </Link>

@@ -2,6 +2,14 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Ensure body and html have proper dark mode background and prevent horizontal scroll */
+html, body {
+  @apply bg-gray-50 dark:bg-dark-900;
+  width: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
 /* Simple utility classes used in pages */
 .btn-primary {
   @apply bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200;

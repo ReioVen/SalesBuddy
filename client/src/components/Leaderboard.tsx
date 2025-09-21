@@ -35,15 +35,25 @@ const Leaderboard: React.FC<LeaderboardProps> = ({ companyId: propCompanyId }) =
   const [leaderboardData, setLeaderboardData] = useState<LeaderboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<number>(0);
+  const [isVisible, setIsVisible] = useState(false);
 
   // Use prop companyId or fall back to user's companyId
   const companyId = propCompanyId || user?.companyId;
 
-  const fetchLeaderboard = async () => {
+  const fetchLeaderboard = async (isManual = false) => {
     if (!companyId) {
       setError('No company ID available');
       setLoading(false);
       return;
+    }
+
+    // Check if manual refresh is on cooldown
+    if (isManual) {
+      const now = Date.now();
+      if (now - lastRefresh < 5000) {
+        return; // Still on cooldown
+      }
     }
 
     try {
@@ -57,6 +67,7 @@ const Leaderboard: React.FC<LeaderboardProps> = ({ companyId: propCompanyId }) =
       if (response.ok) {
         const data = await response.json();
         setLeaderboardData(data);
+        setLastRefresh(Date.now());
       } else {
         const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
         setError(errorData.error || 'Failed to fetch leaderboard data');
@@ -75,6 +86,34 @@ const Leaderboard: React.FC<LeaderboardProps> = ({ companyId: propCompanyId }) =
       setLoading(false);
     }
   }, [companyId, user, propCompanyId]);
+
+  // Visibility detection - only refresh when component is visible
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      setIsVisible(!document.hidden);
+    };
+
+    // Check initial visibility
+    setIsVisible(!document.hidden);
+    
+    // Listen for visibility changes
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, []);
+
+  // Auto-refresh only when visible and every 30 seconds (less frequent)
+  useEffect(() => {
+    if (!companyId || !isVisible) return;
+
+    const interval = setInterval(() => {
+      fetchLeaderboard();
+    }, 30000); // 30 seconds instead of 5
+    
+    return () => clearInterval(interval);
+  }, [companyId, isVisible]);
 
   const getRankIcon = (rank: number) => {
     switch (rank) {
@@ -148,8 +187,10 @@ const Leaderboard: React.FC<LeaderboardProps> = ({ companyId: propCompanyId }) =
             </h3>
              <div className="flex gap-2">
                <button 
-                 onClick={fetchLeaderboard}
-                 className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
+                 onClick={() => fetchLeaderboard(true)}
+                 disabled={Date.now() - lastRefresh < 5000}
+                 className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 disabled:text-gray-400 dark:disabled:text-gray-600 disabled:cursor-not-allowed transition-colors"
+                 title={Date.now() - lastRefresh < 5000 ? 'Please wait 5 seconds between refreshes' : 'Refresh leaderboard'}
                >
                  <TrendingUp className="w-4 h-4" />
                </button>
@@ -180,9 +221,10 @@ const Leaderboard: React.FC<LeaderboardProps> = ({ companyId: propCompanyId }) =
           </h3>
            <div className="flex gap-2">
              <button 
-               onClick={fetchLeaderboard}
-               className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors"
-               title={t('refresh') || 'Refresh'}
+               onClick={() => fetchLeaderboard(true)}
+               disabled={Date.now() - lastRefresh < 5000}
+               className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 disabled:text-gray-400 dark:disabled:text-gray-600 disabled:cursor-not-allowed transition-colors"
+               title={Date.now() - lastRefresh < 5000 ? 'Please wait 5 seconds between refreshes' : 'Refresh leaderboard'}
              >
                <TrendingUp className="w-4 h-4" />
              </button>

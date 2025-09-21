@@ -3,8 +3,8 @@ import { useAuth } from '../contexts/AuthContext.tsx';
 import { useTranslation } from '../hooks/useTranslation.ts';
 import AddUserToCompany from './AddUserToCompany.tsx';
 import CreateTeam from './CreateTeam.tsx';
-import EditUser from './EditUser.tsx';
 import EditTeam from './EditTeam.tsx';
+import EditUser from './EditUser.tsx';
 import TeamMemberManagement from './TeamMemberManagement.tsx';
 import UserDetailModal from './UserDetailModal.tsx';
 import Leaderboard from './Leaderboard.tsx';
@@ -37,7 +37,7 @@ interface Team {
 }
 
 interface Company {
-  _id: string;
+  id: string;
   name: string;
   companyId: string;
   description?: string;
@@ -61,10 +61,11 @@ const CompanyManagement: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'teams' | 'leaderboard'>('overview');
   const [showAddUser, setShowAddUser] = useState(false);
   const [showCreateTeam, setShowCreateTeam] = useState(false);
-  const [editingUser, setEditingUser] = useState<CompanyUser | null>(null);
   const [editingTeam, setEditingTeam] = useState<Team | null>(null);
+  const [editingUser, setEditingUser] = useState<CompanyUser | null>(null);
   const [managingTeam, setManagingTeam] = useState<Team | null>(null);
   const [viewingUser, setViewingUser] = useState<CompanyUser | null>(null);
+  const [userSearchTerm, setUserSearchTerm] = useState('');
   const [showDeleteCompany, setShowDeleteCompany] = useState(false);
   const [deleteConfirmation, setDeleteConfirmation] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
@@ -109,12 +110,13 @@ const CompanyManagement: React.FC = () => {
   }, [user, fetchCompanyData]);
 
   // Handle user operations
-  const handleEditUser = (user: CompanyUser) => {
-    setEditingUser(user);
-  };
 
   const handleViewUser = (user: CompanyUser) => {
     setViewingUser(user);
+  };
+
+  const handleEditUser = (user: CompanyUser) => {
+    setEditingUser(user);
   };
 
   const handleDeleteUser = async (userId: string) => {
@@ -225,7 +227,7 @@ const CompanyManagement: React.FC = () => {
   }
 
   return (
-    <div className="max-w-7xl mx-auto p-6">
+    <div className="max-w-7xl mx-auto p-6 bg-gray-50 dark:bg-dark-900">
       <div className="bg-white dark:bg-dark-800 rounded-lg shadow-md">
         {/* Header */}
         <div className="border-b border-gray-200 dark:border-dark-700 px-6 py-4">
@@ -256,7 +258,7 @@ const CompanyManagement: React.FC = () => {
                 >
                   {companies.map((comp) => (
                     <option key={comp.id} value={comp.id}>
-                      {comp.name} ({comp.users.length} users)
+                      {comp.name} ({comp.users.filter(user => user.role !== 'super_admin' && !user.isSuperAdmin).length} users)
                     </option>
                   ))}
                 </select>
@@ -309,7 +311,7 @@ const CompanyManagement: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
                   <h3 className="text-lg font-semibold text-blue-900 dark:text-blue-200">{t('totalUsers')}</h3>
-                  <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">{company.users.length}</p>
+                  <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">{company.users.filter(user => user.role !== 'super_admin' && !user.isSuperAdmin).length}</p>
                   <p className="text-sm text-blue-700 dark:text-blue-300">{t('max')}: {company.subscription.maxUsers}</p>
                 </div>
                 <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4">
@@ -344,7 +346,7 @@ const CompanyManagement: React.FC = () => {
                       </tr>
                     </thead>
                     <tbody className="bg-white dark:bg-dark-800 divide-y divide-gray-200 dark:divide-dark-600">
-                      {company.users.slice(0, 5).map((user) => (
+                      {company.users.filter(user => user.role !== 'super_admin' && !user.isSuperAdmin).slice(0, 5).map((user) => (
                         <tr key={user._id}>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="text-sm font-medium text-gray-900 dark:text-white">
@@ -412,21 +414,37 @@ const CompanyManagement: React.FC = () => {
           {activeTab === 'users' && (
             <div className="space-y-6">
               <div className="flex justify-between items-center">
-                <h2 className="text-xl font-semibold text-gray-900">{t('companyUsers')}</h2>
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-white">{t('companyUsers')}</h2>
                 {/* Only company admins can add users */}
-                {user?.role === 'company_admin' && (
+                {(user?.role === 'company_admin' || user?.isCompanyAdmin) && (
                   <button 
                     onClick={() => setShowAddUser(!showAddUser)}
-                    className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                    className="bg-blue-600 dark:bg-blue-700 text-white px-4 py-2 rounded hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors duration-200"
                   >
                     {showAddUser ? t('cancel') : t('addUser')}
                   </button>
                 )}
               </div>
+
+              {/* Search input */}
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Search users by name..."
+                  value={userSearchTerm}
+                  onChange={(e) => setUserSearchTerm(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-dark-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-dark-700 text-gray-900 dark:text-white"
+                />
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <svg className="h-5 w-5 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </div>
+              </div>
               
               {showAddUser ? (
                 <AddUserToCompany
-                  companyId={company._id}
+                  companyId={company.id}
                   teams={company.teams}
                   onUserAdded={() => {
                     setShowAddUser(false);
@@ -446,49 +464,56 @@ const CompanyManagement: React.FC = () => {
                 />
               ) : (
                 <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
+                  <table className="min-w-full divide-y divide-gray-200 dark:divide-dark-600">
+                    <thead className="bg-gray-50 dark:bg-dark-600">
                       <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                           {t('name')}
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                           {t('email')}
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                           {t('role')}
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                           {t('team')}
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                           {t('actions')}
                         </th>
                       </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {company.users.map((companyUser) => (
+                    <tbody className="bg-white dark:bg-dark-800 divide-y divide-gray-200 dark:divide-dark-600">
+                      {company.users
+                        .filter(user => user.role !== 'super_admin' && !user.isSuperAdmin)
+                        .filter(user => {
+                          if (!userSearchTerm) return true;
+                          const fullName = `${user.firstName} ${user.lastName}`.toLowerCase();
+                          return fullName.includes(userSearchTerm.toLowerCase());
+                        })
+                        .map((companyUser) => (
                         <tr key={companyUser._id}>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="text-sm font-medium text-gray-900">
+                            <div className="text-sm font-medium text-gray-900 dark:text-white">
                               {companyUser.firstName} {companyUser.lastName}
                             </div>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                             {companyUser.email}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                               companyUser.isCompanyAdmin 
-                                ? 'bg-red-100 text-red-800'
+                                ? 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200'
                                 : companyUser.isTeamLeader
-                                ? 'bg-blue-100 text-blue-800'
-                                : 'bg-gray-100 text-gray-800'
+                                ? 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200'
+                                : 'bg-gray-100 dark:bg-dark-600 text-gray-800 dark:text-gray-200'
                             }`}>
                               {companyUser.isCompanyAdmin ? t('admin') : companyUser.isTeamLeader ? t('teamLeader') : t('user')}
                             </span>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                             {companyUser.teamId ? 
                               (company.teams.find(team => team._id === companyUser.teamId)?.name?.substring(0, 10) || t('unknown')) 
                               : t('noTeam')
@@ -496,37 +521,49 @@ const CompanyManagement: React.FC = () => {
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                             <div className="flex items-center space-x-2">
+                              {/* Only company admins can edit users, but not themselves */}
+                              {(user?.role === 'company_admin' || user?.isCompanyAdmin) && 
+                               companyUser._id !== user?._id && (
+                                <button 
+                                  onClick={() => handleEditUser(companyUser)}
+                                  className="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300"
+                                >
+                                  Edit
+                                </button>
+                              )}
+
                               {/* Team leads and admins can view user details */}
                               {(user?.role === 'company_admin' || user?.role === 'company_team_leader') && (
                                 <button 
                                   onClick={() => handleViewUser(companyUser)}
-                                  className="text-green-600 hover:text-green-900"
+                                  className="text-green-600 dark:text-green-400 hover:text-green-900 dark:hover:text-green-300"
                                 >
                                   {t('viewDetails')}
                                 </button>
                               )}
                               
-                              {/* Only company admins can edit/delete users */}
-                              {user?.role === 'company_admin' && (
-                                <>
-                                  <button 
-                                    onClick={() => handleEditUser(companyUser)}
-                                    className="text-blue-600 hover:text-blue-900"
-                                  >
-                                    {t('edit')}
-                                  </button>
-                                  <button 
-                                    onClick={() => handleDeleteUser(companyUser._id)}
-                                    className="text-red-600 hover:text-red-900"
-                                  >
-                                    {t('delete')}
-                                  </button>
-                                </>
+                              {/* Only company admins can delete users, but not themselves or other company admins */}
+                              {(user?.role === 'company_admin' || user?.isCompanyAdmin) && 
+                               companyUser._id !== user?._id && 
+                               !companyUser.isCompanyAdmin && 
+                               companyUser.role !== 'company_admin' && (
+                                <button 
+                                  onClick={() => handleDeleteUser(companyUser._id)}
+                                  className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300"
+                                >
+                                  {t('delete')}
+                                </button>
+                              )}
+                              
+                              {/* Debug info - remove this later */}
+                              {companyUser._id === user?._id && (
+                                <span className="text-xs text-gray-500 dark:text-gray-400">(You)</span>
                               )}
                               
                               {/* Show dash if no actions available */}
-                              {user?.role !== 'company_admin' && user?.role !== 'company_team_leader' && (
-                                <span className="text-gray-400 text-sm">-</span>
+                              {((user?.role !== 'company_admin' && user?.role !== 'company_team_leader') || 
+                                ((user?.role === 'company_admin' || user?.isCompanyAdmin) && companyUser._id === user?._id)) && (
+                                <span className="text-gray-400 dark:text-gray-500 text-sm">-</span>
                               )}
                             </div>
                           </td>
@@ -542,26 +579,30 @@ const CompanyManagement: React.FC = () => {
           {activeTab === 'teams' && (
             <div className="space-y-6">
               <div className="flex justify-between items-center">
-                <h2 className="text-xl font-semibold text-gray-900">{t('teams')}</h2>
-                {user?.role === 'company_admin' && (
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-white">{t('teams')}</h2>
+                {(user?.role === 'company_admin' || user?.isCompanyAdmin) && (
                   <button 
                     onClick={() => setShowCreateTeam(!showCreateTeam)}
-                    className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                    className="bg-blue-600 dark:bg-blue-700 text-white px-4 py-2 rounded hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors duration-200"
                   >
                     {showCreateTeam ? t('cancel') : t('createTeam')}
                   </button>
                 )}
               </div>
               
-              {showCreateTeam ? (
+              {showCreateTeam && company ? (
                 <CreateTeam
-                  companyId={company._id}
+                  companyId={company.id}
                   onTeamCreated={() => {
                     setShowCreateTeam(false);
                     fetchCompanyData();
                   }}
                   onCancel={() => setShowCreateTeam(false)}
                 />
+              ) : showCreateTeam && !company ? (
+                <div className="bg-white dark:bg-dark-800 border border-gray-200 dark:border-dark-600 rounded-lg p-6">
+                  <p className="text-gray-600 dark:text-gray-400">Loading company data...</p>
+                </div>
               ) : editingTeam ? (
                 <EditTeam
                   team={editingTeam}
@@ -574,26 +615,26 @@ const CompanyManagement: React.FC = () => {
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {company.teams.map((team) => (
-                    <div key={team._id} className="bg-white border border-gray-200 rounded-lg p-6">
+                    <div key={team._id} className="bg-white dark:bg-dark-800 border border-gray-200 dark:border-dark-600 rounded-lg p-6">
                       <div className="flex justify-between items-start mb-4">
                         <div>
-                          <h3 className="text-lg font-semibold text-gray-900">{team.name}</h3>
+                          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{team.name}</h3>
                           {team.description && (
-                            <p className="text-sm text-gray-500 mt-1">{team.description}</p>
+                            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{team.description}</p>
                           )}
                         </div>
                         {/* Only company admins can edit/delete teams */}
-                        {user?.role === 'company_admin' && (
+                        {(user?.role === 'company_admin' || user?.isCompanyAdmin) && (
                           <div className="flex space-x-2">
                             <button 
                               onClick={() => handleEditTeam(team)}
-                              className="text-blue-600 hover:text-blue-900 text-sm"
+                              className="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 text-sm"
                             >
                               {t('edit')}
                             </button>
                             <button 
                               onClick={() => handleDeleteTeam(team._id)}
-                              className="text-red-600 hover:text-red-900 text-sm"
+                              className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 text-sm"
                             >
                               {t('delete')}
                             </button>
@@ -603,22 +644,22 @@ const CompanyManagement: React.FC = () => {
                       
                       <div className="space-y-3">
                         <div>
-                          <h4 className="text-sm font-medium text-gray-700 mb-2">{t('teamLeader')}</h4>
+                          <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('teamLeader')}</h4>
                           {team.teamLeader ? (
                             <div>
-                              <p className="text-sm text-gray-900 font-medium">
+                              <p className="text-sm text-gray-900 dark:text-white font-medium">
                                 {team.teamLeader.firstName} {team.teamLeader.lastName}
                               </p>
-                              <p className="text-xs text-gray-500">{team.teamLeader.email}</p>
+                              <p className="text-xs text-gray-500 dark:text-gray-400">{team.teamLeader.email}</p>
                             </div>
                           ) : (
-                            <p className="text-sm text-gray-500">{t('noTeamLeaderAssigned')}</p>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">{t('noTeamLeaderAssigned')}</p>
                           )}
                         </div>
                         
                         <div>
-                          <h4 className="text-sm font-medium text-gray-700 mb-2">{t('members')} ({team.members.length})</h4>
-                          <p className="text-sm text-gray-600">
+                          <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('members')} ({team.members.length})</h4>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">
                             {team.members.length} {team.members.length !== 1 ? t('members') : t('member')}
                           </p>
                         </div>
@@ -628,7 +669,7 @@ const CompanyManagement: React.FC = () => {
                           <div className="pt-2">
                             <button 
                               onClick={() => setManagingTeam(team)}
-                              className="text-blue-600 hover:text-blue-900 text-sm"
+                              className="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 text-sm"
                             >
                               {t('manageMembers')}
                             </button>
@@ -651,7 +692,7 @@ const CompanyManagement: React.FC = () => {
 
           {activeTab === 'leaderboard' && (
             <div className="space-y-6">
-              <Leaderboard companyId={company._id} />
+              <Leaderboard companyId={company.id} />
             </div>
           )}
         </div>

@@ -115,20 +115,20 @@ const AddUserToCompany: React.FC<AddUserToCompanyProps> = ({
   };
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg p-6">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">Add User to Company</h3>
+    <div className="bg-white dark:bg-dark-800 border border-gray-200 dark:border-dark-600 rounded-lg p-6">
+      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Add User to Company</h3>
       
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 mb-6">
           <div className="flex">
             <div className="flex-shrink-0">
-              <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+              <svg className="h-5 w-5 text-red-400 dark:text-red-300" viewBox="0 0 20 20" fill="currentColor">
                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
               </svg>
             </div>
             <div className="ml-3">
-              <h3 className="text-sm font-medium text-red-800">Error</h3>
-              <p className="mt-1 text-sm text-red-700">{error}</p>
+              <h3 className="text-sm font-medium text-red-800 dark:text-red-200">Error</h3>
+              <p className="mt-1 text-sm text-red-700 dark:text-red-300">{error}</p>
             </div>
           </div>
         </div>
@@ -137,7 +137,7 @@ const AddUserToCompany: React.FC<AddUserToCompanyProps> = ({
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               First Name *
             </label>
             <input
@@ -146,13 +146,13 @@ const AddUserToCompany: React.FC<AddUserToCompanyProps> = ({
               required
               value={form.firstName}
               onChange={(e) => setForm({ ...form, firstName: e.target.value })}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full border border-gray-300 dark:border-dark-600 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-dark-700 text-gray-900 dark:text-white"
               placeholder="Enter first name"
             />
           </div>
 
           <div>
-            <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Last Name *
             </label>
             <input
@@ -161,14 +161,14 @@ const AddUserToCompany: React.FC<AddUserToCompanyProps> = ({
               required
               value={form.lastName}
               onChange={(e) => setForm({ ...form, lastName: e.target.value })}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full border border-gray-300 dark:border-dark-600 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-dark-700 text-gray-900 dark:text-white"
               placeholder="Enter last name"
             />
           </div>
         </div>
 
         <div>
-          <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Email Address *
           </label>
           <input
@@ -177,13 +177,13 @@ const AddUserToCompany: React.FC<AddUserToCompanyProps> = ({
             required
             value={form.email}
             onChange={(e) => setForm({ ...form, email: e.target.value })}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full border border-gray-300 dark:border-dark-600 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-dark-700 text-gray-900 dark:text-white"
             placeholder="Enter email address"
           />
         </div>
 
         <div>
-          <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Password *
           </label>
           <input
@@ -193,13 +193,13 @@ const AddUserToCompany: React.FC<AddUserToCompanyProps> = ({
             minLength={8}
             value={form.password}
             onChange={(e) => setForm({ ...form, password: e.target.value })}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full border border-gray-300 dark:border-dark-600 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-dark-700 text-gray-900 dark:text-white"
             placeholder="Enter password (min 8 characters)"
           />
         </div>
 
         <div>
-          <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Confirm Password *
           </label>
           <input
@@ -216,18 +216,18 @@ const AddUserToCompany: React.FC<AddUserToCompanyProps> = ({
                 setPasswordMatchError(null);
               }
             }}
-            className={`w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-              passwordMatchError ? 'border-red-500 ring-2 ring-red-500' : 'border-gray-300'
+            className={`w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-dark-700 text-gray-900 dark:text-white ${
+              passwordMatchError ? 'border-red-500 ring-2 ring-red-500' : 'border-gray-300 dark:border-dark-600'
             }`}
             placeholder="Confirm password"
           />
           {passwordMatchError && (
-            <p className="mt-1 text-sm text-red-600">{passwordMatchError}</p>
+            <p className="mt-1 text-sm text-red-600 dark:text-red-400">{passwordMatchError}</p>
           )}
         </div>
 
         <div>
-          <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="role" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Role *
           </label>
           <select
@@ -235,7 +235,7 @@ const AddUserToCompany: React.FC<AddUserToCompanyProps> = ({
             required
             value={form.role}
             onChange={(e) => setForm({ ...form, role: e.target.value as any, teamId: e.target.value === 'company_user' ? undefined : form.teamId })}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full border border-gray-300 dark:border-dark-600 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-dark-700 text-gray-900 dark:text-white"
           >
             <option value="company_user">Company User</option>
             {user?.role === 'company_admin' && (
@@ -247,7 +247,7 @@ const AddUserToCompany: React.FC<AddUserToCompanyProps> = ({
         {/* Only show team selection for company admins */}
         {user?.role === 'company_admin' && teams.length > 0 && (
           <div>
-            <label htmlFor="teamId" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="teamId" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Team {form.role === 'company_team_leader' ? '*' : '(optional)'}
             </label>
             <select
@@ -255,7 +255,7 @@ const AddUserToCompany: React.FC<AddUserToCompanyProps> = ({
               required={form.role === 'company_team_leader'}
               value={form.teamId || ''}
               onChange={(e) => setForm({ ...form, teamId: e.target.value || undefined })}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full border border-gray-300 dark:border-dark-600 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-dark-700 text-gray-900 dark:text-white"
             >
               <option value="">Select a team</option>
               {teams.map((team) => (
@@ -264,7 +264,7 @@ const AddUserToCompany: React.FC<AddUserToCompanyProps> = ({
                 </option>
               ))}
             </select>
-            <p className="mt-1 text-sm text-gray-500">
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
               {form.role === 'company_team_leader' 
                 ? 'Select the team this user will lead'
                 : 'Select a team to assign this user to (optional)'
@@ -274,8 +274,8 @@ const AddUserToCompany: React.FC<AddUserToCompanyProps> = ({
         )}
 
         {teams.length === 0 && (
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-            <p className="text-sm text-yellow-700">
+          <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
+            <p className="text-sm text-yellow-700 dark:text-yellow-300">
               No teams available. Create a team first before assigning users to teams.
             </p>
           </div>
@@ -285,14 +285,14 @@ const AddUserToCompany: React.FC<AddUserToCompanyProps> = ({
           <button
             type="button"
             onClick={onCancel}
-            className="flex-1 bg-gray-300 text-gray-700 py-2 px-4 rounded-lg font-medium hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+            className="flex-1 bg-gray-300 dark:bg-dark-600 text-gray-700 dark:text-gray-300 py-2 px-4 rounded-lg font-medium hover:bg-gray-400 dark:hover:bg-dark-500 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
           >
             Cancel
           </button>
           <button
             type="submit"
             disabled={loading || (form.role === 'company_team_leader' && teams.length === 0)}
-            className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex-1 bg-blue-600 dark:bg-blue-700 text-white py-2 px-4 rounded-lg font-medium hover:bg-blue-700 dark:hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? 'Adding User...' : 'Add User'}
           </button>

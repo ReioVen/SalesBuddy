@@ -45,8 +45,8 @@ router.post('/request', [
       additionalInfo
     } = req.body;
 
-    // Check if request already exists for this email
-    const existingRequest = await EnterpriseRequest.findOne({ email });
+    // Check if request already exists for this email (case-insensitive)
+    const existingRequest = await EnterpriseRequest.findOne({ email: email.toLowerCase() });
     if (existingRequest) {
       return res.status(400).json({ 
         error: 'An enterprise request already exists for this email address' 

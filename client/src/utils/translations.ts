@@ -92,6 +92,7 @@ export const translations = {
     cancel: 'Cancel',
     optional: 'Optional',
     examplePersonality: 'e.g., skeptical, friendly, analytical, budget-conscious',
+    customizeClientDescription: 'Customize your AI client to practice with different types of customers, or use the default client.',
     exampleIndustry: 'e.g., Technology, Healthcare, Finance',
     exampleRole: 'e.g., CEO, IT Director, Purchasing Manager',
     examplePrompt: 'e.g., This client is very price-sensitive and always asks for discounts...',
@@ -469,6 +470,16 @@ export const translations = {
     cancel: 'Cancel',
     confirm: 'Confirm',
 
+    // Advanced Settings
+    advancedSettings: 'Advanced Settings',
+    dangerZone: 'Danger Zone',
+    show: 'Show',
+    hide: 'Hide',
+
+    // Enterprise Subscription
+    enterpriseSubscription: 'Enterprise Subscription',
+    enterpriseSubscriptionDescription: 'Your enterprise subscription is fully managed by your company. All features are included with 50 daily AI conversations.',
+
     // FAQ Section
     frequentlyAskedQuestions: 'Frequently Asked Questions',
     faqTitle: 'Have Questions? We Have Answers',
@@ -656,6 +667,7 @@ export const translations = {
     cancel: 'Tühista',
     optional: 'Valikuline',
     examplePersonality: 'nt. skeptiline, sõbralik, analüütiline, eelarve-teadlik',
+    customizeClientDescription: 'Kohanda oma AI klienti, et harjutada erinevat tüüpi klientidega, või kasuta vaikimisi klienti.',
     exampleIndustry: 'nt. Tehnoloogia, Tervishoid, Rahandus',
     exampleRole: 'nt. Tegevjuht, IT-direktor, Ostujuht',
     examplePrompt: 'nt. See klient on väga hinnatundlik ja küsib alati allahindlusi...',
@@ -1047,6 +1059,16 @@ export const translations = {
     contactUs: 'Võtke Ühendust',
     contactUsDescription: 'Kas teil on küsimusi, millele ei vastata meie KKK-s? Oleme siin, et aidata.',
     supportEmail: 'tugi@salesbuddy.ai',
+
+    // Advanced Settings
+    advancedSettings: 'Täpsemad Seaded',
+    dangerZone: 'Ohtlik Tsoon',
+    show: 'Näita',
+    hide: 'Peida',
+
+    // Enterprise Subscription
+    enterpriseSubscription: 'Ettevõtte Tellimus',
+    enterpriseSubscriptionDescription: 'Teie ettevõtte tellimus on täielikult hallatud teie ettevõtte poolt. Kõik funktsioonid on kaasas 50 päevase AI vestlusega.',
   },
   es: {
     // Navigation
@@ -1132,6 +1154,7 @@ export const translations = {
     cancel: 'Cancelar',
     optional: 'Opcional',
     examplePersonality: 'ej. escéptico, amigable, analítico, consciente del presupuesto',
+    customizeClientDescription: 'Personaliza tu cliente de IA para practicar con diferentes tipos de clientes, o usa el cliente predeterminado.',
     exampleIndustry: 'ej. Tecnología, Salud, Finanzas',
     exampleRole: 'ej. CEO, Director de TI, Gerente de Compras',
     examplePrompt: 'ej. Este cliente es muy sensible al precio y siempre pide descuentos...',
@@ -1523,6 +1546,16 @@ export const translations = {
     contactUs: 'Contáctanos',
     contactUsDescription: '¿Tienes preguntas que no se responden en nuestro FAQ? Estamos aquí para ayudar.',
     supportEmail: 'soporte@salesbuddy.ai',
+
+    // Advanced Settings
+    advancedSettings: 'Configuración Avanzada',
+    dangerZone: 'Zona de Peligro',
+    show: 'Mostrar',
+    hide: 'Ocultar',
+
+    // Enterprise Subscription
+    enterpriseSubscription: 'Suscripción Empresarial',
+    enterpriseSubscriptionDescription: 'Tu suscripción empresarial está completamente gestionada por tu empresa. Todas las funciones están incluidas con 50 conversaciones de IA diarias.',
   },
   ru: {
     // Navigation
@@ -1608,6 +1641,7 @@ export const translations = {
     cancel: 'Отмена',
     optional: 'Необязательно',
     examplePersonality: 'напр. скептичный, дружелюбный, аналитичный, бюджетно-сознательный',
+    customizeClientDescription: 'Настройте своего ИИ-клиента для практики с разными типами клиентов или используйте клиента по умолчанию.',
     exampleIndustry: 'напр. Технологии, Здравоохранение, Финансы',
     exampleRole: 'напр. Генеральный директор, IT-директор, Менеджер по закупкам',
     examplePrompt: 'напр. Этот клиент очень чувствителен к цене и всегда просит скидки...',
@@ -1999,6 +2033,16 @@ export const translations = {
     contactUs: 'Свяжитесь с Нами',
     contactUsDescription: 'Есть вопросы, на которые не ответили в нашем FAQ? Мы здесь, чтобы помочь.',
     supportEmail: 'поддержка@salesbuddy.ai',
+
+    // Advanced Settings
+    advancedSettings: 'Дополнительные Настройки',
+    dangerZone: 'Опасная Зона',
+    show: 'Показать',
+    hide: 'Скрыть',
+
+    // Enterprise Subscription
+    enterpriseSubscription: 'Корпоративная Подписка',
+    enterpriseSubscriptionDescription: 'Ваша корпоративная подписка полностью управляется вашей компанией. Все функции включены с 50 ежедневными ИИ-разговорами.',
   },
 };
 

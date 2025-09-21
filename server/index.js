@@ -102,6 +102,25 @@ app.use('/api/speech', authenticateToken, speechRoutes);
 app.use('/api/leaderboard', leaderboardRoutes);
 app.use('/api/enterprise', enterpriseRoutes);
 
+// Root endpoint - provide API information
+app.get('/', (req, res) => {
+  res.json({
+    message: 'SalesBuddy API Server',
+    version: '1.0.0',
+    status: 'running',
+    timestamp: new Date().toISOString(),
+    endpoints: {
+      health: '/api/health',
+      auth: '/api/auth',
+      users: '/api/users',
+      companies: '/api/companies',
+      ai: '/api/ai',
+      admin: '/api/admin'
+    },
+    documentation: 'This is an API-only server. Use the frontend application to interact with the system.'
+  });
+});
+
 // Health check endpoint
 app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });

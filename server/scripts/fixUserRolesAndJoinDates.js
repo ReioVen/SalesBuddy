@@ -19,8 +19,8 @@ async function fixUserRolesAndJoinDates() {
     console.log('✅ Connected to MongoDB');
 
     // Find the admin users
-    const adminUser = await User.findOne({ email: 'admin@salesbuddy.com' });
-    const reioUser = await User.findOne({ email: 'reiovendelin3@gmail.com' });
+    const adminUser = await User.findOne({ email: 'admin@salesbuddy.com' }); // Already lowercase
+    const reioUser = await User.findOne({ email: 'reiovendelin3@gmail.com' }); // Already lowercase
 
     console.log('👤 Found users:', {
       admin: adminUser ? adminUser.email : 'Not found',
@@ -137,8 +137,8 @@ async function fixUserRolesAndJoinDates() {
 
     // Verify the fixes
     console.log('\n🔍 Verifying fixes...');
-    const updatedAdminUser = await User.findOne({ email: 'admin@salesbuddy.com' });
-    const updatedReioUser = await User.findOne({ email: 'reiovendelin3@gmail.com' });
+    const updatedAdminUser = await User.findOne({ email: 'admin@salesbuddy.com' }); // Already lowercase
+    const updatedReioUser = await User.findOne({ email: 'reiovendelin3@gmail.com' }); // Already lowercase
 
     if (updatedAdminUser) {
       console.log('\n✅ Admin user verification:', {

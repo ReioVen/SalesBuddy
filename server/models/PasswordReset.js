@@ -41,11 +41,13 @@ passwordResetSchema.statics.generateToken = function() {
 // Create a new password reset request
 passwordResetSchema.statics.createResetRequest = async function(email) {
   try {
-    // Invalidate any existing reset requests for this email
-    await this.updateMany(
-      { email, used: false },
-      { used: true }
-    );
+    // Clean up old unused tokens for this email (older than 10 minutes)
+    const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000);
+    await this.deleteMany({
+      email,
+      used: false,
+      createdAt: { $lt: tenMinutesAgo }
+    });
 
     // Create new reset request
     const token = this.generateToken();
@@ -59,6 +61,25 @@ passwordResetSchema.statics.createResetRequest = async function(email) {
     return resetRequest;
   } catch (error) {
     throw new Error('Failed to create password reset request');
+  }
+};
+
+// Verify a reset token (without consuming it)
+passwordResetSchema.statics.verifyToken = async function(token) {
+  try {
+    const resetRequest = await this.findOne({
+      token,
+      used: false,
+      expiresAt: { $gt: new Date() }
+    });
+
+    if (!resetRequest) {
+      return { valid: false, error: 'Invalid or expired token' };
+    }
+
+    return { valid: true, email: resetRequest.email };
+  } catch (error) {
+    return { valid: false, error: 'Token verification failed' };
   }
 };
 
