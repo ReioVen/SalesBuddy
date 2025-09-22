@@ -11,14 +11,18 @@ COPY client/package*.json ./client/
 
 # Install dependencies
 RUN npm ci --only=production
-RUN cd server && npm ci --only=production
-RUN cd client && npm ci
+WORKDIR /app/server
+RUN npm ci --only=production
+WORKDIR /app/client
+RUN npm ci
 
 # Copy source code
+WORKDIR /app
 COPY . .
 
 # Build client
-RUN cd client && npm run build
+WORKDIR /app/client
+RUN npm run build
 
 # Production stage
 FROM node:18-alpine AS production
