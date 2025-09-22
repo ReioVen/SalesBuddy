@@ -244,13 +244,6 @@ const SubscriptionManagement: React.FC<SubscriptionManagementProps> = ({ onClose
 
         {isActive && subscription?.stripeCustomerId && subscription?.plan !== 'enterprise' && (
           <>
-            <div className="mb-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-              <div className="text-sm text-blue-800">
-                <p className="font-medium">Subscription Management</p>
-                <p>Your subscription is managed through our system. Use the buttons below to manage your plan and payment methods.</p>
-              </div>
-            </div>
-
             <button
               onClick={handleManageSubscription}
               disabled={loading}
@@ -267,17 +260,6 @@ const SubscriptionManagement: React.FC<SubscriptionManagementProps> = ({ onClose
             >
               <ArrowUpRight className="w-4 h-4" />
               {loading ? t('loadingText') : 'Change Plan'}
-            </button>
-
-
-
-            <button
-              onClick={handleCancelSubscription}
-              disabled={loading}
-              className="w-full bg-red-50 hover:bg-red-100 text-red-700 font-medium py-3 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"
-            >
-              <XCircle className="w-4 h-4" />
-              {loading ? t('loadingText') : t('cancelSubscription')}
             </button>
           </>
         )}

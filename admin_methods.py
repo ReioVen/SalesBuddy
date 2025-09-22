@@ -146,17 +146,17 @@ class AdminMethods:
             search_term = InputValidator.validate_and_sanitize_input(
                 raw_search_term, 'search', is_required=False
             ).lower()
-            
-            for item in self.admin.users_tree.get_children():
-                values = self.admin.users_tree.item(item)['values']
-                # Search in name and email
-                if (search_term in values[1].lower() or 
-                    search_term in values[2].lower() or 
-                    search_term in values[3].lower() or
-                    search_term in values[4].lower()):
-                    self.admin.users_tree.reattach(item, '', 'end')
-                else:
-                    self.admin.users_tree.detach(item)
+        
+        for item in self.admin.users_tree.get_children():
+            values = self.admin.users_tree.item(item)['values']
+            # Search in name and email
+            if (search_term in values[1].lower() or 
+                search_term in values[2].lower() or 
+                search_term in values[3].lower() or
+                search_term in values[4].lower()):
+                self.admin.users_tree.reattach(item, '', 'end')
+            else:
+                self.admin.users_tree.detach(item)
                     
         except SecurityError as e:
             SecurityAuditLogger.log_security_violation(
@@ -707,15 +707,15 @@ Updated: {user.get('updatedAt', 'Unknown')}
             search_term = InputValidator.validate_and_sanitize_input(
                 raw_search_term, 'search', is_required=False
             ).lower()
-            
-            for item in self.admin.companies_tree.get_children():
-                values = self.admin.companies_tree.item(item)['values']
-                # Search in name and industry
-                if (search_term in values[1].lower() or 
-                    search_term in values[2].lower()):
-                    self.admin.companies_tree.reattach(item, '', 'end')
-                else:
-                    self.admin.companies_tree.detach(item)
+        
+        for item in self.admin.companies_tree.get_children():
+            values = self.admin.companies_tree.item(item)['values']
+            # Search in name and industry
+            if (search_term in values[1].lower() or 
+                search_term in values[2].lower()):
+                self.admin.companies_tree.reattach(item, '', 'end')
+            else:
+                self.admin.companies_tree.detach(item)
                     
         except SecurityError as e:
             SecurityAuditLogger.log_security_violation(

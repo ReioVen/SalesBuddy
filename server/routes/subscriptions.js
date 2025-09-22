@@ -19,36 +19,36 @@ const SUBSCRIPTION_PLANS = {
     name: 'Free',
     price: 0,
     stripePriceId: null,
-    features: ['50 AI conversations per month', 'Basic sales scenarios'],
-    limits: { conversations: 50 }
+    features: ['10 AI conversations per month', 'Basic sales scenarios'],
+    limits: { conversations: 10, aiTips: 0 }
   },
   basic: {
     name: 'Basic',
     price: 49.99,
     stripePriceId: process.env.STRIPE_BASIC_PRICE_ID,
-    features: ['200 AI conversations per month', 'Tips and Lessons', 'Basic sales scenarios', 'Email support'],
-    limits: { conversations: 200 }
+    features: ['30 AI conversations per month', '10 AI Tips per month', 'Tips and Lessons', 'Basic sales scenarios', 'Email support'],
+    limits: { conversations: 30, aiTips: 10 }
   },
   pro: {
     name: 'Pro',
     price: 89.99,
     stripePriceId: process.env.STRIPE_PRO_PRICE_ID,
-    features: ['500 AI conversations per month', 'Tips and Lessons', 'More Client Customization', 'Personal Summary Feedback', 'Priority support'],
-    limits: { conversations: 500 }
+    features: ['50 AI conversations per month', '25 AI Tips per month', 'Tips and Lessons', 'More Client Customization', 'Personal Summary Feedback', 'Priority support'],
+    limits: { conversations: 50, aiTips: 25 }
   },
   unlimited: {
     name: 'Unlimited',
     price: 349,
     stripePriceId: process.env.STRIPE_UNLIMITED_PRICE_ID,
-    features: ['Unlimited AI conversations', 'Tips and Lessons', 'Summary', 'More Client Customization', 'Personal Summary Feedback', 'Dedicated support'],
-    limits: { conversations: -1 }
+    features: ['200 AI conversations per month', '50 AI Tips per month', 'Tips and Lessons', 'Summary', 'More Client Customization', 'Personal Summary Feedback', 'Dedicated support'],
+    limits: { conversations: 200, aiTips: 50 }
   },
   enterprise: {
     name: 'Enterprise',
     price: 'Custom Pricing',
     stripePriceId: null,
-    features: ['50 AI conversations per day', 'Tips and Lessons', 'Summary', 'More Client Customization', 'Personal Summary Feedback', 'Team management', 'Dedicated support'],
-    limits: { conversations: 50, period: 'daily' },
+    features: ['50 AI conversations per day', '50 AI Tips per month', 'Tips and Lessons', 'Summary', 'More Client Customization', 'Personal Summary Feedback', 'Team management', 'Dedicated support'],
+    limits: { conversations: 50, aiTips: 50, period: 'daily' },
     isPaid: true,
     billingType: 'enterprise'
   }
@@ -81,13 +81,15 @@ async function applyPlanUpdate(userId, planData) {
     const planConfig = SUBSCRIPTION_PLANS[plan] || SUBSCRIPTION_PLANS.free;
     const monthlyLimit = planConfig.limits.conversations === -1 ? 1000000 : planConfig.limits.conversations;
     const dailyLimit = planConfig.limits.period === 'daily' ? planConfig.limits.conversations : 50;
+    const aiTipsLimit = planConfig.limits.aiTips || 0;
     
     // Prepare update data
     const updateData = {
       'subscription.plan': plan,
       'subscription.status': status,
       'usage.monthlyLimit': monthlyLimit,
-      'usage.dailyLimit': dailyLimit
+      'usage.dailyLimit': dailyLimit,
+      'usage.aiTipsLimit': aiTipsLimit
     };
     
     // Add optional fields if provided
@@ -141,6 +143,27 @@ router.get('/plans', authenticateToken, async (req, res) => {
   }
 });
 
+// Diagnostic endpoint to check Stripe configuration
+router.get('/diagnostic', (req, res) => {
+  const diagnostic = {
+    stripeConfigured: !!stripe,
+    stripeSecretKey: stripeSecretKey ? 'Set' : 'Missing',
+    environmentVariables: {
+      STRIPE_BASIC_PRICE_ID: process.env.STRIPE_BASIC_PRICE_ID ? 'Set' : 'Missing',
+      STRIPE_PRO_PRICE_ID: process.env.STRIPE_PRO_PRICE_ID ? 'Set' : 'Missing',
+      STRIPE_UNLIMITED_PRICE_ID: process.env.STRIPE_UNLIMITED_PRICE_ID ? 'Set' : 'Missing',
+    },
+    plans: Object.keys(SUBSCRIPTION_PLANS).map(key => ({
+      id: key,
+      name: SUBSCRIPTION_PLANS[key].name,
+      price: SUBSCRIPTION_PLANS[key].price,
+      stripePriceId: SUBSCRIPTION_PLANS[key].stripePriceId ? 'Configured' : 'Missing'
+    }))
+  };
+  
+  res.json(diagnostic);
+});
+
 // Create checkout session
 router.post('/create-checkout-session', authenticateToken, [
   body('plan').isIn(['basic', 'pro', 'unlimited'])
@@ -160,8 +183,18 @@ router.post('/create-checkout-session', authenticateToken, [
     const { plan } = req.body;
     const planConfig = SUBSCRIPTION_PLANS[plan];
 
+    console.log('Subscription request:', { plan, planConfig });
+
     if (!planConfig) {
       return res.status(400).json({ error: 'Invalid plan selected' });
+    }
+
+    if (!planConfig.stripePriceId) {
+      console.error('Missing Stripe price ID for plan:', plan);
+      return res.status(400).json({ 
+        error: 'Plan not configured for billing',
+        message: `The ${plan} plan is not properly configured for billing. Please contact support.`
+      });
     }
 
     // Create or get Stripe customer
@@ -185,6 +218,13 @@ router.post('/create-checkout-session', authenticateToken, [
     }
 
     // Create checkout session
+    console.log('Creating Stripe checkout session with:', {
+      customer: customerId,
+      price: planConfig.stripePriceId,
+      plan: plan,
+      userId: req.user._id.toString()
+    });
+
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       payment_method_types: ['card'],
@@ -204,13 +244,38 @@ router.post('/create-checkout-session', authenticateToken, [
       }
     });
 
+    console.log('Stripe checkout session created successfully:', {
+      sessionId: session.id,
+      url: session.url
+    });
+
     res.json({
       sessionId: session.id,
       url: session.url
     });
   } catch (error) {
     console.error('Create checkout session error:', error);
-    res.status(500).json({ error: 'Failed to create checkout session' });
+    
+    // Handle specific Stripe errors
+    if (error.type === 'StripeInvalidRequestError') {
+      return res.status(400).json({ 
+        error: 'Invalid Stripe configuration',
+        message: error.message,
+        details: 'Please check your Stripe price IDs and configuration'
+      });
+    }
+    
+    if (error.type === 'StripeAPIError') {
+      return res.status(503).json({ 
+        error: 'Stripe service error',
+        message: error.message
+      });
+    }
+    
+    res.status(500).json({ 
+      error: 'Failed to create checkout session',
+      message: error.message || 'Unknown error occurred'
+    });
   }
 });
 
@@ -942,6 +1007,127 @@ router.post('/reset-usage', authenticateToken, async (req, res) => {
   } catch (error) {
     console.error('Reset usage error:', error);
     res.status(500).json({ error: 'Failed to reset usage' });
+  }
+});
+
+// Fix subscription (temporary admin endpoint)
+router.post('/fix-subscription', authenticateToken, async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    
+    console.log('Fixing subscription for user:', user.email);
+    console.log('Current plan:', user.subscription.plan);
+    console.log('Current status:', user.subscription.status);
+    console.log('Current monthly limit:', user.usage.monthlyLimit);
+    
+    // Update to Basic plan based on Stripe data
+    const updateData = {
+      'subscription.plan': 'basic',
+      'subscription.status': 'active',
+      'usage.monthlyLimit': 30, // Basic plan: 30 conversations per month
+      'usage.dailyLimit': 30,
+      'usage.aiTipsLimit': 10, // Basic plan: 10 AI tips per month
+      'usage.aiConversations': 0,
+      'usage.aiTipsUsed': 0,
+      'usage.lastResetDate': new Date(),
+      'usage.lastDailyResetDate': new Date(),
+      'usage.lastAiTipsResetDate': new Date(),
+      // Reset summary counts
+      'usage.summariesGeneratedToday': 0,
+      'usage.summariesGenerated': 0,
+      'usage.lastSummaryResetDate': new Date()
+    };
+    
+    const result = await User.findByIdAndUpdate(req.user._id, updateData, { new: true });
+    
+    console.log('Subscription fixed successfully!');
+    console.log('New plan:', result.subscription.plan);
+    console.log('New status:', result.subscription.status);
+    console.log('New monthly limit:', result.usage.monthlyLimit);
+    console.log('Summaries generated today:', result.usage.summariesGeneratedToday);
+    
+    res.json({
+      message: 'Subscription fixed successfully',
+      subscription: result.subscription,
+      usage: result.usage
+    });
+  } catch (error) {
+    console.error('Fix subscription error:', error);
+    res.status(500).json({ error: 'Failed to fix subscription' });
+  }
+});
+
+// Reset summary count (temporary admin endpoint)
+router.post('/reset-summary-count', authenticateToken, async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    
+    console.log('Resetting summary count for user:', user.email);
+    console.log('Current summaries generated today:', user.usage.summariesGeneratedToday);
+    
+    // Reset summary counts
+    const updateData = {
+      'usage.summariesGeneratedToday': 0,
+      'usage.lastSummaryResetDate': new Date()
+    };
+    
+    const result = await User.findByIdAndUpdate(req.user._id, updateData, { new: true });
+    
+    console.log('Summary count reset successfully!');
+    console.log('New summaries generated today:', result.usage.summariesGeneratedToday);
+    
+    res.json({
+      message: 'Summary count reset successfully',
+      summariesGeneratedToday: result.usage.summariesGeneratedToday,
+      lastSummaryResetDate: result.usage.lastSummaryResetDate
+    });
+  } catch (error) {
+    console.error('Reset summary count error:', error);
+    res.status(500).json({ error: 'Failed to reset summary count' });
+  }
+});
+
+// Debug endpoint to check all users with test@gmail.com
+router.get('/debug-users', async (req, res) => {
+  try {
+    const users = await User.find({ email: 'test@gmail.com' });
+    
+    console.log('Found users with test@gmail.com:', users.length);
+    users.forEach((user, index) => {
+      console.log(`User ${index + 1}:`, {
+        id: user._id,
+        email: user.email,
+        plan: user.subscription.plan,
+        status: user.subscription.status,
+        monthlyLimit: user.usage.monthlyLimit,
+        stripeCustomerId: user.subscription.stripeCustomerId,
+        createdAt: user.createdAt
+      });
+    });
+    
+    res.json({
+      count: users.length,
+      users: users.map(user => ({
+        id: user._id,
+        email: user.email,
+        plan: user.subscription.plan,
+        status: user.subscription.status,
+        monthlyLimit: user.usage.monthlyLimit,
+        stripeCustomerId: user.subscription.stripeCustomerId,
+        createdAt: user.createdAt
+      }))
+    });
+  } catch (error) {
+    console.error('Debug users error:', error);
+    res.status(500).json({ error: 'Failed to debug users' });
   }
 });
 

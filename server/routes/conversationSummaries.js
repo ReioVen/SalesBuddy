@@ -127,7 +127,21 @@ router.post('/generate', authenticateToken, async (req, res) => {
   try {
     const userId = req.user._id;
     
-    // Check if user can generate a summary (5 per day limit)
+    // First check if user has enough conversations
+    const recentConversations = await Conversation.find({ userId })
+      .sort({ createdAt: -1 })
+      .limit(5)
+      .lean();
+
+    if (recentConversations.length < 5) {
+      return res.status(400).json({ 
+        error: 'Need at least 5 conversations to generate a summary. Complete 5 conversations first.',
+        conversationsNeeded: 5 - recentConversations.length,
+        currentConversations: recentConversations.length
+      });
+    }
+    
+    // Then check if user can generate a summary (5 per day limit)
     if (!req.user.canGenerateSummary()) {
       const summaryStatus = req.user.getSummaryStatus();
       return res.status(429).json({ 
@@ -141,18 +155,6 @@ router.post('/generate', authenticateToken, async (req, res) => {
       .sort({ summaryNumber: -1 });
     
     const nextSummaryNumber = latestSummary ? latestSummary.summaryNumber + 1 : 1;
-    
-    // Get the last 5 conversations for this user
-    const recentConversations = await Conversation.find({ userId })
-      .sort({ createdAt: -1 })
-      .limit(5)
-      .lean();
-
-    if (recentConversations.length < 5) {
-      return res.status(400).json({ 
-        error: 'Need at least 5 conversations to generate a summary' 
-      });
-    }
 
     // Generate AI analysis using user's language preference
     const aiAnalysis = await generateConversationAnalysis(recentConversations, req.user, req.user.language || 'en');

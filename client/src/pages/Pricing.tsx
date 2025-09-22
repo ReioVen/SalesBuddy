@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext.tsx';
 import { useTranslation } from '../hooks/useTranslation.ts';
 import { 
@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
+import { useSearchParams } from 'react-router-dom';
 
 interface PricingPlan {
   name: string;
@@ -26,6 +27,7 @@ interface PricingPlan {
 const Pricing: React.FC = () => {
   const { user } = useAuth();
   const { t, language } = useTranslation();
+  const [searchParams] = useSearchParams();
   const [showEnterpriseModal, setShowEnterpriseModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -44,13 +46,25 @@ const Pricing: React.FC = () => {
     additionalInfo: ''
   });
 
+  // Handle automatic subscription after registration
+  useEffect(() => {
+    const intendedPlan = searchParams.get('plan');
+    if (intendedPlan && user && !loading) {
+      // Small delay to ensure user is fully loaded
+      const timer = setTimeout(() => {
+        handleSubscribe(intendedPlan);
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [user, searchParams, loading]);
+
   const plans: PricingPlan[] = [
     {
       name: language === 'et' ? 'Tasuta' : 'Free',
       price: 0,
       period: language === 'et' ? 'kuu' : 'month',
       features: [
-        language === 'et' ? '10 AI vestlusi kuus' : '10 AI conversations per month',
+        language === 'et' ? '10 AI Vestlust kuus' : '10 AI conversations per month',
         language === 'et' ? 'Põhimüügi stsenaariumid' : 'Basic sales scenarios',
         language === 'et' ? 'E-posti tugi' : 'Email support',
         language === 'et' ? 'Kokkuvõtted lukustatud (uuenda avamiseks)' : 'Summaries locked (upgrade to unlock)'
@@ -64,7 +78,7 @@ const Pricing: React.FC = () => {
       price: 49.99,
       period: language === 'et' ? 'kuu' : 'month',
       features: [
-        language === 'et' ? '30 AI vestlusi kuus' : '30 AI conversations per month',
+        language === 'et' ? '30 AI Vestlust kuus' : '30 AI conversations per month',
         language === 'et' ? '10 AI nõuannet kuus' : '10 AI Tips per month',
         language === 'et' ? 'Nõuanded ja õppetunnid' : 'Tips and Lessons',
         language === 'et' ? 'Põhimüügi stsenaariumid' : 'Basic sales scenarios',
@@ -79,7 +93,7 @@ const Pricing: React.FC = () => {
       price: 89.99,
       period: language === 'et' ? 'kuu' : 'month',
       features: [
-        language === 'et' ? '50 AI vestlusi kuus' : '50 AI conversations per month',
+        language === 'et' ? '50 AI Vestlust kuus' : '50 AI conversations per month',
         language === 'et' ? '25 AI nõuannet kuus' : '25 AI Tips per month',
         language === 'et' ? 'Nõuanded ja õppetunnid' : 'Tips and Lessons',
         language === 'et' ? 'Rohkem kliendi kohandamist' : 'More Client Customization',
@@ -96,7 +110,7 @@ const Pricing: React.FC = () => {
       price: 349,
       period: language === 'et' ? 'kuu' : 'month',
       features: [
-        language === 'et' ? '200 AI vestlusi kuus' : '200 AI conversations per month',
+        language === 'et' ? '200 AI Vestlust kuus' : '200 AI conversations per month',
         language === 'et' ? '50 AI nõuannet kuus' : '50 AI Tips per month',
         language === 'et' ? 'Nõuanded ja õppetunnid' : 'Tips and Lessons',
         language === 'et' ? 'Rohkem kliendi kohandamist' : 'More Client Customization',
@@ -163,11 +177,11 @@ const Pricing: React.FC = () => {
           )}
         </div>
         {plan.name === 'Enterprise' || plan.name === 'Ettevõte' ? (
-          <p className="text-gray-600 dark:text-gray-400">{language === 'et' ? '50 vestlusi päevas' : '50 conversations/day'}</p>
+          <p className="text-gray-600 dark:text-gray-400">{language === 'et' ? '50 Vestlust päevas' : '50 conversations/day'}</p>
         ) : plan.limits.conversations === -1 ? (
           <p className="text-gray-600 dark:text-gray-400">{language === 'et' ? 'Piiramatud vestlused' : 'Unlimited conversations'}</p>
         ) : (
-          <p className="text-gray-600 dark:text-gray-400">{language === 'et' ? `${plan.limits.conversations} vestlusi kuus` : `${plan.limits.conversations} conversations/month`}</p>
+          <p className="text-gray-600 dark:text-gray-400">{language === 'et' ? `${plan.limits.conversations} Vestlust kuus` : `${plan.limits.conversations} conversations/month`}</p>
         )}
       </div>
 
@@ -183,6 +197,10 @@ const Pricing: React.FC = () => {
       <button
         onClick={() => {
           if (!user) {
+            // Store the intended plan in localStorage before redirecting to registration
+            if (plan.name !== 'Free' && plan.name !== 'Tasuta') {
+              localStorage.setItem('intendedPlan', plan.name.toLowerCase());
+            }
             window.location.href = '/register';
             return;
           }
@@ -212,15 +230,21 @@ const Pricing: React.FC = () => {
 
     try {
       setLoading(true);
+      const planKey = planName.toLowerCase();
+      console.log('Attempting to subscribe to plan:', { planName, planKey });
+      
       const response = await axios.post('/api/subscriptions/create-checkout-session', {
-        plan: planName.toLowerCase()
+        plan: planKey
       });
+      
+      console.log('Checkout session created:', response.data);
       
       // Redirect to Stripe checkout
       window.location.href = response.data.url;
     } catch (error: any) {
       console.error('Subscription error:', error);
-      toast.error(error.response?.data?.error || 'Failed to create checkout session');
+      const errorMessage = error.response?.data?.message || error.response?.data?.error || 'Failed to create checkout session';
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }

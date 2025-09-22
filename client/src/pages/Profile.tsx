@@ -2,7 +2,9 @@ import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext.tsx';
 import { useTranslation } from '../hooks/useTranslation.ts';
 import SubscriptionManagement from '../components/SubscriptionManagement.tsx';
-import { AlertTriangle, Trash2 } from 'lucide-react';
+import { AlertTriangle, Trash2, XCircle } from 'lucide-react';
+import axios from 'axios';
+import toast from 'react-hot-toast';
 
 const Profile: React.FC = () => {
   const { user, logout } = useAuth();
@@ -13,6 +15,27 @@ const Profile: React.FC = () => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState('');
   const [deleteStep, setDeleteStep] = useState(1); // Multi-step confirmation
+  const [isCancellingSubscription, setIsCancellingSubscription] = useState(false);
+
+  const handleCancelSubscription = async () => {
+    if (!window.confirm('Are you sure you want to cancel your subscription? You will lose access to premium features at the end of your current billing period.')) {
+      return;
+    }
+
+    try {
+      setIsCancellingSubscription(true);
+      // This would typically redirect to Stripe portal for cancellation
+      // For now, we'll just redirect to the billing portal
+      const response = await axios.post('/api/subscriptions/create-portal-session');
+      window.location.href = response.data.url;
+    } catch (error: any) {
+      console.error('Cancel subscription error:', error);
+      const errorMessage = error.response?.data?.message || error.response?.data?.error || 'Failed to cancel subscription';
+      toast.error(errorMessage);
+    } finally {
+      setIsCancellingSubscription(false);
+    }
+  };
 
   const handleDeleteAccount = async () => {
     if (deleteConfirmation !== user?.email) {
@@ -114,20 +137,45 @@ const Profile: React.FC = () => {
             </div>
             
             {showDangerZone && (
-              <div className="rounded-lg border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 p-4">
-                <div className="flex items-start gap-3">
-                  <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400 mt-0.5" />
-                  <div className="flex-1">
-                    <h4 className="text-sm font-medium text-red-900 dark:text-red-200 mb-1">Delete Account</h4>
-                    <p className="text-xs text-red-800 dark:text-red-300 mb-3">
-                      Permanently delete your account and all data. This cannot be undone.
-                    </p>
-                    <button
-                      onClick={() => setShowDeleteModal(true)}
-                      className="text-xs px-3 py-1.5 bg-red-600 dark:bg-red-700 text-white rounded hover:bg-red-700 dark:hover:bg-red-600 transition-colors duration-200"
-                    >
-                      Delete Account
-                    </button>
+              <div className="space-y-4">
+                {/* Cancel Subscription */}
+                {user?.subscription?.status === 'active' && user?.subscription?.stripeCustomerId && user?.subscription?.plan !== 'enterprise' && (
+                  <div className="rounded-lg border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 p-4">
+                    <div className="flex items-start gap-3">
+                      <XCircle className="w-5 h-5 text-red-600 dark:text-red-400 mt-0.5" />
+                      <div className="flex-1">
+                        <h4 className="text-sm font-medium text-red-900 dark:text-red-200 mb-1">Cancel Subscription</h4>
+                        <p className="text-xs text-red-800 dark:text-red-300 mb-3">
+                          Cancel your subscription. You'll keep access until the end of your current billing period.
+                        </p>
+                        <button
+                          onClick={handleCancelSubscription}
+                          disabled={isCancellingSubscription}
+                          className="text-xs px-3 py-1.5 bg-red-600 dark:bg-red-700 text-white rounded hover:bg-red-700 dark:hover:bg-red-600 transition-colors duration-200 disabled:opacity-50"
+                        >
+                          {isCancellingSubscription ? 'Processing...' : 'Cancel Subscription'}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Delete Account */}
+                <div className="rounded-lg border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 p-4">
+                  <div className="flex items-start gap-3">
+                    <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400 mt-0.5" />
+                    <div className="flex-1">
+                      <h4 className="text-sm font-medium text-red-900 dark:text-red-200 mb-1">Delete Account</h4>
+                      <p className="text-xs text-red-800 dark:text-red-300 mb-3">
+                        Permanently delete your account and all data. This cannot be undone.
+                      </p>
+                      <button
+                        onClick={() => setShowDeleteModal(true)}
+                        className="text-xs px-3 py-1.5 bg-red-600 dark:bg-red-700 text-white rounded hover:bg-red-700 dark:hover:bg-red-600 transition-colors duration-200"
+                      >
+                        Delete Account
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>

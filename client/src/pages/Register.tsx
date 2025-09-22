@@ -57,7 +57,15 @@ const Register: React.FC = () => {
         company: form.company || undefined,
       });
       if (result.success) {
-        navigate('/');
+        // Check if user intended to subscribe to a paid plan
+        const intendedPlan = localStorage.getItem('intendedPlan');
+        if (intendedPlan && intendedPlan !== 'free') {
+          // Clear the intended plan and redirect to pricing with the plan selected
+          localStorage.removeItem('intendedPlan');
+          navigate(`/pricing?plan=${intendedPlan}`);
+        } else {
+          navigate('/');
+        }
       } else {
         if (result.fieldErrors) setFieldErrors(result.fieldErrors);
         if (result.message) setError(result.message);

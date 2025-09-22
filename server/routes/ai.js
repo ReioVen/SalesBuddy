@@ -1887,6 +1887,17 @@ router.get('/conversations', authenticateToken, async (req, res) => {
   }
 });
 
+// Get conversation count
+router.get('/conversations/count', authenticateToken, async (req, res) => {
+  try {
+    const count = await Conversation.countDocuments({ userId: req.user._id, isActive: true });
+    res.json({ count });
+  } catch (error) {
+    console.error('Get conversation count error:', error);
+    res.status(500).json({ error: 'Failed to get conversation count' });
+  }
+});
+
 // Get current usage status
 router.get('/usage', authenticateToken, async (req, res) => {
   try {

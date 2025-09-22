@@ -47,6 +47,7 @@ const ConversationSummaries: React.FC = () => {
   const [summaries, setSummaries] = useState<ConversationSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [conversationCount, setConversationCount] = useState<number>(0);
   const [summaryStatus, setSummaryStatus] = useState<{
     summariesGeneratedToday: number;
     totalSummariesGenerated: number;
@@ -55,10 +56,51 @@ const ConversationSummaries: React.FC = () => {
     canGenerate: boolean;
   } | null>(null);
 
+  // Database translations are handled automatically by each ConversationSummaryCard
+
+  const loadSummaries = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get('/api/conversation-summaries');
+      setSummaries(response.data.summaries);
+    } catch (error: any) {
+      console.error('Failed to load conversation summaries:', error);
+      setError(t('failedToLoadConversationSummaries'));
+      toast.error(t('failedToLoadConversationSummaries'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadSummaryStatus = async () => {
+    try {
+      const response = await axios.get('/api/conversation-summaries/status', {
+        withCredentials: true
+      });
+      setSummaryStatus(response.data);
+      console.log('Summary status loaded:', response.data);
+    } catch (error: any) {
+      console.error('Failed to load summary status:', error);
+    }
+  };
+
+  const loadConversationCount = async () => {
+    try {
+      const response = await axios.get('/api/ai/conversations/count', {
+        withCredentials: true
+      });
+      setConversationCount(response.data.count || 0);
+    } catch (error: any) {
+      console.error('Failed to load conversation count:', error);
+      setConversationCount(0);
+    }
+  };
+
   useEffect(() => {
     if (user) {
       loadSummaries();
       loadSummaryStatus();
+      loadConversationCount();
     }
   }, [user]);
 
@@ -108,35 +150,13 @@ const ConversationSummaries: React.FC = () => {
     );
   }
 
-  // Database translations are handled automatically by each ConversationSummaryCard
-
-  const loadSummaries = async () => {
-    try {
-      setLoading(true);
-      const response = await axios.get('/api/conversation-summaries');
-      setSummaries(response.data.summaries);
-    } catch (error: any) {
-      console.error('Failed to load conversation summaries:', error);
-      setError(t('failedToLoadConversationSummaries'));
-      toast.error(t('failedToLoadConversationSummaries'));
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const loadSummaryStatus = async () => {
-    try {
-      const response = await axios.get('/api/conversation-summaries/status');
-      setSummaryStatus(response.data.summaryStatus);
-    } catch (error: any) {
-      console.error('Failed to load summary status:', error);
-    }
-  };
 
   const generateNewSummary = async () => {
     try {
       setLoading(true);
-      const response = await axios.post('/api/conversation-summaries/generate');
+      const response = await axios.post('/api/conversation-summaries/generate', {}, {
+        withCredentials: true
+      });
       const newSummary = response.data.summary;
       setSummaries(prev => [newSummary, ...prev]);
       toast.success(t('newConversationSummaryGenerated'));
@@ -241,78 +261,110 @@ const ConversationSummaries: React.FC = () => {
           </div>
         )}
 
-        {/* Generate New Summary Button */}
-        <div className="mb-6">
-          <div className="flex items-center gap-4 mb-4">
-            <button
-              onClick={generateNewSummary}
-              disabled={loading || (summaryStatus && !summaryStatus.canGenerate)}
-              className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              {loading ? (
-                <Loader2 className="w-5 h-5 animate-spin" />
-              ) : (
-                <Award className="w-5 h-5" />
-              )}
-              {t('generateNewSummary')}
-            </button>
-            
-            {/* Daily Limit Status */}
-            {summaryStatus && (
-              <div className="flex items-center gap-2 text-sm">
-                <div className={`px-3 py-1 rounded-full text-xs font-medium ${
-                  summaryStatus.canGenerate 
-                    ? 'bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-200' 
-                    : 'bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-200'
-                }`}>
-                  {summaryStatus.summariesGeneratedToday}/{summaryStatus.dailyLimit} summaries today
+        {/* Generate New Summary Button - Only show if user has enough conversations */}
+        {conversationCount >= 5 && (
+          <div className="mb-6">
+            <div className="flex items-center gap-4 mb-4">
+              <button
+                onClick={generateNewSummary}
+                disabled={loading || (summaryStatus && !summaryStatus.canGenerate)}
+                className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {loading ? (
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                ) : (
+                  <Award className="w-5 h-5" />
+                )}
+                {t('generateNewSummary')}
+              </button>
+              
+              {/* Daily Limit Status */}
+              {summaryStatus && (
+                <div className="flex items-center gap-2 text-sm">
+                  <div className={`px-3 py-1 rounded-full text-xs font-medium ${
+                    summaryStatus.canGenerate 
+                      ? 'bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-200' 
+                      : 'bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-200'
+                  }`}>
+                    {summaryStatus.summariesGeneratedToday}/{summaryStatus.dailyLimit} summaries today
+                  </div>
+                  {summaryStatus.canGenerate && (
+                    <span className="text-gray-600 dark:text-gray-400">
+                      {summaryStatus.remainingToday} remaining
+                    </span>
+                  )}
+                  {!summaryStatus.canGenerate && (
+                    <span className="text-red-600 dark:text-red-400">
+                      Daily limit reached
+                    </span>
+                  )}
                 </div>
-                {summaryStatus.canGenerate && (
-                  <span className="text-gray-600 dark:text-gray-400">
-                    {summaryStatus.remainingToday} remaining
-                  </span>
-                )}
-                {!summaryStatus.canGenerate && (
-                  <span className="text-red-600 dark:text-red-400">
-                    Daily limit reached
-                  </span>
-                )}
-              </div>
+              )}
+            </div>
+            
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              {t('generateSummaryDescription')}
+            </p>
+            
+            {summaryStatus && !summaryStatus.canGenerate && (
+              <p className="text-sm text-red-600 dark:text-red-400 mt-2">
+                You've reached your daily limit of 5 summaries. Try again tomorrow!
+              </p>
             )}
           </div>
-          
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            {t('generateSummaryDescription')}
-          </p>
-          
-          {summaryStatus && !summaryStatus.canGenerate && (
-            <p className="text-sm text-red-600 dark:text-red-400 mt-2">
-              You've reached your daily limit of 5 summaries. Try again tomorrow!
-            </p>
-          )}
-        </div>
+        )}
 
 
         {/* Summaries List */}
         {summaries.length === 0 ? (
           <div className="bg-white dark:bg-dark-800 rounded-lg border border-gray-200 dark:border-dark-600 p-12 text-center">
             <Award className="w-16 h-16 text-gray-400 dark:text-gray-500 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">{t('noSummariesYet')}</h3>
-            <p className="text-gray-600 dark:text-gray-400 mb-6">
-              {t('noSummariesDescription')}
-            </p>
-            <button
-              onClick={generateNewSummary}
-              disabled={loading}
-              className="flex items-center gap-2 px-6 py-3 bg-blue-600 dark:bg-blue-700 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors mx-auto"
-            >
-              {loading ? (
-                <Loader2 className="w-5 h-5 animate-spin" />
-              ) : (
-                <Award className="w-5 h-5" />
-              )}
-              {t('generateSummary')}
-            </button>
+            
+            {conversationCount < 5 ? (
+              <>
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Complete 5 Conversations First</h3>
+                <p className="text-gray-600 dark:text-gray-400 mb-6">
+                  You need to complete at least 5 conversations before you can generate your first AI-powered summary. 
+                  You currently have {conversationCount} conversation{conversationCount !== 1 ? 's' : ''}.
+                </p>
+                <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6">
+                  <p className="text-blue-800 dark:text-blue-200 text-sm">
+                    <strong>Need {5 - conversationCount} more conversation{5 - conversationCount !== 1 ? 's' : ''}</strong> to unlock your first summary
+                  </p>
+                </div>
+                <button
+                  onClick={() => window.location.href = '/conversations'}
+                  className="flex items-center gap-2 px-6 py-3 bg-blue-600 dark:bg-blue-700 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors mx-auto"
+                >
+                  <MessageSquare className="w-5 h-5" />
+                  Start Conversations
+                </button>
+              </>
+            ) : (
+              <>
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">{t('noSummariesYet')}</h3>
+                <p className="text-gray-600 dark:text-gray-400 mb-6">
+                  {t('noSummariesDescription')}
+                </p>
+                <button
+                  onClick={generateNewSummary}
+                  disabled={loading || (summaryStatus && !summaryStatus.canGenerate)}
+                  className="flex items-center gap-2 px-6 py-3 bg-blue-600 dark:bg-blue-700 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors mx-auto"
+                >
+                  {loading ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : (
+                    <Award className="w-5 h-5" />
+                  )}
+                  {summaryStatus && !summaryStatus.canGenerate ? 'Daily Limit Reached' : t('generateSummary')}
+                </button>
+                {summaryStatus && !summaryStatus.canGenerate && (
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                    You've reached your daily limit of 5 summaries. Try again tomorrow!
+                  </p>
+                )}
+              </>
+            )}
           </div>
         ) : (
           <div className="space-y-6">
