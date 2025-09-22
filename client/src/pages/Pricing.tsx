@@ -58,6 +58,7 @@ const Pricing: React.FC = () => {
     }
   }, [user, searchParams, loading]);
 
+  // Updated free plan to 3 conversations per month
   const plans: PricingPlan[] = [
     {
       name: language === 'et' ? 'Tasuta' : 'Free',
