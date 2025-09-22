@@ -6,9 +6,11 @@ import {
   X, 
   Star
 } from 'lucide-react';
-import apiClient from '../config/axios';
+import axios from 'axios';
 import toast from 'react-hot-toast';
 import { useSearchParams } from 'react-router-dom';
+
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://salesbuddy-production.up.railway.app';
 
 interface PricingPlan {
   name: string;
@@ -234,7 +236,7 @@ const Pricing: React.FC = () => {
       const planKey = planName.toLowerCase();
       console.log('Attempting to subscribe to plan:', { planName, planKey });
       
-      const response = await apiClient.post('/api/subscriptions/create-checkout-session', {
+      const response = await axios.post('/api/subscriptions/create-checkout-session', {
         plan: planKey
       });
       
@@ -256,7 +258,7 @@ const Pricing: React.FC = () => {
     setLoading(true);
 
     try {
-      await apiClient.post('/api/enterprise/request', formData);
+      await axios.post('/api/enterprise/request', formData);
       toast.success('Enterprise request submitted successfully! We\'ll contact you soon.');
       setShowEnterpriseModal(false);
       setFormData({

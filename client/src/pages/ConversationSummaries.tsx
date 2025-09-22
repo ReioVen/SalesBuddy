@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext.tsx';
-import apiClient from '../config/axios';
+import axios from 'axios';
 import toast from 'react-hot-toast';
 import ConversationSummaryCard from '../components/ConversationSummaryCard.tsx';
 import { Award, TrendingUp, MessageSquare, Loader2 } from 'lucide-react';
 import { useTranslation } from '../hooks/useTranslation.ts';
+
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://salesbuddy-production.up.railway.app';
 // Removed AI translation context - now using database translations
 
 interface ConversationSummary {
@@ -61,7 +63,7 @@ const ConversationSummaries: React.FC = () => {
   const loadSummaries = async () => {
     try {
       setLoading(true);
-      const response = await apiClient.get('/api/conversation-summaries');
+      const response = await axios.get('/api/conversation-summaries');
       setSummaries(response.data.summaries);
     } catch (error: any) {
       console.error('Failed to load conversation summaries:', error);
@@ -74,7 +76,7 @@ const ConversationSummaries: React.FC = () => {
 
   const loadSummaryStatus = async () => {
     try {
-      const response = await apiClient.get('/api/conversation-summaries/status', {
+      const response = await axios.get('/api/conversation-summaries/status', {
         withCredentials: true
       });
       setSummaryStatus(response.data);
@@ -86,7 +88,7 @@ const ConversationSummaries: React.FC = () => {
 
   const loadConversationCount = async () => {
     try {
-      const response = await apiClient.get('/api/ai/conversations/count', {
+      const response = await axios.get('/api/ai/conversations/count', {
         withCredentials: true
       });
       setConversationCount(response.data.count || 0);
@@ -154,7 +156,7 @@ const ConversationSummaries: React.FC = () => {
   const generateNewSummary = async () => {
     try {
       setLoading(true);
-      const response = await apiClient.post('/api/conversation-summaries/generate', {}, {
+      const response = await axios.post('/api/conversation-summaries/generate', {}, {
         withCredentials: true
       });
       const newSummary = response.data.summary;

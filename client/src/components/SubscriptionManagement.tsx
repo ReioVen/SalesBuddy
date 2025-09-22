@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useTranslation } from '../hooks/useTranslation.ts';
 import { useAuth } from '../contexts/AuthContext.tsx';
-import apiClient from '../config/axios';
+import axios from 'axios';
 import toast from 'react-hot-toast';
 import { 
   CreditCard, 
@@ -13,6 +13,8 @@ import {
   ArrowUpRight,
   Settings
 } from 'lucide-react';
+
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://salesbuddy-production.up.railway.app';
 
 interface SubscriptionManagementProps {
   onClose?: () => void;
@@ -58,7 +60,7 @@ const SubscriptionManagement: React.FC<SubscriptionManagementProps> = ({ onClose
   const handleManageSubscription = async () => {
     try {
       setLoading(true);
-      const response = await apiClient.post('/api/subscriptions/create-portal-session');
+      const response = await axios.post('/api/subscriptions/create-portal-session');
       window.location.href = response.data.url;
     } catch (error: any) {
       console.error('Portal session error:', error);
@@ -78,7 +80,7 @@ const SubscriptionManagement: React.FC<SubscriptionManagementProps> = ({ onClose
       setLoading(true);
       // This would typically redirect to Stripe portal for cancellation
       // For now, we'll just redirect to the billing portal
-      const response = await apiClient.post('/api/subscriptions/create-portal-session');
+      const response = await axios.post('/api/subscriptions/create-portal-session');
       window.location.href = response.data.url;
     } catch (error: any) {
       console.error('Cancel subscription error:', error);
@@ -92,7 +94,7 @@ const SubscriptionManagement: React.FC<SubscriptionManagementProps> = ({ onClose
   const handleCompleteSetup = async () => {
     try {
       setLoading(true);
-      const response = await apiClient.post('/api/subscriptions/complete-setup');
+      const response = await axios.post('/api/subscriptions/complete-setup');
       toast.success(response.data.message);
       
       // Refresh the page to show the updated subscription data
@@ -119,7 +121,7 @@ const SubscriptionManagement: React.FC<SubscriptionManagementProps> = ({ onClose
       setLoading(true);
       
       // Get available plan change options
-      const response = await apiClient.get('/api/subscriptions/change-options');
+      const response = await axios.get('/api/subscriptions/change-options');
       const { availablePlans } = response.data;
       
       if (availablePlans.length === 0) {

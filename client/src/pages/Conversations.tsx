@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useTranslation } from '../hooks/useTranslation.ts';
 import { useAuth } from '../contexts/AuthContext.tsx';
 import { useNavigate } from 'react-router-dom';
-import apiClient from '../config/axios';
+import axios from 'axios';
 import toast from 'react-hot-toast';
 import { Plus, MessageSquare, User, Building, Briefcase, FileText, Send, X, Star, Lightbulb, Volume2, VolumeX } from 'lucide-react';
 import ConversationAIFeedback from '../components/ConversationAIFeedback.tsx';
@@ -10,6 +10,8 @@ import SpeechInput from '../components/SpeechInput.tsx';
 import VoiceCommands from '../components/VoiceCommands.tsx';
 import AITips from '../components/AITips.tsx';
 import { useTextToSpeech } from '../hooks/useTextToSpeech.ts';
+
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://salesbuddy-production.up.railway.app';
 
 interface ClientCustomization {
   name: string;
@@ -189,7 +191,9 @@ const Conversations: React.FC = () => {
       if (!user || usageStatusLoaded) return;
       
       try {
-        const response = await apiClient.get('/api/subscriptions/status');
+        const response = await axios.get(`${API_BASE_URL}/api/subscriptions/status`, {
+          withCredentials: true
+        });
         setUsageStatus(response.data.usageStatus);
         setUsageStatusLoaded(true);
       } catch (error: any) {
@@ -207,7 +211,7 @@ const Conversations: React.FC = () => {
     if (!user) return;
     
     try {
-      const response = await apiClient.get('/api/subscriptions/status');
+      const response = await axios.get('/api/subscriptions/status');
       setUsageStatus(response.data.usageStatus);
     } catch (error: any) {
       console.error('Failed to refresh usage status:', error);
@@ -229,7 +233,7 @@ const Conversations: React.FC = () => {
       
       setLoadingHistory(true);
       try {
-        const response = await apiClient.get('/api/ai/conversations');
+        const response = await axios.get('/api/ai/conversations');
         // Map _id to id for frontend compatibility
         const conversations = (response.data.conversations || []).map((conv: any) => ({
           ...conv,
@@ -257,7 +261,7 @@ const Conversations: React.FC = () => {
       
       setLoadingHistory(true);
       try {
-        const response = await apiClient.get('/api/ai/conversations');
+        const response = await axios.get('/api/ai/conversations');
         const conversations = (response.data.conversations || []).map((conv: any) => ({
           ...conv,
           id: conv._id || conv.id
@@ -295,7 +299,7 @@ const Conversations: React.FC = () => {
     setLoading(true);
     try {
       const volumeToSend = clientCustomization.ttsVolume || ttsVolume;
-      const response = await apiClient.post('/api/ai/conversation', {
+      const response = await axios.post('/api/ai/conversation', {
         scenario: clientCustomization.scenario,
         clientName: clientCustomization.name || undefined,
         clientPersonality: clientCustomization.personality || undefined,
@@ -408,7 +412,7 @@ const Conversations: React.FC = () => {
     setCurrentConversation(updatedConversation);
 
     try {
-      const response = await apiClient.post('/api/ai/message', {
+      const response = await axios.post('/api/ai/message', {
         conversationId: currentConversation.id,
         message: messageToSend,
         language: language
@@ -476,7 +480,7 @@ const Conversations: React.FC = () => {
     setEndingConversation(true);
     try {
       // End the conversation and generate AI ratings (same as "End Conversation" button)
-      await apiClient.post(`/api/ai/conversation/${currentConversation.id}/end`);
+      await axios.post(`/api/ai/conversation/${currentConversation.id}/end`);
       
       // Close the chat window
       setCurrentConversation(null);
@@ -486,7 +490,7 @@ const Conversations: React.FC = () => {
       // Manually refresh conversation history to get AI ratings
       const refreshHistory = async () => {
         try {
-          const response = await apiClient.get('/api/ai/conversations');
+          const response = await axios.get('/api/ai/conversations');
           const conversations = (response.data.conversations || []).map((conv: any) => ({
             ...conv,
             id: conv._id || conv.id
@@ -518,7 +522,7 @@ const Conversations: React.FC = () => {
     
     setEndingConversation(true);
     try {
-      await apiClient.post(`/api/ai/conversation/${currentConversation.id}/end`);
+      await axios.post(`/api/ai/conversation/${currentConversation.id}/end`);
       toast.success(t('conversationEnded'));
       
       // Close the chat window by setting currentConversation to null
@@ -529,7 +533,7 @@ const Conversations: React.FC = () => {
       // Manually refresh conversation history to get AI ratings
       const refreshHistory = async () => {
         try {
-          const response = await apiClient.get('/api/ai/conversations');
+          const response = await axios.get('/api/ai/conversations');
           const conversations = (response.data.conversations || []).map((conv: any) => ({
             ...conv,
             id: conv._id || conv.id
@@ -563,7 +567,7 @@ const Conversations: React.FC = () => {
     }
     
     try {
-      const response = await apiClient.get(`/api/ai/conversation/${conversationId}`);
+      const response = await axios.get(`/api/ai/conversation/${conversationId}`);
       // Map _id to id for frontend compatibility
       const conversation = {
         ...response.data.conversation,
