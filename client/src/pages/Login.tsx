@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext.tsx';
+import { Eye, EyeOff } from 'lucide-react';
 
 const Login: React.FC = () => {
   const { login } = useAuth();
@@ -8,6 +9,7 @@ const Login: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({ email: '', password: '' });
   const [error, setError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
 
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -35,7 +37,28 @@ const Login: React.FC = () => {
         <h1 className="text-2xl font-bold mb-6 text-center text-gray-900 dark:text-white">Welcome back</h1>
         <form onSubmit={onSubmit} className="space-y-4">
           <input className="input-field" name="email" type="email" placeholder="Email" value={form.email} onChange={onChange} required />
-          <input className="input-field" name="password" type="password" placeholder="Password" value={form.password} onChange={onChange} required />
+          <div className="relative">
+            <input 
+              className="input-field pr-10" 
+              name="password" 
+              type={showPassword ? "text" : "password"} 
+              placeholder="Password" 
+              value={form.password} 
+              onChange={onChange} 
+              required 
+            />
+            <button
+              type="button"
+              className="absolute inset-y-0 right-0 pr-3 flex items-center"
+              onClick={() => setShowPassword(!showPassword)}
+            >
+              {showPassword ? (
+                <EyeOff className="h-5 w-5 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300" />
+              ) : (
+                <Eye className="h-5 w-5 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300" />
+              )}
+            </button>
+          </div>
           {error && <p className="text-sm text-red-600">{error}</p>}
           <button type="submit" disabled={loading} className="btn-primary w-full">{loading ? 'Signing in...' : 'Sign in'}</button>
         </form>

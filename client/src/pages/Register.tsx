@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext.tsx';
+import { Eye, EyeOff } from 'lucide-react';
 
 const Register: React.FC = () => {
   const { register } = useAuth();
@@ -17,6 +18,8 @@ const Register: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [passwordMatchError, setPasswordMatchError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -95,20 +98,54 @@ const Register: React.FC = () => {
             {fieldErrors.email && <p className="text-xs text-red-600 mt-1">{fieldErrors.email}</p>}
           </div>
           <div>
-            <input className={`input-field ${fieldErrors.password ? 'ring-2 ring-red-500' : ''}`} name="password" type="password" placeholder="Password" value={form.password} onChange={onChange} required />
+            <div className="relative">
+              <input 
+                className={`input-field pr-10 ${fieldErrors.password ? 'ring-2 ring-red-500' : ''}`} 
+                name="password" 
+                type={showPassword ? "text" : "password"} 
+                placeholder="Password" 
+                value={form.password} 
+                onChange={onChange} 
+                required 
+              />
+              <button
+                type="button"
+                className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? (
+                  <EyeOff className="h-5 w-5 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300" />
+                ) : (
+                  <Eye className="h-5 w-5 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300" />
+                )}
+              </button>
+            </div>
             {fieldErrors.password && <p className="text-xs text-red-600 mt-1">{fieldErrors.password}</p>}
           </div>
           <div>
-            <input 
-              className={`input-field ${passwordMatchError ? 'ring-2 ring-red-500' : ''}`} 
-              name="confirmPassword" 
-              type="password" 
-              placeholder="Confirm password" 
-              value={form.confirmPassword} 
-              onChange={onChange}
-              onBlur={checkPasswordMatch}
-              required 
-            />
+            <div className="relative">
+              <input 
+                className={`input-field pr-10 ${passwordMatchError ? 'ring-2 ring-red-500' : ''}`} 
+                name="confirmPassword" 
+                type={showConfirmPassword ? "text" : "password"} 
+                placeholder="Confirm password" 
+                value={form.confirmPassword} 
+                onChange={onChange}
+                onBlur={checkPasswordMatch}
+                required 
+              />
+              <button
+                type="button"
+                className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+              >
+                {showConfirmPassword ? (
+                  <EyeOff className="h-5 w-5 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300" />
+                ) : (
+                  <Eye className="h-5 w-5 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300" />
+                )}
+              </button>
+            </div>
             {passwordMatchError && <p className="text-xs text-red-600 mt-1">{passwordMatchError}</p>}
           </div>
           {error && <p className="text-sm text-red-600">{error}</p>}
