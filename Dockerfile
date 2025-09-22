@@ -16,5 +16,5 @@ COPY server/ .
 # Expose port
 EXPOSE 5002
 
-# Start server directly with node
-CMD ["node", "index.js"]
+# Start server with simple startup script
+CMD ["node", "start.js"]
