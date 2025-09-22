@@ -60,10 +60,12 @@ app.use(express.urlencoded({ extended: true }));
 
 // CORS configuration
 const allowedOrigins = [
-  process.env.CLIENT_URL || 'http://localhost:3000',
+  process.env.CLIENT_URL || 'https://salesbuddy.pro',
   'https://salesbuddy.pro',
   'https://www.salesbuddy.pro',
-  'https://app.salesbuddy.pro'
+  'https://app.salesbuddy.pro',
+  'https://salesbuddy-client.vercel.app',
+  'https://sales-buddy.vercel.app'
 ];
 
 app.use(cors({
