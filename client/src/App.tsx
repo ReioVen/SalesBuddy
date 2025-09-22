@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useAuth } from './contexts/AuthContext.tsx';
-import { testAPI } from './utils/apiTest';
+// import { testAPI } from './utils/apiTest';
 import Home from './pages/Home.tsx';
 import Pricing from './pages/Pricing.tsx';
 import Login from './pages/Login.tsx';
@@ -156,9 +156,9 @@ const App: React.FC = () => {
   }, [user]);
 
   // Test API connection on app load
-  useEffect(() => {
-    testAPI();
-  }, []);
+  // useEffect(() => {
+  //   testAPI();
+  // }, []);
 
   return (
     <ThemeProvider>
