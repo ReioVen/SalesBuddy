@@ -6,7 +6,12 @@ import tkinter as tk
 from tkinter import messagebox, simpledialog
 from datetime import datetime, timedelta
 import json
+import re
 from bson import ObjectId
+from security_module import (
+    InputValidator, SecureDatabaseQueries, SecurityError, 
+    SecurityAuditLogger, secure_input_wrapper
+)
 
 class AdminMethods:
     def __init__(self, admin_instance):
@@ -132,20 +137,37 @@ class AdminMethods:
         except Exception as e:
             messagebox.showerror("Error", f"Failed to load users: {str(e)}")
     
+    @secure_input_wrapper
     def search_users(self, event=None):
         """Search users based on search term"""
-        search_term = self.admin.user_search_var.get().lower()
-        
-        for item in self.admin.users_tree.get_children():
-            values = self.admin.users_tree.item(item)['values']
-            # Search in name and email
-            if (search_term in values[1].lower() or 
-                search_term in values[2].lower() or 
-                search_term in values[3].lower() or
-                search_term in values[4].lower()):
-                self.admin.users_tree.reattach(item, '', 'end')
-            else:
-                self.admin.users_tree.detach(item)
+        try:
+            # Validate and sanitize search input
+            raw_search_term = self.admin.user_search_var.get()
+            search_term = InputValidator.validate_and_sanitize_input(
+                raw_search_term, 'search', is_required=False
+            ).lower()
+            
+            for item in self.admin.users_tree.get_children():
+                values = self.admin.users_tree.item(item)['values']
+                # Search in name and email
+                if (search_term in values[1].lower() or 
+                    search_term in values[2].lower() or 
+                    search_term in values[3].lower() or
+                    search_term in values[4].lower()):
+                    self.admin.users_tree.reattach(item, '', 'end')
+                else:
+                    self.admin.users_tree.detach(item)
+                    
+        except SecurityError as e:
+            SecurityAuditLogger.log_security_violation(
+                None, "search_users", "search_term", "input_validation", str(e)
+            )
+            messagebox.showerror("Security Error", "Invalid search input detected")
+        except Exception as e:
+            SecurityAuditLogger.log_security_violation(
+                None, "search_users", "error", "unexpected_error", str(e)
+            )
+            messagebox.showerror("Error", "An error occurred during search")
     
     def filter_users(self, filter_type):
         """Filter users by type"""
@@ -474,27 +496,34 @@ Updated: {user.get('updatedAt', 'Unknown')}
         
         def save_user():
             try:
-                # Prepare update data
-                update_data = {
+                # Validate and sanitize all input data
+                raw_data = {
                     'firstName': first_name_var.get(),
                     'lastName': last_name_var.get(),
                     'email': email_var.get(),
                     'language': language_var.get(),
                     'role': role_var.get(),
+                    'subscription.plan': plan_var.get(),
+                    'subscription.status': status_var.get(),
+                    'usage.monthlyLimit': monthly_limit_var.get(),
+                    'usage.dailyLimit': daily_limit_var.get(),
+                    'settings.industry': industry_var.get(),
+                    'settings.salesRole': sales_role_var.get(),
+                    'settings.experienceLevel': experience_var.get()
+                }
+                
+                # Use secure database query builder
+                update_data = SecureDatabaseQueries.build_secure_update_data(raw_data)
+                
+                # Add boolean fields (these don't need validation)
+                update_data.update({
                     'isAdmin': is_admin_var.get(),
                     'isSuperAdmin': is_super_admin_var.get(),
                     'isCompanyAdmin': is_company_admin_var.get(),
                     'isTeamLeader': is_team_leader_var.get(),
                     'isEmailVerified': email_verified_var.get(),
-                    'subscription.plan': plan_var.get(),
-                    'subscription.status': status_var.get(),
-                    'usage.monthlyLimit': int(monthly_limit_var.get()) if monthly_limit_var.get().isdigit() else 50,
-                    'usage.dailyLimit': int(daily_limit_var.get()) if daily_limit_var.get().isdigit() else 50,
-                    'settings.industry': industry_var.get(),
-                    'settings.salesRole': sales_role_var.get(),
-                    'settings.experienceLevel': experience_var.get(),
                     'updatedAt': datetime.now()
-                }
+                })
                 
                 # Update user in database
                 result = self.admin.users_collection.update_one(
@@ -509,8 +538,16 @@ Updated: {user.get('updatedAt', 'Unknown')}
                 else:
                     messagebox.showwarning("Warning", "No changes were made")
                     
+            except SecurityError as e:
+                SecurityAuditLogger.log_security_violation(
+                    str(user.get('_id', 'unknown')), "save_user", "user_data", "input_validation", str(e)
+                )
+                messagebox.showerror("Security Error", "Invalid input data detected")
             except Exception as e:
-                messagebox.showerror("Error", f"Failed to update user: {str(e)}")
+                SecurityAuditLogger.log_security_violation(
+                    str(user.get('_id', 'unknown')), "save_user", "error", "unexpected_error", str(e)
+                )
+                messagebox.showerror("Error", "An error occurred while updating user")
         
         tk.Button(button_frame, text="Save Changes", command=save_user, 
                  bg='#4CAF50', fg='white', font=('Arial', 12, 'bold')).pack(side='left', padx=5)
@@ -661,18 +698,35 @@ Updated: {user.get('updatedAt', 'Unknown')}
         except Exception as e:
             messagebox.showerror("Error", f"Failed to load companies: {str(e)}")
     
+    @secure_input_wrapper
     def search_companies(self, event=None):
         """Search companies based on search term"""
-        search_term = self.admin.company_search_var.get().lower()
-        
-        for item in self.admin.companies_tree.get_children():
-            values = self.admin.companies_tree.item(item)['values']
-            # Search in name and industry
-            if (search_term in values[1].lower() or 
-                search_term in values[2].lower()):
-                self.admin.companies_tree.reattach(item, '', 'end')
-            else:
-                self.admin.companies_tree.detach(item)
+        try:
+            # Validate and sanitize search input
+            raw_search_term = self.admin.company_search_var.get()
+            search_term = InputValidator.validate_and_sanitize_input(
+                raw_search_term, 'search', is_required=False
+            ).lower()
+            
+            for item in self.admin.companies_tree.get_children():
+                values = self.admin.companies_tree.item(item)['values']
+                # Search in name and industry
+                if (search_term in values[1].lower() or 
+                    search_term in values[2].lower()):
+                    self.admin.companies_tree.reattach(item, '', 'end')
+                else:
+                    self.admin.companies_tree.detach(item)
+                    
+        except SecurityError as e:
+            SecurityAuditLogger.log_security_violation(
+                None, "search_companies", "search_term", "input_validation", str(e)
+            )
+            messagebox.showerror("Security Error", "Invalid search input detected")
+        except Exception as e:
+            SecurityAuditLogger.log_security_violation(
+                None, "search_companies", "error", "unexpected_error", str(e)
+            )
+            messagebox.showerror("Error", "An error occurred during search")
     
     def view_company_details(self, event=None):
         """View detailed company information"""
@@ -966,21 +1020,28 @@ Updated: {company.get('updatedAt', 'Unknown')}
         
         def save_company():
             try:
-                # Prepare update data
-                update_data = {
+                # Validate and sanitize all input data
+                raw_data = {
                     'name': name_var.get(),
                     'description': description_var.get(),
                     'industry': industry_var.get(),
                     'size': size_var.get(),
-                    'isActive': is_active_var.get(),
                     'subscription.plan': plan_var.get(),
                     'subscription.status': status_var.get(),
-                    'subscription.maxUsers': int(max_users_var.get()) if max_users_var.get().isdigit() else 5,
+                    'subscription.maxUsers': max_users_var.get(),
+                    'settings.defaultRole': default_role_var.get()
+                }
+                
+                # Use secure database query builder
+                update_data = SecureDatabaseQueries.build_secure_update_data(raw_data)
+                
+                # Add boolean fields (these don't need validation)
+                update_data.update({
+                    'isActive': is_active_var.get(),
                     'settings.allowUserRegistration': allow_registration_var.get(),
                     'settings.requireApproval': require_approval_var.get(),
-                    'settings.defaultRole': default_role_var.get(),
                     'updatedAt': datetime.now()
-                }
+                })
                 
                 # Update company in database
                 result = self.admin.companies_collection.update_one(
@@ -995,8 +1056,16 @@ Updated: {company.get('updatedAt', 'Unknown')}
                 else:
                     messagebox.showwarning("Warning", "No changes were made")
                     
+            except SecurityError as e:
+                SecurityAuditLogger.log_security_violation(
+                    str(company.get('_id', 'unknown')), "save_company", "company_data", "input_validation", str(e)
+                )
+                messagebox.showerror("Security Error", "Invalid input data detected")
             except Exception as e:
-                messagebox.showerror("Error", f"Failed to update company: {str(e)}")
+                SecurityAuditLogger.log_security_violation(
+                    str(company.get('_id', 'unknown')), "save_company", "error", "unexpected_error", str(e)
+                )
+                messagebox.showerror("Error", "An error occurred while updating company")
         
         tk.Button(button_frame, text="Save Changes", command=save_company, 
                  bg='#4CAF50', fg='white', font=('Arial', 12, 'bold')).pack(side='left', padx=5)
@@ -1245,6 +1314,7 @@ Updated: {company.get('updatedAt', 'Unknown')}
         except Exception as e:
             messagebox.showerror("Error", f"Failed to filter conversations: {str(e)}")
     
+    @secure_input_wrapper
     def filter_conversations_by_username(self):
         """Filter conversations by username"""
         if not self.admin.connected:
@@ -1255,10 +1325,26 @@ Updated: {company.get('updatedAt', 'Unknown')}
             for item in self.admin.conversations_tree.get_children():
                 self.admin.conversations_tree.delete(item)
             
-            username = self.admin.conversation_username_var.get().strip()
+            # Validate and sanitize username input
+            raw_username = self.admin.conversation_username_var.get()
+            username = InputValidator.validate_and_sanitize_input(
+                raw_username, 'search', is_required=False
+            ).strip()
+            
             if not username:
                 self.load_conversations()  # Load all if empty
                 return
+            
+            # Use secure database query builder for user search
+            user_filter = SecureDatabaseQueries.build_secure_filter(
+                'firstName', username, '$regex'
+            )
+            user_filter.update(SecureDatabaseQueries.build_secure_filter(
+                'lastName', username, '$regex'
+            ))
+            user_filter.update(SecureDatabaseQueries.build_secure_filter(
+                'email', username, '$regex'
+            ))
             
             # Search for users matching the username
             users = list(self.admin.users_collection.find({
@@ -1306,8 +1392,16 @@ Updated: {company.get('updatedAt', 'Unknown')}
                     tags=(str(conv['_id']),)  # Store full ObjectId as tag
                 )
                 
+        except SecurityError as e:
+            SecurityAuditLogger.log_security_violation(
+                None, "filter_conversations_by_username", "username", "input_validation", str(e)
+            )
+            messagebox.showerror("Security Error", "Invalid username input detected")
         except Exception as e:
-            messagebox.showerror("Error", f"Failed to filter conversations by username: {str(e)}")
+            SecurityAuditLogger.log_security_violation(
+                None, "filter_conversations_by_username", "error", "unexpected_error", str(e)
+            )
+            messagebox.showerror("Error", "An error occurred while filtering conversations")
     
     def clear_conversation_filters(self):
         """Clear all conversation filters and reload all conversations"""
@@ -1459,12 +1553,23 @@ Updated: {conversation.get('updatedAt', 'Unknown')}
         except Exception as e:
             messagebox.showerror("Error", f"Failed to view conversation: {str(e)}")
     
+    @secure_input_wrapper
     def export_conversations(self):
         """Export conversations to JSON"""
         try:
             filename = simpledialog.askstring("Export", "Enter filename (without extension):")
             if not filename:
                 return
+            
+            # Validate and sanitize filename
+            filename = InputValidator.validate_and_sanitize_input(
+                filename, 'text', is_required=True
+            )
+            
+            # Remove any dangerous characters from filename
+            filename = re.sub(r'[<>:"/\\|?*]', '_', filename)
+            if not filename:
+                filename = "export"
             
             # Ask user what to export
             export_choice = messagebox.askyesnocancel(
@@ -1521,5 +1626,284 @@ Updated: {conversation.get('updatedAt', 'Unknown')}
                               f"Exported {len(conversations)} conversations ({export_type}) to {filename}\n\n"
                               f"File saved in the admin panel directory.")
             
+        except SecurityError as e:
+            SecurityAuditLogger.log_security_violation(
+                None, "export_conversations", "filename", "input_validation", str(e)
+            )
+            messagebox.showerror("Security Error", "Invalid filename detected")
         except Exception as e:
-            messagebox.showerror("Error", f"Failed to export conversations: {str(e)}")
+            SecurityAuditLogger.log_security_violation(
+                None, "export_conversations", "error", "unexpected_error", str(e)
+            )
+            messagebox.showerror("Error", "An error occurred while exporting conversations")
+    
+    def load_translations(self, event=None):
+        """Load translations for selected language and category"""
+        if not self.admin.connected:
+            return
+        
+        try:
+            # Clear existing items
+            for item in self.admin.translations_tree.get_children():
+                self.admin.translations_tree.delete(item)
+            
+            language = self.admin.translation_language_var.get()
+            category = self.admin.translation_category_var.get()
+            
+            # Get translation keys for the category
+            translation_keys = list(self.admin.translations_collection.find({'category': category, 'isActive': True}))
+            
+            for key_doc in translation_keys:
+                # Get translation for this key and language
+                translation = self.admin.translations_collection.find_one({
+                    'translationKey': key_doc['_id'],
+                    'language': language,
+                    'isActive': True
+                })
+                
+                # Format text preview (first 100 characters)
+                text_preview = ""
+                last_modified = "Never"
+                status = "Missing"
+                
+                if translation:
+                    text_preview = translation.get('text', '')[:100] + "..." if len(translation.get('text', '')) > 100 else translation.get('text', '')
+                    last_modified = translation.get('lastModified', '').strftime('%Y-%m-%d %H:%M') if translation.get('lastModified') else "Unknown"
+                    status = "Active"
+                
+                # Insert into treeview
+                self.admin.translations_tree.insert('', 'end', 
+                    values=(
+                        key_doc.get('key', ''),
+                        text_preview,
+                        last_modified,
+                        status
+                    ),
+                    tags=(str(key_doc['_id']), str(translation['_id']) if translation else '')
+                )
+                
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to load translations: {str(e)}")
+    
+    def edit_translation(self, event=None):
+        """Edit translation text"""
+        selected_item = self.admin.translations_tree.selection()
+        if not selected_item:
+            messagebox.showwarning("Warning", "Please select a translation to edit")
+            return
+        
+        try:
+            # Get selected item data
+            item = selected_item[0]
+            values = self.admin.translations_tree.item(item)['values']
+            tags = self.admin.translations_tree.item(item)['tags']
+            
+            key_name = values[0]
+            current_text = values[1]
+            language = self.admin.translation_language_var.get()
+            category = self.admin.translation_category_var.get()
+            
+            # Create edit window
+            edit_window = tk.Toplevel(self.admin.root)
+            edit_window.title(f"Edit Translation - {key_name} ({language.upper()})")
+            edit_window.geometry("800x600")
+            edit_window.grab_set()
+            
+            # Main frame
+            main_frame = tk.Frame(edit_window)
+            main_frame.pack(fill='both', expand=True, padx=10, pady=10)
+            
+            # Key info
+            info_frame = tk.LabelFrame(main_frame, text="Translation Information", font=('Arial', 12, 'bold'))
+            info_frame.pack(fill='x', pady=(0, 10))
+            
+            tk.Label(info_frame, text=f"Key: {key_name}").pack(anchor='w', padx=10, pady=5)
+            tk.Label(info_frame, text=f"Language: {language.upper()}").pack(anchor='w', padx=10, pady=5)
+            tk.Label(info_frame, text=f"Category: {category}").pack(anchor='w', padx=10, pady=5)
+            
+            # Text editor
+            text_frame = tk.LabelFrame(main_frame, text="Translation Text", font=('Arial', 12, 'bold'))
+            text_frame.pack(fill='both', expand=True, pady=(0, 10))
+            
+            text_editor = tk.Text(text_frame, wrap='word', font=('Consolas', 10))
+            text_scrollbar = tk.Scrollbar(text_frame, orient='vertical', command=text_editor.yview)
+            text_editor.configure(yscrollcommand=text_scrollbar.set)
+            
+            text_editor.pack(side='left', fill='both', expand=True, padx=10, pady=10)
+            text_scrollbar.pack(side='right', fill='y', pady=10)
+            
+            # Load current text
+            if current_text and current_text != "Missing":
+                text_editor.insert('1.0', current_text)
+            
+            # Buttons
+            button_frame = tk.Frame(main_frame)
+            button_frame.pack(fill='x', pady=10)
+            
+            def save_translation():
+                try:
+                    new_text = text_editor.get('1.0', tk.END).strip()
+                    
+                    if not new_text:
+                        messagebox.showwarning("Warning", "Translation text cannot be empty")
+                        return
+                    
+                    # Validate input
+                    validated_text = InputValidator.validate_and_sanitize_input(
+                        new_text, 'description', is_required=True
+                    )
+                    
+                    # Get translation key
+                    key_doc = self.admin.translations_collection.find_one({
+                        'key': key_name,
+                        'category': category,
+                        'isActive': True
+                    })
+                    
+                    if not key_doc:
+                        messagebox.showerror("Error", "Translation key not found")
+                        return
+                    
+                    # Check if translation exists
+                    existing_translation = self.admin.translations_collection.find_one({
+                        'translationKey': key_doc['_id'],
+                        'language': language,
+                        'isActive': True
+                    })
+                    
+                    if existing_translation:
+                        # Update existing translation
+                        result = self.admin.translations_collection.update_one(
+                            {'_id': existing_translation['_id']},
+                            {
+                                '$set': {
+                                    'text': validated_text,
+                                    'lastModified': datetime.now()
+                                }
+                            }
+                        )
+                    else:
+                        # Create new translation
+                        new_translation = {
+                            'translationKey': key_doc['_id'],
+                            'language': language,
+                            'text': validated_text,
+                            'isActive': True,
+                            'lastModified': datetime.now(),
+                            'createdAt': datetime.now()
+                        }
+                        result = self.admin.translations_collection.insert_one(new_translation)
+                    
+                    messagebox.showinfo("Success", "Translation saved successfully!")
+                    edit_window.destroy()
+                    self.load_translations()  # Refresh the list
+                    
+                except SecurityError as e:
+                    SecurityAuditLogger.log_security_violation(
+                        None, "edit_translation", "translation_text", "input_validation", str(e)
+                    )
+                    messagebox.showerror("Security Error", "Invalid translation text detected")
+                except Exception as e:
+                    SecurityAuditLogger.log_security_violation(
+                        None, "edit_translation", "error", "unexpected_error", str(e)
+                    )
+                    messagebox.showerror("Error", f"Failed to save translation: {str(e)}")
+            
+            tk.Button(button_frame, text="Save Translation", command=save_translation, 
+                     bg='#4CAF50', fg='white', font=('Arial', 12, 'bold')).pack(side='left', padx=5)
+            tk.Button(button_frame, text="Cancel", command=edit_window.destroy, 
+                     bg='#607D8B', fg='white', font=('Arial', 12)).pack(side='left', padx=5)
+            
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to edit translation: {str(e)}")
+    
+    def seed_translations(self):
+        """Seed database with Terms and FAQ translations"""
+        try:
+            # Import the seeding function
+            import sys
+            import os
+            sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'scripts'))
+            
+            from seedTermsAndFaqTranslations import seedTermsAndFaqTranslations
+            
+            # Run the seeding
+            result = messagebox.askyesno("Confirm Seeding", 
+                "This will populate the database with Terms of Service and FAQ translations for all supported languages.\n\n"
+                "This operation may take a few minutes. Continue?")
+            
+            if result:
+                messagebox.showinfo("Info", "Seeding started. Please check the console for progress updates.")
+                # Note: In a real implementation, you'd want to run this in a separate thread
+                # and show progress updates in the UI
+                seedTermsAndFaqTranslations()
+                messagebox.showinfo("Success", "Database seeding completed successfully!")
+                self.load_translations()  # Refresh the translations list
+                
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to seed translations: {str(e)}")
+    
+    def export_translations(self):
+        """Export translations to JSON file"""
+        try:
+            language = self.admin.translation_language_var.get()
+            category = self.admin.translation_category_var.get()
+            
+            # Get all translations for the selected language and category
+            translation_keys = list(self.admin.translations_collection.find({
+                'category': category, 
+                'isActive': True
+            }))
+            
+            translations = {}
+            for key_doc in translation_keys:
+                translation = self.admin.translations_collection.find_one({
+                    'translationKey': key_doc['_id'],
+                    'language': language,
+                    'isActive': True
+                })
+                
+                if translation:
+                    translations[key_doc['key']] = translation['text']
+            
+            # Ask for filename
+            filename = simpledialog.askstring("Export Translations", 
+                f"Enter filename for {language.upper()} {category} translations:")
+            
+            if not filename:
+                return
+            
+            # Validate filename
+            filename = InputValidator.validate_and_sanitize_input(filename, 'text', is_required=True)
+            filename = re.sub(r'[<>:"/\\|?*]', '_', filename)
+            if not filename:
+                filename = f"{category}_{language}_translations"
+            
+            filename += ".json"
+            
+            # Save to file
+            with open(filename, 'w', encoding='utf-8') as f:
+                json.dump({
+                    'language': language,
+                    'category': category,
+                    'translations': translations,
+                    'exported_at': datetime.now().isoformat(),
+                    'count': len(translations)
+                }, f, indent=2, ensure_ascii=False)
+            
+            messagebox.showinfo("Success", 
+                f"Exported {len(translations)} translations to {filename}\n\n"
+                f"Language: {language.upper()}\n"
+                f"Category: {category}\n"
+                f"File saved in the admin panel directory.")
+            
+        except SecurityError as e:
+            SecurityAuditLogger.log_security_violation(
+                None, "export_translations", "filename", "input_validation", str(e)
+            )
+            messagebox.showerror("Security Error", "Invalid filename detected")
+        except Exception as e:
+            SecurityAuditLogger.log_security_violation(
+                None, "export_translations", "error", "unexpected_error", str(e)
+            )
+            messagebox.showerror("Error", f"Failed to export translations: {str(e)}")

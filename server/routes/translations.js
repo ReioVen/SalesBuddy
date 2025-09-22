@@ -11,7 +11,7 @@ router.get('/:language', async (req, res) => {
     const { language } = req.params;
     
     // Validate language
-    const validLanguages = ['en', 'et', 'lv', 'lt', 'fi', 'sv', 'no', 'da'];
+    const validLanguages = ['en', 'et', 'es', 'ru', 'lv', 'lt', 'fi', 'sv', 'no', 'da', 'de', 'fr', 'it', 'pt', 'pl', 'cs', 'sk', 'hu', 'ro', 'bg', 'hr', 'sl', 'el', 'tr', 'ar', 'he', 'ja', 'ko', 'zh', 'hi', 'th', 'vi', 'id', 'ms', 'tl'];
     if (!validLanguages.includes(language)) {
       return res.status(400).json({ error: 'Invalid language code' });
     }
@@ -116,7 +116,7 @@ router.post('/admin/translate', authenticateToken, requireAdmin, async (req, res
     }
 
     // Validate language
-    const validLanguages = ['en', 'et', 'lv', 'lt', 'fi', 'sv', 'no', 'da'];
+    const validLanguages = ['en', 'et', 'es', 'ru', 'lv', 'lt', 'fi', 'sv', 'no', 'da', 'de', 'fr', 'it', 'pt', 'pl', 'cs', 'sk', 'hu', 'ro', 'bg', 'hr', 'sl', 'el', 'tr', 'ar', 'he', 'ja', 'ko', 'zh', 'hi', 'th', 'vi', 'id', 'ms', 'tl'];
     if (!validLanguages.includes(language)) {
       return res.status(400).json({ error: 'Invalid language code' });
     }

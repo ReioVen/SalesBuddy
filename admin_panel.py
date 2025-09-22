@@ -15,6 +15,10 @@ from bson import ObjectId
 import threading
 from typing import Dict, List, Any, Optional
 from admin_methods import AdminMethods
+from security_module import (
+    InputValidator, SecureDatabaseQueries, SecurityError, 
+    SecurityAuditLogger, secure_input_wrapper
+)
 
 class SalesBuddyAdmin:
     def __init__(self):
@@ -57,6 +61,7 @@ class SalesBuddyAdmin:
         self.create_users_tab()
         self.create_companies_tab()
         self.create_conversations_tab()
+        self.create_translations_tab()
         self.create_analytics_tab()
         self.create_settings_tab()
         
@@ -281,6 +286,78 @@ class SalesBuddyAdmin:
         # Bind double-click event
         self.conversations_tree.bind('<Double-1>', self.methods.view_conversation)
         
+    def create_translations_tab(self):
+        """Create translations management tab"""
+        translations_frame = ttk.Frame(self.notebook)
+        self.notebook.add(translations_frame, text="Translations")
+        
+        # Title
+        title_label = tk.Label(translations_frame, text="Terms of Service & FAQ Translations", 
+                              font=('Arial', 16, 'bold'))
+        title_label.pack(pady=20)
+        
+        # Language selection frame
+        lang_frame = tk.Frame(translations_frame)
+        lang_frame.pack(fill='x', padx=20, pady=10)
+        
+        tk.Label(lang_frame, text="Select Language:", font=('Arial', 12, 'bold')).pack(side='left')
+        self.translation_language_var = tk.StringVar(value='en')
+        lang_combo = tk.ttk.Combobox(lang_frame, textvariable=self.translation_language_var,
+                                   values=['en', 'et', 'es', 'ru'], width=10)
+        lang_combo.pack(side='left', padx=10)
+        lang_combo.bind('<<ComboboxSelected>>', self.methods.load_translations)
+        
+        # Category selection frame
+        category_frame = tk.Frame(translations_frame)
+        category_frame.pack(fill='x', padx=20, pady=5)
+        
+        tk.Label(category_frame, text="Category:", font=('Arial', 12, 'bold')).pack(side='left')
+        self.translation_category_var = tk.StringVar(value='terms_of_service')
+        category_combo = tk.ttk.Combobox(category_frame, textvariable=self.translation_category_var,
+                                       values=['terms_of_service', 'faq'], width=15)
+        category_combo.pack(side='left', padx=10)
+        category_combo.bind('<<ComboboxSelected>>', self.methods.load_translations)
+        
+        # Load button
+        load_btn = tk.Button(category_frame, text="Load Translations", 
+                           command=self.methods.load_translations, bg='#4CAF50', fg='white')
+        load_btn.pack(side='left', padx=10)
+        
+        # Translations treeview
+        columns = ('Key', 'Text Preview', 'Last Modified', 'Status')
+        self.translations_tree = ttk.Treeview(translations_frame, columns=columns, show='headings', height=15)
+        
+        for col in columns:
+            self.translations_tree.heading(col, text=col)
+            if col == 'Text Preview':
+                self.translations_tree.column(col, width=400)
+            else:
+                self.translations_tree.column(col, width=150)
+        
+        # Scrollbar for translations tree
+        translations_scrollbar = ttk.Scrollbar(translations_frame, orient='vertical', command=self.translations_tree.yview)
+        self.translations_tree.configure(yscrollcommand=translations_scrollbar.set)
+        
+        # Pack translations tree and scrollbar
+        self.translations_tree.pack(side='left', fill='both', expand=True, padx=(20, 0), pady=10)
+        translations_scrollbar.pack(side='right', fill='y', pady=10)
+        
+        # Translation actions frame
+        actions_frame = tk.Frame(translations_frame)
+        actions_frame.pack(fill='x', padx=20, pady=10)
+        
+        tk.Button(actions_frame, text="Edit Translation", command=self.methods.edit_translation, 
+                 bg='#FF9800', fg='white').pack(side='left', padx=5)
+        tk.Button(actions_frame, text="Seed Database", command=self.methods.seed_translations, 
+                 bg='#9C27B0', fg='white').pack(side='left', padx=5)
+        tk.Button(actions_frame, text="Export Translations", command=self.methods.export_translations, 
+                 bg='#607D8B', fg='white').pack(side='left', padx=5)
+        tk.Button(actions_frame, text="Refresh", command=self.methods.load_translations, 
+                 bg='#4CAF50', fg='white').pack(side='left', padx=5)
+        
+        # Bind double-click event
+        self.translations_tree.bind('<Double-1>', self.methods.edit_translation)
+        
     def create_analytics_tab(self):
         """Create analytics tab"""
         analytics_frame = ttk.Frame(self.notebook)
@@ -315,7 +392,27 @@ class SalesBuddyAdmin:
         
         tk.Label(app_frame, text="Auto-refresh interval (seconds):").pack(anchor='w', padx=10, pady=5)
         self.refresh_interval_var = tk.StringVar(value="30")
-        tk.Entry(app_frame, textvariable=self.refresh_interval_var, width=10).pack(anchor='w', padx=10, pady=5)
+        refresh_entry = tk.Entry(app_frame, textvariable=self.refresh_interval_var, width=10)
+        refresh_entry.pack(anchor='w', padx=10, pady=5)
+        
+        # Add validation for refresh interval
+        def validate_refresh_interval(*args):
+            try:
+                value = self.refresh_interval_var.get()
+                if value:
+                    validated_value = InputValidator.validate_and_sanitize_input(
+                        value, 'refresh_interval', is_required=False
+                    )
+                    # Convert to int and validate range
+                    int_value = int(validated_value)
+                    if int_value < 5 or int_value > 3600:  # 5 seconds to 1 hour
+                        self.refresh_interval_var.set("30")  # Reset to default
+                        messagebox.showwarning("Invalid Input", "Refresh interval must be between 5 and 3600 seconds")
+            except (SecurityError, ValueError):
+                self.refresh_interval_var.set("30")  # Reset to default
+                messagebox.showwarning("Invalid Input", "Please enter a valid number for refresh interval")
+        
+        self.refresh_interval_var.trace('w', validate_refresh_interval)
         
     def connect_to_database(self):
         """Connect to MongoDB database"""
@@ -373,29 +470,41 @@ class SalesBuddyAdmin:
             threading.Thread(target=self.methods.load_conversations, daemon=True).start()
             threading.Thread(target=self.methods.refresh_dashboard, daemon=True).start()
     
+    @secure_input_wrapper
     def test_connection(self):
         """Test database connection"""
         try:
-            uri = self.db_uri_var.get()
-            if not uri:
-                messagebox.showerror("Error", "Please enter MongoDB URI")
-                return
+            # Validate and sanitize URI input
+            raw_uri = self.db_uri_var.get()
+            uri = InputValidator.validate_and_sanitize_input(
+                raw_uri, 'uri', is_required=True
+            )
             
             client = MongoClient(uri)
             client.admin.command('ping')
             client.close()
             messagebox.showinfo("Success", "Connection successful!")
             
+        except SecurityError as e:
+            SecurityAuditLogger.log_security_violation(
+                None, "test_connection", "uri", "input_validation", str(e)
+            )
+            messagebox.showerror("Security Error", "Invalid URI format detected")
         except Exception as e:
-            messagebox.showerror("Connection Error", f"Failed to connect:\n{str(e)}")
+            SecurityAuditLogger.log_security_violation(
+                None, "test_connection", "error", "connection_error", str(e)
+            )
+            messagebox.showerror("Connection Error", "Failed to connect to database")
     
+    @secure_input_wrapper
     def reconnect_database(self):
         """Reconnect to database with new URI"""
         try:
-            uri = self.db_uri_var.get()
-            if not uri:
-                messagebox.showerror("Error", "Please enter MongoDB URI")
-                return
+            # Validate and sanitize URI input
+            raw_uri = self.db_uri_var.get()
+            uri = InputValidator.validate_and_sanitize_input(
+                raw_uri, 'uri', is_required=True
+            )
             
             if self.client:
                 self.client.close()
@@ -417,10 +526,20 @@ class SalesBuddyAdmin:
             self.load_initial_data()
             messagebox.showinfo("Success", "Reconnected successfully!")
             
-        except Exception as e:
+        except SecurityError as e:
+            SecurityAuditLogger.log_security_violation(
+                None, "reconnect_database", "uri", "input_validation", str(e)
+            )
             self.connected = False
-            self.status_label.config(text=f"Connection failed: {str(e)}", fg='red')
-            messagebox.showerror("Database Error", f"Failed to reconnect:\n{str(e)}")
+            self.status_label.config(text="Invalid URI format", fg='red')
+            messagebox.showerror("Security Error", "Invalid URI format detected")
+        except Exception as e:
+            SecurityAuditLogger.log_security_violation(
+                None, "reconnect_database", "error", "connection_error", str(e)
+            )
+            self.connected = False
+            self.status_label.config(text="Connection failed", fg='red')
+            messagebox.showerror("Database Error", "Failed to reconnect to database")
 
     def run(self):
         """Start the admin panel"""

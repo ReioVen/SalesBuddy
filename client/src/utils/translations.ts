@@ -1,4 +1,4 @@
-export type Language = 'en' | 'et' | 'es' | 'ru';
+export type Language = 'en' | 'et' | 'es' | 'ru' | 'lv' | 'lt' | 'fi' | 'sv' | 'no' | 'da' | 'de' | 'fr' | 'it' | 'pt' | 'pl' | 'cs' | 'sk' | 'hu' | 'ro' | 'bg' | 'hr' | 'sl' | 'el' | 'tr' | 'ar' | 'he' | 'ja' | 'ko' | 'zh' | 'hi' | 'th' | 'vi' | 'id' | 'ms' | 'tl';
 
 export const translations = {
   en: {
@@ -437,22 +437,22 @@ export const translations = {
     startConversationDesc: 'Begin chatting with our AI that acts as your potential customer.',
     improveTrackProgress: 'Improve & Track Progress',
     improveTrackProgressDesc: 'Get feedback and track your improvement over time.',
-    whatOurUsersSay: 'What Our Users Say',
-    whatOurUsersSayDescription: 'Join thousands of sales professionals who trust SalesBuddy',
-    sarahJohnson: 'Sarah Johnson',
-    salesManager: 'Sales Manager',
-    techCorp: 'TechCorp',
-    sarahTestimonial: 'SalesBuddy has transformed our sales training. Our team\'s confidence and close rates have improved dramatically.',
-    mikeChen: 'Mike Chen',
-    accountExecutive: 'Account Executive',
-    growthStart: 'GrowthStart',
-    mikeTestimonial: 'The AI scenarios are incredibly realistic. I feel much more prepared for real customer interactions.',
-    emilyRodriguez: 'Emily Rodriguez',
-    salesDirector: 'Sales Director',
-    innovateCo: 'InnovateCo',
-    emilyTestimonial: 'The analytics help us identify areas for improvement. It\'s like having a personal sales coach.',
+    whatOurUsersSay: 'Why Choose SalesBuddy?',
+    whatOurUsersSayDescription: 'Discover the power of AI-driven sales training',
+    sarahJohnson: 'AI-Powered Training',
+    salesManager: 'Realistic Scenarios',
+    techCorp: 'Advanced Analytics',
+    sarahTestimonial: 'Practice with AI that simulates real customer interactions and provides instant feedback on your sales techniques.',
+    mikeChen: 'Personalized Learning',
+    accountExecutive: 'Skill Development',
+    growthStart: 'Performance Tracking',
+    mikeTestimonial: 'Customize your training experience with different customer personalities, industries, and difficulty levels.',
+    emilyRodriguez: 'Professional Growth',
+    salesDirector: 'Team Management',
+    innovateCo: 'Enterprise Ready',
+    emilyTestimonial: 'Track your progress with detailed analytics and insights to continuously improve your sales performance.',
     readyToTransform: 'Ready to Transform Your Sales Skills?',
-    readyToTransformDesc: 'Join thousands of sales professionals who are already improving their skills with SalesBuddy.',
+    readyToTransformDesc: 'Start your journey to becoming a more confident and successful sales professional.',
     startPracticingNow: 'Start Practicing Now',
     startFreeTrial: 'Start Free Trial',
     viewPlans: 'View Plans',
@@ -507,13 +507,22 @@ export const translations = {
     faqQuestion11: 'What happens if I cancel my subscription?',
     faqAnswer11: 'You can continue using your account until the end of your current billing period. After cancellation, you\'ll lose access to premium features but can reactivate anytime.',
     faqQuestion12: 'Do you offer volume discounts for large teams?',
-    faqAnswer12: 'Yes, we offer custom pricing for enterprise teams with 50+ users. Contact our sales team at reio.vendelin3@gmail.com to discuss volume discounts and custom features.',
+    faqAnswer12: 'Yes, we offer custom pricing for enterprise teams with 50+ users. Contact our sales team at RevoTechSB@gmail.com to discuss volume discounts and custom features.',
+    
+    faqQuestion13: 'Do you offer refunds?',
+    faqAnswer13: 'We offer a 30-day money-back guarantee for all new subscriptions. If you\'re not satisfied with our service within the first 30 days, we\'ll provide a full refund.',
+    
+    faqQuestion14: 'How do I contact customer support?',
+    faqAnswer14: 'You can contact our customer support team through email at RevoTechSB@gmail.com, through our in-app chat feature, or by scheduling a call with our support team. We typically respond within 24 hours.',
+    
+    faqQuestion15: 'Can I use SalesBuddy on mobile devices?',
+    faqAnswer15: 'Yes, SalesBuddy is fully responsive and works on all devices including smartphones and tablets. We also offer native mobile apps for iOS and Android for the best experience.',
 
     // Terms of Service Section
     termsOfService: 'Terms of Service',
     termsTitle: 'Terms of Service',
     termsDescription: 'Please read these terms carefully before using our service.',
-    termsLastUpdated: 'Last updated: December 2024',
+    termsLastUpdated: 'Last updated: September 2025',
     termsContent: `
       <div class="terms-content">
         <h3>1. Acceptance of Terms</h3>
@@ -574,14 +583,14 @@ export const translations = {
         <p>If any provision of these Terms is held to be invalid or unenforceable, the remaining provisions shall remain in full force and effect.</p>
         
         <h3>17. Contact Information</h3>
-        <p>If you have any questions about these Terms, please contact us at reio.vendelin3@gmail.com.</p>
+        <p>If you have any questions about these Terms, please contact us at RevoTechSB@gmail.com.</p>
       </div>
     `,
     privacyPolicy: 'Privacy Policy',
     privacyPolicyDescription: 'Learn how we protect and handle your personal information.',
     contactUs: 'Contact Us',
     contactUsDescription: 'Have questions not answered in our FAQ? We\'re here to help.',
-    supportEmail: 'reio.vendelin3@gmail.com',
+    supportEmail: 'RevoTechSB@gmail.com',
   },
   et: {
     // Navigation
@@ -978,7 +987,7 @@ export const translations = {
     homeHeroDescription: 'Harjutage nutika AI-ga, mis toimib teie kliendina. Parandage oma müügioskusi realistlike stsenaariumide ja isikupärast tagasisidega.',
     startPracticing: 'Alusta Harjutamist',
     getStartedFree: 'Alusta Tasuta',
-    viewPricing: 'Vaata Hinnad',
+    viewPricing: 'Vaata Hindu',
     watchDemo: 'Vaata Demot',
     whyChooseSalesBuddy: 'Miks Valida SalesBuddy?',
     homeFeaturesDescription: 'Kõik, mida vajate müügieksperdiks saamiseks, toodetud tipptasemel AI tehnoloogiaga.',
@@ -998,25 +1007,25 @@ export const translations = {
     startConversationDesc: 'Alusta vestlemist meie AI-ga, mis toimib teie potentsiaalse kliendina.',
     improveTrackProgress: 'Paranda ja Jälgi Edusammu',
     improveTrackProgressDesc: 'Saa tagasisidet ja jälgi oma paranemist aja jooksul.',
-    whatOurUsersSay: 'Mida Ütlevad Meie Kasutajad',
-    whatOurUsersSayDescription: 'Liitu tuhandete müügiprofessionaalidega, kes usaldavad SalesBuddy-d',
-    sarahJohnson: 'Sarah Johnson',
-    salesManager: 'Müügijuht',
-    techCorp: 'TechCorp',
-    sarahTestimonial: 'SalesBuddy on muutnud meie müügikoolitust. Meie meeskonna enesekindlus ja sulgemismäärad on paranenud drastiliselt.',
-    mikeChen: 'Mike Chen',
-    accountExecutive: 'Konto Juht',
-    growthStart: 'GrowthStart',
-    mikeTestimonial: 'AI stsenaariumid on uskumatult realistlikud. Tunnen end palju paremini ettevalmistatud tõeliste kliendisuhtluste jaoks.',
-    emilyRodriguez: 'Emily Rodriguez',
-    salesDirector: 'Müügidirektor',
-    innovateCo: 'InnovateCo',
-    emilyTestimonial: 'Analüütika aitab meil tuvastada parandamise alasid. See on nagu isiklik müügitreener.',
+    whatOurUsersSay: 'Miks Valida SalesBuddy?',
+    whatOurUsersSayDescription: 'Avasta AI-põhise müügikoolituse võimsus',
+    sarahJohnson: 'AI-põhine Koolitus',
+    salesManager: 'Realistlikud Stsenaariumid',
+    techCorp: 'Täpsem Analüütika',
+    sarahTestimonial: 'Harjutage AI-ga, mis simuleerib päris kliendisuhtlusi ja annab kohest tagasisidet teie müügitehnikate kohta.',
+    mikeChen: 'Isikupärastatud Õpe',
+    accountExecutive: 'Oskuste Arendamine',
+    growthStart: 'Tulemuste Jälgimine',
+    mikeTestimonial: 'Kohandage oma koolituskogemust erinevate kliendi isiksustega, valdkondadega ja raskusastmetega.',
+    emilyRodriguez: 'Professionaalne Kasv',
+    salesDirector: 'Meeskonna Juhtimine',
+    innovateCo: 'Ettevõtte Valmis',
+    emilyTestimonial: 'Jälgige oma edenemist üksikasjaliku analüütika ja ülevaadetega, et pidevalt parandada oma müügitulemusi.',
     readyToTransform: 'Valmis Muutma Oma Müügioskusi?',
-    readyToTransformDesc: 'Liitu tuhandete müügiprofessionaalidega, kes juba parandavad oma oskusi SalesBuddy-ga.',
+    readyToTransformDesc: 'Alusta oma teekonda, et saada enesekindlamaks ja edukamaks müügiprofessionaaliks.',
     startPracticingNow: 'Alusta Harjutamist Kohe',
     startFreeTrial: 'Alusta Tasuta Katsetust',
-    viewPlans: 'Vaata Plaane',
+    viewPlans: 'Vaata Hindu',
 
     // Account Deletion
     deleteAccount: 'Kustuta Konto',
@@ -1052,13 +1061,75 @@ export const translations = {
     termsOfService: 'Kasutustingimused',
     termsTitle: 'Kasutustingimused',
     termsDescription: 'Palun lugege neid tingimusi hoolikalt enne meie teenuse kasutamist.',
-    termsLastUpdated: 'Viimati uuendatud: Detsember 2024',
-    termsContent: 'SalesBuddy kasutamisega nõustute meie kasutustingimustega. See hõlmab, kuid ei piirdu õige meie AI koolitusplatvormi kasutamisega, intellektuaalomandi õiguste austamisega ja sobiva käitumise säilitamisega koolitussessioonide ajal. Meil on õigus neid tingimusi igal ajal muuta ja teatame kasutajatele olulistest muudatustest.',
+    termsLastUpdated: 'Viimati uuendatud: September 2025',
+    termsContent: `
+      <div class="terms-content">
+        <h3>1. Tingimuste vastuvõtmine</h3>
+        <p>SalesBuddy ("Teenus") kasutamisega nõustute ja kohustute järgima selle lepingu tingimusi ja sätteid. Kui te ei nõustu ülaltooduga, palun ärge kasutage seda teenust.</p>
+        
+        <h3>2. Teenuse kirjeldus</h3>
+        <p>SalesBuddy on AI-põhine müügikoolitusplatvorm, mis pakub vestluskoolitusstsenaariume, tulemuste analüütikat ja tagasisidet, et aidata kasutajatel parandada oma müügioskusi. Teenus sisaldab, kuid ei piirdu AI genereeritud vestlustega, tulemuste jälgimisega ja haridusliku sisuga.</p>
+        
+        <h3>3. Kasutajakontod ja registreerimine</h3>
+        <p>Teatud teenuse funktsioonidele juurdepääsuks peate registreerima konto. Nõustute esitama registreerimise ajal täpse, ajakohase ja täieliku teabe ning värskendama sellist teavet, et see oleks täpne, ajakohane ja täielik. Olete vastutav oma konto mandaatide konfidentsiaalsuse säilitamise eest ja kõigi teie kontoga seotud tegevuste eest.</p>
+        
+        <h3>4. Vastuvõetava kasutamise poliitika</h3>
+        <p>Nõustute mitte kasutama teenust:</p>
+        <ul>
+          <li>kehtivate seaduste või määruste rikkumiseks</li>
+          <li>ebaseadusliku, kahjuliku, ähvardava, solvava, laimava või muul viisil vastuvõetamatu sisu edastamiseks või üleslaadimiseks</li>
+          <li>ebalubatud juurdepääsu üritamiseks teenuse mis tahes osale või teiste kasutajate kontodele</li>
+          <li>teenuse kasutamiseks ärilistel eesmärkidel ilma selge kirjaliku nõusolekuta</li>
+          <li>teenuse mis tahes osa pöördinseneri töö tegemiseks, dekompileerimiseks või lahtivõtmiseks</li>
+          <li>teenuse või teenusega ühendatud serverite häirimiseks</li>
+          <li>automaatsete skriptide või botide kasutamiseks teenusele juurdepääsuks</li>
+        </ul>
+        
+        <h3>5. Intellektuaalomandi õigused</h3>
+        <p>Teenus ja selle originaalne sisu, funktsioonid ja funktsionaalsus on ja jäävad SalesBuddy ja selle litsentsiandjate erandlikuks omandiks. Teenus on kaitstud autoriõiguse, kaubamärgi ja teiste seaduste poolt. Meie kaubamärke ja kaubamärgi kujundust ei tohi kasutada ühegi toote või teenusega seoses ilma meie eelneva kirjaliku nõusolekuta.</p>
+        
+        <h3>6. Kasutaja sisu ja andmed</h3>
+        <p>Säilitate omandiõiguse kõigele sisule, mille esitate teenusele ("Kasutaja sisu"). Esitades kasutaja sisu, annate meile maailma laiuse, mitteeksklusiivse, tasuta litsentsi kasutada, reprodutseerida, muuta ja levitada teie kasutaja sisu ainult teenuse pakkumise ja parandamise eesmärgil. Võime koguda ja analüüsida kasutuse andmeid, vestluse mustreid ja tulemuste mõõdikuid, et parandada oma AI mudeleid ja teenuse kvaliteeti.</p>
+        
+        <h3>7. Privaatsus ja andmekaitse</h3>
+        <p>Teie privaatsus on meie jaoks oluline. Meie privaatsuspoliitika selgitab, kuidas me kogume, kasutame ja kaitseme teie teavet teenuse kasutamisel. Teenuse kasutamisega nõustute teabe kogumise ja kasutamisega vastavalt meie privaatsuspoliitikale.</p>
+        
+        <h3>8. Maksetingimused ja arveldus</h3>
+        <p>Teatud teenuse funktsioonid nõuavad tasumist. Tellides tasulise plaani, nõustute maksma kõik oma kontoga seotud tasud. Kõik tasud on tagasimakstavad, välja arvatud juhul, kui on öeldud teisiti. Jätame endale õiguse muuta oma hinnakujundust 30 päeva eelneva teatega. Tasumise ebaõnnestumine võib põhjustada teie konto peatamise või lõpetamise.</p>
+        
+        <h3>9. Teenuse kättesaadavus ja muudatused</h3>
+        <p>Püüame säilitada kõrge teenuse kättesaadavust, kuid ei garanteeri katkematut juurdepääsu. Jätame endale õiguse muuta, peatada või lõpetada teenuse mis tahes osa igal ajal koos või ilma teate andmisega. Võime ka kehtestada piiranguid teatud funktsioonidele või piirata teie juurdepääsu teenuse osadele või kogu teenusele ilma teate andmisega.</p>
+        
+        <h3>10. Lõpetamine</h3>
+        <p>Mõlemad pooled võivad lõpetada selle lepingu igal ajal. Võime lõpetada või peatada teie konto kohe, ilma eelneva teate andmisega, käitumise eest, mida peame nende tingimuste rikkumiseks või kahjulikuks teiste kasutajate, meie või kolmandate osapoolte suhtes, või mis tahes muul põhjusel meie ainuõigusel.</p>
+        
+        <h3>11. Vastutusest loobumine ja garantii</h3>
+        <p>TEENUS PAKUTAKSE "NII NAGU ON" JA "NII NAGU SAADAVAL" ALUSEL. LOOBUME SELGELT KÕIGIST GARANTIIEST MIS TAHES LIIGI, OLGU SIIS VÄLJENDATUD VÕI KAUDNE, SEALHULGAS KUID MITTE AINULT KAUBATAVUSE, KONKREETSE EESMÄRGI SOBIVUSE JA MITTE-RIKKUMISE KAUDNE GARANTII. ME EI ANNA GARANTII, ET TEENUS VASTAB TEIE NÕUDMISTELE VÕI OLEB SAADAVAL KATKEMATULT, TURVALISELT VÕI VIGADETA ALUSEL.</p>
+        
+        <h3>12. Vastutuse piirang</h3>
+        <p>MITTE ÜHES JUHUS EI OLE SALESBUDDY, SELLE DIREKTORID, TÖÖTAJAD VÕI AGENDID VASTUTAVAD MIS TAHES KAUDSE, JUHUSLIKU, ERILISE, TAGAJÄRJE VÕI KARISTUSLIKU KAHJU EEST, SEALHULGAS ILMA PIIRANGUTETA KASUMI, ANDMETE, KASUTAMISE, HEATAHI VÕI MUUDE VARIMATUTE KAOTUSTE EEST, MIS TULEVAD TEIE TEENUSE KASUTAMISEST. MEIE KOGU VASTUTUS EI ÜLETA SUMMA, MIDA TE MEILE MAKSTITE 12 KUU JÄRGMISELT ENNE NÕUDMIST.</p>
+        
+        <h3>13. Hüvitamine</h3>
+        <p>Nõustute kaitsma, hüvitama ja vabastama SalesBuddy ja selle sidusettevõtted mis tahes nõudmistest, kahjudest, kohustustest, kaotustest, kohustustest, kuludest või võlgadest ja kuludest (sealhulgas advokaadi tasud), mis tulenevad teie teenuse kasutamisest või nende tingimuste rikkumisest.</p>
+        
+        <h3>14. Kohaldatav õigus ja vaidluste lahendamine</h3>
+        <p>Neid tingimusi tuleb tõlgendada ja reguleerida Delaware osariigi seaduste järgi, võtmata arvesse selle konfliktiõiguse sätteid. Kõik nende tingimuste alusel tekkivad vaidlused tuleb lahendada kohustusliku vahekohtumenetluse kaudu vastavalt Ameerika Vahekohtu Assotsiatsiooni reeglitele.</p>
+        
+        <h3>15. Tingimuste muudatused</h3>
+        <p>Jätame endale õiguse muuta neid tingimusi igal ajal. Teavitame kasutajaid olulistest muudatustest meili teel või teenuse kaudu. Teie jätkuv teenuse kasutamine pärast selliseid muudatusi tähendab uuendatud tingimuste vastuvõtmist.</p>
+        
+        <h3>16. Eraldatavus</h3>
+        <p>Kui nende tingimuste mis tahes sätet peetakse kehtetuks või täitmisele kuuluvaks, jäävad ülejäänud sätted täies ulatuses kehtima.</p>
+        
+        <h3>17. Kontaktandmed</h3>
+        <p>Kui teil on küsimusi nende tingimuste kohta, palun võtke meiega ühendust aadressil RevoTechSB@gmail.com.</p>
+      </div>
+    `,
     privacyPolicy: 'Privaatsuspoliitika',
     privacyPolicyDescription: 'Uurige, kuidas me kaitsteme ja käsitleme teie isikuandmeid.',
     contactUs: 'Võtke Ühendust',
     contactUsDescription: 'Kas teil on küsimusi, millele ei vastata meie KKK-s? Oleme siin, et aidata.',
-    supportEmail: 'tugi@salesbuddy.ai',
+    supportEmail: 'RevoTechSB@gmail.com',
 
     // Advanced Settings
     advancedSettings: 'Täpsemad Seaded',
@@ -1485,22 +1556,22 @@ export const translations = {
     startConversationDesc: 'Comienza a chatear con nuestra IA que actúa como tu cliente potencial.',
     improveTrackProgress: 'Mejorar y Rastrear Progreso',
     improveTrackProgressDesc: 'Obtén retroalimentación y rastrea tu mejora a lo largo del tiempo.',
-    whatOurUsersSay: 'Lo Que Dicen Nuestros Usuarios',
-    whatOurUsersSayDescription: 'Únete a miles de profesionales de ventas que confían en SalesBuddy',
-    sarahJohnson: 'Sarah Johnson',
-    salesManager: 'Gerente de Ventas',
-    techCorp: 'TechCorp',
-    sarahTestimonial: 'SalesBuddy ha transformado nuestro entrenamiento de ventas. La confianza y las tasas de cierre de nuestro equipo han mejorado dramáticamente.',
-    mikeChen: 'Mike Chen',
-    accountExecutive: 'Ejecutivo de Cuentas',
-    growthStart: 'GrowthStart',
-    mikeTestimonial: 'Los escenarios de IA son increíblemente realistas. Me siento mucho más preparado para interacciones reales con clientes.',
-    emilyRodriguez: 'Emily Rodriguez',
-    salesDirector: 'Directora de Ventas',
-    innovateCo: 'InnovateCo',
-    emilyTestimonial: 'Las analíticas nos ayudan a identificar áreas de mejora. Es como tener un entrenador de ventas personal.',
+    whatOurUsersSay: '¿Por Qué Elegir SalesBuddy?',
+    whatOurUsersSayDescription: 'Descubre el poder del entrenamiento de ventas impulsado por IA',
+    sarahJohnson: 'Entrenamiento con IA',
+    salesManager: 'Escenarios Realistas',
+    techCorp: 'Analíticas Avanzadas',
+    sarahTestimonial: 'Practica con IA que simula interacciones reales con clientes y proporciona retroalimentación instantánea sobre tus técnicas de ventas.',
+    mikeChen: 'Aprendizaje Personalizado',
+    accountExecutive: 'Desarrollo de Habilidades',
+    growthStart: 'Seguimiento de Rendimiento',
+    mikeTestimonial: 'Personaliza tu experiencia de entrenamiento con diferentes personalidades de clientes, industrias y niveles de dificultad.',
+    emilyRodriguez: 'Crecimiento Profesional',
+    salesDirector: 'Gestión de Equipos',
+    innovateCo: 'Listo para Empresas',
+    emilyTestimonial: 'Rastrea tu progreso con analíticas detalladas e insights para mejorar continuamente tu rendimiento de ventas.',
     readyToTransform: '¿Listo para Transformar tus Habilidades de Ventas?',
-    readyToTransformDesc: 'Únete a miles de profesionales de ventas que ya están mejorando sus habilidades con SalesBuddy.',
+    readyToTransformDesc: 'Comienza tu viaje para convertirte en un profesional de ventas más confiado y exitoso.',
     startPracticingNow: 'Comenzar a Practicar Ahora',
     startFreeTrial: 'Comenzar Prueba Gratuita',
     viewPlans: 'Ver Planes',
@@ -1539,13 +1610,58 @@ export const translations = {
     termsOfService: 'Términos de Servicio',
     termsTitle: 'Términos de Servicio',
     termsDescription: 'Por favor lee estos términos cuidadosamente antes de usar nuestro servicio.',
-    termsLastUpdated: 'Última actualización: Diciembre 2024',
-    termsContent: 'Al usar SalesBuddy, aceptas nuestros términos de servicio. Esto incluye pero no se limita al uso adecuado de nuestra plataforma de entrenamiento de IA, respetar los derechos de propiedad intelectual y mantener una conducta apropiada durante las sesiones de entrenamiento. Nos reservamos el derecho de modificar estos términos en cualquier momento y notificaremos a los usuarios de cambios significativos.',
+    termsLastUpdated: 'Última actualización: Septiembre 2025',
+    termsContent: `
+      <div class="terms-content">
+        <h3>1. Aceptación de Términos</h3>
+        <p>Al acceder y usar SalesBuddy ("el Servicio"), aceptas y te comprometes a cumplir con los términos y disposiciones de este acuerdo. Si no estás de acuerdo con lo anterior, por favor no uses este servicio.</p>
+        
+        <h3>2. Licencia de Uso</h3>
+        <p>Se otorga permiso para usar temporalmente SalesBuddy únicamente para visualización personal y no comercial transitoria. Esta es la concesión de una licencia, no una transferencia de título, y bajo esta licencia no puedes:</p>
+        <ul>
+          <li>modificar o copiar los materiales</li>
+          <li>usar los materiales para cualquier propósito comercial o para cualquier exhibición pública</li>
+          <li>intentar hacer ingeniería inversa de cualquier software contenido en el sitio web</li>
+          <li>remover cualquier notación de derechos de autor u otras notaciones propietarias de los materiales</li>
+        </ul>
+        
+        <h3>3. Política de Privacidad</h3>
+        <p>Tu privacidad es importante para nosotros. Nuestra Política de Privacidad explica cómo recopilamos, usamos y protegemos tu información cuando usas nuestro Servicio. Al usar nuestro Servicio, aceptas la recopilación y uso de información de acuerdo con esta política.</p>
+        
+        <h3>4. Cuentas de Usuario</h3>
+        <p>Cuando creas una cuenta con nosotros, debes proporcionar información que sea precisa, completa y actual en todo momento. Eres responsable de proteger la contraseña y de todas las actividades que ocurran bajo tu cuenta.</p>
+        
+        <h3>5. Usos Prohibidos</h3>
+        <p>No puedes usar nuestro Servicio:</p>
+        <ul>
+          <li>Para cualquier propósito ilegal o para solicitar a otros que realicen actos ilegales</li>
+          <li>Para violar cualquier regulación, regla, ley u ordenanza internacional, federal, provincial o estatal</li>
+          <li>Para infringir o violar nuestros derechos de propiedad intelectual o los derechos de propiedad intelectual de otros</li>
+          <li>Para acosar, abusar, insultar, dañar, difamar, calumniar, menospreciar, intimidar o discriminar</li>
+          <li>Para enviar información falsa o engañosa</li>
+        </ul>
+        
+        <h3>6. Contenido</h3>
+        <p>Nuestro Servicio te permite publicar, enlazar, almacenar, compartir y de otra manera hacer disponible cierta información, texto, gráficos, videos u otro material. Eres responsable del contenido que publicas en el Servicio, incluyendo su legalidad, confiabilidad y apropiación.</p>
+        
+        <h3>7. Terminación</h3>
+        <p>Podemos terminar o suspender tu cuenta y prohibir el acceso al Servicio inmediatamente, sin previo aviso o responsabilidad, bajo nuestra sola discreción, por cualquier razón y sin limitación, incluyendo pero no limitado a una violación de los Términos.</p>
+        
+        <h3>8. Descargo de Responsabilidad</h3>
+        <p>La información en este sitio web se proporciona "tal como está". En la medida máxima permitida por la ley, esta Compañía excluye todas las representaciones, garantías, condiciones y términos relacionados con nuestro sitio web y el uso de este sitio web.</p>
+        
+        <h3>9. Ley Aplicable</h3>
+        <p>Estos Términos serán interpretados y gobernados por las leyes de la jurisdicción en la que nuestra empresa está establecida, sin consideración a sus disposiciones de conflicto de leyes.</p>
+        
+        <h3>10. Cambios a los Términos</h3>
+        <p>Nos reservamos el derecho, a nuestra sola discreción, de modificar o reemplazar estos Términos en cualquier momento. Si una revisión es material, proporcionaremos al menos 30 días de aviso antes de que cualquier nuevo término entre en vigor.</p>
+      </div>
+    `,
     privacyPolicy: 'Política de Privacidad',
     privacyPolicyDescription: 'Aprende cómo protegemos y manejamos tu información personal.',
     contactUs: 'Contáctanos',
     contactUsDescription: '¿Tienes preguntas que no se responden en nuestro FAQ? Estamos aquí para ayudar.',
-    supportEmail: 'soporte@salesbuddy.ai',
+    supportEmail: 'RevoTechSB@gmail.com',
 
     // Advanced Settings
     advancedSettings: 'Configuración Avanzada',
@@ -1972,22 +2088,22 @@ export const translations = {
     startConversationDesc: 'Начните общаться с нашим ИИ, который действует как ваш потенциальный клиент.',
     improveTrackProgress: 'Улучшить и Отследить Прогресс',
     improveTrackProgressDesc: 'Получайте обратную связь и отслеживайте свое улучшение со временем.',
-    whatOurUsersSay: 'Что Говорят Наши Пользователи',
-    whatOurUsersSayDescription: 'Присоединяйтесь к тысячам профессионалов продаж, которые доверяют SalesBuddy',
-    sarahJohnson: 'Сара Джонсон',
-    salesManager: 'Менеджер по Продажам',
-    techCorp: 'TechCorp',
-    sarahTestimonial: 'SalesBuddy трансформировал наше обучение продажам. Уверенность и показатели закрытия нашей команды значительно улучшились.',
-    mikeChen: 'Майк Чен',
-    accountExecutive: 'Исполнительный Директор по Аккаунтам',
-    growthStart: 'GrowthStart',
-    mikeTestimonial: 'ИИ-сценарии невероятно реалистичны. Я чувствую себя намного более подготовленным к реальным взаимодействиям с клиентами.',
-    emilyRodriguez: 'Эмили Родригес',
-    salesDirector: 'Директор по Продажам',
-    innovateCo: 'InnovateCo',
-    emilyTestimonial: 'Аналитика помогает нам выявлять области для улучшения. Это как иметь личного тренера по продажам.',
+    whatOurUsersSay: 'Почему Выбрать SalesBuddy?',
+    whatOurUsersSayDescription: 'Откройте силу обучения продажам на основе ИИ',
+    sarahJohnson: 'Обучение с ИИ',
+    salesManager: 'Реалистичные Сценарии',
+    techCorp: 'Продвинутая Аналитика',
+    sarahTestimonial: 'Практикуйтесь с ИИ, который симулирует реальные взаимодействия с клиентами и предоставляет мгновенную обратную связь по вашим техникам продаж.',
+    mikeChen: 'Персонализированное Обучение',
+    accountExecutive: 'Развитие Навыков',
+    growthStart: 'Отслеживание Результатов',
+    mikeTestimonial: 'Настройте свой опыт обучения с различными личностями клиентов, отраслями и уровнями сложности.',
+    emilyRodriguez: 'Профессиональный Рост',
+    salesDirector: 'Управление Командой',
+    innovateCo: 'Готов для Предприятий',
+    emilyTestimonial: 'Отслеживайте свой прогресс с подробной аналитикой и инсайтами для постоянного улучшения ваших результатов продаж.',
     readyToTransform: 'Готовы Трансформировать Свои Навыки Продаж?',
-    readyToTransformDesc: 'Присоединяйтесь к тысячам профессионалов продаж, которые уже улучшают свои навыки с SalesBuddy.',
+    readyToTransformDesc: 'Начните свой путь к тому, чтобы стать более уверенным и успешным профессионалом продаж.',
     startPracticingNow: 'Начать Практику Сейчас',
     startFreeTrial: 'Начать Бесплатную Пробную Версию',
     viewPlans: 'Посмотреть Планы',
@@ -2026,13 +2142,58 @@ export const translations = {
     termsOfService: 'Условия Использования',
     termsTitle: 'Условия Использования',
     termsDescription: 'Пожалуйста, внимательно прочитайте эти условия перед использованием нашего сервиса.',
-    termsLastUpdated: 'Последнее обновление: Декабрь 2024',
-    termsContent: 'Используя SalesBuddy, вы соглашаетесь с нашими условиями использования. Это включает, но не ограничивается правильным использованием нашей платформы обучения ИИ, соблюдением прав интеллектуальной собственности и поддержанием надлежащего поведения во время тренировочных сессий. Мы оставляем за собой право изменять эти условия в любое время и уведомим пользователей о значительных изменениях.',
+    termsLastUpdated: 'Последнее обновление: Сентябрь 2025',
+    termsContent: `
+      <div class="terms-content">
+        <h3>1. Принятие Условий</h3>
+        <p>Получая доступ и используя SalesBuddy ("Сервис"), вы принимаете и соглашаетесь соблюдать условия и положения данного соглашения. Если вы не согласны с вышеизложенным, пожалуйста, не используйте этот сервис.</p>
+        
+        <h3>2. Лицензия на Использование</h3>
+        <p>Разрешение предоставляется для временного использования SalesBuddy только для личного, некоммерческого временного просмотра. Это предоставление лицензии, а не передача права собственности, и в рамках этой лицензии вы не можете:</p>
+        <ul>
+          <li>изменять или копировать материалы</li>
+          <li>использовать материалы в коммерческих целях или для публичного показа</li>
+          <li>пытаться провести обратную инженерию любого программного обеспечения, содержащегося на веб-сайте</li>
+          <li>удалять любые уведомления об авторских правах или другие уведомления о собственности из материалов</li>
+        </ul>
+        
+        <h3>3. Политика Конфиденциальности</h3>
+        <p>Ваша конфиденциальность важна для нас. Наша Политика Конфиденциальности объясняет, как мы собираем, используем и защищаем вашу информацию при использовании нашего Сервиса. Используя наш Сервис, вы соглашаетесь на сбор и использование информации в соответствии с этой политикой.</p>
+        
+        <h3>4. Пользовательские Аккаунты</h3>
+        <p>Когда вы создаете аккаунт у нас, вы должны предоставить информацию, которая является точной, полной и актуальной во все времена. Вы несете ответственность за защиту пароля и за все действия, которые происходят под вашим аккаунтом.</p>
+        
+        <h3>5. Запрещенное Использование</h3>
+        <p>Вы не можете использовать наш Сервис:</p>
+        <ul>
+          <li>Для любых незаконных целей или для побуждения других к совершению незаконных действий</li>
+          <li>Для нарушения любых международных, федеральных, провинциальных или государственных правил, законов или местных постановлений</li>
+          <li>Для нарушения наших прав интеллектуальной собственности или прав интеллектуальной собственности других</li>
+          <li>Для преследования, оскорбления, вреда, клеветы, дискредитации, запугивания или дискриминации</li>
+          <li>Для предоставления ложной или вводящей в заблуждение информации</li>
+        </ul>
+        
+        <h3>6. Контент</h3>
+        <p>Наш Сервис позволяет вам публиковать, связывать, хранить, делиться и иным образом делать доступной определенную информацию, текст, графику, видео или другой материал. Вы несете ответственность за контент, который вы публикуете в Сервисе, включая его законность, надежность и уместность.</p>
+        
+        <h3>7. Прекращение</h3>
+        <p>Мы можем прекратить или приостановить ваш аккаунт и запретить доступ к Сервису немедленно, без предварительного уведомления или ответственности, по нашему собственному усмотрению, по любой причине и без ограничений, включая, но не ограничиваясь нарушением Условий.</p>
+        
+        <h3>8. Отказ от Ответственности</h3>
+        <p>Информация на этом веб-сайте предоставляется "как есть". В максимальной степени, разрешенной законом, эта Компания исключает все заявления, гарантии, условия и термины, связанные с нашим веб-сайтом и использованием этого веб-сайта.</p>
+        
+        <h3>9. Применимое Право</h3>
+        <p>Эти Условия должны интерпретироваться и регулироваться законами юрисдикции, в которой наша компания зарегистрирована, без учета положений о конфликте законов.</p>
+        
+        <h3>10. Изменения в Условиях</h3>
+        <p>Мы оставляем за собой право, по нашему собственному усмотрению, изменять или заменять эти Условия в любое время. Если пересмотр является существенным, мы предоставим по крайней мере 30 дней уведомления до вступления в силу любых новых условий.</p>
+      </div>
+    `,
     privacyPolicy: 'Политика Конфиденциальности',
     privacyPolicyDescription: 'Узнайте, как мы защищаем и обрабатываем вашу личную информацию.',
     contactUs: 'Свяжитесь с Нами',
     contactUsDescription: 'Есть вопросы, на которые не ответили в нашем FAQ? Мы здесь, чтобы помочь.',
-    supportEmail: 'поддержка@salesbuddy.ai',
+    supportEmail: 'RevoTechSB@gmail.com',
 
     // Advanced Settings
     advancedSettings: 'Дополнительные Настройки',

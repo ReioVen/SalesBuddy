@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-export type Language = 'en' | 'et' | 'es' | 'ru';
+export type Language = 'en' | 'et' | 'es' | 'ru' | 'lv' | 'lt' | 'fi' | 'sv' | 'no' | 'da' | 'de' | 'fr' | 'it' | 'pt' | 'pl' | 'cs' | 'sk' | 'hu' | 'ro' | 'bg' | 'hr' | 'sl' | 'el' | 'tr' | 'ar' | 'he' | 'ja' | 'ko' | 'zh' | 'hi' | 'th' | 'vi' | 'id' | 'ms' | 'tl';
 
 interface TranslationResponse {
   language: string;

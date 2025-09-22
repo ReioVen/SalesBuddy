@@ -9,7 +9,7 @@ const translationSchema = new mongoose.Schema({
   language: {
     type: String,
     required: true,
-    enum: ['en', 'et', 'lv', 'lt', 'fi', 'sv', 'no', 'da']
+    enum: ['en', 'et', 'es', 'ru', 'lv', 'lt', 'fi', 'sv', 'no', 'da', 'de', 'fr', 'it', 'pt', 'pl', 'cs', 'sk', 'hu', 'ro', 'bg', 'hr', 'sl', 'el', 'tr', 'ar', 'he', 'ja', 'ko', 'zh', 'hi', 'th', 'vi', 'id', 'ms', 'tl']
   },
   text: {
     type: String,
