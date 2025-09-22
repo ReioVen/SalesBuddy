@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useRef, ReactNode } from 'react';
-import axios from 'axios';
+import apiClient from '../config/axios';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 
@@ -85,7 +85,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   // Set up axios defaults
   useEffect(() => {
-    axios.defaults.withCredentials = true;
+    // Credentials are handled by apiClient configuration
   }, []);
 
   // Check if user is logged in on app start (only once)
@@ -95,7 +95,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       authCheckCompleted.current = true;
       
       try {
-        const response = await axios.get('/api/auth/me');
+        const response = await apiClient.get('/api/auth/me');
         const user = response.data.user;
         setUser(user);
         
@@ -111,7 +111,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const login = async (email: string, password: string) => {
     try {
-      const response = await axios.post('/api/auth/login', { email, password });
+      const response = await apiClient.post('/api/auth/login', { email, password });
       const { user } = response.data;
       setUser(user);
       
@@ -127,7 +127,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const register = async (userData: RegisterData) => {
     try {
-      const response = await axios.post('/api/auth/register', userData);
+      const response = await apiClient.post('/api/auth/register', userData);
       const { user } = response.data;
       setUser(user);
       
@@ -150,7 +150,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const logout = async () => {
     try {
-      await axios.post('/api/auth/logout');
+      await apiClient.post('/api/auth/logout');
     } catch {}
     setUser(null);
     toast.success('Logged out successfully');
@@ -163,7 +163,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const refreshUser = async () => {
     try {
-      const response = await axios.get('/api/auth/me');
+      const response = await apiClient.get('/api/auth/me');
       setUser(response.data.user);
     } catch (error) {
       console.error('Failed to refresh user data:', error);
