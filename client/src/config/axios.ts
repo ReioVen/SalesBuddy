@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Configure axios base URL
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://salesbuddy-production.up.railway.app';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://salesbuddy.pro';
 
 // Create axios instance with base configuration
 const apiClient = axios.create({
