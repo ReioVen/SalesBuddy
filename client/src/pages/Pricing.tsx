@@ -64,14 +64,14 @@ const Pricing: React.FC = () => {
       price: 0,
       period: language === 'et' ? 'kuu' : 'month',
       features: [
-        language === 'et' ? '10 AI Vestlust kuus' : '10 AI conversations per month',
+        language === 'et' ? '3 AI Vestlust kuus' : '3 AI conversations per month',
         language === 'et' ? 'Põhimüügi stsenaariumid' : 'Basic sales scenarios',
         language === 'et' ? 'E-posti tugi' : 'Email support',
         language === 'et' ? 'Kokkuvõtted lukustatud (uuenda avamiseks)' : 'Summaries locked (upgrade to unlock)'
       ],
       buttonText: language === 'et' ? 'Alusta tasuta' : 'Get Started Free',
       buttonAction: 'subscribe',
-      limits: { conversations: 10, aiTips: 0 }
+      limits: { conversations: 3, aiTips: 0 }
     },
     {
       name: language === 'et' ? 'Põhi' : 'Basic',

@@ -124,7 +124,7 @@ const userSchema = new mongoose.Schema({
     },
     monthlyLimit: {
       type: Number,
-      default: 50 // Free tier limit (matches subscription plans)
+      default: 3 // Free tier limit (matches subscription plans)
     },
     dailyLimit: {
       type: Number,
@@ -454,7 +454,7 @@ userSchema.methods.getSummaryStatus = function() {
 // Get subscription limits
 userSchema.methods.getSubscriptionLimits = function() {
   const limits = {
-    free: { conversations: 10, aiTips: 0, features: ['basic_ai'], period: 'monthly' },
+    free: { conversations: 3, aiTips: 0, features: ['basic_ai'], period: 'monthly' },
     basic: { conversations: 30, aiTips: 10, features: ['basic_ai', 'tips_lessons'], period: 'monthly' },
     pro: { conversations: 50, aiTips: 25, features: ['basic_ai', 'tips_lessons', 'summary', 'client_customization', 'summary_feedback'], period: 'monthly' },
     unlimited: { conversations: 200, aiTips: 50, features: ['basic_ai', 'tips_lessons', 'summary', 'client_customization', 'summary_feedback'], period: 'monthly' },

@@ -4,7 +4,7 @@
 
 1. **Multiple User Accounts**: You're creating new accounts each time instead of using the same one
 2. **Stripe Webhook Not Processing**: Users pay through Stripe but don't get their subscription updated in the database
-3. **Wrong Subscription Limits**: Users still see old limits (50 conversations) instead of new limits (10 for free, 30 for basic)
+3. **Wrong Subscription Limits**: Users still see old limits (50 conversations) instead of new limits (3 for free, 30 for basic)
 
 ## Immediate Fix
 
@@ -20,7 +20,7 @@ This will:
 - Find all users with `test@gmail.com` or `test1@gmail.com`
 - Check if they have a Stripe customer ID (indicating they paid)
 - Update their subscription to Basic plan (30 conversations, 10 AI tips) if they paid
-- Update their subscription to Free plan (10 conversations, 0 AI tips) if they didn't pay
+- Update their subscription to Free plan (3 conversations, 0 AI tips) if they didn't pay
 
 ### Step 2: Test Webhook Endpoint
 

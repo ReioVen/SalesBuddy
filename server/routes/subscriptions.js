@@ -19,8 +19,8 @@ const SUBSCRIPTION_PLANS = {
     name: 'Free',
     price: 0,
     stripePriceId: null,
-    features: ['10 AI conversations per month', 'Basic sales scenarios'],
-    limits: { conversations: 10, aiTips: 0 }
+    features: ['3 AI conversations per month', 'Basic sales scenarios'],
+    limits: { conversations: 3, aiTips: 0 }
   },
   basic: {
     name: 'Basic',

@@ -80,7 +80,7 @@ async function fixAllSubscriptions() {
     console.log('\n=== SUMMARY ===');
     console.log('All test users have been updated with correct subscription data.');
     console.log('Users with Stripe customer IDs were set to Basic plan (30 conversations, 10 AI tips).');
-    console.log('Users without Stripe customer IDs were set to Free plan (10 conversations, 0 AI tips).');
+    console.log('Users without Stripe customer IDs were set to Free plan (3 conversations, 0 AI tips).');
     
   } catch (error) {
     console.error('Error fixing subscriptions:', error);
