@@ -1,41 +1,17 @@
-# Multi-stage build for production
-FROM node:18-alpine AS builder
+# Railway-optimized Dockerfile
+FROM node:18-alpine
 
 # Set working directory
 WORKDIR /app
 
-# Copy package files
-COPY package*.json ./
-COPY server/package*.json ./server/
-COPY client/package*.json ./client/
+# Copy server package files
+COPY server/package*.json ./
 
-# Install dependencies
+# Install server dependencies
 RUN npm ci --only=production
-WORKDIR /app/server
-RUN npm ci --only=production
-WORKDIR /app/client
-RUN npm ci
 
-# Copy source code
-WORKDIR /app
-COPY . .
-
-# Build client
-WORKDIR /app/client
-RUN npm run build
-
-# Production stage
-FROM node:18-alpine AS production
-
-WORKDIR /app
-
-# Copy server dependencies and source
-COPY --from=builder /app/server/package*.json ./
-COPY --from=builder /app/server/node_modules ./node_modules
-COPY --from=builder /app/server ./
-
-# Copy built client
-COPY --from=builder /app/client/build ./public
+# Copy server source code
+COPY server/ .
 
 # Expose port
 EXPOSE 5002
