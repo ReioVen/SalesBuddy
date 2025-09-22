@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useRef, ReactNode } from 'react';
-import apiClient from '../config/axios';
+import axios from 'axios';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 
@@ -95,7 +95,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       authCheckCompleted.current = true;
       
       try {
-        const response = await apiClient.get('/api/auth/me');
+        const apiUrl = process.env.REACT_APP_API_URL || 'https://wp7ya87q.up.railway.app';
+        const response = await axios.get(`${apiUrl}/api/auth/me`, {
+          withCredentials: true
+        });
         const user = response.data.user;
         setUser(user);
         
@@ -111,7 +114,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const login = async (email: string, password: string) => {
     try {
-      const response = await apiClient.post('/api/auth/login', { email, password });
+      const apiUrl = process.env.REACT_APP_API_URL || 'https://wp7ya87q.up.railway.app';
+      const response = await axios.post(`${apiUrl}/api/auth/login`, { email, password }, {
+        withCredentials: true
+      });
       const { user } = response.data;
       setUser(user);
       
@@ -127,7 +133,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const register = async (userData: RegisterData) => {
     try {
-      const response = await apiClient.post('/api/auth/register', userData);
+      const apiUrl = process.env.REACT_APP_API_URL || 'https://wp7ya87q.up.railway.app';
+      const response = await axios.post(`${apiUrl}/api/auth/register`, userData, {
+        withCredentials: true
+      });
       const { user } = response.data;
       setUser(user);
       
@@ -150,7 +159,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const logout = async () => {
     try {
-      await apiClient.post('/api/auth/logout');
+      const apiUrl = process.env.REACT_APP_API_URL || 'https://wp7ya87q.up.railway.app';
+      await axios.post(`${apiUrl}/api/auth/logout`, {}, {
+        withCredentials: true
+      });
     } catch {}
     setUser(null);
     toast.success('Logged out successfully');
@@ -163,7 +175,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const refreshUser = async () => {
     try {
-      const response = await apiClient.get('/api/auth/me');
+      const apiUrl = process.env.REACT_APP_API_URL || 'https://wp7ya87q.up.railway.app';
+      const response = await axios.get(`${apiUrl}/api/auth/me`, {
+        withCredentials: true
+      });
       setUser(response.data.user);
     } catch (error) {
       console.error('Failed to refresh user data:', error);
