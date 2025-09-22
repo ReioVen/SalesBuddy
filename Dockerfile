@@ -4,8 +4,8 @@ FROM node:18-alpine
 # Set working directory
 WORKDIR /app
 
-# Copy server package files
-COPY server/package*.json ./
+# Copy production package.json
+COPY server/package.production.json ./package.json
 
 # Install server dependencies
 RUN npm ci --only=production
