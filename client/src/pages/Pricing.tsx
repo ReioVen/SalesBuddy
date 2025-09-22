@@ -6,7 +6,7 @@ import {
   X, 
   Star
 } from 'lucide-react';
-import axios from 'axios';
+import apiClient from '../config/axios';
 import toast from 'react-hot-toast';
 import { useSearchParams } from 'react-router-dom';
 
@@ -233,7 +233,7 @@ const Pricing: React.FC = () => {
       const planKey = planName.toLowerCase();
       console.log('Attempting to subscribe to plan:', { planName, planKey });
       
-      const response = await axios.post('/api/subscriptions/create-checkout-session', {
+      const response = await apiClient.post('/api/subscriptions/create-checkout-session', {
         plan: planKey
       });
       
@@ -255,7 +255,7 @@ const Pricing: React.FC = () => {
     setLoading(true);
 
     try {
-      await axios.post('/api/enterprise/request', formData);
+      await apiClient.post('/api/enterprise/request', formData);
       toast.success('Enterprise request submitted successfully! We\'ll contact you soon.');
       setShowEnterpriseModal(false);
       setFormData({

@@ -3,7 +3,7 @@ import { useAuth } from '../contexts/AuthContext.tsx';
 import { useTranslation } from '../hooks/useTranslation.ts';
 import SubscriptionManagement from '../components/SubscriptionManagement.tsx';
 import { AlertTriangle, Trash2, XCircle } from 'lucide-react';
-import axios from 'axios';
+import apiClient from '../config/axios';
 import toast from 'react-hot-toast';
 
 const Profile: React.FC = () => {
@@ -26,7 +26,7 @@ const Profile: React.FC = () => {
       setIsCancellingSubscription(true);
       // This would typically redirect to Stripe portal for cancellation
       // For now, we'll just redirect to the billing portal
-      const response = await axios.post('/api/subscriptions/create-portal-session');
+      const response = await apiClient.post('/api/subscriptions/create-portal-session');
       window.location.href = response.data.url;
     } catch (error: any) {
       console.error('Cancel subscription error:', error);
