@@ -14,7 +14,7 @@ import {
   Settings
 } from 'lucide-react';
 
-const API_BASE_URL = 'https://salesbuddy-production.up.railway.app';
+const API_BASE_URL = 'https://api.salesbuddy.pro';
 
 interface SubscriptionManagementProps {
   onClose?: () => void;

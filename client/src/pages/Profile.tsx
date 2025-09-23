@@ -6,7 +6,7 @@ import { AlertTriangle, Trash2, XCircle } from 'lucide-react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 
-const API_BASE_URL = 'https://salesbuddy-production.up.railway.app';
+const API_BASE_URL = 'https://api.salesbuddy.pro';
 
 const Profile: React.FC = () => {
   const { user, logout } = useAuth();

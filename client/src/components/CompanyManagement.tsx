@@ -9,7 +9,7 @@ import TeamMemberManagement from './TeamMemberManagement.tsx';
 import UserDetailModal from './UserDetailModal.tsx';
 import Leaderboard from './Leaderboard.tsx';
 
-const API_BASE_URL = 'https://salesbuddy-production.up.railway.app';
+const API_BASE_URL = 'https://api.salesbuddy.pro';
 
 interface CompanyUser {
   _id: string;

@@ -5,7 +5,7 @@ import axios from 'axios';
 import toast from 'react-hot-toast';
 import { Send, MessageSquare, Lightbulb, X, Minimize2, Maximize2 } from 'lucide-react';
 
-const API_BASE_URL = 'https://salesbuddy-production.up.railway.app';
+const API_BASE_URL = 'https://api.salesbuddy.pro';
 
 interface AITipMessage {
   role: 'user' | 'assistant';

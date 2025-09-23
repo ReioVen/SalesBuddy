@@ -65,8 +65,7 @@ const allowedOrigins = [
   'https://www.salesbuddy.pro',
   'https://app.salesbuddy.pro',
   'https://salesbuddy-client.vercel.app',
-  'https://sales-buddy.vercel.app',
-  'https://salesbuddy-production.up.railway.app'
+  'https://sales-buddy.vercel.app'
 ];
 
 app.use(cors({

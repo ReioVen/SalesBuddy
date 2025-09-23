@@ -10,7 +10,7 @@ import axios from 'axios';
 import toast from 'react-hot-toast';
 import { useSearchParams } from 'react-router-dom';
 
-const API_BASE_URL = 'https://salesbuddy-production.up.railway.app';
+const API_BASE_URL = 'https://api.salesbuddy.pro';
 
 interface PricingPlan {
   name: string;

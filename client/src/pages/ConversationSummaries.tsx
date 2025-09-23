@@ -6,7 +6,7 @@ import ConversationSummaryCard from '../components/ConversationSummaryCard.tsx';
 import { Award, TrendingUp, MessageSquare, Loader2 } from 'lucide-react';
 import { useTranslation } from '../hooks/useTranslation.ts';
 
-const API_BASE_URL = 'https://salesbuddy-production.up.railway.app';
+const API_BASE_URL = 'https://api.salesbuddy.pro';
 // Removed AI translation context - now using database translations
 
 interface ConversationSummary {
