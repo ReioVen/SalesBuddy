@@ -105,7 +105,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       authCheckCompleted.current = true;
       
       try {
-        const apiUrl = 'https://salesbuddy-production.up.railway.app';
+        // Use environment variable or fallback to production URL
+        const apiUrl = process.env.REACT_APP_API_URL || 'https://salesbuddy-production.up.railway.app';
         console.log('🔐 [CLIENT] Checking auth on app start:', { apiUrl });
         
         const response = await axios.get(`${apiUrl}/api/auth/me`, {
@@ -138,7 +139,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const login = async (email: string, password: string) => {
     try {
-        const apiUrl = 'https://salesbuddy-production.up.railway.app';
+        // Use environment variable or fallback to production URL
+        const apiUrl = process.env.REACT_APP_API_URL || 'https://salesbuddy-production.up.railway.app';
       console.log('🔐 [CLIENT] Attempting login:', { email, apiUrl });
       
       const response = await axios.post(`${apiUrl}/api/auth/login`, { email, password }, {
@@ -187,7 +189,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const register = async (userData: RegisterData) => {
     try {
-        const apiUrl = 'https://salesbuddy-production.up.railway.app';
+        // Use environment variable or fallback to production URL
+        const apiUrl = process.env.REACT_APP_API_URL || 'https://salesbuddy-production.up.railway.app';
       const response = await axios.post(`${apiUrl}/api/auth/register`, userData, {
         withCredentials: true
       });
@@ -219,7 +222,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const logout = async () => {
     try {
-        const apiUrl = 'https://salesbuddy-production.up.railway.app';
+        // Use environment variable or fallback to production URL
+        const apiUrl = process.env.REACT_APP_API_URL || 'https://salesbuddy-production.up.railway.app';
       await axios.post(`${apiUrl}/api/auth/logout`, {}, {
         withCredentials: true
       });
@@ -238,7 +242,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const refreshUser = async () => {
     try {
-        const apiUrl = 'https://salesbuddy-production.up.railway.app';
+        // Use environment variable or fallback to production URL
+        const apiUrl = process.env.REACT_APP_API_URL || 'https://salesbuddy-production.up.railway.app';
       const response = await axios.get(`${apiUrl}/api/auth/me`, {
         withCredentials: true
       });

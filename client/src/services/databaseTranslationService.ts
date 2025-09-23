@@ -1,7 +1,8 @@
 import axios from 'axios';
 
 // Force the correct API URL to override any environment variable that might be set incorrectly
-const API_BASE_URL = 'https://salesbuddy-production.up.railway.app';
+// Use environment variable or fallback to production URL
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://salesbuddy-production.up.railway.app';
 
 export type Language = 'en' | 'et' | 'es' | 'ru' | 'lv' | 'lt' | 'fi' | 'sv' | 'no' | 'da' | 'de' | 'fr' | 'it' | 'pt' | 'pl' | 'cs' | 'sk' | 'hu' | 'ro' | 'bg' | 'hr' | 'sl' | 'el' | 'tr' | 'ar' | 'he' | 'ja' | 'ko' | 'zh' | 'hi' | 'th' | 'vi' | 'id' | 'ms' | 'tl';
 
@@ -1055,11 +1056,19 @@ class DatabaseTranslationService {
       }
       this.lastTranslationRequest = Date.now();
 
+      // Get token from localStorage for Authorization header
+      const token = localStorage.getItem('sb_token');
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json'
+      };
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
       const response = await fetch(`${API_BASE_URL}/api/dynamic-translation/translate`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
+        headers,
         credentials: 'include', // Include cookies for authentication
         body: JSON.stringify({
           text: feedback,
@@ -1166,11 +1175,19 @@ class DatabaseTranslationService {
       }
       this.lastTranslationRequest = Date.now();
 
+      // Get token from localStorage for Authorization header
+      const token = localStorage.getItem('sb_token');
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json'
+      };
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
       const response = await fetch(`${API_BASE_URL}/api/dynamic-translation/translate`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
+        headers,
         credentials: 'include', // Include cookies for authentication
         body: JSON.stringify({
           text,
@@ -1232,11 +1249,19 @@ class DatabaseTranslationService {
       }
       this.lastTranslationRequest = Date.now();
 
+      // Get token from localStorage for Authorization header
+      const token = localStorage.getItem('sb_token');
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json'
+      };
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
       const response = await fetch(`${API_BASE_URL}/api/dynamic-translation/translate-stage-feedback`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
+        headers,
         credentials: 'include', // Include cookies for authentication
         body: JSON.stringify({
           feedback,
