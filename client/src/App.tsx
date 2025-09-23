@@ -85,8 +85,8 @@ const PageRenderer: React.FC = () => {
         <PasswordSetup />
       </div>
 
-      {/* Conversations Page - Only render if user is authenticated */}
-      {user && (
+      {/* Conversations Page - Only render if user is authenticated and not loading */}
+      {user && !authLoading && (
         <div 
           className={`absolute inset-0 w-full bg-gray-50 dark:bg-dark-900 ${currentPath === '/conversations' ? 'block' : 'hidden'}`}
           style={{ zIndex: currentPath === '/conversations' ? 10 : 1, minHeight: '100vh', overflow: 'visible' }}
@@ -95,8 +95,8 @@ const PageRenderer: React.FC = () => {
         </div>
       )}
 
-      {/* Conversation Summaries Page - Only render if user is authenticated */}
-      {user && (
+      {/* Conversation Summaries Page - Only render if user is authenticated and not loading */}
+      {user && !authLoading && (
         <div 
           className={`absolute inset-0 w-full bg-gray-50 dark:bg-dark-900 ${currentPath === '/conversation-summaries' ? 'block' : 'hidden'}`}
           style={{ zIndex: currentPath === '/conversation-summaries' ? 10 : 1, minHeight: '100vh', overflow: 'visible' }}
@@ -105,8 +105,8 @@ const PageRenderer: React.FC = () => {
         </div>
       )}
 
-      {/* Profile Page - Only render if user is authenticated */}
-      {user && (
+      {/* Profile Page - Only render if user is authenticated and not loading */}
+      {user && !authLoading && (
         <div 
           className={`absolute inset-0 w-full bg-gray-50 dark:bg-dark-900 ${currentPath === '/profile' ? 'block' : 'hidden'}`}
           style={{ zIndex: currentPath === '/profile' ? 10 : 1, minHeight: '100vh', overflow: 'visible' }}
@@ -115,8 +115,8 @@ const PageRenderer: React.FC = () => {
         </div>
       )}
 
-      {/* Settings Page - Only render if user is authenticated */}
-      {user && (
+      {/* Settings Page - Only render if user is authenticated and not loading */}
+      {user && !authLoading && (
         <div 
           className={`absolute inset-0 w-full bg-gray-50 dark:bg-dark-900 ${currentPath === '/settings' ? 'block' : 'hidden'}`}
           style={{ zIndex: currentPath === '/settings' ? 10 : 1, minHeight: '100vh', overflow: 'visible' }}
@@ -125,8 +125,8 @@ const PageRenderer: React.FC = () => {
         </div>
       )}
 
-      {/* Company Page - Only render if user is authenticated */}
-      {user && (
+      {/* Company Page - Only render if user is authenticated and not loading */}
+      {user && !authLoading && (
         <div 
           className={`absolute inset-0 w-full bg-gray-50 dark:bg-dark-900 ${currentPath === '/company' ? 'block' : 'hidden'}`}
           style={{ zIndex: currentPath === '/company' ? 10 : 1, minHeight: '100vh', overflow: 'visible' }}
@@ -135,8 +135,8 @@ const PageRenderer: React.FC = () => {
         </div>
       )}
 
-      {/* Admin Dashboard Page - Only render if user is authenticated */}
-      {user && (
+      {/* Admin Dashboard Page - Only render if user is authenticated and not loading */}
+      {user && !authLoading && (
         <div 
           className={`absolute inset-0 w-full bg-gray-50 dark:bg-dark-900 ${currentPath === '/admin' ? 'block' : 'hidden'}`}
           style={{ zIndex: currentPath === '/admin' ? 10 : 1, minHeight: '100vh', overflow: 'visible' }}

@@ -53,7 +53,7 @@ interface Company {
 }
 
 const CompanyManagement: React.FC = () => {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { t } = useTranslation();
   const [company, setCompany] = useState<Company | null>(null);
   const [companies, setCompanies] = useState<Company[]>([]);
@@ -106,10 +106,11 @@ const CompanyManagement: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (user?.companyId || user?.isSuperAdmin) {
+    // Only fetch data if user is authenticated, not loading, and has proper permissions
+    if (user && !authLoading && user.id && (user.companyId || user.isSuperAdmin)) {
       fetchCompanyData();
     }
-  }, [user, fetchCompanyData]);
+  }, [user, authLoading, fetchCompanyData]);
 
   // Handle user operations
 
