@@ -30,7 +30,7 @@ const ResetPassword: React.FC = () => {
 
   const verifyToken = async (tokenToVerify: string) => {
     try {
-      const response = await fetch(`/api/password-reset/verify-reset-token/${tokenToVerify}`, {
+      const response = await fetch(`${API_BASE_URL}/api/password-reset/verify-reset-token/${tokenToVerify}`, {
         method: 'GET',
         credentials: 'include',
       });

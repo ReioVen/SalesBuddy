@@ -3,6 +3,8 @@ import { useTranslation } from '../hooks/useTranslation.ts';
 import { useAuth } from '../contexts/AuthContext.tsx';
 import { Trophy, Medal, Award, User, TrendingUp, Calendar, Users } from 'lucide-react';
 
+const API_BASE_URL = 'https://salesbuddy-production.up.railway.app';
+
 interface LeaderboardEntry {
   rank: number;
   user: {
@@ -60,8 +62,19 @@ const Leaderboard: React.FC<LeaderboardProps> = ({ companyId: propCompanyId }) =
       setLoading(true);
       setError(null);
       
-      const response = await fetch(`/api/leaderboard/company/${companyId}`, {
-        credentials: 'include'
+      // Get token from localStorage for Authorization header
+      const token = localStorage.getItem('sb_token');
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json'
+      };
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
+      const response = await fetch(`${API_BASE_URL}/api/leaderboard/company/${companyId}`, {
+        credentials: 'include',
+        headers
       });
 
       if (response.ok) {

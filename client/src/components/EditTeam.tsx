@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 
+const API_BASE_URL = 'https://salesbuddy-production.up.railway.app';
+
 interface EditTeamForm {
   name: string;
   description: string;
@@ -33,7 +35,7 @@ const EditTeam: React.FC<EditTeamProps> = ({
     setError(null);
 
     try {
-      const response = await fetch(`/api/companies/teams/${team._id}`, {
+      const response = await fetch(`${API_BASE_URL}/api/companies/teams/${team._id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'
