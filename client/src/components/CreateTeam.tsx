@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 
+const API_BASE_URL = 'https://salesbuddy-production.up.railway.app';
+
 interface CreateTeamForm {
   name: string;
   description: string;
@@ -29,7 +31,7 @@ const CreateTeam: React.FC<CreateTeamProps> = ({
     setError(null);
 
     try {
-      const response = await fetch('/api/companies/teams/create', {
+      const response = await fetch(`${API_BASE_URL}/api/companies/teams/create`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

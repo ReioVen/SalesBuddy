@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+
+const API_BASE_URL = 'https://salesbuddy-production.up.railway.app';
 import { useAuth } from '../contexts/AuthContext.tsx';
 
 interface AddUserForm {
@@ -83,7 +85,7 @@ const AddUserToCompany: React.FC<AddUserToCompanyProps> = ({
         }
       }
 
-      const response = await fetch('/api/companies/users', {
+      const response = await fetch(`${API_BASE_URL}/api/companies/users`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

@@ -9,6 +9,8 @@ import TeamMemberManagement from './TeamMemberManagement.tsx';
 import UserDetailModal from './UserDetailModal.tsx';
 import Leaderboard from './Leaderboard.tsx';
 
+const API_BASE_URL = 'https://salesbuddy-production.up.railway.app';
+
 interface CompanyUser {
   _id: string;
   firstName: string;
@@ -73,7 +75,7 @@ const CompanyManagement: React.FC = () => {
   // Fetch company data
   const fetchCompanyData = useCallback(async () => {
     try {
-      const response = await fetch(`/api/companies/details`, {
+      const response = await fetch(`${API_BASE_URL}/api/companies/details`, {
         credentials: 'include'
       });
       

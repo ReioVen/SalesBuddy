@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+
+const API_BASE_URL = 'https://salesbuddy-production.up.railway.app';
 import { useAuth } from '../contexts/AuthContext.tsx';
 
 interface CreateCompanyForm {
@@ -54,7 +56,7 @@ const CreateCompany: React.FC = () => {
     setError(null);
 
     try {
-      const response = await fetch('/api/companies/create', {
+      const response = await fetch(`${API_BASE_URL}/api/companies/create`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

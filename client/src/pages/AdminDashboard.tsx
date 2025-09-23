@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+
+const API_BASE_URL = 'https://salesbuddy-production.up.railway.app';
 import { useAuth } from '../contexts/AuthContext.tsx';
 import CreateCompany from '../components/CreateCompany.tsx';
 import CreateUser from '../components/CreateUser.tsx';
@@ -57,7 +59,7 @@ const AdminDashboard: React.FC = () => {
 
   const fetchDashboardData = async () => {
     try {
-      const response = await fetch('/api/admin/dashboard', {
+      const response = await fetch(`${API_BASE_URL}/api/admin/dashboard`, {
         credentials: 'include'
       });
       

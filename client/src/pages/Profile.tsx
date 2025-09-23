@@ -52,7 +52,7 @@ const Profile: React.FC = () => {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('/api/users/delete-account', {
+      const response = await fetch(`${API_BASE_URL}/api/users/delete-account`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',

@@ -1055,7 +1055,7 @@ class DatabaseTranslationService {
       }
       this.lastTranslationRequest = Date.now();
 
-      const response = await fetch('/api/dynamic-translation/translate', {
+      const response = await fetch(`${API_BASE_URL}/api/dynamic-translation/translate`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -1166,7 +1166,7 @@ class DatabaseTranslationService {
       }
       this.lastTranslationRequest = Date.now();
 
-      const response = await fetch('/api/dynamic-translation/translate', {
+      const response = await fetch(`${API_BASE_URL}/api/dynamic-translation/translate`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -1232,7 +1232,7 @@ class DatabaseTranslationService {
       }
       this.lastTranslationRequest = Date.now();
 
-      const response = await fetch('/api/dynamic-translation/translate-stage-feedback', {
+      const response = await fetch(`${API_BASE_URL}/api/dynamic-translation/translate-stage-feedback`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 
+const API_BASE_URL = 'https://salesbuddy-production.up.railway.app';
+
 interface CreateUserForm {
   email: string;
   password: string;
@@ -37,7 +39,7 @@ const CreateUser: React.FC = () => {
   useEffect(() => {
     const fetchCompanies = async () => {
       try {
-        const response = await fetch('/api/admin/companies', {
+        const response = await fetch(`${API_BASE_URL}/api/admin/companies`, {
           credentials: 'include'
         });
         
@@ -76,7 +78,7 @@ const CreateUser: React.FC = () => {
     }
 
     try {
-      const response = await fetch('/api/admin/users/create', {
+      const response = await fetch(`${API_BASE_URL}/api/admin/users/create`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

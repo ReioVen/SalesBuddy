@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+
+const API_BASE_URL = 'https://salesbuddy-production.up.railway.app';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useTheme } from '../contexts/ThemeContext.tsx';
 
@@ -61,7 +63,7 @@ const ResetPassword: React.FC = () => {
     }
 
     try {
-      const response = await fetch('/api/password-reset/reset-password', {
+      const response = await fetch(`${API_BASE_URL}/api/password-reset/reset-password`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
