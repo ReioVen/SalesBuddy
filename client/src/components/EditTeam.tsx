@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-
-const API_BASE_URL = 'https://salesbuddy-production.up.railway.app';
+import axios from 'axios';
 
 interface EditTeamForm {
   name: string;
@@ -35,23 +34,45 @@ const EditTeam: React.FC<EditTeamProps> = ({
     setError(null);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/companies/teams/${team._id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        credentials: 'include',
-        body: JSON.stringify(form)
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to update team');
+      // Get token from localStorage for authentication
+      const token = localStorage.getItem('sb_token');
+      if (!token) {
+        setError('Authentication token not found. Please log in again.');
+        setLoading(false);
+        return;
       }
 
+      console.log('🔐 [EditTeam] Updating team (v2.0):', {
+        teamId: team._id,
+        hasToken: !!token,
+        formData: form,
+        timestamp: new Date().toISOString()
+      });
+
+      const response = await axios.put(`/api/companies/teams/${team._id}`, form, {
+        withCredentials: true,
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      console.log('✅ [EditTeam] Team updated successfully');
       onTeamUpdated();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update team');
+    } catch (err: any) {
+      console.log('❌ [EditTeam] Update failed:', {
+        status: err.response?.status,
+        message: err.response?.data?.error,
+        errors: err.response?.data?.errors
+      });
+
+      if (err.response?.data?.errors && Array.isArray(err.response.data.errors)) {
+        // Handle validation errors
+        const errorMessages = err.response.data.errors.map((error: any) => error.msg).join(', ');
+        setError(errorMessages);
+      } else {
+        setError(err.response?.data?.error || err.message || 'Failed to update team');
+      }
     } finally {
       setLoading(false);
     }
