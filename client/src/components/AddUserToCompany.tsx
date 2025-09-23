@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext.tsx';
-
-const API_BASE_URL = 'https://salesbuddy-production.up.railway.app';
+import axios from 'axios';
 
 interface AddUserForm {
   email: string;
@@ -85,19 +84,9 @@ const AddUserToCompany: React.FC<AddUserToCompanyProps> = ({
         }
       }
 
-      const response = await fetch(`${API_BASE_URL}/api/companies/users`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        credentials: 'include',
-        body: JSON.stringify(formData)
+      const response = await axios.post('/api/companies/users', formData, {
+        withCredentials: true
       });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to add user');
-      }
 
       // Reset form and notify parent
       setForm({

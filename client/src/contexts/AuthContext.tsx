@@ -88,6 +88,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     // Configure axios to always send credentials
     axios.defaults.withCredentials = true;
     
+    // Set the base URL for all axios requests
+    axios.defaults.baseURL = 'https://salesbuddy-production.up.railway.app';
+    
     // Add request interceptor to include auth token in headers
     axios.interceptors.request.use((config) => {
       const token = localStorage.getItem('sb_token');
@@ -105,11 +108,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       authCheckCompleted.current = true;
       
       try {
-        // Force the correct API URL - override any incorrect environment variables
-        const apiUrl = 'https://salesbuddy-production.up.railway.app';
-        console.log('🔐 [CLIENT] Checking auth on app start:', { apiUrl });
+        console.log('🔐 [CLIENT] Checking auth on app start');
         
-        const response = await axios.get(`${apiUrl}/api/auth/me`, {
+        const response = await axios.get('/api/auth/me', {
           withCredentials: true
         });
         
@@ -139,11 +140,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const login = async (email: string, password: string) => {
     try {
-        // Force the correct API URL - override any incorrect environment variables
-        const apiUrl = 'https://salesbuddy-production.up.railway.app';
-      console.log('🔐 [CLIENT] Attempting login:', { email, apiUrl });
+      console.log('🔐 [CLIENT] Attempting login:', { email });
       
-      const response = await axios.post(`${apiUrl}/api/auth/login`, { email, password }, {
+      const response = await axios.post('/api/auth/login', { email, password }, {
         withCredentials: true
       });
       
@@ -164,7 +163,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       
       // Test cookie debug endpoint after login
       try {
-        const debugResponse = await axios.get(`${apiUrl}/api/auth/debug-cookies`, {
+        const debugResponse = await axios.get('/api/auth/debug-cookies', {
           withCredentials: true
         });
         console.log('🍪 [CLIENT] Cookie debug after login:', debugResponse.data);
