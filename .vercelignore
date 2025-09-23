@@ -1,0 +1,9 @@
+server/
+node_modules/
+__pycache__/
+*.py
+*.js
+!client/
+!client/**/*
+!vercel.json
+!package.json
