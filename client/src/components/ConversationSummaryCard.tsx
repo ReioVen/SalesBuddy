@@ -241,11 +241,19 @@ const ConversationSummaryCard: React.FC<ConversationSummaryCardProps> = ({ summa
       const requestTranslation = async () => {
         try {
           
+          // Get token from localStorage for Authorization header
+          const token = localStorage.getItem('sb_token');
+          const headers: Record<string, string> = {
+            'Content-Type': 'application/json'
+          };
+          
+          if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+          }
+
           const response = await fetch(`${API_BASE_URL}/api/conversation-summaries/${summary._id}/translate`, {
             method: 'POST',
-            headers: {
-              'Content-Type': 'application/json'
-            },
+            headers,
             credentials: 'include', // Include cookies for authentication
             body: JSON.stringify({ targetLanguage: language })
           });

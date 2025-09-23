@@ -75,8 +75,19 @@ const CompanyManagement: React.FC = () => {
   // Fetch company data
   const fetchCompanyData = useCallback(async () => {
     try {
+      // Get token from localStorage for Authorization header
+      const token = localStorage.getItem('sb_token');
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json'
+      };
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
       const response = await fetch(`${API_BASE_URL}/api/companies/details`, {
-        credentials: 'include'
+        credentials: 'include',
+        headers
       });
       
       if (response.ok) {
@@ -127,9 +138,20 @@ const CompanyManagement: React.FC = () => {
     }
 
     try {
+      // Get token from localStorage for Authorization header
+      const token = localStorage.getItem('sb_token');
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json'
+      };
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
       const response = await fetch(`${API_BASE_URL}/api/companies/users/${userId}`, {
         method: 'DELETE',
-        credentials: 'include'
+        credentials: 'include',
+        headers
       });
 
       if (response.ok) {
@@ -154,9 +176,20 @@ const CompanyManagement: React.FC = () => {
     }
 
     try {
+      // Get token from localStorage for Authorization header
+      const token = localStorage.getItem('sb_token');
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json'
+      };
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
       const response = await fetch(`${API_BASE_URL}/api/companies/teams/${teamId}`, {
         method: 'DELETE',
-        credentials: 'include'
+        credentials: 'include',
+        headers
       });
 
       if (response.ok) {
@@ -176,9 +209,20 @@ const CompanyManagement: React.FC = () => {
 
     setIsDeleting(true);
     try {
+      // Get token from localStorage for Authorization header
+      const token = localStorage.getItem('sb_token');
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json'
+      };
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
       const response = await fetch(`${API_BASE_URL}/api/companies/${company.id}`, {
         method: 'DELETE',
-        credentials: 'include'
+        credentials: 'include',
+        headers
       });
 
       if (response.ok) {

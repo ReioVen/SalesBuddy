@@ -94,8 +94,19 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, onClose }) => {
     setLoading(true);
     setError(null);
     try {
+      // Get token from localStorage for Authorization header
+      const token = localStorage.getItem('sb_token');
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json'
+      };
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
       const response = await fetch(`${API_BASE_URL}/api/companies/users/${user._id}/conversations?page=${page}&limit=20`, {
-        credentials: 'include'
+        credentials: 'include',
+        headers
       });
       
       if (response.ok) {
@@ -118,8 +129,19 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, onClose }) => {
     setLoading(true);
     setError(null);
     try {
+      // Get token from localStorage for Authorization header
+      const token = localStorage.getItem('sb_token');
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json'
+      };
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
       const response = await fetch(`${API_BASE_URL}/api/companies/users/${user._id}/summaries`, {
-        credentials: 'include'
+        credentials: 'include',
+        headers
       });
       
       if (response.ok) {

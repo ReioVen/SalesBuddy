@@ -81,13 +81,13 @@ const ConversationSummaries: React.FC = () => {
       const response = await axios.get(`${API_BASE_URL}/api/conversation-summaries/status`, {
         withCredentials: true
       });
-      setSummaryStatus(response.data);
-      console.log('Summary status loaded:', response.data);
+      setSummaryStatus(response.data.summaryStatus);
+      console.log('Summary status loaded:', response.data.summaryStatus);
       console.log('Daily limit debug:', {
-        summariesGeneratedToday: response.data.summariesGeneratedToday,
-        dailyLimit: response.data.dailyLimit,
-        canGenerate: response.data.canGenerate,
-        remainingToday: response.data.remainingToday
+        summariesGeneratedToday: response.data.summaryStatus.summariesGeneratedToday,
+        dailyLimit: response.data.summaryStatus.dailyLimit,
+        canGenerate: response.data.summaryStatus.canGenerate,
+        remainingToday: response.data.summaryStatus.remainingToday
       });
     } catch (error: any) {
       console.error('Failed to load summary status:', error);
