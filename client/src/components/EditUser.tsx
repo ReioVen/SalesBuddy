@@ -76,10 +76,11 @@ const EditUser: React.FC<EditUserProps> = ({
         ...(form.teamId ? { teamId: form.teamId } : {})
       };
 
-      console.log('🔐 [EditUser] Updating user:', {
+      console.log('🔐 [EditUser] Updating user (v2.0):', {
         userId: user._id,
         hasToken: !!token,
-        apiData
+        apiData,
+        timestamp: new Date().toISOString()
       });
       
       const response = await axios.put(`/api/companies/users/${user._id}`, apiData, {
