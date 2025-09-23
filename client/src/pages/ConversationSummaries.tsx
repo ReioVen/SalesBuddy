@@ -43,7 +43,7 @@ interface ConversationSummary {
 }
 
 const ConversationSummaries: React.FC = () => {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { t, language } = useTranslation();
   // Removed AI translation context - now using database translations
   const [summaries, setSummaries] = useState<ConversationSummary[]>([]);
@@ -101,12 +101,47 @@ const ConversationSummaries: React.FC = () => {
   };
 
   useEffect(() => {
-    if (user) {
+    // Only load if user is authenticated, not loading, and has an ID
+    if (user && !authLoading && user.id) {
       loadSummaries();
       loadSummaryStatus();
       loadConversationCount();
     }
-  }, [user]);
+  }, [user, authLoading]);
+
+  // Show loading state while authentication is being checked
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-dark-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600 dark:text-gray-400">{t('loading')}</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Don't render if user is not authenticated
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-dark-900 flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+            {t('authenticationRequired')}
+          </h2>
+          <p className="text-gray-600 dark:text-gray-400 mb-6">
+            {t('pleaseLoginToAccessSummaries')}
+          </p>
+          <button
+            onClick={() => window.location.href = '/login'}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-colors"
+          >
+            {t('goToLogin')}
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   // Check if user is on free plan and show lock screen
   if (user && user.subscription?.plan === 'free') {

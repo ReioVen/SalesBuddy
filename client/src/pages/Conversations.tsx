@@ -87,7 +87,7 @@ interface Conversation {
 
 const Conversations: React.FC = () => {
   const { t, language } = useTranslation();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [showNewChatForm, setShowNewChatForm] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -185,7 +185,7 @@ const Conversations: React.FC = () => {
     };
   }, [showNewChatForm, currentConversation, showConversationDetail]);
 
-  // Load usage status only once when component mounts
+  // Load usage status only once when component mounts and user is authenticated
   useEffect(() => {
     const loadUsageStatus = async () => {
       if (!user || usageStatusLoaded) return;
@@ -201,7 +201,8 @@ const Conversations: React.FC = () => {
       }
     };
 
-    if (user && !usageStatusLoaded) {
+    // Only load if user is authenticated, not loading, and has an ID
+    if (user && !authLoading && !usageStatusLoaded && user.id) {
       loadUsageStatus();
     }
   }, [user, usageStatusLoaded]);
@@ -253,7 +254,8 @@ const Conversations: React.FC = () => {
       }
     };
 
-    if (user && !dataLoaded) {
+    // Only load if user is authenticated, not loading, and has an ID
+    if (user && !authLoading && user.id && !dataLoaded) {
       loadHistory();
     }
   }, [user, dataLoaded, usageStatus, navigate]);
@@ -691,6 +693,18 @@ const Conversations: React.FC = () => {
     };
     return stageTranslations[stage as keyof typeof stageTranslations] || stage;
   };
+
+  // Show loading state while authentication is being checked
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-dark-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600 dark:text-gray-400">{t('loading')}</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!user) {
     return (
