@@ -3,6 +3,8 @@ import { ChevronDown, ChevronUp, Star, TrendingUp, Target, MessageSquare, Award,
 import { useTranslation } from '../hooks/useTranslation.ts';
 import { databaseTranslationService } from '../services/databaseTranslationService.ts';
 
+const API_BASE_URL = 'https://salesbuddy-production.up.railway.app';
+
 interface StageRating {
   rating: number;
   feedback: string;
@@ -239,7 +241,7 @@ const ConversationSummaryCard: React.FC<ConversationSummaryCardProps> = ({ summa
       const requestTranslation = async () => {
         try {
           
-          const response = await fetch(`/api/conversation-summaries/${summary._id}/translate`, {
+          const response = await fetch(`${API_BASE_URL}/api/conversation-summaries/${summary._id}/translate`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json'

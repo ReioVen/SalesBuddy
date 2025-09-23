@@ -3,6 +3,8 @@ import { useTranslation } from '../hooks/useTranslation.ts';
 import ConversationReaderModal from './ConversationReaderModal.tsx';
 import { translateAIContent } from '../utils/aiContentTranslator.ts';
 
+const API_BASE_URL = 'https://salesbuddy-production.up.railway.app';
+
 interface Conversation {
   _id: string;
   title: string;
@@ -92,7 +94,7 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, onClose }) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`/api/companies/users/${user._id}/conversations?page=${page}&limit=20`, {
+      const response = await fetch(`${API_BASE_URL}/api/companies/users/${user._id}/conversations?page=${page}&limit=20`, {
         credentials: 'include'
       });
       
@@ -116,7 +118,7 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, onClose }) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`/api/companies/users/${user._id}/summaries`, {
+      const response = await fetch(`${API_BASE_URL}/api/companies/users/${user._id}/summaries`, {
         credentials: 'include'
       });
       

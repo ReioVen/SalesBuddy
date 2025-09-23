@@ -127,7 +127,7 @@ const CompanyManagement: React.FC = () => {
     }
 
     try {
-      const response = await fetch(`/api/companies/users/${userId}`, {
+      const response = await fetch(`${API_BASE_URL}/api/companies/users/${userId}`, {
         method: 'DELETE',
         credentials: 'include'
       });
@@ -154,7 +154,7 @@ const CompanyManagement: React.FC = () => {
     }
 
     try {
-      const response = await fetch(`/api/companies/teams/${teamId}`, {
+      const response = await fetch(`${API_BASE_URL}/api/companies/teams/${teamId}`, {
         method: 'DELETE',
         credentials: 'include'
       });
@@ -176,7 +176,7 @@ const CompanyManagement: React.FC = () => {
 
     setIsDeleting(true);
     try {
-      const response = await fetch(`/api/companies/${company.id}`, {
+      const response = await fetch(`${API_BASE_URL}/api/companies/${company.id}`, {
         method: 'DELETE',
         credentials: 'include'
       });

@@ -299,7 +299,7 @@ userSchema.methods.incrementAIUsage = function() {
   return this.save();
 };
 
-// Check if user can generate a summary (5 per day limit, and not free plan)
+// Check if user can generate a summary (based on subscription plan)
 userSchema.methods.canGenerateSummary = function() {
   // Free plan users cannot generate summaries
   if (!this.canAccessSummaries()) {
@@ -321,8 +321,11 @@ userSchema.methods.canGenerateSummary = function() {
     this.save(); // Save the reset
   }
   
-  // Check if user has reached the daily limit (5 summaries per day)
-  return this.usage.summariesGeneratedToday < 5;
+  // Get subscription limits and check if user has reached the daily limit
+  const limits = this.getSubscriptionLimits();
+  const dailyLimit = limits.summaries || 0;
+  
+  return this.usage.summariesGeneratedToday < dailyLimit;
 };
 
 // Increment summary generation count
@@ -442,11 +445,14 @@ userSchema.methods.getSummaryStatus = function() {
     this.save(); // Save the reset
   }
   
+  const limits = this.getSubscriptionLimits();
+  const dailyLimit = limits.summaries || 5; // Default to 5 if not specified in plan
+  
   return {
     summariesGeneratedToday: this.usage.summariesGeneratedToday,
     totalSummariesGenerated: this.usage.summariesGenerated,
-    dailyLimit: 5,
-    remainingToday: Math.max(0, 5 - this.usage.summariesGeneratedToday),
+    dailyLimit: dailyLimit,
+    remainingToday: Math.max(0, dailyLimit - this.usage.summariesGeneratedToday),
     canGenerate: this.canGenerateSummary()
   };
 };
@@ -454,11 +460,11 @@ userSchema.methods.getSummaryStatus = function() {
 // Get subscription limits
 userSchema.methods.getSubscriptionLimits = function() {
   const limits = {
-    free: { conversations: 3, aiTips: 0, features: ['basic_ai'], period: 'monthly' },
-    basic: { conversations: 30, aiTips: 10, features: ['basic_ai', 'tips_lessons'], period: 'monthly' },
-    pro: { conversations: 50, aiTips: 25, features: ['basic_ai', 'tips_lessons', 'summary', 'client_customization', 'summary_feedback'], period: 'monthly' },
-    unlimited: { conversations: 200, aiTips: 50, features: ['basic_ai', 'tips_lessons', 'summary', 'client_customization', 'summary_feedback'], period: 'monthly' },
-    enterprise: { conversations: 50, aiTips: 50, features: ['basic_ai', 'tips_lessons', 'summary', 'client_customization', 'summary_feedback', 'team_management', 'leaderboard', 'sso_integration', 'custom_branding', 'advanced_analytics', 'api_access', 'dedicated_support'], period: 'daily' }
+    free: { conversations: 3, aiTips: 0, summaries: 0, features: ['basic_ai'], period: 'monthly' },
+    basic: { conversations: 30, aiTips: 10, summaries: 0, features: ['basic_ai', 'tips_lessons'], period: 'monthly' },
+    pro: { conversations: 50, aiTips: 25, summaries: 5, features: ['basic_ai', 'tips_lessons', 'summary', 'client_customization', 'summary_feedback'], period: 'monthly' },
+    unlimited: { conversations: 200, aiTips: 50, summaries: 10, features: ['basic_ai', 'tips_lessons', 'summary', 'client_customization', 'summary_feedback'], period: 'monthly' },
+    enterprise: { conversations: 50, aiTips: 50, summaries: 5, features: ['basic_ai', 'tips_lessons', 'summary', 'client_customization', 'summary_feedback', 'team_management', 'leaderboard', 'sso_integration', 'custom_branding', 'advanced_analytics', 'api_access', 'dedicated_support'], period: 'daily' }
   };
   
   return limits[this.subscription.plan] || limits.free;
