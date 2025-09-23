@@ -201,8 +201,7 @@ const Conversations: React.FC = () => {
       }
     };
 
-    // Only load if user is authenticated, not loading, and has an ID
-    if (user && !authLoading && !usageStatusLoaded && user.id) {
+    if (user && !usageStatusLoaded) {
       loadUsageStatus();
     }
   }, [user, usageStatusLoaded]);
@@ -254,8 +253,7 @@ const Conversations: React.FC = () => {
       }
     };
 
-    // Only load if user is authenticated, not loading, and has an ID
-    if (user && !authLoading && user.id && !dataLoaded) {
+    if (user && !dataLoaded) {
       loadHistory();
     }
   }, [user, dataLoaded, usageStatus, navigate]);
@@ -694,17 +692,6 @@ const Conversations: React.FC = () => {
     return stageTranslations[stage as keyof typeof stageTranslations] || stage;
   };
 
-  // Show loading state while authentication is being checked
-  if (authLoading) {
-    return (
-      <div className="min-h-screen bg-gray-50 dark:bg-dark-900 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-400">{t('loading')}</p>
-        </div>
-      </div>
-    );
-  }
 
   if (!user) {
     return (
