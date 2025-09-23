@@ -327,11 +327,11 @@ const ConversationSummaryCard: React.FC<ConversationSummaryCardProps> = ({ summa
 
 
   const stageNames = {
-    opening: t('stageOpening'),
-    discovery: t('stageDiscovery'),
-    presentation: t('stagePresentation'),
-    objectionHandling: t('stageObjectionHandling'),
-    closing: t('stageClosing')
+    opening: t('opening'),
+    discovery: t('discovery'),
+    presentation: t('presentation'),
+    objectionHandling: t('objectionHandling'),
+    closing: t('closing')
   };
 
   return (

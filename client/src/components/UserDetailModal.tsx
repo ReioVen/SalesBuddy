@@ -68,11 +68,11 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, onClose }) => {
   // Function to translate stage names
   const translateStage = (stage: string) => {
     const stageMap: { [key: string]: string } = {
-      opening: t('stageOpening'),
-      discovery: t('stageDiscovery'),
-      presentation: t('stagePresentation'),
-      objectionHandling: t('stageObjectionHandling'),
-      closing: t('stageClosing')
+      opening: t('opening'),
+      discovery: t('discovery'),
+      presentation: t('presentation'),
+      objectionHandling: t('objectionHandling'),
+      closing: t('closing')
     };
     return stageMap[stage] || stage.charAt(0).toUpperCase() + stage.slice(1);
   };

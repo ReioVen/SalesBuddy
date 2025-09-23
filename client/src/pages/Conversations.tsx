@@ -683,11 +683,11 @@ const Conversations: React.FC = () => {
 
   const translateStageName = (stage: string) => {
     const stageTranslations = {
-      'introduction': t('stageOpening'),
-      'mapping': t('stageDiscovery'),
-      'productPresentation': t('stagePresentation'),
-      'objectionHandling': t('stageObjectionHandling'),
-      'close': t('stageClosing')
+      'introduction': t('opening'),
+      'mapping': t('discovery'),
+      'productPresentation': t('presentation'),
+      'objectionHandling': t('objectionHandling'),
+      'close': t('closing')
     };
     return stageTranslations[stage as keyof typeof stageTranslations] || stage;
   };
