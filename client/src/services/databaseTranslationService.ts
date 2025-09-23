@@ -464,7 +464,9 @@ class DatabaseTranslationService {
     }
 
     try {
-      const response = await axios.get<TranslationResponse>(`/api/translations/${language}`);
+      const response = await axios.get<TranslationResponse>(`${API_BASE_URL}/api/translations/${language}`, {
+        withCredentials: true
+      });
       const translations = response.data.translations;
 
       // Update cache

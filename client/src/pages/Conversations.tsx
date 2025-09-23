@@ -11,7 +11,7 @@ import VoiceCommands from '../components/VoiceCommands.tsx';
 import AITips from '../components/AITips.tsx';
 import { useTextToSpeech } from '../hooks/useTextToSpeech.ts';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://salesbuddy-production.up.railway.app';
+const API_BASE_URL = 'https://salesbuddy-production.up.railway.app';
 
 interface ClientCustomization {
   name: string;
