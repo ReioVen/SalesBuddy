@@ -23,6 +23,7 @@ import { ThemeProvider } from './contexts/ThemeContext.tsx';
 const PageRenderer: React.FC = () => {
   const location = useLocation();
   const currentPath = location.pathname;
+  const { user, loading: authLoading } = useAuth();
 
   // All pages are rendered simultaneously but only the current one is visible
   // Using absolute positioning to stack them and only show the active one
@@ -84,53 +85,65 @@ const PageRenderer: React.FC = () => {
         <PasswordSetup />
       </div>
 
-      {/* Conversations Page */}
-      <div 
-        className={`absolute inset-0 w-full bg-gray-50 dark:bg-dark-900 ${currentPath === '/conversations' ? 'block' : 'hidden'}`}
-        style={{ zIndex: currentPath === '/conversations' ? 10 : 1, minHeight: '100vh', overflow: 'visible' }}
-      >
-        <Conversations />
-      </div>
+      {/* Conversations Page - Only render if user is authenticated */}
+      {user && (
+        <div 
+          className={`absolute inset-0 w-full bg-gray-50 dark:bg-dark-900 ${currentPath === '/conversations' ? 'block' : 'hidden'}`}
+          style={{ zIndex: currentPath === '/conversations' ? 10 : 1, minHeight: '100vh', overflow: 'visible' }}
+        >
+          <Conversations />
+        </div>
+      )}
 
-      {/* Conversation Summaries Page */}
-      <div 
-        className={`absolute inset-0 w-full bg-gray-50 dark:bg-dark-900 ${currentPath === '/conversation-summaries' ? 'block' : 'hidden'}`}
-        style={{ zIndex: currentPath === '/conversation-summaries' ? 10 : 1, minHeight: '100vh', overflow: 'visible' }}
-      >
-        <ConversationSummaries />
-      </div>
+      {/* Conversation Summaries Page - Only render if user is authenticated */}
+      {user && (
+        <div 
+          className={`absolute inset-0 w-full bg-gray-50 dark:bg-dark-900 ${currentPath === '/conversation-summaries' ? 'block' : 'hidden'}`}
+          style={{ zIndex: currentPath === '/conversation-summaries' ? 10 : 1, minHeight: '100vh', overflow: 'visible' }}
+        >
+          <ConversationSummaries />
+        </div>
+      )}
 
-      {/* Profile Page */}
-      <div 
-        className={`absolute inset-0 w-full bg-gray-50 dark:bg-dark-900 ${currentPath === '/profile' ? 'block' : 'hidden'}`}
-        style={{ zIndex: currentPath === '/profile' ? 10 : 1, minHeight: '100vh', overflow: 'visible' }}
-      >
-        <Profile />
-      </div>
+      {/* Profile Page - Only render if user is authenticated */}
+      {user && (
+        <div 
+          className={`absolute inset-0 w-full bg-gray-50 dark:bg-dark-900 ${currentPath === '/profile' ? 'block' : 'hidden'}`}
+          style={{ zIndex: currentPath === '/profile' ? 10 : 1, minHeight: '100vh', overflow: 'visible' }}
+        >
+          <Profile />
+        </div>
+      )}
 
-      {/* Settings Page */}
-      <div 
-        className={`absolute inset-0 w-full bg-gray-50 dark:bg-dark-900 ${currentPath === '/settings' ? 'block' : 'hidden'}`}
-        style={{ zIndex: currentPath === '/settings' ? 10 : 1, minHeight: '100vh', overflow: 'visible' }}
-      >
-        <Settings />
-      </div>
+      {/* Settings Page - Only render if user is authenticated */}
+      {user && (
+        <div 
+          className={`absolute inset-0 w-full bg-gray-50 dark:bg-dark-900 ${currentPath === '/settings' ? 'block' : 'hidden'}`}
+          style={{ zIndex: currentPath === '/settings' ? 10 : 1, minHeight: '100vh', overflow: 'visible' }}
+        >
+          <Settings />
+        </div>
+      )}
 
-      {/* Company Page */}
-      <div 
-        className={`absolute inset-0 w-full bg-gray-50 dark:bg-dark-900 ${currentPath === '/company' ? 'block' : 'hidden'}`}
-        style={{ zIndex: currentPath === '/company' ? 10 : 1, minHeight: '100vh', overflow: 'visible' }}
-      >
-        <Company />
-      </div>
+      {/* Company Page - Only render if user is authenticated */}
+      {user && (
+        <div 
+          className={`absolute inset-0 w-full bg-gray-50 dark:bg-dark-900 ${currentPath === '/company' ? 'block' : 'hidden'}`}
+          style={{ zIndex: currentPath === '/company' ? 10 : 1, minHeight: '100vh', overflow: 'visible' }}
+        >
+          <Company />
+        </div>
+      )}
 
-      {/* Admin Dashboard Page */}
-      <div 
-        className={`absolute inset-0 w-full bg-gray-50 dark:bg-dark-900 ${currentPath === '/admin' ? 'block' : 'hidden'}`}
-        style={{ zIndex: currentPath === '/admin' ? 10 : 1, minHeight: '100vh', overflow: 'visible' }}
-      >
-        <AdminDashboard />
-      </div>
+      {/* Admin Dashboard Page - Only render if user is authenticated */}
+      {user && (
+        <div 
+          className={`absolute inset-0 w-full bg-gray-50 dark:bg-dark-900 ${currentPath === '/admin' ? 'block' : 'hidden'}`}
+          style={{ zIndex: currentPath === '/admin' ? 10 : 1, minHeight: '100vh', overflow: 'visible' }}
+        >
+          <AdminDashboard />
+        </div>
+      )}
 
       {/* 404 Fallback - redirect to home */}
       {!['/', '/pricing', '/login', '/register', '/forgot-password', '/reset-password', '/password-setup', '/conversations', '/conversation-summaries', '/profile', '/settings', '/company', '/admin'].includes(currentPath) && (
