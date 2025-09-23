@@ -344,7 +344,7 @@ const ConversationSummaryCard: React.FC<ConversationSummaryCardProps> = ({ summa
             </div>
             <div className="flex items-center gap-2">
               <span className={`px-3 py-1 rounded-full text-sm font-medium ${getRatingColor(summary.overallRating)}`}>
-                {getRatingIcon(summary.overallRating)} {summary.overallRating}{t('ratingOutOf')}
+                {getRatingIcon(summary.overallRating)} {summary.overallRating}/10
               </span>
             </div>
           </div>

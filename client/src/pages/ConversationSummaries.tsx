@@ -83,6 +83,12 @@ const ConversationSummaries: React.FC = () => {
       });
       setSummaryStatus(response.data);
       console.log('Summary status loaded:', response.data);
+      console.log('Daily limit debug:', {
+        summariesGeneratedToday: response.data.summariesGeneratedToday,
+        dailyLimit: response.data.dailyLimit,
+        canGenerate: response.data.canGenerate,
+        remainingToday: response.data.remainingToday
+      });
     } catch (error: any) {
       console.error('Failed to load summary status:', error);
     }

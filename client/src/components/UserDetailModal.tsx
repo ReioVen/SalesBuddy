@@ -352,7 +352,7 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, onClose }) => {
                                   </svg>
                                 ))}
                                 <span className="ml-2 text-sm font-medium text-gray-700">
-                                  {summary.overallRating}{t('ratingOutOf')}
+                                  {summary.overallRating}/10
                                 </span>
                               </div>
                             </div>
@@ -370,7 +370,7 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, onClose }) => {
                                     <div className={`px-2 py-1 text-xs font-semibold rounded-full mb-1 ${getStageColor(stage)}`}>
                                       {translateStage(stage)}
                                     </div>
-                                    <div className="text-sm font-medium">{rating}{t('ratingOutOf')}</div>
+                                    <div className="text-sm font-medium">{rating}/10</div>
                                   </div>
                                 );
                               })}
