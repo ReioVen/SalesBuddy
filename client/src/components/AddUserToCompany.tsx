@@ -75,6 +75,12 @@ const AddUserToCompany: React.FC<AddUserToCompanyProps> = ({
         canManageUsers: user?.role === 'company_admin' || user?.isCompanyAdmin
       });
 
+      // Debug: Check all localStorage items
+      console.log('🔐 [AddUserToCompany] All localStorage items:', Object.keys(localStorage).map(key => ({
+        key,
+        value: key === 'sb_token' ? localStorage.getItem(key)?.substring(0, 20) + '...' : localStorage.getItem(key)
+      })));
+
       // Check if user has permission to add users
       if (!(user?.role === 'company_admin' || user?.isCompanyAdmin)) {
         setError('You do not have permission to add users to the company');
@@ -102,11 +108,37 @@ const AddUserToCompany: React.FC<AddUserToCompanyProps> = ({
       } catch (testError: any) {
         console.log('❌ [AddUserToCompany] Token test failed:', {
           status: testError.response?.status,
-          message: testError.response?.data?.error
+          message: testError.response?.data?.error,
+          fullError: testError.message
         });
-        setError('Authentication token is invalid. Please log in again.');
-        setLoading(false);
-        return;
+        
+        // Try with fetch as fallback
+        try {
+          console.log('🔄 [AddUserToCompany] Trying token test with fetch...');
+          const fetchTestResponse = await fetch('https://salesbuddy-production.up.railway.app/api/auth/me', {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${token}`
+            },
+            credentials: 'include'
+          });
+          
+          if (fetchTestResponse.ok) {
+            const testData = await fetchTestResponse.json();
+            console.log('✅ [AddUserToCompany] Fetch token test succeeded, user:', testData.user?.email);
+          } else {
+            const errorData = await fetchTestResponse.json();
+            console.log('❌ [AddUserToCompany] Fetch token test failed:', errorData);
+            setError('Authentication token is invalid. Please log in again.');
+            setLoading(false);
+            return;
+          }
+        } catch (fetchTestError) {
+          console.log('❌ [AddUserToCompany] Fetch token test error:', fetchTestError);
+          setError('Authentication token is invalid. Please log in again.');
+          setLoading(false);
+          return;
+        }
       }
 
       // Prepare form data
@@ -144,10 +176,43 @@ const AddUserToCompany: React.FC<AddUserToCompanyProps> = ({
         url: '/api/companies/users',
         hasAuthHeader: !!requestConfig.headers.Authorization,
         authHeaderValue: requestConfig.headers.Authorization ? requestConfig.headers.Authorization.substring(0, 30) + '...' : 'none',
-        withCredentials: requestConfig.withCredentials
+        withCredentials: requestConfig.withCredentials,
+        axiosBaseURL: axios.defaults.baseURL,
+        axiosWithCredentials: axios.defaults.withCredentials
       });
 
-      const response = await axios.post('/api/companies/users', formData, requestConfig);
+      // Try with axios first
+      let response;
+      try {
+        response = await axios.post('/api/companies/users', formData, requestConfig);
+      } catch (axiosError: any) {
+        console.log('❌ [AddUserToCompany] Axios request failed:', {
+          status: axiosError.response?.status,
+          message: axiosError.response?.data?.error,
+          headers: axiosError.response?.headers
+        });
+
+        // Fallback: Try with fetch
+        console.log('🔄 [AddUserToCompany] Trying fallback with fetch...');
+        const fetchResponse = await fetch('https://salesbuddy-production.up.railway.app/api/companies/users', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          credentials: 'include',
+          body: JSON.stringify(formData)
+        });
+
+        if (!fetchResponse.ok) {
+          const errorData = await fetchResponse.json();
+          throw new Error(errorData.error || 'Failed to add user');
+        }
+
+        const result = await fetchResponse.json();
+        response = { data: result };
+        console.log('✅ [AddUserToCompany] Fetch request succeeded');
+      }
 
       // Reset form and notify parent
       setForm({
