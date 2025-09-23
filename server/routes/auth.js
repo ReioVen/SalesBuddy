@@ -14,11 +14,10 @@ const generateToken = (userId) => {
 
 // Helper to set cookie
 const setAuthCookie = (res, token) => {
-  const isProd = process.env.NODE_ENV === 'production';
   res.cookie('sb_token', token, {
     httpOnly: true,
-    secure: isProd,
-    sameSite: 'lax', // Changed from 'none' to 'lax' for better compatibility
+    secure: false, // Set to false to work in all environments
+    sameSite: 'lax',
     maxAge: 7 * 24 * 60 * 60 * 1000,
     path: '/',
   });
@@ -238,8 +237,8 @@ router.post('/logout', (req, res) => {
   try {
     res.clearCookie('sb_token', {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax', // Changed from conditional to 'lax' for consistency
+      secure: false,
+      sameSite: 'lax',
       path: '/',
     });
     res.json({ message: 'Logged out' });
