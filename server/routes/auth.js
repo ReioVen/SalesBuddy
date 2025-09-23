@@ -89,6 +89,7 @@ router.post('/register', [
 
     res.status(201).json({
       message: 'User registered successfully',
+      token: token, // Include token in response for cross-origin requests
       user: {
         id: user._id,
         email: user.email,
@@ -192,6 +193,7 @@ router.post('/login', [
     console.log('✅ [LOGIN] Login successful for user:', user.email);
     res.json({
       message: 'Login successful',
+      token: token, // Include token in response for cross-origin requests
       user: {
         id: user._id,
         email: user.email,

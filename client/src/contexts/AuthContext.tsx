@@ -87,6 +87,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   useEffect(() => {
     // Configure axios to always send credentials
     axios.defaults.withCredentials = true;
+    
+    // Add request interceptor to include auth token in headers
+    axios.interceptors.request.use((config) => {
+      const token = localStorage.getItem('sb_token');
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+      return config;
+    });
   }, []);
 
   // Check if user is logged in on app start (only once)
@@ -142,8 +151,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         userEmail: response.data.user?.email 
       });
       
-      const { user } = response.data;
+      const { user, token } = response.data;
       setUser(user);
+      
+      // Store token in localStorage for cross-origin requests
+      if (token) {
+        localStorage.setItem('sb_token', token);
+        console.log('🔐 [CLIENT] Token stored in localStorage:', token.substring(0, 20) + '...');
+      }
       
       // Test cookie debug endpoint after login
       try {
@@ -176,8 +191,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const response = await axios.post(`${apiUrl}/api/auth/register`, userData, {
         withCredentials: true
       });
-      const { user } = response.data;
+      const { user, token } = response.data;
       setUser(user);
+      
+      // Store token in localStorage for cross-origin requests
+      if (token) {
+        localStorage.setItem('sb_token', token);
+        console.log('🔐 [CLIENT] Token stored in localStorage after registration');
+      }
       
       toast.success('Registration successful!');
       return { success: true } as const;
@@ -203,6 +224,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         withCredentials: true
       });
     } catch {}
+    
+    // Clear token from localStorage
+    localStorage.removeItem('sb_token');
     setUser(null);
     toast.success('Logged out successfully');
     navigate('/login');
