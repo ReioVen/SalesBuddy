@@ -70,8 +70,18 @@ const allowedOrigins = [
 ];
 
 app.use(cors({
-  origin: true, // Allow all origins for now
-  credentials: true
+  origin: [
+    'https://salesbuddy.pro',
+    'https://www.salesbuddy.pro', 
+    'https://app.salesbuddy.pro',
+    'https://salesbuddy-client.vercel.app',
+    'https://sales-buddy.vercel.app',
+    'https://salesbuddy-production.up.railway.app'
+  ],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
+  exposedHeaders: ['Set-Cookie']
 }));
 
 // Database connection (guard missing URI)

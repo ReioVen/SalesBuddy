@@ -30,6 +30,7 @@ const setAuthCookie = (res, token) => {
     sameSite: 'lax',
     maxAge: 7 * 24 * 60 * 60 * 1000,
     path: '/',
+    domain: undefined // Let browser handle domain automatically
   });
   
   console.log('🍪 [COOKIE] Cookie set successfully');
@@ -218,6 +219,21 @@ router.post('/login', [
   }
 });
 
+// Debug endpoint to check cookies
+router.get('/debug-cookies', (req, res) => {
+  console.log('🍪 [DEBUG] Cookie debug request:', {
+    cookies: req.cookies,
+    headers: req.headers,
+    hasSbToken: !!req.cookies?.sb_token
+  });
+  
+  res.json({
+    cookies: req.cookies,
+    hasSbToken: !!req.cookies?.sb_token,
+    allHeaders: req.headers
+  });
+});
+
 // Get current user
 router.get('/me', authenticateToken, async (req, res) => {
   try {
@@ -260,6 +276,7 @@ router.post('/logout', (req, res) => {
       secure: false,
       sameSite: 'lax',
       path: '/',
+      domain: undefined
     });
     res.json({ message: 'Logged out' });
   } catch (error) {
