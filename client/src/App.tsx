@@ -25,6 +25,9 @@ const PageRenderer: React.FC = () => {
   const currentPath = location.pathname;
   const { user, loading: authLoading } = useAuth();
 
+  // Debug authentication state
+  console.log('App.tsx - Authentication state:', { user: !!user, authLoading, currentPath });
+
   // All pages are rendered simultaneously but only the current one is visible
   // Using absolute positioning to stack them and only show the active one
   return (

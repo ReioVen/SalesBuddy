@@ -103,9 +103,12 @@ const ConversationSummaries: React.FC = () => {
   useEffect(() => {
     // Only load if user is authenticated, not loading, and has an ID
     if (user && !authLoading && user.id) {
+      console.log('ConversationSummaries - Loading data for user:', user.id);
       loadSummaries();
       loadSummaryStatus();
       loadConversationCount();
+    } else {
+      console.log('ConversationSummaries - Not loading data:', { user: !!user, authLoading, userId: user?.id });
     }
   }, [user, authLoading]);
 

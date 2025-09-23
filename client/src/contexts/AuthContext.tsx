@@ -100,10 +100,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           withCredentials: true
         });
         const user = response.data.user;
+        console.log('AuthContext - User authenticated:', user);
         setUser(user);
         
         // Password setup is now handled by a modal in App.tsx
       } catch (error) {
+        console.log('AuthContext - Authentication failed:', error);
         setUser(null);
       }
       setLoading(false);
