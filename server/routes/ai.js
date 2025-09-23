@@ -1737,6 +1737,65 @@ Respond in this exact JSON format:
    }
 });
 
+// Test endpoint to debug AI message issues
+router.get('/debug', authenticateToken, async (req, res) => {
+  try {
+    console.log('🔍 [DEBUG] Starting debug test...');
+    
+    // Test 1: Check user object
+    console.log('🔍 [DEBUG] User object:', {
+      id: req.user._id,
+      email: req.user.email,
+      hasCanUseAI: typeof req.user.canUseAI === 'function',
+      hasGetUsageStatus: typeof req.user.getUsageStatus === 'function'
+    });
+    
+    // Test 2: Check OpenAI configuration
+    console.log('🔍 [DEBUG] OpenAI config:', {
+      hasOpenAI: !!openai,
+      hasApiKey: !!process.env.OPENAI_API_KEY,
+      apiKeyLength: process.env.OPENAI_API_KEY?.length || 0
+    });
+    
+    // Test 3: Check database connection
+    console.log('🔍 [DEBUG] Database connection:', {
+      readyState: mongoose.connection.readyState,
+      host: mongoose.connection.host,
+      name: mongoose.connection.name
+    });
+    
+    // Test 4: Try to call user methods
+    try {
+      const canUseAI = req.user.canUseAI();
+      const usageStatus = req.user.getUsageStatus();
+      console.log('🔍 [DEBUG] User methods work:', { canUseAI, usageStatus });
+    } catch (methodError) {
+      console.error('❌ [DEBUG] User method error:', methodError);
+    }
+    
+    res.json({
+      status: 'debug_complete',
+      user: {
+        id: req.user._id,
+        email: req.user.email,
+        hasCanUseAI: typeof req.user.canUseAI === 'function',
+        hasGetUsageStatus: typeof req.user.getUsageStatus === 'function'
+      },
+      openai: {
+        configured: !!openai,
+        hasApiKey: !!process.env.OPENAI_API_KEY
+      },
+      database: {
+        connected: mongoose.connection.readyState === 1,
+        readyState: mongoose.connection.readyState
+      }
+    });
+  } catch (error) {
+    console.error('❌ [DEBUG] Debug endpoint error:', error);
+    res.status(500).json({ error: 'Debug failed', details: error.message });
+  }
+});
+
 // Send message to AI
 router.post('/message', authenticateToken, [
   body('conversationId').isMongoId(),
@@ -1883,8 +1942,18 @@ router.post('/message', authenticateToken, [
     }
   } catch (error) {
     console.error('❌ [AI MESSAGE] Send message error:', error);
+    console.error('❌ [AI MESSAGE] Error message:', error.message);
     console.error('❌ [AI MESSAGE] Error stack:', error.stack);
-    res.status(500).json({ error: 'Failed to send message' });
+    console.error('❌ [AI MESSAGE] Error name:', error.name);
+    console.error('❌ [AI MESSAGE] Full error object:', JSON.stringify(error, null, 2));
+    
+    // Send more detailed error to client for debugging
+    res.status(500).json({ 
+      error: 'Failed to send message',
+      details: error.message,
+      type: error.name,
+      timestamp: new Date().toISOString()
+    });
   }
 });
 

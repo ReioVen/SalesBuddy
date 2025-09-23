@@ -447,8 +447,19 @@ const Conversations: React.FC = () => {
       // No need to refresh conversation history after each message
       // The current conversation is already updated with the new message
     } catch (error: any) {
+      console.error('❌ [CLIENT] Send message error:', error);
+      console.error('❌ [CLIENT] Error response:', error.response?.data);
+      
       const message = error.response?.data?.error || t('failedToSendMessage');
-      toast.error(message);
+      const details = error.response?.data?.details;
+      const errorType = error.response?.data?.type;
+      
+      if (details) {
+        console.error('❌ [CLIENT] Error details:', details);
+        toast.error(`${message}: ${details}`);
+      } else {
+        toast.error(message);
+      }
     } finally {
       setSendingMessage(false);
     }
