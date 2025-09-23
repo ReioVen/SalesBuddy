@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import axios from 'axios';
 
 interface EditUserForm {
   firstName: string;
@@ -58,6 +59,14 @@ const EditUser: React.FC<EditUserProps> = ({
     }
 
     try {
+      // Get token from localStorage for authentication
+      const token = localStorage.getItem('sb_token');
+      if (!token) {
+        setError('Authentication token not found. Please log in again.');
+        setLoading(false);
+        return;
+      }
+
       // Prepare data for API - include teamId for all users if selected
       const apiData = {
         firstName: form.firstName,
@@ -66,29 +75,37 @@ const EditUser: React.FC<EditUserProps> = ({
         role: form.role,
         ...(form.teamId ? { teamId: form.teamId } : {})
       };
+
+      console.log('🔐 [EditUser] Updating user:', {
+        userId: user._id,
+        hasToken: !!token,
+        apiData
+      });
       
-      const response = await fetch(`/api/companies/users/${user._id}`, {
-        method: 'PUT',
+      const response = await axios.put(`/api/companies/users/${user._id}`, apiData, {
+        withCredentials: true,
         headers: {
+          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
-        },
-        credentials: 'include',
-        body: JSON.stringify(apiData)
+        }
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        if (errorData.errors && Array.isArray(errorData.errors)) {
-          // Handle validation errors
-          const errorMessages = errorData.errors.map((err: any) => err.msg).join(', ');
-          throw new Error(errorMessages);
-        }
-        throw new Error(errorData.error || 'Failed to update user');
-      }
-
+      console.log('✅ [EditUser] User updated successfully');
       onUserUpdated();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update user');
+    } catch (err: any) {
+      console.log('❌ [EditUser] Update failed:', {
+        status: err.response?.status,
+        message: err.response?.data?.error,
+        errors: err.response?.data?.errors
+      });
+
+      if (err.response?.data?.errors && Array.isArray(err.response.data.errors)) {
+        // Handle validation errors
+        const errorMessages = err.response.data.errors.map((error: any) => error.msg).join(', ');
+        setError(errorMessages);
+      } else {
+        setError(err.response?.data?.error || err.message || 'Failed to update user');
+      }
     } finally {
       setLoading(false);
     }
