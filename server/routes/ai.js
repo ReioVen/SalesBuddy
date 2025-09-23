@@ -1744,14 +1744,18 @@ router.post('/message', authenticateToken, [
   body('language').optional().isIn(['en', 'et', 'es', 'ru'])
 ], async (req, res) => {
   try {
+    console.log('🔍 [AI MESSAGE] Starting message processing...');
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
+      console.log('❌ [AI MESSAGE] Validation errors:', errors.array());
       return res.status(400).json({ errors: errors.array() });
     }
 
     const { conversationId, message } = req.body;
+    console.log('🔍 [AI MESSAGE] Processing message for conversation:', conversationId);
 
     // Find conversation
+    console.log('🔍 [AI MESSAGE] Looking for conversation with ID:', conversationId);
     const conversation = await Conversation.findOne({
       _id: conversationId,
       userId: req.user._id,
@@ -1759,18 +1763,22 @@ router.post('/message', authenticateToken, [
     });
 
     if (!conversation) {
+      console.log('❌ [AI MESSAGE] Conversation not found');
       return res.status(404).json({ error: 'Conversation not found' });
     }
+    console.log('✅ [AI MESSAGE] Conversation found');
 
     // Check if user can use AI
+    console.log('🔍 [AI MESSAGE] Checking if user can use AI...');
     if (!req.user.canUseAI || typeof req.user.canUseAI !== 'function') {
-      console.error('User missing canUseAI method in message route:', req.user);
+      console.error('❌ [AI MESSAGE] User missing canUseAI method:', req.user);
       return res.status(500).json({
         error: 'User model error',
         message: 'User model is missing required methods. Please contact support.'
       });
     }
     
+    console.log('🔍 [AI MESSAGE] Calling canUseAI()...');
     if (!req.user.canUseAI()) {
       const usageStatus = req.user.getUsageStatus();
       return res.status(403).json({
@@ -1784,15 +1792,20 @@ router.post('/message', authenticateToken, [
     }
 
     // Check if user has exceeded their conversation limit
+    console.log('🔍 [AI MESSAGE] Fetching user from database...');
     const user = await User.findById(req.user._id);
     if (!user) {
+      console.log('❌ [AI MESSAGE] User not found in database');
       return res.status(404).json({
         error: 'User not found',
         message: 'User account not found. Please log in again.'
       });
     }
+    console.log('✅ [AI MESSAGE] User found in database');
 
+    console.log('🔍 [AI MESSAGE] Getting usage status...');
     const usageStatus = user.getUsageStatus();
+    console.log('🔍 [AI MESSAGE] Usage status:', usageStatus);
     if (!usageStatus.canUseAI) {
       return res.status(403).json({
         error: 'Conversation limit reached',
@@ -1805,21 +1818,29 @@ router.post('/message', authenticateToken, [
     }
 
     // Add user message to conversation and save to database
+    console.log('🔍 [AI MESSAGE] Adding user message to conversation...');
     await conversation.addMessageAndSave('user', message);
+    console.log('✅ [AI MESSAGE] User message added to conversation');
 
     // Create AI prompt using client customization but NO conversation history
     // The AI should only respond to the current message, not previous context
+    console.log('🔍 [AI MESSAGE] Creating AI prompt...');
     const prompt = createSalesPrompt(message, req.user.settings, conversation.scenario, conversation.clientCustomization, [], conversation.language || 'en');
+    console.log('✅ [AI MESSAGE] AI prompt created');
 
     // If OpenAI is not configured, short-circuit with a friendly error
+    console.log('🔍 [AI MESSAGE] Checking OpenAI configuration...');
     if (!openai) {
+      console.log('❌ [AI MESSAGE] OpenAI not configured');
       return res.status(503).json({
         error: 'AI service not configured',
         message: 'OPENAI_API_KEY is missing. Configure it to enable AI conversations.'
       });
     }
+    console.log('✅ [AI MESSAGE] OpenAI is configured');
 
     try {
+      console.log('🔍 [AI MESSAGE] Calling OpenAI API...');
       // Prepare messages array with conversation history for current session
       // The AI client will remember the current conversation but not previous conversations
       const messages = [
@@ -1836,13 +1857,16 @@ router.post('/message', authenticateToken, [
 
       const aiResponse = completion.choices[0].message.content;
       const tokensUsed = completion.usage.total_tokens;
+      console.log('✅ [AI MESSAGE] OpenAI response received, tokens used:', tokensUsed);
 
       // Add AI response to conversation and save to database
       // We save after each message pair to prevent data loss, but the frontend won't refresh the conversation list
+      console.log('🔍 [AI MESSAGE] Saving AI response to conversation...');
       await conversation.addMessageAndSave('assistant', aiResponse, tokensUsed);
+      console.log('✅ [AI MESSAGE] AI response saved to conversation');
 
       // Note: Usage is only incremented when starting a conversation, not for each message
-
+      console.log('✅ [AI MESSAGE] Sending response to client...');
       res.json({
         message: 'Message sent successfully',
         response: aiResponse,
@@ -1854,11 +1878,12 @@ router.post('/message', authenticateToken, [
         usage: req.user.usage
       });
     } catch (openaiError) {
-      console.error('OpenAI API error:', openaiError);
+      console.error('❌ [AI MESSAGE] OpenAI API error:', openaiError);
       res.status(500).json({ error: 'AI service temporarily unavailable' });
     }
   } catch (error) {
-    console.error('Send message error:', error);
+    console.error('❌ [AI MESSAGE] Send message error:', error);
+    console.error('❌ [AI MESSAGE] Error stack:', error.stack);
     res.status(500).json({ error: 'Failed to send message' });
   }
 });
