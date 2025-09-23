@@ -64,6 +64,51 @@ const AddUserToCompany: React.FC<AddUserToCompanyProps> = ({
     }
 
     try {
+      // Debug: Check if token exists
+      const token = localStorage.getItem('sb_token');
+      console.log('🔐 [AddUserToCompany] Token check:', {
+        hasToken: !!token,
+        tokenLength: token ? token.length : 0,
+        tokenStart: token ? token.substring(0, 20) + '...' : 'none',
+        userRole: user?.role,
+        isCompanyAdmin: user?.isCompanyAdmin,
+        canManageUsers: user?.role === 'company_admin' || user?.isCompanyAdmin
+      });
+
+      // Check if user has permission to add users
+      if (!(user?.role === 'company_admin' || user?.isCompanyAdmin)) {
+        setError('You do not have permission to add users to the company');
+        setLoading(false);
+        return;
+      }
+
+      // Check if token exists
+      if (!token) {
+        setError('Authentication token not found. Please log in again.');
+        setLoading(false);
+        return;
+      }
+
+      // Test token validity by making a request to /api/auth/me
+      try {
+        console.log('🔐 [AddUserToCompany] Testing token validity...');
+        const testResponse = await axios.get('/api/auth/me', {
+          withCredentials: true,
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        console.log('✅ [AddUserToCompany] Token is valid, user:', testResponse.data.user?.email);
+      } catch (testError: any) {
+        console.log('❌ [AddUserToCompany] Token test failed:', {
+          status: testError.response?.status,
+          message: testError.response?.data?.error
+        });
+        setError('Authentication token is invalid. Please log in again.');
+        setLoading(false);
+        return;
+      }
+
       // Prepare form data
       const formData = {
         ...form,
@@ -84,9 +129,25 @@ const AddUserToCompany: React.FC<AddUserToCompanyProps> = ({
         }
       }
 
-      const response = await axios.post('/api/companies/users', formData, {
-        withCredentials: true
+      console.log('🔐 [AddUserToCompany] Making request with formData:', formData);
+
+      // Manually add the Authorization header to ensure it's included
+      const requestConfig = {
+        withCredentials: true,
+        headers: {
+          'Authorization': token ? `Bearer ${token}` : undefined,
+          'Content-Type': 'application/json'
+        }
+      };
+
+      console.log('🔐 [AddUserToCompany] Request config:', {
+        url: '/api/companies/users',
+        hasAuthHeader: !!requestConfig.headers.Authorization,
+        authHeaderValue: requestConfig.headers.Authorization ? requestConfig.headers.Authorization.substring(0, 30) + '...' : 'none',
+        withCredentials: requestConfig.withCredentials
       });
+
+      const response = await axios.post('/api/companies/users', formData, requestConfig);
 
       // Reset form and notify parent
       setForm({

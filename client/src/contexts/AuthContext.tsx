@@ -94,8 +94,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     // Add request interceptor to include auth token in headers
     axios.interceptors.request.use((config) => {
       const token = localStorage.getItem('sb_token');
+      console.log('🔐 [AXIOS INTERCEPTOR] Request interceptor called:', {
+        url: config.url,
+        hasToken: !!token,
+        tokenLength: token ? token.length : 0,
+        tokenStart: token ? token.substring(0, 20) + '...' : 'none'
+      });
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
+        console.log('🔐 [AXIOS INTERCEPTOR] Authorization header set');
+      } else {
+        console.log('❌ [AXIOS INTERCEPTOR] No token found in localStorage');
       }
       return config;
     });
