@@ -145,6 +145,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const { user } = response.data;
       setUser(user);
       
+      // Test cookie debug endpoint after login
+      try {
+        const debugResponse = await axios.get(`${apiUrl}/api/auth/debug-cookies`, {
+          withCredentials: true
+        });
+        console.log('🍪 [CLIENT] Cookie debug after login:', debugResponse.data);
+      } catch (debugError) {
+        console.log('❌ [CLIENT] Cookie debug failed:', debugError);
+      }
+      
       // Password setup is now handled by a modal in App.tsx
       toast.success('Login successful!');
       return { success: true } as const;
