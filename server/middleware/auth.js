@@ -3,25 +3,57 @@ const User = require('../models/User');
 
 const authenticateToken = async (req, res, next) => {
   try {
+    console.log('🔐 [AUTH] Authentication attempt:', {
+      url: req.url,
+      method: req.method,
+      hasAuthHeader: !!req.headers['authorization'],
+      hasCookies: !!req.cookies,
+      cookieKeys: req.cookies ? Object.keys(req.cookies) : [],
+      userAgent: req.headers['user-agent']?.substring(0, 50)
+    });
+
     const authHeader = req.headers['authorization'];
     const bearerToken = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
     const cookieToken = req.cookies && req.cookies['sb_token'];
     const token = bearerToken || cookieToken;
 
+    console.log('🔐 [AUTH] Token check:', {
+      hasBearerToken: !!bearerToken,
+      hasCookieToken: !!cookieToken,
+      tokenLength: token ? token.length : 0,
+      tokenStart: token ? token.substring(0, 20) + '...' : 'none'
+    });
+
     if (!token) {
+      console.log('❌ [AUTH] No token found');
       return res.status(401).json({ error: 'Access token required' });
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    console.log('🔐 [AUTH] Token decoded:', { userId: decoded.userId });
+    
     const user = await User.findById(decoded.userId).select('-password');
     
     if (!user) {
+      console.log('❌ [AUTH] User not found for ID:', decoded.userId);
       return res.status(401).json({ error: 'Invalid token' });
     }
+
+    console.log('✅ [AUTH] User authenticated:', { 
+      id: user._id, 
+      email: user.email,
+      role: user.role 
+    });
 
     req.user = user;
     next();
   } catch (error) {
+    console.log('❌ [AUTH] Authentication error:', {
+      name: error.name,
+      message: error.message,
+      stack: error.stack?.substring(0, 200)
+    });
+    
     if (error.name === 'JsonWebTokenError') {
       return res.status(401).json({ error: 'Invalid token' });
     }

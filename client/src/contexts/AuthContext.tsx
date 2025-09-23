@@ -97,14 +97,28 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       
       try {
         const apiUrl = 'https://salesbuddy-production.up.railway.app';
+        console.log('🔐 [CLIENT] Checking auth on app start:', { apiUrl });
+        
         const response = await axios.get(`${apiUrl}/api/auth/me`, {
           withCredentials: true
         });
+        
+        console.log('🔐 [CLIENT] Auth check response:', { 
+          status: response.status,
+          hasUser: !!response.data.user,
+          userEmail: response.data.user?.email 
+        });
+        
         const user = response.data.user;
         setUser(user);
         
         // Password setup is now handled by a modal in App.tsx
-      } catch (error) {
+      } catch (error: any) {
+        console.log('❌ [CLIENT] Auth check failed:', {
+          status: error.response?.status,
+          message: error.response?.data?.error,
+          fullError: error.message
+        });
         setUser(null);
       }
       setLoading(false);
@@ -116,9 +130,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const login = async (email: string, password: string) => {
     try {
         const apiUrl = 'https://salesbuddy-production.up.railway.app';
+      console.log('🔐 [CLIENT] Attempting login:', { email, apiUrl });
+      
       const response = await axios.post(`${apiUrl}/api/auth/login`, { email, password }, {
         withCredentials: true
       });
+      
+      console.log('🔐 [CLIENT] Login response:', { 
+        status: response.status,
+        hasUser: !!response.data.user,
+        userEmail: response.data.user?.email 
+      });
+      
       const { user } = response.data;
       setUser(user);
       
@@ -126,6 +149,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       toast.success('Login successful!');
       return { success: true } as const;
     } catch (error: any) {
+      console.log('❌ [CLIENT] Login error:', {
+        status: error.response?.status,
+        message: error.response?.data?.error,
+        fullError: error.message
+      });
       const message = error.response?.data?.error || 'Invalid email or password';
       toast.error(message);
       return { success: false, message } as const;

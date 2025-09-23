@@ -14,6 +14,16 @@ const generateToken = (userId) => {
 
 // Helper to set cookie
 const setAuthCookie = (res, token) => {
+  console.log('🍪 [COOKIE] Setting cookie with config:', {
+    name: 'sb_token',
+    httpOnly: true,
+    secure: false,
+    sameSite: 'lax',
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+    path: '/',
+    tokenLength: token.length
+  });
+  
   res.cookie('sb_token', token, {
     httpOnly: true,
     secure: false, // Set to false to work in all environments
@@ -21,6 +31,8 @@ const setAuthCookie = (res, token) => {
     maxAge: 7 * 24 * 60 * 60 * 1000,
     path: '/',
   });
+  
+  console.log('🍪 [COOKIE] Cookie set successfully');
 };
 
 // Register user
@@ -163,12 +175,20 @@ router.post('/login', [
 
     // Generate token
     const token = generateToken(user._id);
+    console.log('🔐 [LOGIN] Generated token for user:', { 
+      userId: user._id, 
+      email: user.email,
+      tokenLength: token.length 
+    });
+    
     setAuthCookie(res, token);
+    console.log('🍪 [LOGIN] Cookie set with token');
 
     // Update last login
     user.lastLogin = new Date();
     await user.save();
 
+    console.log('✅ [LOGIN] Login successful for user:', user.email);
     res.json({
       message: 'Login successful',
       user: {
