@@ -18,7 +18,7 @@ const setAuthCookie = (res, token) => {
   res.cookie('sb_token', token, {
     httpOnly: true,
     secure: isProd,
-    sameSite: isProd ? 'none' : 'lax',
+    sameSite: 'lax', // Changed from 'none' to 'lax' for better compatibility
     maxAge: 7 * 24 * 60 * 60 * 1000,
     path: '/',
   });
@@ -239,7 +239,7 @@ router.post('/logout', (req, res) => {
     res.clearCookie('sb_token', {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+      sameSite: 'lax', // Changed from conditional to 'lax' for consistency
       path: '/',
     });
     res.json({ message: 'Logged out' });

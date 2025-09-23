@@ -108,10 +108,7 @@ const CompanyManagement: React.FC = () => {
   useEffect(() => {
     // Only fetch data if user is authenticated, not loading, and has proper permissions
     if (user && !authLoading && user.id && (user.companyId || user.isSuperAdmin)) {
-      console.log('CompanyManagement - Loading company data for user:', user.id);
       fetchCompanyData();
-    } else {
-      console.log('CompanyManagement - Not loading company data:', { user: !!user, authLoading, userId: user?.id, companyId: user?.companyId, isSuperAdmin: user?.isSuperAdmin });
     }
   }, [user, authLoading, fetchCompanyData]);
 

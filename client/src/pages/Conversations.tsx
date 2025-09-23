@@ -203,10 +203,7 @@ const Conversations: React.FC = () => {
 
     // Only load if user is authenticated, not loading, and has an ID
     if (user && !authLoading && !usageStatusLoaded && user.id) {
-      console.log('Conversations - Loading usage status for user:', user.id);
       loadUsageStatus();
-    } else {
-      console.log('Conversations - Not loading usage status:', { user: !!user, authLoading, usageStatusLoaded, userId: user?.id });
     }
   }, [user, usageStatusLoaded]);
 
