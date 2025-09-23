@@ -28,7 +28,9 @@ const Profile: React.FC = () => {
       setIsCancellingSubscription(true);
       // This would typically redirect to Stripe portal for cancellation
       // For now, we'll just redirect to the billing portal
-      const response = await axios.post('/api/subscriptions/create-portal-session');
+      const response = await axios.post(`${API_BASE_URL}/api/subscriptions/create-portal-session`, {}, {
+        withCredentials: true
+      });
       window.location.href = response.data.url;
     } catch (error: any) {
       console.error('Cancel subscription error:', error);

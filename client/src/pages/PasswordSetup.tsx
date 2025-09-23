@@ -4,6 +4,8 @@ import { useAuth } from '../contexts/AuthContext.tsx';
 import { Eye, EyeOff, Lock, CheckCircle } from 'lucide-react';
 import axios from 'axios';
 
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://salesbuddy-production.up.railway.app';
+
 const PasswordSetup: React.FC = () => {
   const { user, setUser } = useAuth();
   const navigate = useNavigate();
@@ -72,9 +74,11 @@ const PasswordSetup: React.FC = () => {
     setLoading(true);
 
     try {
-      const response = await axios.post('/api/auth/setup-password', {
+      const response = await axios.post(`${API_BASE_URL}/api/auth/setup-password`, {
         password: formData.password,
         confirmPassword: formData.confirmPassword
+      }, {
+        withCredentials: true
       });
 
       // Update user context

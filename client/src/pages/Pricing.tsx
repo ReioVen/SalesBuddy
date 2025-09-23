@@ -236,8 +236,10 @@ const Pricing: React.FC = () => {
       const planKey = planName.toLowerCase();
       console.log('Attempting to subscribe to plan:', { planName, planKey });
       
-      const response = await axios.post('/api/subscriptions/create-checkout-session', {
+      const response = await axios.post(`${API_BASE_URL}/api/subscriptions/create-checkout-session`, {
         plan: planKey
+      }, {
+        withCredentials: true
       });
       
       console.log('Checkout session created:', response.data);
@@ -258,7 +260,9 @@ const Pricing: React.FC = () => {
     setLoading(true);
 
     try {
-      await axios.post('/api/enterprise/request', formData);
+      await axios.post(`${API_BASE_URL}/api/enterprise/request`, formData, {
+        withCredentials: true
+      });
       toast.success('Enterprise request submitted successfully! We\'ll contact you soon.');
       setShowEnterpriseModal(false);
       setFormData({

@@ -211,7 +211,9 @@ const Conversations: React.FC = () => {
     if (!user) return;
     
     try {
-      const response = await axios.get('/api/subscriptions/status');
+      const response = await axios.get(`${API_BASE_URL}/api/subscriptions/status`, {
+        withCredentials: true
+      });
       setUsageStatus(response.data.usageStatus);
     } catch (error: any) {
       console.error('Failed to refresh usage status:', error);
@@ -233,7 +235,9 @@ const Conversations: React.FC = () => {
       
       setLoadingHistory(true);
       try {
-        const response = await axios.get('/api/ai/conversations');
+        const response = await axios.get(`${API_BASE_URL}/api/ai/conversations`, {
+          withCredentials: true
+        });
         // Map _id to id for frontend compatibility
         const conversations = (response.data.conversations || []).map((conv: any) => ({
           ...conv,
@@ -261,7 +265,9 @@ const Conversations: React.FC = () => {
       
       setLoadingHistory(true);
       try {
-        const response = await axios.get('/api/ai/conversations');
+        const response = await axios.get(`${API_BASE_URL}/api/ai/conversations`, {
+          withCredentials: true
+        });
         const conversations = (response.data.conversations || []).map((conv: any) => ({
           ...conv,
           id: conv._id || conv.id
@@ -299,7 +305,7 @@ const Conversations: React.FC = () => {
     setLoading(true);
     try {
       const volumeToSend = clientCustomization.ttsVolume || ttsVolume;
-      const response = await axios.post('/api/ai/conversation', {
+      const response = await axios.post(`${API_BASE_URL}/api/ai/conversation`, {
         scenario: clientCustomization.scenario,
         clientName: clientCustomization.name || undefined,
         clientPersonality: clientCustomization.personality || undefined,
@@ -314,6 +320,8 @@ const Conversations: React.FC = () => {
           voiceURI: clientCustomization.selectedVoice.voiceURI
         } : undefined,
         ttsVolume: volumeToSend
+      }, {
+        withCredentials: true
       });
 
       toast.success(t('conversationStarted'));
@@ -412,10 +420,12 @@ const Conversations: React.FC = () => {
     setCurrentConversation(updatedConversation);
 
     try {
-      const response = await axios.post('/api/ai/message', {
+      const response = await axios.post(`${API_BASE_URL}/api/ai/message`, {
         conversationId: currentConversation.id,
         message: messageToSend,
         language: language
+      }, {
+        withCredentials: true
       });
 
       // Add AI response to conversation
@@ -480,7 +490,9 @@ const Conversations: React.FC = () => {
     setEndingConversation(true);
     try {
       // End the conversation and generate AI ratings (same as "End Conversation" button)
-      await axios.post(`/api/ai/conversation/${currentConversation.id}/end`);
+      await axios.post(`${API_BASE_URL}/api/ai/conversation/${currentConversation.id}/end`, {}, {
+        withCredentials: true
+      });
       
       // Close the chat window
       setCurrentConversation(null);
@@ -490,7 +502,9 @@ const Conversations: React.FC = () => {
       // Manually refresh conversation history to get AI ratings
       const refreshHistory = async () => {
         try {
-          const response = await axios.get('/api/ai/conversations');
+          const response = await axios.get(`${API_BASE_URL}/api/ai/conversations`, {
+            withCredentials: true
+          });
           const conversations = (response.data.conversations || []).map((conv: any) => ({
             ...conv,
             id: conv._id || conv.id
@@ -522,7 +536,9 @@ const Conversations: React.FC = () => {
     
     setEndingConversation(true);
     try {
-      await axios.post(`/api/ai/conversation/${currentConversation.id}/end`);
+      await axios.post(`${API_BASE_URL}/api/ai/conversation/${currentConversation.id}/end`, {}, {
+        withCredentials: true
+      });
       toast.success(t('conversationEnded'));
       
       // Close the chat window by setting currentConversation to null
@@ -533,7 +549,9 @@ const Conversations: React.FC = () => {
       // Manually refresh conversation history to get AI ratings
       const refreshHistory = async () => {
         try {
-          const response = await axios.get('/api/ai/conversations');
+          const response = await axios.get(`${API_BASE_URL}/api/ai/conversations`, {
+            withCredentials: true
+          });
           const conversations = (response.data.conversations || []).map((conv: any) => ({
             ...conv,
             id: conv._id || conv.id
@@ -567,7 +585,9 @@ const Conversations: React.FC = () => {
     }
     
     try {
-      const response = await axios.get(`/api/ai/conversation/${conversationId}`);
+      const response = await axios.get(`${API_BASE_URL}/api/ai/conversation/${conversationId}`, {
+        withCredentials: true
+      });
       // Map _id to id for frontend compatibility
       const conversation = {
         ...response.data.conversation,

@@ -1,5 +1,7 @@
 import axios from 'axios';
 
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://salesbuddy-production.up.railway.app';
+
 export type Language = 'en' | 'et' | 'es' | 'ru' | 'lv' | 'lt' | 'fi' | 'sv' | 'no' | 'da' | 'de' | 'fr' | 'it' | 'pt' | 'pl' | 'cs' | 'sk' | 'hu' | 'ro' | 'bg' | 'hr' | 'sl' | 'el' | 'tr' | 'ar' | 'he' | 'ja' | 'ko' | 'zh' | 'hi' | 'th' | 'vi' | 'id' | 'ms' | 'tl';
 
 interface TranslationResponse {
@@ -696,10 +698,12 @@ class DatabaseTranslationService {
    */
   private async translateLongTextAsync(text: string, language: Language): Promise<void> {
     try {
-      const response = await axios.post('/api/dynamic-translation/translate', {
+      const response = await axios.post(`${API_BASE_URL}/api/dynamic-translation/translate`, {
         text: text,
         targetLanguage: language,
         context: 'sales_feedback'
+      }, {
+        withCredentials: true
       });
       
       if (response.data.success && response.data.translatedText) {
@@ -735,10 +739,12 @@ class DatabaseTranslationService {
     }
 
     try {
-      const response = await axios.post('/api/dynamic-translation/translate', {
+      const response = await axios.post(`${API_BASE_URL}/api/dynamic-translation/translate`, {
         text: text,
         targetLanguage: language,
         context: 'sales_feedback'
+      }, {
+        withCredentials: true
       });
       
       if (response.data.success && response.data.translatedText) {
@@ -802,11 +808,12 @@ class DatabaseTranslationService {
         usingCookies: true
       });
       
-      const response = await axios.post('/api/dynamic-translation/batch-translate', {
+      const response = await axios.post(`${API_BASE_URL}/api/dynamic-translation/batch-translate`, {
         texts: uncachedTexts,
         targetLanguage: language,
         context: 'sales_feedback'
       }, {
+        withCredentials: true,
         headers: {
           'Content-Type': 'application/json'
         }

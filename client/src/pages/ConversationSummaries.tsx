@@ -63,7 +63,9 @@ const ConversationSummaries: React.FC = () => {
   const loadSummaries = async () => {
     try {
       setLoading(true);
-      const response = await axios.get('/api/conversation-summaries');
+      const response = await axios.get(`${API_BASE_URL}/api/conversation-summaries`, {
+        withCredentials: true
+      });
       setSummaries(response.data.summaries);
     } catch (error: any) {
       console.error('Failed to load conversation summaries:', error);
@@ -76,7 +78,7 @@ const ConversationSummaries: React.FC = () => {
 
   const loadSummaryStatus = async () => {
     try {
-      const response = await axios.get('/api/conversation-summaries/status', {
+      const response = await axios.get(`${API_BASE_URL}/api/conversation-summaries/status`, {
         withCredentials: true
       });
       setSummaryStatus(response.data);
@@ -88,7 +90,7 @@ const ConversationSummaries: React.FC = () => {
 
   const loadConversationCount = async () => {
     try {
-      const response = await axios.get('/api/ai/conversations/count', {
+      const response = await axios.get(`${API_BASE_URL}/api/ai/conversations/count`, {
         withCredentials: true
       });
       setConversationCount(response.data.count || 0);
@@ -156,7 +158,7 @@ const ConversationSummaries: React.FC = () => {
   const generateNewSummary = async () => {
     try {
       setLoading(true);
-      const response = await axios.post('/api/conversation-summaries/generate', {}, {
+      const response = await axios.post(`${API_BASE_URL}/api/conversation-summaries/generate`, {}, {
         withCredentials: true
       });
       const newSummary = response.data.summary;

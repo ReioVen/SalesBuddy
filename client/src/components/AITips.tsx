@@ -5,6 +5,8 @@ import axios from 'axios';
 import toast from 'react-hot-toast';
 import { Send, MessageSquare, Lightbulb, X, Minimize2, Maximize2 } from 'lucide-react';
 
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://salesbuddy-production.up.railway.app';
+
 interface AITipMessage {
   role: 'user' | 'assistant';
   content: string;
@@ -49,7 +51,9 @@ const AITips: React.FC<AITipsProps> = ({ isOpen, onToggle, isMinimized, onToggle
     const fetchUsageStatus = async () => {
       if (isOpen && user) {
         try {
-          const response = await axios.get('/api/ai/tips/usage');
+          const response = await axios.get(`${API_BASE_URL}/api/ai/tips/usage`, {
+            withCredentials: true
+          });
           setUsageStatus(response.data.aiTipsStatus);
         } catch (error) {
           console.error('Failed to fetch AI Tips usage status:', error);
@@ -92,10 +96,12 @@ const AITips: React.FC<AITipsProps> = ({ isOpen, onToggle, isMinimized, onToggle
     setIsLoading(true);
 
     try {
-      const response = await axios.post('/api/ai/tips', {
+      const response = await axios.post(`${API_BASE_URL}/api/ai/tips`, {
         message: inputMessage.trim(),
         language: language,
         conversationHistory: messages.slice(-10) // Send last 10 messages for context
+      }, {
+        withCredentials: true
       });
 
       const assistantMessage: AITipMessage = {

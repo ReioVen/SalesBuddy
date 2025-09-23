@@ -60,7 +60,9 @@ const SubscriptionManagement: React.FC<SubscriptionManagementProps> = ({ onClose
   const handleManageSubscription = async () => {
     try {
       setLoading(true);
-      const response = await axios.post('/api/subscriptions/create-portal-session');
+      const response = await axios.post(`${API_BASE_URL}/api/subscriptions/create-portal-session`, {}, {
+        withCredentials: true
+      });
       window.location.href = response.data.url;
     } catch (error: any) {
       console.error('Portal session error:', error);
@@ -80,7 +82,9 @@ const SubscriptionManagement: React.FC<SubscriptionManagementProps> = ({ onClose
       setLoading(true);
       // This would typically redirect to Stripe portal for cancellation
       // For now, we'll just redirect to the billing portal
-      const response = await axios.post('/api/subscriptions/create-portal-session');
+      const response = await axios.post(`${API_BASE_URL}/api/subscriptions/create-portal-session`, {}, {
+        withCredentials: true
+      });
       window.location.href = response.data.url;
     } catch (error: any) {
       console.error('Cancel subscription error:', error);
@@ -94,7 +98,9 @@ const SubscriptionManagement: React.FC<SubscriptionManagementProps> = ({ onClose
   const handleCompleteSetup = async () => {
     try {
       setLoading(true);
-      const response = await axios.post('/api/subscriptions/complete-setup');
+      const response = await axios.post(`${API_BASE_URL}/api/subscriptions/complete-setup`, {}, {
+        withCredentials: true
+      });
       toast.success(response.data.message);
       
       // Refresh the page to show the updated subscription data
@@ -121,7 +127,9 @@ const SubscriptionManagement: React.FC<SubscriptionManagementProps> = ({ onClose
       setLoading(true);
       
       // Get available plan change options
-      const response = await axios.get('/api/subscriptions/change-options');
+      const response = await axios.get(`${API_BASE_URL}/api/subscriptions/change-options`, {
+        withCredentials: true
+      });
       const { availablePlans } = response.data;
       
       if (availablePlans.length === 0) {

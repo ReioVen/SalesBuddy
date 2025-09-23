@@ -3,6 +3,8 @@ import { useAuth } from '../contexts/AuthContext.tsx';
 import { Eye, EyeOff, Lock, CheckCircle, X } from 'lucide-react';
 import axios from 'axios';
 
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://salesbuddy-production.up.railway.app';
+
 interface PasswordSetupModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -72,9 +74,11 @@ const PasswordSetupModal: React.FC<PasswordSetupModalProps> = ({ isOpen, onClose
     }
 
     try {
-      const response = await axios.post('/api/auth/setup-password', {
+      const response = await axios.post(`${API_BASE_URL}/api/auth/setup-password`, {
         password: formData.password,
         confirmPassword: formData.confirmPassword
+      }, {
+        withCredentials: true
       });
 
       if (response.data.user) {
