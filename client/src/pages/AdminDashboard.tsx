@@ -3,7 +3,7 @@ import { useAuth } from '../contexts/AuthContext.tsx';
 import CreateCompany from '../components/CreateCompany.tsx';
 import CreateUser from '../components/CreateUser.tsx';
 
-const API_BASE_URL = 'https://api.salesbuddy.pro';
+const API_BASE_URL = 'https://salesbuddy-production.up.railway.app';
 
 interface DashboardStats {
   totalUsers: number;

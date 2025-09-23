@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTheme } from '../contexts/ThemeContext.tsx';
 
-const API_BASE_URL = 'https://api.salesbuddy.pro';
+const API_BASE_URL = 'https://salesbuddy-production.up.railway.app';
 
 const ForgotPassword: React.FC = () => {
   const { actualTheme } = useTheme();

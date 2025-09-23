@@ -4,7 +4,7 @@ import { useAuth } from '../contexts/AuthContext.tsx';
 import { Eye, EyeOff, Lock, CheckCircle } from 'lucide-react';
 import axios from 'axios';
 
-const API_BASE_URL = 'https://api.salesbuddy.pro';
+const API_BASE_URL = 'https://salesbuddy-production.up.railway.app';
 
 const PasswordSetup: React.FC = () => {
   const { user, setUser } = useAuth();

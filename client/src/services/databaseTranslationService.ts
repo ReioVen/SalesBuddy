@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Force the correct API URL to override any environment variable that might be set incorrectly
-const API_BASE_URL = 'https://api.salesbuddy.pro';
+const API_BASE_URL = 'https://salesbuddy-production.up.railway.app';
 
 export type Language = 'en' | 'et' | 'es' | 'ru' | 'lv' | 'lt' | 'fi' | 'sv' | 'no' | 'da' | 'de' | 'fr' | 'it' | 'pt' | 'pl' | 'cs' | 'sk' | 'hu' | 'ro' | 'bg' | 'hr' | 'sl' | 'el' | 'tr' | 'ar' | 'he' | 'ja' | 'ko' | 'zh' | 'hi' | 'th' | 'vi' | 'id' | 'ms' | 'tl';
 

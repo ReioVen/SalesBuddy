@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-const API_BASE_URL = 'https://api.salesbuddy.pro';
+const API_BASE_URL = 'https://salesbuddy-production.up.railway.app';
 
 interface CreateTeamForm {
   name: string;
