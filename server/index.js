@@ -58,6 +58,18 @@ app.use((req, res, next) => {
 
 app.use(express.urlencoded({ extended: true }));
 
+// Add debugging for all requests
+app.use((req, res, next) => {
+  console.log('🌐 [SERVER] Request:', {
+    method: req.method,
+    url: req.url,
+    origin: req.headers.origin,
+    userAgent: req.headers['user-agent']?.substring(0, 50),
+    timestamp: new Date().toISOString()
+  });
+  next();
+});
+
 // CORS configuration
 const allowedOrigins = [
   process.env.CLIENT_URL || 'https://salesbuddy.pro',
@@ -70,19 +82,45 @@ const allowedOrigins = [
 ];
 
 app.use(cors({
-  origin: [
-    'https://salesbuddy.pro',
-    'https://www.salesbuddy.pro', 
-    'https://app.salesbuddy.pro',
-    'https://salesbuddy-client.vercel.app',
-    'https://sales-buddy.vercel.app',
-    'https://salesbuddy-production.up.railway.app'
-  ],
+  origin: function (origin, callback) {
+    const allowedOrigins = [
+      'https://salesbuddy.pro',
+      'https://www.salesbuddy.pro', 
+      'https://app.salesbuddy.pro',
+      'https://salesbuddy-client.vercel.app',
+      'https://sales-buddy.vercel.app',
+      'https://salesbuddy-production.up.railway.app',
+      'http://localhost:3000', // For local development
+      'http://localhost:3001'  // For local development
+    ];
+    
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      console.log('✅ [CORS] Allowed origin:', origin);
+      callback(null, true);
+    } else {
+      console.log('❌ [CORS] Blocked origin:', origin);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
-  exposedHeaders: ['Set-Cookie']
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Cookie', 'X-Requested-With'],
+  exposedHeaders: ['Set-Cookie'],
+  optionsSuccessStatus: 200 // Some legacy browsers choke on 204
 }));
+
+// Handle preflight OPTIONS requests explicitly
+app.options('*', (req, res) => {
+  console.log('🔄 [CORS] Handling OPTIONS preflight request:', req.url);
+  res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Cookie, X-Requested-With');
+  res.header('Access-Control-Allow-Credentials', 'true');
+  res.status(200).end();
+});
 
 // Database connection (guard missing URI)
 const mongoUri = (process.env.MONGODB_URI && process.env.MONGODB_URI.trim() !== '')
