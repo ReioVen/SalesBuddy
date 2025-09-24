@@ -163,7 +163,8 @@ router.post('/login', [
           usage: user.usage,
           settings: user.settings,
           needsPasswordSetup: user.needsPasswordSetup
-        }
+        },
+        token: token
       });
       return;
     }

@@ -74,7 +74,7 @@ const PasswordSetupModal: React.FC<PasswordSetupModalProps> = ({ isOpen, onClose
     }
 
     try {
-      const response = await axios.post(`${API_BASE_URL}/api/auth/setup-password`, {
+      const response = await axios.post('/api/auth/setup-password', {
         password: formData.password,
         confirmPassword: formData.confirmPassword
       }, {
