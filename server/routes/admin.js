@@ -16,6 +16,23 @@ const dailyRefreshService = require('../services/dailyRefreshService');
 
 const router = express.Router();
 
+// Add request logging middleware for all admin routes
+router.use((req, res, next) => {
+  console.log('🔍 [ADMIN ROUTES] Request received:', {
+    url: req.url,
+    method: req.method,
+    path: req.path,
+    user: req.user ? {
+      id: req.user._id,
+      email: req.user.email,
+      role: req.user.role,
+      hasAdminAccess: req.user.hasAdminAccess()
+    } : 'No user object',
+    timestamp: new Date().toISOString()
+  });
+  next();
+});
+
 // Add error handling middleware for all admin routes
 router.use((error, req, res, next) => {
   console.error('❌ [ADMIN ROUTES] Unhandled error:', {
@@ -46,7 +63,7 @@ const generateTempPassword = () => {
 };
 
 // Test endpoint to verify admin access
-router.get('/test', authenticateToken, requireAdmin, async (req, res) => {
+router.get('/test', requireAdmin, async (req, res) => {
   console.log('🧪 [ADMIN TEST] Test endpoint accessed successfully');
   res.json({ 
     message: 'Admin access confirmed',
@@ -61,7 +78,7 @@ router.get('/test', authenticateToken, requireAdmin, async (req, res) => {
 });
 
 // Get admin dashboard data
-router.get('/dashboard', authenticateToken, requireAdmin, async (req, res) => {
+router.get('/dashboard', requireAdmin, async (req, res) => {
   try {
     console.log('🔐 [ADMIN DASHBOARD] User attempting access:', {
       id: req.user._id,
