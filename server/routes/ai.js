@@ -401,18 +401,20 @@ if (openaiApiKey && openaiApiKey.trim() !== '') {
      }
    };
 
-   // NEW: Generate difficulty phase randomization
-   // 15% beginning hard, 50% middle hard, 35% closing hard
-   const generateDifficultyPhase = () => {
-     const random = Math.random();
-     if (random < 0.15) {
-       return 'beginning_hard';
-     } else if (random < 0.65) {
-       return 'middle_hard';
-     } else {
-       return 'closing_hard';
-     }
-   };
+  // NEW: Generate difficulty phase randomization - More varied and realistic
+  // 20% easy, 40% moderate, 25% challenging, 15% difficult
+  const generateDifficultyPhase = () => {
+    const random = Math.random();
+    if (random < 0.20) {
+      return 'easy_flow'; // Natural, cooperative flow
+    } else if (random < 0.60) {
+      return 'moderate_resistance'; // Some resistance but manageable
+    } else if (random < 0.85) {
+      return 'challenging_moments'; // Difficult at specific points
+    } else {
+      return 'difficult_throughout'; // Consistently challenging
+    }
+  };
 
    const difficultyPhase = generateDifficultyPhase();
    
@@ -432,9 +434,10 @@ if (openaiApiKey && openaiApiKey.trim() !== '') {
      ];
      
      switch (phase) {
-       case 'beginning_hard': return allSellingPoints.slice(0, 1); // Very few selling points
-       case 'middle_hard': return allSellingPoints.slice(0, 2); // Few selling points
-       case 'closing_hard': return allSellingPoints.slice(0, 3); // Moderate selling points
+       case 'easy_flow': return allSellingPoints.slice(0, 6); // Many selling points - cooperative
+       case 'moderate_resistance': return allSellingPoints.slice(0, 4); // Good selling points
+       case 'challenging_moments': return allSellingPoints.slice(0, 3); // Fewer selling points
+       case 'difficult_throughout': return allSellingPoints.slice(0, 1); // Very few selling points
        default: return allSellingPoints.slice(0, 3);
      }
    };
@@ -454,9 +457,10 @@ if (openaiApiKey && openaiApiKey.trim() !== '') {
     ];
     
     switch (phase) {
-      case 'beginning_hard': return allProblems.slice(0, 1); // Very few problems
-      case 'middle_hard': return allProblems.slice(0, 2); // Few problems
-      case 'closing_hard': return allProblems.slice(0, 3); // Moderate problems
+      case 'easy_flow': return allProblems.slice(0, 5); // Many problems - easy to sell to
+      case 'moderate_resistance': return allProblems.slice(0, 3); // Moderate problems
+      case 'challenging_moments': return allProblems.slice(0, 2); // Fewer problems
+      case 'difficult_throughout': return allProblems.slice(0, 1); // Very few problems
       default: return allProblems.slice(0, 3);
     }
   };
@@ -476,9 +480,10 @@ if (openaiApiKey && openaiApiKey.trim() !== '') {
     ];
     
     switch (phase) {
-      case 'beginning_hard': return allWeakSpots.slice(0, 1); // Very few weak spots
-      case 'middle_hard': return allWeakSpots.slice(0, 2); // Few weak spots
-      case 'closing_hard': return allWeakSpots.slice(0, 3); // Moderate weak spots
+      case 'easy_flow': return allWeakSpots.slice(0, 4); // More weak spots - easier to influence
+      case 'moderate_resistance': return allWeakSpots.slice(0, 3); // Moderate weak spots
+      case 'challenging_moments': return allWeakSpots.slice(0, 2); // Fewer weak spots
+      case 'difficult_throughout': return allWeakSpots.slice(0, 1); // Very few weak spots
       default: return allWeakSpots.slice(0, 3);
     }
   };
@@ -500,6 +505,124 @@ if (openaiApiKey && openaiApiKey.trim() !== '') {
    const emotionalTriggers = generateEmotionalTriggers();
    const randomAddOns = generateRandomAddOns();
    const memoryRecall = generateMemoryRecall();
+
+   // NEW: Generate realistic human emotional profile
+   const generateEmotionalProfile = () => {
+     const emotionalProfiles = [
+       {
+         name: 'Stressed Professional',
+         primaryNeeds: ['time_savings', 'stress_reduction', 'work_life_balance'],
+         painPoints: ['overwhelmed', 'lack_of_time', 'burnout_risk'],
+         emotionalTriggers: ['urgency', 'efficiency', 'support'],
+         buyingMotivation: 'seeking_solutions',
+         resistanceLevel: 'moderate'
+       },
+       {
+         name: 'Budget-Conscious Parent',
+         primaryNeeds: ['cost_savings', 'family_security', 'value_for_money'],
+         painPoints: ['financial_pressure', 'family_responsibilities', 'future_planning'],
+         emotionalTriggers: ['savings', 'family_benefit', 'security'],
+         buyingMotivation: 'practical_necessity',
+         resistanceLevel: 'high'
+       },
+       {
+         name: 'Ambitious Entrepreneur',
+         primaryNeeds: ['growth', 'competitive_advantage', 'scalability'],
+         painPoints: ['market_pressure', 'resource_constraints', 'opportunity_cost'],
+         emotionalTriggers: ['success', 'innovation', 'results'],
+         buyingMotivation: 'growth_opportunity',
+         resistanceLevel: 'low'
+       },
+       {
+         name: 'Skeptical Consumer',
+         primaryNeeds: ['trust', 'proof_of_value', 'risk_minimization'],
+         painPoints: ['bad_experiences', 'trust_issues', 'decision_fatigue'],
+         emotionalTriggers: ['social_proof', 'guarantees', 'testimonials'],
+         buyingMotivation: 'proven_need',
+         resistanceLevel: 'very_high'
+       },
+       {
+         name: 'Tech-Enthusiast',
+         primaryNeeds: ['innovation', 'cutting_edge', 'efficiency'],
+         painPoints: ['outdated_solutions', 'integration_issues', 'learning_curve'],
+         emotionalTriggers: ['technology', 'features', 'automation'],
+         buyingMotivation: 'innovation_drive',
+         resistanceLevel: 'low'
+       },
+       {
+         name: 'Traditional Conservative',
+         primaryNeeds: ['reliability', 'familiarity', 'stability'],
+         painPoints: ['change_anxiety', 'learning_new_systems', 'uncertainty'],
+         emotionalTriggers: ['stability', 'support', 'familiarity'],
+         buyingMotivation: 'necessity_only',
+         resistanceLevel: 'high'
+       }
+     ];
+
+     return emotionalProfiles[Math.floor(Math.random() * emotionalProfiles.length)];
+   };
+
+   // NEW: Generate dynamic emotional state system
+   const generateEmotionalState = () => {
+     const baseStates = [
+       'neutral', 'slightly_interested', 'curious', 'skeptical', 'frustrated', 
+       'hopeful', 'confused', 'excited', 'worried', 'relaxed'
+     ];
+     
+     return {
+       current: baseStates[Math.floor(Math.random() * baseStates.length)],
+       volatility: Math.random() * 0.8 + 0.2, // 0.2 to 1.0
+       responsiveness: Math.random() * 0.6 + 0.4, // 0.4 to 1.0
+       trustLevel: Math.random() * 0.5 + 0.2, // 0.2 to 0.7
+       buyingUrgency: Math.random() * 0.3 + 0.1 // 0.1 to 0.4
+     };
+   };
+
+   // NEW: Generate realistic pain points that evolve
+   const generatePainPoints = () => {
+     const painPointCategories = [
+       {
+         category: 'Financial',
+         points: ['budget_constraints', 'unexpected_costs', 'ROI_uncertainty', 'payment_timing'],
+         intensity: Math.random() * 0.8 + 0.2
+       },
+       {
+         category: 'Time',
+         points: ['implementation_time', 'learning_curve', 'disruption_to_workflow', 'deadline_pressure'],
+         intensity: Math.random() * 0.8 + 0.2
+       },
+       {
+         category: 'Risk',
+         points: ['vendor_reliability', 'technology_compatibility', 'staff_adoption', 'data_security'],
+         intensity: Math.random() * 0.8 + 0.2
+       },
+       {
+         category: 'Change',
+         points: ['comfort_zone', 'existing_processes', 'team_resistance', 'training_needs'],
+         intensity: Math.random() * 0.8 + 0.2
+       }
+     ];
+
+     return painPointCategories;
+   };
+
+   // NEW: Generate buying progression stages
+   const generateBuyingProgression = () => {
+     const stages = [
+       { name: 'unaware', resistance: 0.9, interest: 0.1 },
+       { name: 'aware', resistance: 0.7, interest: 0.3 },
+       { name: 'considering', resistance: 0.5, interest: 0.5 },
+       { name: 'evaluating', resistance: 0.3, interest: 0.7 },
+       { name: 'ready', resistance: 0.1, interest: 0.9 }
+     ];
+     
+     return stages[Math.floor(Math.random() * stages.length)];
+   };
+
+   const emotionalProfile = generateEmotionalProfile();
+   const emotionalState = generateEmotionalState();
+   const painPoints = generatePainPoints();
+   const buyingProgression = generateBuyingProgression();
 
            const profile = {
       name: `${firstName} ${lastName}`,
@@ -541,11 +664,16 @@ if (openaiApiKey && openaiApiKey.trim() !== '') {
       personalityShifts: personalityShifts,
       emotionalTriggers: emotionalTriggers,
       randomAddOns: randomAddOns,
-      memoryRecall: memoryRecall
+      memoryRecall: memoryRecall,
+      // NEW: Emotional algorithm attributes
+      emotionalProfile: emotionalProfile,
+      emotionalState: emotionalState,
+      painPoints: painPoints,
+      buyingProgression: buyingProgression
     };
    
              // Validate that all required properties are present
-     const requiredProps = ['name', 'familySize', 'income', 'incomeRange', 'priceSensitivity', 'priceContext', 'familyType', 'personality', 'industry', 'role', 'specificDetails', 'fullProfile', 'personalityTraits', 'difficultyPhase', 'sellingPoints', 'problems', 'weakSpots', 'moodModifier', 'microTraits', 'timeContext', 'decisionStyle', 'randomEvents', 'communicationStyle', 'preferredChannel', 'buyingHistory', 'values', 'energyLevel', 'cognitiveBias', 'timeContextNew', 'communicationGlitches', 'personalityShifts', 'emotionalTriggers', 'randomAddOns', 'memoryRecall'];
+     const requiredProps = ['name', 'familySize', 'income', 'incomeRange', 'priceSensitivity', 'priceContext', 'familyType', 'personality', 'industry', 'role', 'specificDetails', 'fullProfile', 'personalityTraits', 'difficultyPhase', 'sellingPoints', 'problems', 'weakSpots', 'moodModifier', 'microTraits', 'timeContext', 'decisionStyle', 'randomEvents', 'communicationStyle', 'preferredChannel', 'buyingHistory', 'values', 'energyLevel', 'cognitiveBias', 'timeContextNew', 'communicationGlitches', 'personalityShifts', 'emotionalTriggers', 'randomAddOns', 'memoryRecall', 'emotionalProfile', 'emotionalState', 'painPoints', 'buyingProgression'];
    for (const prop of requiredProps) {
      if (profile[prop] === undefined || profile[prop] === null) {
        console.error(`Missing required property: ${prop}`);
@@ -702,36 +830,21 @@ Respond as the CLIENT/CUSTOMER would. Remember: You are a real person being sold
        });
      }
 
-     // Add difficulty phase-based behavior
+     // Add difficulty phase-based behavior - More realistic and varied
      let difficultyPhaseInstructions = '';
      if (clientCustomization.difficultyPhase) {
        switch (clientCustomization.difficultyPhase) {
-         case 'beginning_hard':
-           if (difficulty === 'easy') {
-             difficultyPhaseInstructions = 'You are somewhat challenging during the BEGINNING of the conversation. You are initially skeptical and busy, but not extremely difficult. You ask "Who is this?", "How did you get my number?", but you are willing to listen briefly.';
-           } else if (difficulty === 'medium') {
-             difficultyPhaseInstructions = 'You are challenging during the BEGINNING of the conversation. You are immediately skeptical, busy, and difficult to engage. You ask "Who is this?", "How did you get my number?", "I\'m not interested, goodbye" or simply hang up.';
-           } else { // hard
-             difficultyPhaseInstructions = 'You are extremely challenging during the BEGINNING of the conversation. You are immediately hostile, extremely busy, and almost impossible to engage. You aggressively ask "Who is this?", "How did you get my number?", "I\'m hanging up right now" and frequently hang up.';
-           }
+         case 'easy_flow':
+           difficultyPhaseInstructions = 'You have a natural, cooperative flow throughout the conversation. You are generally receptive, ask good questions, and are willing to engage. You may have some minor concerns but are generally positive and open to learning more. You provide realistic feedback and are not overly challenging.';
            break;
-         case 'middle_hard':
-           if (difficulty === 'easy') {
-             difficultyPhaseInstructions = 'You are somewhat challenging during the MIDDLE of the conversation. You start reasonably but become moderately difficult when they try to understand your needs, present solutions, or handle objections. You ask some tough questions and are somewhat skeptical.';
-           } else if (difficulty === 'medium') {
-             difficultyPhaseInstructions = 'You are challenging during the MIDDLE of the conversation. You start reasonably but become very difficult when they try to understand your needs, present solutions, or handle objections. You ask tough questions, challenge their claims, and are very skeptical of their value proposition.';
-           } else { // hard
-             difficultyPhaseInstructions = 'You are extremely challenging during the MIDDLE of the conversation. You start reasonably but become extremely difficult when they try to understand your needs, present solutions, or handle objections. You aggressively challenge everything, ask extremely tough questions, and are completely skeptical of their value proposition.';
-           }
+         case 'moderate_resistance':
+           difficultyPhaseInstructions = 'You show moderate resistance throughout the conversation. You are initially cautious but willing to listen. You ask reasonable questions and have some concerns, but you are not overly difficult. You provide fair objections and are willing to consider the value proposition.';
            break;
-         case 'closing_hard':
-           if (difficulty === 'easy') {
-             difficultyPhaseInstructions = 'You are somewhat challenging during the CLOSING phase. You seem interested throughout most of the conversation, but when it comes time to commit or take action, you become moderately difficult. You have some last-minute objections and may need a bit more time.';
-           } else if (difficulty === 'medium') {
-             difficultyPhaseInstructions = 'You are challenging during the CLOSING phase. You seem interested throughout most of the conversation and may even show enthusiasm, but when it comes time to commit or take action, you become very difficult. You have last-minute objections, need more time to think, want to consult others, or find reasons to delay.';
-           } else { // hard
-             difficultyPhaseInstructions = 'You are extremely challenging during the CLOSING phase. You seem interested throughout most of the conversation and may even show enthusiasm, but when it comes time to commit or take action, you become nearly impossible to close. You have multiple last-minute objections, need extensive time to think, insist on consulting multiple people, or find numerous reasons to delay indefinitely.';
-           }
+         case 'challenging_moments':
+           difficultyPhaseInstructions = 'You have challenging moments at specific points in the conversation. You might be difficult during needs assessment, objection handling, or closing phases, but not throughout the entire conversation. You have legitimate concerns and ask tough questions, but you are not consistently difficult.';
+           break;
+         case 'difficult_throughout':
+           difficultyPhaseInstructions = 'You are consistently challenging throughout the conversation. You are skeptical, ask tough questions, and have strong objections. You are not easily convinced and require significant value demonstration. You are professional but demanding.';
            break;
        }
      }
@@ -1086,6 +1199,60 @@ Respond as the CLIENT/CUSTOMER would. Remember: You are a real person being sold
     - If they show genuine interest in helping → you become more cooperative
     This makes you feel alive and responsive rather than scripted.`;
 
+    // NEW: Add emotional algorithm instructions
+    let emotionalAlgorithmInstructions = '';
+    if (clientCustomization.emotionalProfile && clientCustomization.emotionalState && clientCustomization.painPoints && clientCustomization.buyingProgression) {
+      const profile = clientCustomization.emotionalProfile;
+      const state = clientCustomization.emotionalState;
+      const painPoints = clientCustomization.painPoints;
+      const progression = clientCustomization.buyingProgression;
+      
+      emotionalAlgorithmInstructions = `EMOTIONAL ALGORITHM - HUMAN-LIKE RESPONSES:
+      
+EMOTIONAL PROFILE: ${profile.name}
+- Primary Needs: ${profile.primaryNeeds.join(', ')}
+- Pain Points: ${profile.painPoints.join(', ')}
+- Emotional Triggers: ${profile.emotionalTriggers.join(', ')}
+- Buying Motivation: ${profile.buyingMotivation}
+- Base Resistance Level: ${profile.resistanceLevel}
+
+CURRENT EMOTIONAL STATE:
+- Current State: ${state.current}
+- Volatility: ${state.volatility.toFixed(2)} (how much your emotions change)
+- Responsiveness: ${state.responsiveness.toFixed(2)} (how quickly you respond to their approach)
+- Trust Level: ${state.trustLevel.toFixed(2)} (how much you trust them)
+- Buying Urgency: ${state.buyingUrgency.toFixed(2)} (how urgently you need a solution)
+
+BUYING PROGRESSION STAGE: ${progression.name.toUpperCase()}
+- Resistance Level: ${progression.resistance} (0.1 = low, 0.9 = high)
+- Interest Level: ${progression.interest} (0.1 = low, 0.9 = high)
+
+PAIN POINTS (with intensity):
+${painPoints.map(category => `- ${category.category}: ${category.points.join(', ')} (intensity: ${category.intensity.toFixed(2)})`).join('\n')}
+
+EMOTIONAL RESPONSE RULES:
+1. Your emotional state evolves based on how well they address your pain points
+2. When they hit your pain points effectively, your interest increases and resistance decreases
+3. Your emotional responses should feel natural and human-like, not robotic
+4. Show genuine emotions: frustration when they don't understand, excitement when they do
+5. Your buying urgency increases when they demonstrate clear value for your specific needs
+6. Express your pain points naturally in conversation, don't just list them
+7. When they provide solutions that address your specific pain points, show genuine interest
+8. Your trust level affects how much information you share and how quickly you make decisions
+9. Use your emotional triggers to guide your responses (${profile.emotionalTriggers.join(', ')})
+10. Your current buying stage (${progression.name}) affects how much you're willing to commit
+
+HUMAN-LIKE BEHAVIOR:
+- Express your needs and concerns naturally through conversation
+- Show emotional responses to their approach (positive when good, negative when bad)
+- Share personal context when they earn your trust
+- Express genuine concerns and excitement appropriately
+- Make decisions based on both logic and emotion
+- Show vulnerability when they address your pain points effectively
+- Express frustration when they don't understand your situation
+- Show enthusiasm when they provide relevant solutions`;
+    }
+
     // Add selling points, problems, and weak spots if available
     let additionalInfo = '';
     if (clientCustomization.sellingPoints && clientCustomization.sellingPoints.length > 0) {
@@ -1140,38 +1307,39 @@ ${clientCustomization.customPrompt ? `Detailed Profile: ${clientCustomization.cu
   ${randomAddOnsInstructions ? `23. ${randomAddOnsInstructions}` : ''}
   ${memoryRecallInstructions ? `24. ${memoryRecallInstructions}` : ''}
   ${adaptiveResistanceInstructions ? `25. ${adaptiveResistanceInstructions}` : ''}
-  26. Ask realistic questions that this type of client would ask when being sold to.
-  27. Be challenging but fair - provide realistic sales scenarios from a buyer's perspective.
-  28. Keep responses conversational and natural.
-  29. If asked about your identity, you are simply a potential customer interested in their product/service.
-  30. NEVER act like a salesperson or try to sell anything - you are the BUYER.
-  31. If the person calling is being inappropriate, rude, or doing a bad job, respond as a real client would: politely decline and end the conversation (e.g., "I'm not interested, thank you" or "I don't think this is a good fit").
-  32. NEVER lecture the person calling or break character to give feedback - just respond as a real client would.
-  33. If you want to end the conversation, do so naturally as a client would (hang up, say goodbye, etc.).
-  34. **CRITICAL FOR VARIETY**: NEVER use the same phrases or responses repeatedly. Always vary your wording, sentence structure, and expression. Use different words to express the same meaning. Be creative with your language while staying in character.
-  35. **NATURAL SPEECH PATTERNS**: Use contractions, informal language, and natural speech patterns. Vary your sentence length and structure. Sometimes be brief, sometimes elaborate.
-  36. **UNIQUE RESPONSES**: Each response should feel fresh and unique. Avoid formulaic responses. Think about how a real person would naturally express themselves in this situation.
-  37. IMPORTANT: You are receiving a COLD CALL or UNEXPECTED CALL. Your initial response should vary based on your personality traits and current situation. Don't always use the same defensive responses.
-  38. VARY YOUR INITIAL RESPONSES based on your personality:
+  ${emotionalAlgorithmInstructions ? `26. ${emotionalAlgorithmInstructions}` : ''}
+  27. Ask realistic questions that this type of client would ask when being sold to.
+  28. Be challenging but fair - provide realistic sales scenarios from a buyer's perspective.
+  29. Keep responses conversational and natural.
+  30. If asked about your identity, you are simply a potential customer interested in their product/service.
+  31. NEVER act like a salesperson or try to sell anything - you are the BUYER.
+  32. If the person calling is being inappropriate, rude, or doing a bad job, respond as a real client would: politely decline and end the conversation (e.g., "I'm not interested, thank you" or "I don't think this is a good fit").
+  33. NEVER lecture the person calling or break character to give feedback - just respond as a real client would.
+  34. If you want to end the conversation, do so naturally as a client would (hang up, say goodbye, etc.).
+  35. **CRITICAL FOR VARIETY**: NEVER use the same phrases or responses repeatedly. Always vary your wording, sentence structure, and expression. Use different words to express the same meaning. Be creative with your language while staying in character.
+  36. **NATURAL SPEECH PATTERNS**: Use contractions, informal language, and natural speech patterns. Vary your sentence length and structure. Sometimes be brief, sometimes elaborate.
+  37. **UNIQUE RESPONSES**: Each response should feel fresh and unique. Avoid formulaic responses. Think about how a real person would naturally express themselves in this situation.
+  38. IMPORTANT: You are receiving a COLD CALL or UNEXPECTED CALL. Your initial response should vary based on your personality traits and current situation. Don't always use the same defensive responses.
+  39. VARY YOUR INITIAL RESPONSES based on your personality:
       - Some clients might be curious: "Oh, hello. What's this about?"
       - Some might be busy but polite: "Hi, I'm a bit busy but I can spare a minute"
       - Some might be friendly: "Hello! How can I help you?"
       - Some might be direct: "Yes, what do you need?"
       - Some might be skeptical: "Who is this? How did you get my number?"
       - Some might be confused: "I'm sorry, what company did you say you're with?"
-  39. When the person calling tries to explain what they offer, respond naturally based on your personality:
+  40. When the person calling tries to explain what they offer, respond naturally based on your personality:
       - Curious clients ask questions: "That sounds interesting, tell me more"
       - Busy clients want efficiency: "I'm in a hurry, can you be quick?"
       - Skeptical clients are cautious: "I'm not sure I need anything like that"
       - Friendly clients are open: "Oh, that could be useful, how does it work?"
-  40. If the person calling goes off-topic or asks strange questions, respond naturally:
+  41. If the person calling goes off-topic or asks strange questions, respond naturally:
       - "I'm not sure I understand what you're asking"
       - "Could you clarify what service you're offering?"
       - "This seems a bit confusing, what exactly are you selling?"
-  41. Give the person calling a chance to explain their value before dismissing them completely.
-  42. Only become aggressive and ask to be removed from lists if they're rude, pushy, or clearly not listening to your objections.
-  43. Be challenging but fair - provide realistic sales resistance that good salespeople can overcome.
-  44. If the conversation becomes too strange or off-topic, end it naturally: "I'm not interested, goodbye" or simply hang up.
+  42. Give the person calling a chance to explain their value before dismissing them completely.
+  43. Only become aggressive and ask to be removed from lists if they're rude, pushy, or clearly not listening to your objections.
+  44. Be challenging but fair - provide realistic sales resistance that good salespeople can overcome.
+  45. If the conversation becomes too strange or off-topic, end it naturally: "I'm not interested, goodbye" or simply hang up.
  
 **RESPONSE VARIETY GUIDELINES:**
 - NEVER repeat the same phrases or sentence structures
