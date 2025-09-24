@@ -16,22 +16,22 @@ const dailyRefreshService = require('../services/dailyRefreshService');
 
 const router = express.Router();
 
-// Add request logging middleware for all admin routes
-router.use((req, res, next) => {
-  console.log('🔍 [ADMIN ROUTES] Request received:', {
-    url: req.url,
-    method: req.method,
-    path: req.path,
-    user: req.user ? {
-      id: req.user._id,
-      email: req.user.email,
-      role: req.user.role,
-      hasAdminAccess: req.user.hasAdminAccess()
-    } : 'No user object',
-    timestamp: new Date().toISOString()
-  });
-  next();
-});
+// Request logging middleware (disabled in production)
+// router.use((req, res, next) => {
+//   console.log('🔍 [ADMIN ROUTES] Request received:', {
+//     url: req.url,
+//     method: req.method,
+//     path: req.path,
+//     user: req.user ? {
+//       id: req.user._id,
+//       email: req.user.email,
+//       role: req.user.role,
+//       hasAdminAccess: req.user.hasAdminAccess()
+//     } : 'No user object',
+//     timestamp: new Date().toISOString()
+//   });
+//   next();
+// });
 
 // Add error handling middleware for all admin routes
 router.use((error, req, res, next) => {
@@ -62,32 +62,9 @@ const generateTempPassword = () => {
   return result;
 };
 
-// Test endpoint to verify admin access
-router.get('/test', requireAdmin, async (req, res) => {
-  console.log('🧪 [ADMIN TEST] Test endpoint accessed successfully');
-  res.json({ 
-    message: 'Admin access confirmed',
-    user: {
-      id: req.user._id,
-      email: req.user.email,
-      role: req.user.role,
-      isSuperAdmin: req.user.isSuperAdmin,
-      isAdmin: req.user.isAdmin
-    }
-  });
-});
-
 // Get admin dashboard data
 router.get('/dashboard', requireAdmin, async (req, res) => {
   try {
-    console.log('🔐 [ADMIN DASHBOARD] User attempting access:', {
-      id: req.user._id,
-      email: req.user.email,
-      role: req.user.role,
-      isSuperAdmin: req.user.isSuperAdmin,
-      isAdmin: req.user.isAdmin,
-      hasAdminAccess: req.user.hasAdminAccess()
-    });
     const totalUsers = await User.countDocuments();
     const totalCompanies = await Company.countDocuments();
     const activeUsers = await User.countDocuments({ 'subscription.status': 'active' });
@@ -122,16 +99,7 @@ router.get('/dashboard', requireAdmin, async (req, res) => {
       recentCompanies
     });
   } catch (error) {
-    console.error('❌ [ADMIN DASHBOARD] Error occurred:', {
-      message: error.message,
-      stack: error.stack,
-      name: error.name,
-      user: req.user ? {
-        id: req.user._id,
-        email: req.user.email,
-        role: req.user.role
-      } : 'No user object'
-    });
+    console.error('Admin dashboard error:', error);
     res.status(500).json({ error: 'Failed to fetch dashboard data' });
   }
 });

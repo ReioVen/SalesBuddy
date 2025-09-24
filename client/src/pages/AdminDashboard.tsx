@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { useAuth } from '../contexts/AuthContext.tsx';
 import CreateCompany from '../components/CreateCompany.tsx';
 import CreateUser from '../components/CreateUser.tsx';
@@ -59,18 +60,10 @@ const AdminDashboard: React.FC = () => {
 
   const fetchDashboardData = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/admin/dashboard`, {
-        credentials: 'include'
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch dashboard data');
-      }
-      
-      const data = await response.json();
-      setStats(data.stats);
-      setRecentUsers(data.recentUsers);
-      setRecentCompanies(data.recentCompanies);
+      const response = await axios.get('/api/admin/dashboard');
+      setStats(response.data.stats);
+      setRecentUsers(response.data.recentUsers);
+      setRecentCompanies(response.data.recentCompanies);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch dashboard data');
     } finally {
