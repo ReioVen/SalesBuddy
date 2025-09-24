@@ -93,23 +93,33 @@ mongoose.connect(mongoUri)
 .then(() => console.log(`Connected to MongoDB: ${mongoUri.includes('127.0.0.1') ? 'local' : 'remote'}`))
 .catch(err => console.error('MongoDB connection error:', err));
 
-// Request logging middleware (disabled in production)
-// app.use('/api', (req, res, next) => {
-//   console.log('🌐 [SERVER] Incoming request:', {
-//     method: req.method,
-//     url: req.url,
-//     path: req.path,
-//     timestamp: new Date().toISOString()
-//   });
-//   next();
-// });
+// Request logging middleware (enabled for debugging)
+app.use('/api', (req, res, next) => {
+  console.log('🌐 [SERVER] Incoming request:', {
+    method: req.method,
+    url: req.url,
+    path: req.path,
+    timestamp: new Date().toISOString()
+  });
+  next();
+});
 
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', authenticateToken, userRoutes);
 app.use('/api/companies', authenticateToken, companyRoutes);
 app.use('/api/password-reset', passwordResetRoutes);
-app.use('/api/admin', authenticateToken, adminRoutes);
+
+// Admin routes with extra logging
+app.use('/api/admin', (req, res, next) => {
+  console.log('🔧 [ADMIN MOUNT] Request to admin routes:', {
+    method: req.method,
+    url: req.url,
+    path: req.path,
+    timestamp: new Date().toISOString()
+  });
+  next();
+}, authenticateToken, adminRoutes);
 
 // Subscription routes - webhook needs to be public, others need auth
 app.use('/api/subscriptions', subscriptionRoutes);
