@@ -1,6 +1,5 @@
-# Railway-optimized Dockerfile
-# Use a more reliable base image tag
-FROM node:18.19-alpine3.18
+# Standard Dockerfile using official Node.js image
+FROM node:18
 
 # Set working directory
 WORKDIR /app
@@ -12,10 +11,10 @@ COPY server/package.production.json ./package.json
 RUN npm install --only=production
 
 # Copy server source code
-COPY server/ .
+COPY server/ ./
 
 # Expose port
 EXPOSE 5002
 
-# Start server with simple startup script
+# Start server
 CMD ["node", "start.js"]

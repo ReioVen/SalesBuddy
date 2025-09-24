@@ -1,5 +1,5 @@
 # Railway-optimized Dockerfile
-FROM node:18-alpine
+FROM node:18.19-alpine3.18
 
 # Set working directory
 WORKDIR /app
