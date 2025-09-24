@@ -42,7 +42,10 @@ const authenticateToken = async (req, res, next) => {
     console.log('✅ [AUTH] User authenticated:', { 
       id: user._id, 
       email: user.email,
-      role: user.role 
+      role: user.role,
+      isSuperAdmin: user.isSuperAdmin,
+      isAdmin: user.isAdmin,
+      adminPermissions: user.adminPermissions
     });
 
     req.user = user;

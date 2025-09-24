@@ -29,6 +29,14 @@ const generateTempPassword = () => {
 // Get admin dashboard data
 router.get('/dashboard', authenticateToken, requireAdmin, async (req, res) => {
   try {
+    console.log('🔐 [ADMIN DASHBOARD] User attempting access:', {
+      id: req.user._id,
+      email: req.user.email,
+      role: req.user.role,
+      isSuperAdmin: req.user.isSuperAdmin,
+      isAdmin: req.user.isAdmin,
+      hasAdminAccess: req.user.hasAdminAccess()
+    });
     const totalUsers = await User.countDocuments();
     const totalCompanies = await Company.countDocuments();
     const activeUsers = await User.countDocuments({ 'subscription.status': 'active' });

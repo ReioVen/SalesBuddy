@@ -21,13 +21,33 @@ const requireSuperAdmin = async (req, res, next) => {
 // Check if user has admin access (admin or super admin)
 const requireAdmin = async (req, res, next) => {
   try {
+    console.log('🔐 [REQUIRE ADMIN] Checking admin access for user:', {
+      id: req.user._id,
+      email: req.user.email,
+      role: req.user.role,
+      isSuperAdmin: req.user.isSuperAdmin,
+      isAdmin: req.user.isAdmin,
+      adminPermissions: req.user.adminPermissions,
+      hasAdminAccess: req.user.hasAdminAccess(),
+      isSuperAdminUser: req.user.isSuperAdminUser(),
+      isAdminUser: req.user.isAdminUser(),
+      fullUserObject: JSON.stringify(req.user, null, 2)
+    });
+    
     if (!req.user.hasAdminAccess()) {
+      console.log('❌ [REQUIRE ADMIN] Access denied:', {
+        userRole: req.user.role,
+        isSuperAdmin: req.user.isSuperAdmin,
+        isAdmin: req.user.isAdmin
+      });
       return res.status(403).json({ 
         error: 'Admin access required',
         requiredRoles: ['admin', 'super_admin'],
         userRole: req.user.role
       });
     }
+    
+    console.log('✅ [REQUIRE ADMIN] Access granted');
     next();
   } catch (error) {
     console.error('❌ [ADMIN] Admin check error:', error);
