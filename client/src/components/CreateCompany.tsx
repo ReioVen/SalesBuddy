@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import axios from 'axios';
 import { useAuth } from '../contexts/AuthContext.tsx';
 
 const API_BASE_URL = 'https://salesbuddy-production.up.railway.app';
@@ -56,21 +57,8 @@ const CreateCompany: React.FC = () => {
     setError(null);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/companies/create`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        credentials: 'include',
-        body: JSON.stringify(form)
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to create company');
-      }
-
-      const data = await response.json();
+      const response = await axios.post('/api/companies/create', form);
+      const data = response.data;
       
       // If this is an admin creating a company, don't update the current user's context
       // The admin should remain as admin, not become a company admin

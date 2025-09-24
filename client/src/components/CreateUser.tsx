@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 
 const API_BASE_URL = 'https://salesbuddy-production.up.railway.app';
 
@@ -39,14 +40,8 @@ const CreateUser: React.FC = () => {
   useEffect(() => {
     const fetchCompanies = async () => {
       try {
-        const response = await fetch(`${API_BASE_URL}/api/admin/companies`, {
-          credentials: 'include'
-        });
-        
-        if (response.ok) {
-          const data = await response.json();
-          setCompanies(data.companies || []);
-        }
+        const response = await axios.get('/api/admin/companies');
+        setCompanies(response.data.companies || []);
       } catch (error) {
         console.error('Failed to fetch companies:', error);
       } finally {
@@ -78,21 +73,7 @@ const CreateUser: React.FC = () => {
     }
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/admin/users/create`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        credentials: 'include',
-        body: JSON.stringify(form)
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to create user');
-      }
-
-      await response.json();
+      await axios.post('/api/admin/users/create', form);
       setSuccess(true);
       
       // Reset form
