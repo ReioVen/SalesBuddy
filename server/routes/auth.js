@@ -57,6 +57,9 @@ router.post('/register', [
 
     const { email, password, firstName, lastName, company } = req.body;
 
+    // Normalize email for consistent storage
+    const normalizedEmail = User.normalizeEmail(email);
+
     // Check if user already exists (case-insensitive)
     const existingUser = await User.findByEmail(email);
     if (existingUser) {
@@ -65,7 +68,7 @@ router.post('/register', [
 
     // Create new user
     const user = new User({
-      email,
+      email: normalizedEmail,
       password,
       firstName,
       lastName,

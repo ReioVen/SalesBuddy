@@ -318,6 +318,9 @@ router.post('/users/create', authenticateToken, canManageAllUsers, [
 
     const { email, password, firstName, lastName, role, companyId, teamId } = req.body;
 
+    // Normalize email for consistent storage
+    const normalizedEmail = User.normalizeEmail(email);
+
     // Check if user already exists (case-insensitive)
     const existingUser = await User.findByEmail(email);
     if (existingUser) {
@@ -346,7 +349,7 @@ router.post('/users/create', authenticateToken, canManageAllUsers, [
     
     // Create new user - assign enterprise plan if they belong to a company
     const newUser = new User({
-      email,
+      email: normalizedEmail,
       password: password, // Use the password provided by the admin
       firstName,
       lastName,

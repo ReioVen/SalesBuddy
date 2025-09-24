@@ -325,6 +325,9 @@ router.post('/users', authenticateToken, canManageUsers, [
 
     const { email, password, firstName, lastName, role = 'company_user', teamName } = req.body;
 
+    // Normalize email for consistent storage
+    const normalizedEmail = User.normalizeEmail(email);
+
     // Only company admins can create users
     if (!req.user.canManageUsers()) {
       return res.status(403).json({ 
@@ -376,7 +379,7 @@ router.post('/users', authenticateToken, canManageUsers, [
     
     // Create new user with enterprise plan
     const user = new User({
-      email,
+      email: normalizedEmail,
       password: password, // Use the password provided by the admin
       firstName,
       lastName,
@@ -764,6 +767,9 @@ router.post('/users/add', authenticateToken, requireCompanyAdmin, [
 
     const { email, password, firstName, lastName, role, companyId, teamId } = req.body;
 
+    // Normalize email for consistent storage
+    const normalizedEmail = User.normalizeEmail(email);
+
     // Verify user has access to this company
     if (req.user.companyId.toString() !== companyId) {
       return res.status(403).json({ error: 'Access denied to this company' });
@@ -799,7 +805,7 @@ router.post('/users/add', authenticateToken, requireCompanyAdmin, [
     
     // Create new user with enterprise plan
     const newUser = new User({
-      email,
+      email: normalizedEmail,
       password: password, // Use the password provided by the admin
       firstName,
       lastName,

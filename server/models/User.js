@@ -215,7 +215,26 @@ userSchema.methods.comparePassword = async function(candidatePassword) {
 
 // Static method to find user by email (case-insensitive)
 userSchema.statics.findByEmail = function(email) {
-  return this.findOne({ email: email.toLowerCase() });
+  // Normalize email for Gmail addresses (remove dots and convert to lowercase)
+  const normalizedEmail = this.normalizeEmail(email);
+  return this.findOne({ email: normalizedEmail });
+};
+
+// Email normalization helper for Gmail addresses
+userSchema.statics.normalizeEmail = function(email) {
+  if (!email) return '';
+  
+  let normalized = email.toLowerCase().trim();
+  
+  // Check if it's a Gmail address
+  if (normalized.endsWith('@gmail.com')) {
+    // Remove dots from the local part (before @)
+    const [localPart, domain] = normalized.split('@');
+    const normalizedLocal = localPart.replace(/\./g, '');
+    normalized = `${normalizedLocal}@${domain}`;
+  }
+  
+  return normalized;
 };
 
 // Check if user has active subscription
