@@ -180,9 +180,50 @@ app.get('/', (req, res) => {
   });
 });
 
-// Health check endpoint
+// Health check endpoint (for Railway health checks)
+app.get('/health', (req, res) => {
+  try {
+    const healthStatus = {
+      status: 'OK',
+      timestamp: new Date().toISOString(),
+      uptime: process.uptime(),
+      memory: process.memoryUsage(),
+      database: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected'
+    };
+    
+    // Return 200 if server is running, even if DB is not connected yet
+    res.json(healthStatus);
+  } catch (error) {
+    console.error('Health check error:', error);
+    res.status(500).json({ 
+      status: 'ERROR', 
+      error: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+// Health check endpoint (for API health checks)
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'OK', timestamp: new Date().toISOString() });
+  try {
+    const healthStatus = {
+      status: 'OK',
+      timestamp: new Date().toISOString(),
+      uptime: process.uptime(),
+      memory: process.memoryUsage(),
+      database: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected'
+    };
+    
+    // Return 200 if server is running, even if DB is not connected yet
+    res.json(healthStatus);
+  } catch (error) {
+    console.error('Health check error:', error);
+    res.status(500).json({ 
+      status: 'ERROR', 
+      error: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
 });
 
 // Error handling middleware
@@ -206,11 +247,12 @@ app.use('*', (req, res) => {
 });
 
 const server = app.listen(PORT, () => {
-  console.log(`SalesBuddy server running on port ${PORT}`);
+  console.log(`✅ SalesBuddy server running on port ${PORT}`);
+  console.log(`🌐 Health check available at: http://localhost:${PORT}/api/health`);
   
   // Start the daily refresh service for enterprise users
   dailyRefreshService.startDailyRefresh();
-  console.log('Daily refresh service initialized');
+  console.log('📅 Daily refresh service initialized');
 });
 
 // Handle server startup errors
