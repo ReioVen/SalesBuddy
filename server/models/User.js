@@ -632,4 +632,59 @@ userSchema.methods.isEnterpriseSubscriptionValid = function() {
   return this.companyId !== null && this.companyId !== undefined;
 };
 
+// Sync subscription with company (for company users)
+userSchema.methods.syncWithCompanySubscription = async function() {
+  if (!this.companyId) {
+    return false; // Not a company user
+  }
+
+  const Company = require('./Company');
+  const company = await Company.findById(this.companyId);
+  
+  if (!company) {
+    console.warn(`Company not found for user ${this.email}`);
+    return false;
+  }
+
+  // Update subscription to enterprise if company has enterprise plan
+  if (company.subscription.plan === 'enterprise') {
+    this.subscription = {
+      plan: 'enterprise',
+      status: 'active',
+      stripeCustomerId: 'enterprise_customer',
+      currentPeriodStart: new Date(),
+      currentPeriodEnd: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 year
+      cancelAtPeriodEnd: false
+    };
+
+    // Update monthly limit based on company's setting
+    if (company.subscription.monthlyConversationLimit) {
+      this.usage.monthlyLimit = company.subscription.monthlyConversationLimit;
+    }
+
+    await this.save();
+    return true;
+  }
+
+  return false;
+};
+
+// Static method to sync all company users with their company subscriptions
+userSchema.statics.syncAllCompanyUsers = async function() {
+  const Company = require('./Company');
+  
+  const companyUsers = await this.find({
+    companyId: { $exists: true, $ne: null }
+  });
+
+  let syncedCount = 0;
+  for (const user of companyUsers) {
+    if (await user.syncWithCompanySubscription()) {
+      syncedCount++;
+    }
+  }
+
+  return syncedCount;
+};
+
 module.exports = mongoose.model('User', userSchema); 

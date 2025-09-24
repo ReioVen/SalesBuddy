@@ -724,6 +724,12 @@ async function handleSubscriptionCreated(subscription) {
 router.get('/status', authenticateToken, async (req, res) => {
   try {
     const user = await User.findById(req.user._id);
+    
+    // Auto-sync company users with their company subscription
+    if (user.companyId) {
+      await user.syncWithCompanySubscription();
+    }
+    
     const limits = user.getSubscriptionLimits();
     const usageStatus = user.getUsageStatus();
     
