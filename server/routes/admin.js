@@ -16,6 +16,25 @@ const dailyRefreshService = require('../services/dailyRefreshService');
 
 const router = express.Router();
 
+// Add error handling middleware for all admin routes
+router.use((error, req, res, next) => {
+  console.error('❌ [ADMIN ROUTES] Unhandled error:', {
+    message: error.message,
+    stack: error.stack,
+    url: req.url,
+    method: req.method,
+    user: req.user ? {
+      id: req.user._id,
+      email: req.user.email,
+      role: req.user.role
+    } : 'No user object'
+  });
+  
+  if (!res.headersSent) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // Generate a secure temporary password
 const generateTempPassword = () => {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -25,6 +44,21 @@ const generateTempPassword = () => {
   }
   return result;
 };
+
+// Test endpoint to verify admin access
+router.get('/test', authenticateToken, requireAdmin, async (req, res) => {
+  console.log('🧪 [ADMIN TEST] Test endpoint accessed successfully');
+  res.json({ 
+    message: 'Admin access confirmed',
+    user: {
+      id: req.user._id,
+      email: req.user.email,
+      role: req.user.role,
+      isSuperAdmin: req.user.isSuperAdmin,
+      isAdmin: req.user.isAdmin
+    }
+  });
+});
 
 // Get admin dashboard data
 router.get('/dashboard', authenticateToken, requireAdmin, async (req, res) => {
@@ -71,7 +105,16 @@ router.get('/dashboard', authenticateToken, requireAdmin, async (req, res) => {
       recentCompanies
     });
   } catch (error) {
-    console.error('Admin dashboard error:', error);
+    console.error('❌ [ADMIN DASHBOARD] Error occurred:', {
+      message: error.message,
+      stack: error.stack,
+      name: error.name,
+      user: req.user ? {
+        id: req.user._id,
+        email: req.user.email,
+        role: req.user.role
+      } : 'No user object'
+    });
     res.status(500).json({ error: 'Failed to fetch dashboard data' });
   }
 });
