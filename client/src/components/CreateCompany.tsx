@@ -10,6 +10,7 @@ interface CreateCompanyForm {
   industry: string;
   size: '1-10' | '11-50' | '51-200' | '201-500' | '500+';
   maxUsers: number;
+  monthlyConversationLimit: number;
 }
 
 const CreateCompany: React.FC = () => {
@@ -19,7 +20,8 @@ const CreateCompany: React.FC = () => {
     description: '',
     industry: '',
     size: '1-10',
-    maxUsers: 1000 // Default to higher number for enterprise
+    maxUsers: 1000, // Default to higher number for enterprise
+    monthlyConversationLimit: 50 // Default monthly conversation limit
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -207,10 +209,30 @@ const CreateCompany: React.FC = () => {
             </p>
           </div>
 
+          <div>
+            <label htmlFor="monthlyConversationLimit" className="block text-sm font-medium text-gray-300 mb-2">
+              Monthly Conversation Limit *
+            </label>
+            <input
+              type="number"
+              id="monthlyConversationLimit"
+              required
+              min="1"
+              max="10000"
+              value={form.monthlyConversationLimit}
+              onChange={(e) => setForm({ ...form, monthlyConversationLimit: parseInt(e.target.value) || 1 })}
+              className="w-full bg-gray-700 border border-gray-600 text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              placeholder="Enter monthly conversation limit per user"
+            />
+            <p className="mt-1 text-sm text-gray-400">
+              Monthly conversation limit that will be applied to all users in this company (1-10,000)
+            </p>
+          </div>
+
           <div className="bg-blue-900/20 border border-blue-500/30 rounded-lg p-4">
             <h3 className="text-sm font-medium text-blue-300 mb-2">Enterprise Plan Features</h3>
             <ul className="text-sm text-blue-200 space-y-1">
-              <li>• Unlimited users and conversations</li>
+              <li>• Configurable monthly conversation limits per user</li>
               <li>• Full team management capabilities</li>
               <li>• Advanced analytics and reporting</li>
               <li>• Client customization and feedback tools</li>
