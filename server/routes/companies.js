@@ -400,7 +400,6 @@ router.post('/users', authenticateToken, canManageUsers, [
       usage: {
         aiConversations: 0,
         monthlyLimit: company.subscription.monthlyConversationLimit || 50, // Use company's limit
-        dailyLimit: 50,
         lastResetDate: new Date(),
         lastDailyResetDate: new Date()
       }
@@ -827,7 +826,6 @@ router.post('/users/add', authenticateToken, requireCompanyAdmin, [
       usage: {
         aiConversations: 0,
         monthlyLimit: company.subscription.monthlyConversationLimit || 50, // Use company's limit
-        dailyLimit: 50,
         lastResetDate: new Date(),
         lastDailyResetDate: new Date()
       },

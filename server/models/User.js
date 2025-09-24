@@ -250,20 +250,18 @@ userSchema.methods.hasActiveSubscription = function() {
 userSchema.methods.canUseAI = function() {
   const now = new Date();
   
-  // For enterprise users, check daily limits (always active if they have a company)
+  // For enterprise users, check monthly limits (always active if they have a company)
   if (this.subscription.plan === 'enterprise' && this.companyId) {
-    const lastDailyReset = new Date(this.usage.lastDailyResetDate);
-    const isNewDay = now.getDate() !== lastDailyReset.getDate() || 
-                     now.getMonth() !== lastDailyReset.getMonth() || 
-                     now.getFullYear() !== lastDailyReset.getFullYear();
+    const lastReset = new Date(this.usage.lastResetDate);
+    const isNewMonth = now.getMonth() !== lastReset.getMonth() || now.getFullYear() !== lastReset.getFullYear();
     
-    // If it's a new day, they can use AI (daily limit will be reset)
-    if (isNewDay) {
+    // If it's a new month, they can use AI (monthly limit will be reset)
+    if (isNewMonth) {
       return true;
     }
     
-    // Check if within daily limit
-    return this.usage.aiConversations < this.usage.dailyLimit;
+    // Check if within monthly limit
+    return this.usage.aiConversations < this.usage.monthlyLimit;
   }
   
   // For non-enterprise users, check monthly limits
@@ -292,26 +290,13 @@ userSchema.methods.canUseAI = function() {
 userSchema.methods.incrementAIUsage = function() {
   const now = new Date();
   
-  // For enterprise users, check daily reset (always active if they have a company)
-  if (this.subscription.plan === 'enterprise' && this.companyId) {
-    const lastDailyReset = new Date(this.usage.lastDailyResetDate);
-    const isNewDay = now.getDate() !== lastDailyReset.getDate() || 
-                     now.getMonth() !== lastDailyReset.getMonth() || 
-                     now.getFullYear() !== lastDailyReset.getFullYear();
-    
-    if (isNewDay) {
-      this.usage.aiConversations = 0;
-      this.usage.lastDailyResetDate = now;
-    }
-  } else {
-    // For non-enterprise users, check monthly reset
-    const lastReset = new Date(this.usage.lastResetDate);
-    const isNewMonth = now.getMonth() !== lastReset.getMonth() || now.getFullYear() !== lastReset.getFullYear();
-    
-    if (isNewMonth) {
-      this.usage.aiConversations = 0;
-      this.usage.lastResetDate = now;
-    }
+  // For all users (including enterprise), check monthly reset
+  const lastReset = new Date(this.usage.lastResetDate);
+  const isNewMonth = now.getMonth() !== lastReset.getMonth() || now.getFullYear() !== lastReset.getFullYear();
+  
+  if (isNewMonth) {
+    this.usage.aiConversations = 0;
+    this.usage.lastResetDate = now;
   }
   
   this.usage.aiConversations += 1;
@@ -483,7 +468,7 @@ userSchema.methods.getSubscriptionLimits = function() {
     basic: { conversations: 30, aiTips: 10, summaries: 0, features: ['basic_ai', 'tips_lessons'], period: 'monthly' },
     pro: { conversations: 50, aiTips: 25, summaries: 5, features: ['basic_ai', 'tips_lessons', 'summary', 'client_customization', 'summary_feedback'], period: 'monthly' },
     unlimited: { conversations: 200, aiTips: 50, summaries: 10, features: ['basic_ai', 'tips_lessons', 'summary', 'client_customization', 'summary_feedback'], period: 'monthly' },
-    enterprise: { conversations: 50, aiTips: 50, summaries: 5, features: ['basic_ai', 'tips_lessons', 'summary', 'client_customization', 'summary_feedback', 'team_management', 'leaderboard', 'sso_integration', 'custom_branding', 'advanced_analytics', 'api_access', 'dedicated_support'], period: 'daily' }
+    enterprise: { conversations: 50, aiTips: 50, summaries: 5, features: ['basic_ai', 'tips_lessons', 'summary', 'client_customization', 'summary_feedback', 'team_management', 'leaderboard', 'sso_integration', 'custom_branding', 'advanced_analytics', 'api_access', 'dedicated_support'], period: 'monthly' }
   };
   
   return limits[this.subscription.plan] || limits.free;
@@ -494,15 +479,9 @@ userSchema.methods.getUsageStatus = function() {
   const limits = this.getSubscriptionLimits();
   const currentUsage = this.usage.aiConversations;
   
-  // For enterprise users, use daily limits
-  let limit, period;
-  if (this.subscription.plan === 'enterprise' && this.companyId) {
-    limit = this.usage.dailyLimit;
-    period = 'daily';
-  } else {
-    limit = this.usage.monthlyLimit;
-    period = 'monthly';
-  }
+  // For all users (including enterprise), use monthly limits
+  let limit = this.usage.monthlyLimit;
+  let period = 'monthly';
   
   return {
     currentUsage,

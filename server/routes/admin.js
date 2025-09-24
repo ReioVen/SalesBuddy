@@ -371,7 +371,6 @@ router.post('/users/create', authenticateToken, canManageAllUsers, [
       usage: {
         aiConversations: 0,
         monthlyLimit: companyId ? companyMonthlyLimit : 50, // Use company's limit for company users, default for others
-        dailyLimit: companyId ? 50 : 50, // Set daily limit for enterprise users
         lastResetDate: new Date(),
         lastDailyResetDate: new Date()
       },
