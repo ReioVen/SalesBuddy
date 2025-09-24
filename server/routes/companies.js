@@ -48,7 +48,8 @@ router.post('/create', authenticateToken, [
   body('description').optional().trim(),
   body('industry').optional().trim(),
   body('size').optional().isIn(['1-10', '11-50', '51-200', '201-500', '500+']),
-  body('maxUsers').optional().isInt({ min: 1, max: 10000 }).withMessage('Max users must be between 1 and 10000')
+  body('maxUsers').optional().isInt({ min: 1, max: 10000 }).withMessage('Max users must be between 1 and 10000'),
+  body('monthlyConversationLimit').optional().isInt({ min: 1, max: 10000 }).withMessage('Monthly conversation limit must be between 1 and 10000')
 ], async (req, res) => {
   try {
     // Only allow super admins to create companies
@@ -65,7 +66,7 @@ router.post('/create', authenticateToken, [
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { name, description, industry, size, maxUsers } = req.body;
+    const { name, description, industry, size, maxUsers, monthlyConversationLimit } = req.body;
 
     // Create company (only super admins can reach this point)
     const company = new Company({
@@ -77,7 +78,8 @@ router.post('/create', authenticateToken, [
       subscription: {
         plan: 'enterprise',
         status: 'active',
-        maxUsers: maxUsers || -1 // Unlimited for enterprise
+        maxUsers: maxUsers || -1, // Unlimited for enterprise
+        monthlyConversationLimit: monthlyConversationLimit || 50 // Default to 50 if not specified
       }
     });
 
@@ -394,7 +396,7 @@ router.post('/users', authenticateToken, canManageUsers, [
       },
       usage: {
         aiConversations: 0,
-        monthlyLimit: 50,
+        monthlyLimit: company.subscription.monthlyConversationLimit || 50, // Use company's limit
         dailyLimit: 50,
         lastResetDate: new Date(),
         lastDailyResetDate: new Date()
@@ -818,7 +820,7 @@ router.post('/users/add', authenticateToken, requireCompanyAdmin, [
       },
       usage: {
         aiConversations: 0,
-        monthlyLimit: 50,
+        monthlyLimit: company.subscription.monthlyConversationLimit || 50, // Use company's limit
         dailyLimit: 50,
         lastResetDate: new Date(),
         lastDailyResetDate: new Date()

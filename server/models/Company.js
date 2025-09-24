@@ -85,6 +85,10 @@ const companySchema = new mongoose.Schema({
     maxUsers: {
       type: Number,
       default: 5 // Free tier limit
+    },
+    monthlyConversationLimit: {
+      type: Number,
+      default: 50 // Default monthly conversation limit for company users
     }
   },
   settings: {

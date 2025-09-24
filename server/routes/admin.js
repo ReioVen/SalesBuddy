@@ -122,7 +122,8 @@ router.post('/companies', authenticateToken, canManageCompanies, [
   body('adminLastName').trim().notEmpty().withMessage('Admin last name is required'),
   body('description').optional().trim(),
   body('industry').optional().trim(),
-  body('size').optional().isIn(['1-10', '11-50', '51-200', '201-500', '500+'])
+  body('size').optional().isIn(['1-10', '11-50', '51-200', '201-500', '500+']),
+  body('monthlyConversationLimit').optional().isInt({ min: 1, max: 10000 }).withMessage('Monthly conversation limit must be between 1 and 10000')
 ], async (req, res) => {
   try {
     const errors = validationResult(req);
@@ -138,7 +139,8 @@ router.post('/companies', authenticateToken, canManageCompanies, [
       adminLastName, 
       description, 
       industry, 
-      size 
+      size,
+      monthlyConversationLimit 
     } = req.body;
 
     // Check if admin email already exists (case-insensitive)
@@ -156,13 +158,14 @@ router.post('/companies', authenticateToken, canManageCompanies, [
       subscription: {
         plan: 'enterprise',
         status: 'active',
-        maxUsers: -1 // Unlimited for enterprise
+        maxUsers: -1, // Unlimited for enterprise
+        monthlyConversationLimit: monthlyConversationLimit || 50 // Default to 50 if not specified
       }
     });
 
     await company.save();
 
-    // Create admin user
+    // Create admin user with company's monthly conversation limit
     const adminUser = new User({
       email: adminEmail,
       password: adminPassword,
@@ -170,7 +173,21 @@ router.post('/companies', authenticateToken, canManageCompanies, [
       lastName: adminLastName,
       companyId: company._id,
       role: 'company_admin',
-      isCompanyAdmin: true
+      isCompanyAdmin: true,
+      subscription: {
+        plan: 'enterprise',
+        status: 'active',
+        stripeCustomerId: 'enterprise_customer',
+        currentPeriodStart: new Date(),
+        currentPeriodEnd: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000) // 1 year
+      },
+      usage: {
+        aiConversations: 0,
+        monthlyLimit: company.subscription.monthlyConversationLimit,
+        dailyLimit: 50, // Daily limit for enterprise users
+        lastResetDate: new Date(),
+        lastDailyResetDate: new Date()
+      }
     });
 
     await adminUser.save();
@@ -282,6 +299,15 @@ router.post('/users/create', authenticateToken, canManageAllUsers, [
     // Use the provided password for all users (company admins set temporary passwords)
     console.log('Using provided password for', email);
     
+    // Get company's monthly conversation limit if user belongs to a company
+    let companyMonthlyLimit = 50; // Default limit
+    if (companyId) {
+      const company = await Company.findById(companyId);
+      if (company && company.subscription.monthlyConversationLimit) {
+        companyMonthlyLimit = company.subscription.monthlyConversationLimit;
+      }
+    }
+    
     // Create new user - assign enterprise plan if they belong to a company
     const newUser = new User({
       email,
@@ -305,7 +331,7 @@ router.post('/users/create', authenticateToken, canManageAllUsers, [
       },
       usage: {
         aiConversations: 0,
-        monthlyLimit: 50,
+        monthlyLimit: companyId ? companyMonthlyLimit : 50, // Use company's limit for company users, default for others
         dailyLimit: companyId ? 50 : 50, // Set daily limit for enterprise users
         lastResetDate: new Date(),
         lastDailyResetDate: new Date()
