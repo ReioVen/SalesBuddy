@@ -620,11 +620,14 @@ ${isLeadCall ? 'You may have shown some interest in the past or filled out a for
   14. Be challenging but fair - provide realistic sales resistance that good salespeople can overcome.
   15. If the conversation becomes too strange or off-topic, end it naturally: "I'm not interested, goodbye" or simply hang up.
  
-// No conversation history - AI responds only to current message
+${conversationHistory && conversationHistory.length > 0 ? `CONVERSATION HISTORY (from this current call only):
+${conversationHistory.map(msg => `${msg.role === 'user' ? 'CALLER' : 'YOU'}: ${msg.content}`).join('\n')}
 
- Current message from the CALLER: "${userMessage}"
+` : ''}
+
+Current message from the CALLER: "${userMessage}"
  
- Respond as the CLIENT/CUSTOMER would. Remember: You are a real person being sold to, not an AI. You do NOT remember any previous conversations or messages. Respond only to this current message as if it's the first time you're hearing from this person.`;
+Respond as the CLIENT/CUSTOMER would. Remember: You are a real person being sold to, not an AI. You remember ONLY the current conversation we are having right now. You do NOT remember any previous conversations from other sessions or calls. If conversation history is shown above, those are from THIS current call only.`;
     
     return basePrompt;
   }
@@ -1180,11 +1183,14 @@ ${clientCustomization.customPrompt ? `Detailed Profile: ${clientCustomization.cu
 - Mix formal and informal language based on your personality
 - Use different question structures and response patterns
 
-// No conversation history - AI responds only to current message
+${conversationHistory && conversationHistory.length > 0 ? `CONVERSATION HISTORY (from this current call only):
+${conversationHistory.map(msg => `${msg.role === 'user' ? 'CALLER' : 'YOU'}: ${msg.content}`).join('\n')}
 
- Current message from the CALLER: "${userMessage}"
+` : ''}
+
+Current message from the CALLER: "${userMessage}"
  
- Respond as the CLIENT/CUSTOMER would. Remember: You are a real person being sold to, not an AI. You do NOT remember any previous conversations or messages. Respond only to this current message as if it's the first time you're hearing from this person.`;
+Respond as the CLIENT/CUSTOMER would. Remember: You are a real person being sold to, not an AI. You remember ONLY the current conversation we are having right now. You do NOT remember any previous conversations from other sessions or calls. If conversation history is shown above, those are from THIS current call only.`;
   } else {
          // Use default prompt
      basePrompt = `You are a potential CLIENT/CUSTOMER who is being approached by a salesperson. You are NOT the salesperson - you are the one being sold to.
@@ -1229,11 +1235,14 @@ Scenario: ${scenario}
   21. Be challenging but fair - provide realistic sales resistance that good salespeople can overcome.
   22. If the conversation becomes too strange or off-topic, end it naturally: "I'm not interested, goodbye" or simply hang up.
  
-// No conversation history - AI responds only to current message
+${conversationHistory && conversationHistory.length > 0 ? `CONVERSATION HISTORY (from this current call only):
+${conversationHistory.map(msg => `${msg.role === 'user' ? 'CALLER' : 'YOU'}: ${msg.content}`).join('\n')}
 
- Current message from the CALLER: "${userMessage}"
+` : ''}
+
+Current message from the CALLER: "${userMessage}"
  
- Respond as the CLIENT/CUSTOMER would. Remember: You are a real person being sold to, not an AI. You do NOT remember any previous conversations or messages. Respond only to this current message as if it's the first time you're hearing from this person.`;
+Respond as the CLIENT/CUSTOMER would. Remember: You are a real person being sold to, not an AI. You remember ONLY the current conversation we are having right now. You do NOT remember any previous conversations from other sessions or calls. If conversation history is shown above, those are from THIS current call only.`;
   }
 
   return basePrompt;
@@ -1881,10 +1890,12 @@ router.post('/message', authenticateToken, [
     await conversation.addMessageAndSave('user', message);
     console.log('✅ [AI MESSAGE] User message added to conversation');
 
-    // Create AI prompt using client customization but NO conversation history
-    // The AI should only respond to the current message, not previous context
+    // Create AI prompt using client customization WITH current conversation history
+    // The AI should have context from the current conversation but not previous conversations
     console.log('🔍 [AI MESSAGE] Creating AI prompt...');
-    const prompt = createSalesPrompt(message, req.user.settings, conversation.scenario, conversation.clientCustomization, [], conversation.language || 'en');
+    // Get conversation history but exclude the current message (last one) since it's passed separately
+    const conversationHistory = conversation.messages.slice(-11, -1); // Get last 10 messages excluding the current one
+    const prompt = createSalesPrompt(message, req.user.settings, conversation.scenario, conversation.clientCustomization, conversationHistory, conversation.language || 'en');
     console.log('✅ [AI MESSAGE] AI prompt created');
 
     // If OpenAI is not configured, short-circuit with a friendly error
