@@ -1229,50 +1229,21 @@ Respond as the CLIENT/CUSTOMER would. Remember: You are a real person being sold
       const painPoints = clientCustomization.painPoints;
       const progression = clientCustomization.buyingProgression;
       
-      emotionalAlgorithmInstructions = `EMOTIONAL ALGORITHM - HUMAN-LIKE RESPONSES:
-      
-EMOTIONAL PROFILE: ${profile.name}
-- Primary Needs: ${profile.primaryNeeds.join(', ')}
-- Pain Points: ${profile.painPoints.join(', ')}
-- Emotional Triggers: ${profile.emotionalTriggers.join(', ')}
-- Buying Motivation: ${profile.buyingMotivation}
-- Base Resistance Level: ${profile.resistanceLevel}
+      emotionalAlgorithmInstructions = `EMOTIONAL PROFILE: ${profile.name} (${profile.buyingMotivation}, ${profile.resistanceLevel} resistance)
+STATE: ${state.current} | Trust: ${(state.trustLevel * 100).toFixed(0)}% | Urgency: ${(state.buyingUrgency * 100).toFixed(0)}%
+STAGE: ${progression.name.toUpperCase()} | Interest: ${(progression.interest * 100).toFixed(0)}% | Resistance: ${(progression.resistance * 100).toFixed(0)}%
 
-CURRENT EMOTIONAL STATE:
-- Current State: ${state.current}
-- Volatility: ${state.volatility.toFixed(2)} (how much your emotions change)
-- Responsiveness: ${state.responsiveness.toFixed(2)} (how quickly you respond to their approach)
-- Trust Level: ${state.trustLevel.toFixed(2)} (how much you trust them)
-- Buying Urgency: ${state.buyingUrgency.toFixed(2)} (how urgently you need a solution)
+NEEDS: ${profile.primaryNeeds.join(', ')}
+PAIN POINTS: ${profile.painPoints.join(', ')}
+TRIGGERS: ${profile.emotionalTriggers.join(', ')}
 
-BUYING PROGRESSION STAGE: ${progression.name.toUpperCase()}
-- Resistance Level: ${progression.resistance} (0.1 = low, 0.9 = high)
-- Interest Level: ${progression.interest} (0.1 = low, 0.9 = high)
-
-PAIN POINTS (with intensity):
-${painPoints.map(category => `- ${category.category}: ${category.points.join(', ')} (intensity: ${category.intensity.toFixed(2)})`).join('\n')}
-
-EMOTIONAL RESPONSE RULES:
-1. Your emotional state evolves based on how well they address your pain points
-2. When they hit your pain points effectively, your interest increases and resistance decreases
-3. Your emotional responses should feel natural and human-like, not robotic
-4. Show genuine emotions: frustration when they don't understand, excitement when they do
-5. Your buying urgency increases when they demonstrate clear value for your specific needs
-6. Express your pain points naturally in conversation, don't just list them
-7. When they provide solutions that address your specific pain points, show genuine interest
-8. Your trust level affects how much information you share and how quickly you make decisions
-9. Use your emotional triggers to guide your responses (${profile.emotionalTriggers.join(', ')})
-10. Your current buying stage (${progression.name}) affects how much you're willing to commit
-
-HUMAN-LIKE BEHAVIOR:
-- Express your needs and concerns naturally through conversation
-- Show emotional responses to their approach (positive when good, negative when bad)
-- Share personal context when they earn your trust
-- Express genuine concerns and excitement appropriately
-- Make decisions based on both logic and emotion
-- Show vulnerability when they address your pain points effectively
-- Express frustration when they don't understand your situation
-- Show enthusiasm when they provide relevant solutions`;
+RESPONSE RULES:
+- Show emotions naturally: frustration when misunderstood, excitement when understood
+- Express pain points in conversation, don't list them
+- Increase interest when they address your needs effectively
+- Trust level affects how much you share
+- Use triggers: ${profile.emotionalTriggers.join(', ')}
+- Current stage (${progression.name}) affects commitment willingness`;
     }
 
     // Add selling points, problems, and weak spots if available
@@ -2084,7 +2055,8 @@ router.post('/message', authenticateToken, [
     // The AI should have context from the current conversation but not previous conversations
     console.log('🔍 [AI MESSAGE] Creating AI prompt...');
     // Get conversation history but exclude the current message (last one) since it's passed separately
-    const conversationHistory = conversation.messages.slice(-11, -1); // Get last 10 messages excluding the current one
+    // Reduced to 6 messages for cost savings while maintaining context
+    const conversationHistory = conversation.messages.slice(-7, -1); // Get last 6 messages excluding the current one
     const prompt = createSalesPrompt(message, req.user.settings, conversation.scenario, conversation.clientCustomization, conversationHistory, conversation.language || 'en');
     console.log('✅ [AI MESSAGE] AI prompt created');
 
@@ -2107,11 +2079,11 @@ router.post('/message', authenticateToken, [
         { role: "system", content: prompt }
       ];
       
-      // Get AI response
+      // Get AI response with optimized token usage
       const completion = await openai.chat.completions.create({
         model: "gpt-3.5-turbo",
         messages: messages,
-        max_tokens: 500,
+        max_tokens: 300, // Reduced from 500 to 300 for cost savings
         temperature: 0.7
       });
 
@@ -2634,18 +2606,18 @@ Be constructive, specific, and encouraging in your feedback.
 `;
 
     const response = await axios.post('https://api.openai.com/v1/chat/completions', {
-      model: 'gpt-4',
+      model: 'gpt-3.5-turbo', // Changed from gpt-4 to gpt-3.5-turbo for significant cost savings
       messages: [
         {
           role: 'system',
-          content: 'You are an expert sales coach with 20+ years of experience. Provide detailed, constructive feedback on sales conversations.'
+          content: 'You are an expert sales coach. Provide concise, constructive feedback on sales conversations.'
         },
         {
           role: 'user',
           content: prompt
         }
       ],
-      max_tokens: 3000,
+      max_tokens: 1500, // Reduced from 3000 to 1500 for cost savings
       temperature: 0.7
     }, {
       headers: {
@@ -2811,9 +2783,9 @@ Always maintain the persona of an experienced human sales coach.`;
       { role: 'system', content: systemPrompt }
     ];
 
-    // Add conversation history if provided (last 10 messages for context)
+    // Add conversation history if provided (last 6 messages for context to save tokens)
     if (conversationHistory && conversationHistory.length > 0) {
-      conversationHistory.slice(-10).forEach(msg => {
+      conversationHistory.slice(-6).forEach(msg => {
         messages.push({
           role: msg.role,
           content: msg.content
@@ -2827,11 +2799,11 @@ Always maintain the persona of an experienced human sales coach.`;
       content: message
     });
 
-    // Generate AI response
+    // Generate AI response with optimized token usage
     const completion = await openai.chat.completions.create({
-      model: 'gpt-4',
+      model: 'gpt-3.5-turbo', // Changed from gpt-4 to gpt-3.5-turbo for cost savings
       messages: messages,
-      max_tokens: 1000,
+      max_tokens: 500, // Reduced from 1000 to 500 for cost savings
       temperature: 0.7,
       presence_penalty: 0.1,
       frequency_penalty: 0.1

@@ -323,18 +323,18 @@ Be constructive, specific, and encouraging in your feedback.
 `;
 
     const response = await axios.post('https://api.openai.com/v1/chat/completions', {
-      model: 'gpt-4',
+      model: 'gpt-3.5-turbo', // Changed from gpt-4 to gpt-3.5-turbo for significant cost savings
       messages: [
         {
           role: 'system',
-          content: 'You are an expert sales coach with 20+ years of experience. Provide detailed, constructive feedback on sales conversations.'
+          content: 'You are an expert sales coach. Provide concise, constructive feedback on sales conversations.'
         },
         {
           role: 'user',
           content: prompt
         }
       ],
-      max_tokens: 3000,
+      max_tokens: 1500, // Reduced from 3000 to 1500 for cost savings
       temperature: 0.7
     }, {
       headers: {

@@ -1166,8 +1166,9 @@ const Conversations: React.FC = () => {
               </div>
             </div>
 
-            {/* Enhanced Client Profile Section */}
-            <div className="px-4 py-3 bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
+            {/* Enhanced Client Profile Section - Only for Lead Calls */}
+            {currentConversation.scenario === 'lead_call' && (
+              <div className="px-4 py-3 bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
               {/* Basic Info Row */}
               <div className="flex flex-wrap gap-3 text-sm mb-3">
                 {currentConversation.clientCustomization.familySize && (
@@ -1323,7 +1324,8 @@ const Conversations: React.FC = () => {
                   </div>
                 </div>
               )}
-            </div>
+              </div>
+            )}
 
             {/* Messages */}
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
