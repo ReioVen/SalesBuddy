@@ -114,7 +114,7 @@ const CreateUser: React.FC = () => {
 
   if (success) {
     return (
-      <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+      <div className="bg-green-900/20 border border-green-500/30 rounded-lg p-4 mb-6">
         <div className="flex items-center">
           <div className="flex-shrink-0">
             <svg className="h-5 w-5 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -122,8 +122,8 @@ const CreateUser: React.FC = () => {
             </svg>
           </div>
           <div className="ml-3">
-            <h3 className="text-sm font-medium text-green-800">User Created Successfully!</h3>
-            <p className="mt-1 text-sm text-green-700">
+            <h3 className="text-sm font-medium text-green-400">User Created Successfully!</h3>
+            <p className="mt-1 text-sm text-green-300">
               The user has been created and can now log in with their credentials.
             </p>
           </div>
@@ -133,11 +133,11 @@ const CreateUser: React.FC = () => {
   }
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg p-6">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">Create New User</h3>
+    <div className="bg-gray-800 border border-gray-700 rounded-lg p-6">
+      <h3 className="text-lg font-semibold text-white mb-4">Create New User</h3>
       
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+        <div className="bg-red-900/20 border border-red-500/30 rounded-lg p-4 mb-6">
           <div className="flex">
             <div className="flex-shrink-0">
               <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
@@ -145,8 +145,8 @@ const CreateUser: React.FC = () => {
               </svg>
             </div>
             <div className="ml-3">
-              <h3 className="text-sm font-medium text-red-800">Error</h3>
-              <p className="mt-1 text-sm text-red-700">{error}</p>
+              <h3 className="text-sm font-medium text-red-400">Error</h3>
+              <p className="mt-1 text-sm text-red-300">{error}</p>
             </div>
           </div>
         </div>
@@ -155,7 +155,7 @@ const CreateUser: React.FC = () => {
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="firstName" className="block text-sm font-medium text-gray-300 mb-1">
               First Name *
             </label>
             <input
@@ -164,13 +164,13 @@ const CreateUser: React.FC = () => {
               required
               value={form.firstName}
               onChange={(e) => setForm({ ...form, firstName: e.target.value })}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full bg-gray-700 border border-gray-600 text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               placeholder="Enter first name"
             />
           </div>
 
           <div>
-            <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="lastName" className="block text-sm font-medium text-gray-300 mb-1">
               Last Name *
             </label>
             <input
@@ -179,14 +179,14 @@ const CreateUser: React.FC = () => {
               required
               value={form.lastName}
               onChange={(e) => setForm({ ...form, lastName: e.target.value })}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full bg-gray-700 border border-gray-600 text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               placeholder="Enter last name"
             />
           </div>
         </div>
 
         <div>
-          <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-1">
             Email Address *
           </label>
           <input
@@ -201,7 +201,7 @@ const CreateUser: React.FC = () => {
         </div>
 
         <div>
-          <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-1">
             Password *
           </label>
           <input
@@ -217,7 +217,7 @@ const CreateUser: React.FC = () => {
         </div>
 
         <div>
-          <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-300 mb-1">
             Confirm Password *
           </label>
           <input
@@ -245,7 +245,7 @@ const CreateUser: React.FC = () => {
         </div>
 
         <div>
-          <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="role" className="block text-sm font-medium text-gray-300 mb-1">
             Role *
           </label>
           <select
@@ -264,12 +264,12 @@ const CreateUser: React.FC = () => {
 
         {form.role !== 'individual' && (
           <div>
-            <label htmlFor="companyId" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="companyId" className="block text-sm font-medium text-gray-300 mb-1">
               Company *
             </label>
             {loadingCompanies ? (
               <div className="w-full border border-gray-300 rounded-lg px-3 py-2 bg-gray-50">
-                <span className="text-gray-500">Loading companies...</span>
+                <span className="text-gray-400">Loading companies...</span>
               </div>
             ) : (
               <select
@@ -277,7 +277,7 @@ const CreateUser: React.FC = () => {
                 required={form.role !== 'individual'}
                 value={form.companyId || ''}
                 onChange={(e) => setForm({ ...form, companyId: e.target.value || undefined })}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full bg-gray-700 border border-gray-600 text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
                 <option value="">Select a company</option>
                 {companies.map((company) => (
@@ -287,7 +287,7 @@ const CreateUser: React.FC = () => {
                 ))}
               </select>
             )}
-            <p className="mt-1 text-sm text-gray-500">
+            <p className="mt-1 text-sm text-gray-400">
               Select the company this user will belong to
             </p>
           </div>
