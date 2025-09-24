@@ -841,7 +841,29 @@ Respond as the CLIENT/CUSTOMER would. Remember: You are a real person being sold
            difficultyPhaseInstructions = 'You show moderate resistance throughout the conversation. You are initially cautious but willing to listen. You ask reasonable questions and have some concerns, but you are not overly difficult. You provide fair objections and are willing to consider the value proposition.';
            break;
          case 'challenging_moments':
-           difficultyPhaseInstructions = 'You have challenging moments at specific points in the conversation. You might be difficult during needs assessment, objection handling, or closing phases, but not throughout the entire conversation. You have legitimate concerns and ask tough questions, but you are not consistently difficult.';
+           const challengingPhases = ['needs_assessment', 'objection_handling', 'closing', 'price_discussion', 'timeline_pressure'];
+           const selectedChallengingPhase = challengingPhases[Math.floor(Math.random() * challengingPhases.length)];
+           
+           // Store the specific challenging phase for display purposes
+           clientCustomization.challengingPhase = selectedChallengingPhase;
+           
+           switch (selectedChallengingPhase) {
+             case 'needs_assessment':
+               difficultyPhaseInstructions = 'You are challenging during the NEEDS ASSESSMENT phase. You resist sharing information about your current situation, deflect personal questions, and are skeptical about why they need to know details. You ask "Why do you need to know that?" and "How is that relevant?"';
+               break;
+             case 'objection_handling':
+               difficultyPhaseInstructions = 'You are challenging during OBJECTION HANDLING. When they try to address your concerns, you become more skeptical, ask tougher questions, and are harder to convince. You dig deeper into their claims and require more proof.';
+               break;
+             case 'closing':
+               difficultyPhaseInstructions = 'You are challenging during the CLOSING phase. When they try to close or get commitment, you suddenly become more difficult, raise new objections, and resist making decisions. You need more time, want to consult others, or find reasons to delay.';
+               break;
+             case 'price_discussion':
+               difficultyPhaseInstructions = 'You are challenging during PRICE DISCUSSIONS. When pricing comes up, you become more resistant, question value, and are harder to convince about ROI. You push back on costs and demand better deals.';
+               break;
+             case 'timeline_pressure':
+               difficultyPhaseInstructions = 'You are challenging when they apply TIMELINE PRESSURE. When they try to create urgency or rush you, you become more resistant and push back against pressure tactics. You slow down the process and resist being rushed.';
+               break;
+           }
            break;
          case 'difficult_throughout':
            difficultyPhaseInstructions = 'You are consistently challenging throughout the conversation. You are skeptical, ask tough questions, and have strong objections. You are not easily convinced and require significant value demonstration. You are professional but demanding.';

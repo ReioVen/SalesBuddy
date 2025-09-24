@@ -30,6 +30,7 @@ interface ClientCustomization {
   contentInterest?: string;
   familyType?: string;
   difficultyPhase?: string;
+  challengingPhase?: string; // NEW: Specific challenging phase for challenging_moments
   // NEW: Layered personality modifiers
   moodModifier?: string;
   microTraits?: string[];
@@ -50,6 +51,32 @@ interface ClientCustomization {
   emotionalTriggers?: string;
   randomAddOns?: string;
   memoryRecall?: string;
+  // NEW: Emotional algorithm attributes
+  emotionalProfile?: {
+    name: string;
+    primaryNeeds: string[];
+    painPoints: string[];
+    emotionalTriggers: string[];
+    buyingMotivation: string;
+    resistanceLevel: string;
+  };
+  emotionalState?: {
+    current: string;
+    volatility: number;
+    responsiveness: number;
+    trustLevel: number;
+    buyingUrgency: number;
+  };
+  painPoints?: Array<{
+    category: string;
+    points: string[];
+    intensity: number;
+  }>;
+  buyingProgression?: {
+    name: string;
+    resistance: number;
+    interest: number;
+  };
   // Existing attributes
   personalityTraits?: string[];
   sellingPoints?: string[];
@@ -676,18 +703,31 @@ const Conversations: React.FC = () => {
 
   const getDifficultyPhaseColor = (phase: string) => {
     switch (phase) {
-      case 'beginning_hard': return 'bg-red-100 text-red-800';
-      case 'middle_hard': return 'bg-orange-100 text-orange-800';
-      case 'closing_hard': return 'bg-purple-100 text-purple-800';
+      case 'easy_flow': return 'bg-green-100 text-green-800';
+      case 'moderate_resistance': return 'bg-yellow-100 text-yellow-800';
+      case 'challenging_moments': return 'bg-orange-100 text-orange-800';
+      case 'difficult_throughout': return 'bg-red-100 text-red-800';
       default: return 'bg-gray-100 text-gray-800';
     }
   };
 
   const getDifficultyPhaseTranslation = (phase: string) => {
     switch (phase) {
-      case 'beginning_hard': return t('beginningHard');
-      case 'middle_hard': return t('middleHard');
-      case 'closing_hard': return t('closingHard');
+      case 'easy_flow': return 'Easy Flow';
+      case 'moderate_resistance': return 'Moderate Resistance';
+      case 'challenging_moments': return 'Challenging Moments';
+      case 'difficult_throughout': return 'Difficult Throughout';
+      default: return phase;
+    }
+  };
+
+  const getChallengingPhaseTranslation = (phase: string) => {
+    switch (phase) {
+      case 'needs_assessment': return 'Needs Assessment';
+      case 'objection_handling': return 'Objection Handling';
+      case 'closing': return 'Closing';
+      case 'price_discussion': return 'Price Discussion';
+      case 'timeline_pressure': return 'Timeline Pressure';
       default: return phase;
     }
   };
@@ -1126,48 +1166,164 @@ const Conversations: React.FC = () => {
               </div>
             </div>
 
-            {/* Client Profile Section */}
-            {(currentConversation.clientCustomization.familySize || 
-              currentConversation.clientCustomization.incomeRange || 
-              currentConversation.clientCustomization.priceSensitivity ||
-              currentConversation.clientCustomization.contentInterest ||
-              currentConversation.clientCustomization.familyType ||
-              currentConversation.clientCustomization.difficultyPhase) && (
-              <div className="px-4 py-3 bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
-                <div className="flex flex-wrap gap-3 text-sm">
-                  {currentConversation.clientCustomization.familySize && (
-                    <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full">
-                      👨‍👩‍👧‍👦 {currentConversation.clientCustomization.familySize} family members
-                    </span>
-                  )}
-                  {currentConversation.clientCustomization.incomeRange && (
-                    <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full">
-                      💰 {currentConversation.clientCustomization.incomeRange}
-                    </span>
-                  )}
-                  {currentConversation.clientCustomization.priceSensitivity && (
-                    <span className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full">
-                      💸 {getPriceSensitivityTranslation(currentConversation.clientCustomization.priceSensitivity)} price sensitivity
-                    </span>
-                  )}
-                  {currentConversation.clientCustomization.contentInterest && (
-                    <span className="px-2 py-1 bg-purple-100 text-purple-800 rounded-full">
-                      📺 {getContentInterestTranslation(currentConversation.clientCustomization.contentInterest)} content
-                    </span>
-                  )}
-                  {currentConversation.clientCustomization.familyType && (
-                    <span className="px-2 py-1 bg-pink-100 text-pink-800 rounded-full">
-                      🏠 {getFamilyTypeTranslation(currentConversation.clientCustomization.familyType)}
-                    </span>
-                  )}
-                  {currentConversation.clientCustomization.difficultyPhase && (
-                    <span className={`px-2 py-1 rounded-full ${getDifficultyPhaseColor(currentConversation.clientCustomization.difficultyPhase)}`}>
-                      ⚠️ {getDifficultyPhaseTranslation(currentConversation.clientCustomization.difficultyPhase)}
-                    </span>
-                  )}
-                </div>
+            {/* Enhanced Client Profile Section */}
+            <div className="px-4 py-3 bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
+              {/* Basic Info Row */}
+              <div className="flex flex-wrap gap-3 text-sm mb-3">
+                {currentConversation.clientCustomization.familySize && (
+                  <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full">
+                    👨‍👩‍👧‍👦 {currentConversation.clientCustomization.familySize} family members
+                  </span>
+                )}
+                {currentConversation.clientCustomization.incomeRange && (
+                  <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full">
+                    💰 {currentConversation.clientCustomization.incomeRange}
+                  </span>
+                )}
+                {currentConversation.clientCustomization.priceSensitivity && (
+                  <span className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full">
+                    💸 {getPriceSensitivityTranslation(currentConversation.clientCustomization.priceSensitivity)} price sensitivity
+                  </span>
+                )}
+                {currentConversation.clientCustomization.difficultyPhase && (
+                  <span className={`px-2 py-1 rounded-full ${getDifficultyPhaseColor(currentConversation.clientCustomization.difficultyPhase)}`}>
+                    ⚠️ {getDifficultyPhaseTranslation(currentConversation.clientCustomization.difficultyPhase)}
+                    {currentConversation.clientCustomization.challengingPhase && currentConversation.clientCustomization.difficultyPhase === 'challenging_moments' && (
+                      <span className="ml-1">({getChallengingPhaseTranslation(currentConversation.clientCustomization.challengingPhase)})</span>
+                    )}
+                  </span>
+                )}
               </div>
-            )}
+
+              {/* Emotional Profile Section */}
+              {currentConversation.clientCustomization.emotionalProfile && (
+                <div className="mb-3">
+                  <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">🧠 Emotional Profile</h4>
+                  <div className="flex flex-wrap gap-2 text-xs">
+                    <span className="px-2 py-1 bg-purple-100 text-purple-800 rounded-full">
+                      {currentConversation.clientCustomization.emotionalProfile.name}
+                    </span>
+                    <span className="px-2 py-1 bg-orange-100 text-orange-800 rounded-full">
+                      {currentConversation.clientCustomization.emotionalProfile.buyingMotivation.replace('_', ' ')}
+                    </span>
+                    <span className="px-2 py-1 bg-red-100 text-red-800 rounded-full">
+                      {currentConversation.clientCustomization.emotionalProfile.resistanceLevel} resistance
+                    </span>
+                  </div>
+                  <div className="mt-2 text-xs text-gray-600 dark:text-gray-400">
+                    <div><strong>Primary Needs:</strong> {currentConversation.clientCustomization.emotionalProfile.primaryNeeds.join(', ')}</div>
+                    <div><strong>Pain Points:</strong> {currentConversation.clientCustomization.emotionalProfile.painPoints.join(', ')}</div>
+                    <div><strong>Emotional Triggers:</strong> {currentConversation.clientCustomization.emotionalProfile.emotionalTriggers.join(', ')}</div>
+                  </div>
+                </div>
+              )}
+
+              {/* Current Emotional State */}
+              {currentConversation.clientCustomization.emotionalState && (
+                <div className="mb-3">
+                  <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">😊 Current State</h4>
+                  <div className="flex flex-wrap gap-2 text-xs">
+                    <span className="px-2 py-1 bg-indigo-100 text-indigo-800 rounded-full">
+                      {currentConversation.clientCustomization.emotionalState.current}
+                    </span>
+                    <span className="px-2 py-1 bg-teal-100 text-teal-800 rounded-full">
+                      Trust: {(currentConversation.clientCustomization.emotionalState.trustLevel * 100).toFixed(0)}%
+                    </span>
+                    <span className="px-2 py-1 bg-cyan-100 text-cyan-800 rounded-full">
+                      Urgency: {(currentConversation.clientCustomization.emotionalState.buyingUrgency * 100).toFixed(0)}%
+                    </span>
+                    <span className="px-2 py-1 bg-emerald-100 text-emerald-800 rounded-full">
+                      Responsive: {(currentConversation.clientCustomization.emotionalState.responsiveness * 100).toFixed(0)}%
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {/* Buying Progression */}
+              {currentConversation.clientCustomization.buyingProgression && (
+                <div className="mb-3">
+                  <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">📈 Buying Stage</h4>
+                  <div className="flex items-center gap-3">
+                    <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">
+                      {currentConversation.clientCustomization.buyingProgression.name.toUpperCase()}
+                    </span>
+                    <div className="flex-1">
+                      <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">Interest vs Resistance</div>
+                      <div className="flex gap-2">
+                        <div className="flex-1">
+                          <div className="text-xs text-green-600 dark:text-green-400">Interest</div>
+                          <div className="w-full bg-gray-200 rounded-full h-2">
+                            <div 
+                              className="bg-green-500 h-2 rounded-full" 
+                              style={{width: `${currentConversation.clientCustomization.buyingProgression.interest * 100}%`}}
+                            ></div>
+                          </div>
+                        </div>
+                        <div className="flex-1">
+                          <div className="text-xs text-red-600 dark:text-red-400">Resistance</div>
+                          <div className="w-full bg-gray-200 rounded-full h-2">
+                            <div 
+                              className="bg-red-500 h-2 rounded-full" 
+                              style={{width: `${currentConversation.clientCustomization.buyingProgression.resistance * 100}%`}}
+                            ></div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Pain Points */}
+              {currentConversation.clientCustomization.painPoints && currentConversation.clientCustomization.painPoints.length > 0 && (
+                <div className="mb-3">
+                  <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">🎯 Active Pain Points</h4>
+                  <div className="space-y-2">
+                    {currentConversation.clientCustomization.painPoints.map((category, index) => (
+                      <div key={index} className="text-xs">
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="font-medium text-gray-700 dark:text-gray-300">{category.category}</span>
+                          <span className="text-gray-500">{(category.intensity * 100).toFixed(0)}% intensity</span>
+                        </div>
+                        <div className="flex flex-wrap gap-1">
+                          {category.points.map((point, pointIndex) => (
+                            <span key={pointIndex} className="px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs">
+                              {point.replace('_', ' ')}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Personality Traits & Quirks */}
+              {(currentConversation.clientCustomization.personalityTraits || 
+                currentConversation.clientCustomization.microTraits || 
+                currentConversation.clientCustomization.randomAddOns) && (
+                <div>
+                  <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">🎭 Personality & Quirks</h4>
+                  <div className="flex flex-wrap gap-2 text-xs">
+                    {currentConversation.clientCustomization.personalityTraits?.map((trait, index) => (
+                      <span key={index} className="px-2 py-1 bg-gray-100 text-gray-800 rounded-full">
+                        {trait.replace('_', ' ')}
+                      </span>
+                    ))}
+                    {currentConversation.clientCustomization.microTraits?.map((trait, index) => (
+                      <span key={index} className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full">
+                        {trait.replace('_', ' ')}
+                      </span>
+                    ))}
+                    {currentConversation.clientCustomization.randomAddOns && currentConversation.clientCustomization.randomAddOns !== 'no_addon' && (
+                      <span className="px-2 py-1 bg-pink-100 text-pink-800 rounded-full">
+                        {currentConversation.clientCustomization.randomAddOns.replace('_', ' ')}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
 
             {/* Messages */}
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
