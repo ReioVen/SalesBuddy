@@ -201,41 +201,23 @@ const SubscriptionManagement: React.FC<SubscriptionManagementProps> = ({ onClose
           <div className="flex items-center justify-between text-sm">
             <span className="text-gray-600 dark:text-gray-300">AI Conversations:</span>
             <span className="font-medium text-gray-900 dark:text-white">
-              {user.usage?.aiConversations || 0} / {subscription?.plan === 'enterprise' ? (user.usage?.dailyLimit || '∞') : (user.usage?.monthlyLimit || '∞')}
+              {user.usage?.aiConversations || 0} / {user.usage?.monthlyLimit || '∞'}
             </span>
           </div>
-          {subscription?.plan === 'enterprise' ? (
-            user.usage?.dailyLimit && user.usage.dailyLimit > 0 && (
-              <div className="mt-2">
-                <div className="w-full bg-gray-200 dark:bg-dark-600 rounded-full h-2">
-                  <div 
-                    className="bg-green-600 h-2 rounded-full transition-all duration-300"
-                    style={{ 
-                      width: `${Math.min(100, ((user.usage?.aiConversations || 0) / user.usage.dailyLimit) * 100)}%` 
-                    }}
-                  ></div>
-                </div>
-                <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 text-right">
-                  {Math.round(((user.usage?.aiConversations || 0) / user.usage.dailyLimit) * 100)}% used (daily)
-                </div>
+          {user.usage?.monthlyLimit && user.usage.monthlyLimit > 0 && (
+            <div className="mt-2">
+              <div className="w-full bg-gray-200 dark:bg-dark-600 rounded-full h-2">
+                <div 
+                  className="bg-green-600 h-2 rounded-full transition-all duration-300"
+                  style={{ 
+                    width: `${Math.min(100, ((user.usage?.aiConversations || 0) / user.usage.monthlyLimit) * 100)}%` 
+                  }}
+                ></div>
               </div>
-            )
-          ) : (
-            user.usage?.monthlyLimit && user.usage.monthlyLimit > 0 && (
-              <div className="mt-2">
-                <div className="w-full bg-gray-200 dark:bg-dark-600 rounded-full h-2">
-                  <div 
-                    className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                    style={{ 
-                      width: `${Math.min(100, ((user.usage?.aiConversations || 0) / user.usage.monthlyLimit) * 100)}%` 
-                    }}
-                  ></div>
-                </div>
-                <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 text-right">
-                  {Math.round(((user.usage?.aiConversations || 0) / user.usage.monthlyLimit) * 100)}% used
-                </div>
+              <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 text-right">
+                {Math.round(((user.usage?.aiConversations || 0) / user.usage.monthlyLimit) * 100)}% used (monthly)
               </div>
-            )
+            </div>
           )}
         </div>
       </div>
