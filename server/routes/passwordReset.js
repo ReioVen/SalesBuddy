@@ -60,8 +60,19 @@ router.post('/forgot-password', passwordResetLimiter, [
 
     if (!emailResult.success) {
       console.error('❌ [PASSWORD RESET] Failed to send password reset email:', emailResult.error);
+      
+      // Log password reset details as fallback for admin to manually send
+      console.log('📧 [PASSWORD RESET] FALLBACK - Password reset details:');
+      console.log('📧 [PASSWORD RESET] =================================');
+      console.log('📧 [PASSWORD RESET] Email:', email);
+      console.log('📧 [PASSWORD RESET] User:', user.firstName, user.lastName);
+      console.log('📧 [PASSWORD RESET] Reset Token:', resetRequest.token);
+      console.log('📧 [PASSWORD RESET] Reset URL:', `${process.env.CLIENT_URL || 'http://localhost:3000'}/reset-password?token=${resetRequest.token}`);
+      console.log('📧 [PASSWORD RESET] Expires At:', resetRequest.expiresAt);
+      console.log('📧 [PASSWORD RESET] =================================');
+      
       return res.status(500).json({
-        error: 'Failed to send password reset email. Please try again.'
+        error: 'Failed to send password reset email. Please try again or contact support.'
       });
     }
 

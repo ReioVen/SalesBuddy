@@ -1,38 +1,76 @@
 const nodemailer = require('nodemailer');
 
-// Create transporter for Gmail SMTP with robust configuration
-const createTransporter = () => {
-  return nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 587,
-    secure: false, // true for 465, false for other ports
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASSWORD
+// Create multiple transporter configurations for fallback
+const createTransporter = (config = 'gmail') => {
+  const configs = {
+    gmail: {
+      host: 'smtp.gmail.com',
+      port: 587,
+      secure: false,
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASSWORD
+      },
+      tls: {
+        rejectUnauthorized: false
+      },
+      connectionTimeout: 5000, // 5 seconds
+      greetingTimeout: 3000, // 3 seconds
+      socketTimeout: 5000, // 5 seconds
+      pool: false,
+      maxConnections: 1,
+      maxMessages: 1
     },
-    tls: {
-      rejectUnauthorized: false
+    gmail_ssl: {
+      host: 'smtp.gmail.com',
+      port: 465,
+      secure: true,
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASSWORD
+      },
+      tls: {
+        rejectUnauthorized: false
+      },
+      connectionTimeout: 5000,
+      greetingTimeout: 3000,
+      socketTimeout: 5000,
+      pool: false,
+      maxConnections: 1,
+      maxMessages: 1
     },
-    connectionTimeout: 10000, // 10 seconds
-    greetingTimeout: 5000, // 5 seconds
-    socketTimeout: 10000, // 10 seconds
-    pool: false, // disable connection pooling
-    maxConnections: 1,
-    maxMessages: 1,
-    rateDelta: 1000, // 1 second
-    rateLimit: 1
-  });
+    outlook: {
+      host: 'smtp-mail.outlook.com',
+      port: 587,
+      secure: false,
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASSWORD
+      },
+      tls: {
+        rejectUnauthorized: false
+      },
+      connectionTimeout: 5000,
+      greetingTimeout: 3000,
+      socketTimeout: 5000,
+      pool: false,
+      maxConnections: 1,
+      maxMessages: 1
+    }
+  };
+  
+  return nodemailer.createTransport(configs[config] || configs.gmail);
 };
 
-// Send password reset email with retry logic
+// Send password reset email with multiple fallback configurations
 const sendPasswordResetEmail = async (email, resetToken, firstName) => {
-  const maxRetries = 3;
+  const configs = ['gmail', 'gmail_ssl', 'outlook'];
   let lastError;
   
-  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+  for (const config of configs) {
     try {
-      console.log(`📧 [EMAIL SERVICE] Attempt ${attempt}/${maxRetries} - Creating transporter...`);
-      const transporter = createTransporter();
+      console.log(`📧 [EMAIL SERVICE] Trying ${config} configuration...`);
+      const transporter = createTransporter(config);
     
     const resetUrl = `${process.env.CLIENT_URL || 'http://localhost:3000'}/reset-password?token=${resetToken}`;
     
@@ -106,24 +144,25 @@ const sendPasswordResetEmail = async (email, resetToken, firstName) => {
       `
     };
 
-      console.log(`📧 [EMAIL SERVICE] Attempt ${attempt}/${maxRetries} - Sending email...`);
+      console.log(`📧 [EMAIL SERVICE] Sending email via ${config}...`);
       const result = await transporter.sendMail(mailOptions);
-      console.log(`✅ [EMAIL SERVICE] Password reset email sent successfully on attempt ${attempt}:`, result.messageId);
+      console.log(`✅ [EMAIL SERVICE] Password reset email sent successfully via ${config}:`, result.messageId);
       return { success: true, messageId: result.messageId };
       
     } catch (error) {
       lastError = error;
-      console.error(`❌ [EMAIL SERVICE] Attempt ${attempt}/${maxRetries} failed:`, error.message);
+      console.error(`❌ [EMAIL SERVICE] ${config} configuration failed:`, error.message);
       
-      if (attempt < maxRetries) {
-        console.log(`🔄 [EMAIL SERVICE] Retrying in 2 seconds...`);
-        await new Promise(resolve => setTimeout(resolve, 2000));
+      // Try next configuration
+      if (configs.indexOf(config) < configs.length - 1) {
+        console.log(`🔄 [EMAIL SERVICE] Trying next configuration...`);
+        await new Promise(resolve => setTimeout(resolve, 1000));
       }
     }
   }
   
-  // All attempts failed
-  console.error(`❌ [EMAIL SERVICE] All ${maxRetries} attempts failed. Last error:`, lastError.message);
+  // All configurations failed
+  console.error(`❌ [EMAIL SERVICE] All configurations failed. Last error:`, lastError.message);
   return { success: false, error: lastError.message };
 };
 
