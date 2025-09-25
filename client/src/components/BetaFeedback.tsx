@@ -28,6 +28,19 @@ const BetaFeedback: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+    
+    // Basic client-side validation
+    if (!feedback.title.trim()) {
+      alert('Please enter a title for your feedback.');
+      setIsSubmitting(false);
+      return;
+    }
+    
+    if (!feedback.description.trim()) {
+      alert('Please enter a description for your feedback.');
+      setIsSubmitting(false);
+      return;
+    }
 
     // Debug authentication
     const token = localStorage.getItem('token');
@@ -274,7 +287,7 @@ const BetaFeedback: React.FC = () => {
                     type="text"
                     value={feedback.title}
                     onChange={(e) => handleInputChange('title', e.target.value)}
-                    placeholder="Brief description of the issue"
+                    placeholder="Brief description of the issue (e.g., 'Login button not working')"
                     required
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
                   />
@@ -288,7 +301,7 @@ const BetaFeedback: React.FC = () => {
                   <textarea
                     value={feedback.description}
                     onChange={(e) => handleInputChange('description', e.target.value)}
-                    placeholder="Please provide detailed information about the issue, steps to reproduce, and any error messages you saw."
+                    placeholder="Please provide detailed information about the issue, steps to reproduce, and any error messages you saw. (e.g., 'When I click the login button, nothing happens. I tried refreshing the page but it still doesn't work.')"
                     required
                     rows={4}
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"

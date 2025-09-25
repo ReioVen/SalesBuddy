@@ -90,7 +90,7 @@ router.post('/', (req, res, next) => {
   body('type').isIn(['bug', 'issue', 'feature', 'other']),
   body('priority').isIn(['low', 'medium', 'high']),
   body('title').trim().isLength({ min: 1, max: 200 }),
-  body('description').trim().isLength({ min: 5, max: 2000 })
+  body('description').trim().isLength({ min: 1, max: 2000 })
 ], async (req, res) => {
   try {
     console.log('🔍 [FEEDBACK] Received feedback submission:', {
