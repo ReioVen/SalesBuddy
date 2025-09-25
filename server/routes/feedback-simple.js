@@ -2,8 +2,6 @@ const express = require('express');
 const { body, validationResult } = require('express-validator');
 const { authenticateToken } = require('../middleware/auth');
 const Feedback = require('../models/Feedback');
-// Temporarily disabled to fix deployment
-// const feedbackEmailService = require('../services/feedbackEmailService');
 
 const router = express.Router();
 
@@ -12,12 +10,8 @@ console.log('🔍 [FEEDBACK] Loading feedback routes...');
 console.log('🔍 [FEEDBACK] Router created:', !!router);
 console.log('🔍 [FEEDBACK] Router type:', typeof router);
 
-// Check email service configuration (temporarily disabled)
-console.log('📧 [FEEDBACK] Email service configuration:', {
-  hasEmailService: false, // Temporarily disabled
-  emailUser: process.env.EMAIL_USER ? 'Set' : 'Not set',
-  emailPass: process.env.EMAIL_PASS ? 'Set' : 'Not set'
-});
+// Email service temporarily disabled for deployment stability
+console.log('📧 [FEEDBACK] Email service: Disabled for deployment stability');
 
 // Test route to verify feedback routes are working
 router.get('/test', (req, res) => {
