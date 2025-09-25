@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import CustomConfirmDialog from './CustomConfirmDialog';
 
 const API_BASE_URL = 'https://salesbuddy-production.up.railway.app';
 
@@ -41,6 +42,18 @@ const TeamMemberManagement: React.FC<TeamMemberManagementProps> = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedUser, setSelectedUser] = useState<string>('');
+  const [confirmDialog, setConfirmDialog] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+    type?: 'danger' | 'warning' | 'info';
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: () => {}
+  });
 
   // Fetch available users (company users not in this team)
   useEffect(() => {
@@ -128,9 +141,11 @@ const TeamMemberManagement: React.FC<TeamMemberManagementProps> = ({
         throw new Error(errorData.error || 'Failed to add member to team');
       }
 
-      // Remove user from available list
+      // Update UI immediately - remove user from available list
       setAvailableUsers(prev => prev.filter(u => u._id !== selectedUser));
       setSelectedUser('');
+      
+      // Also update the parent component
       onUpdate();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to add member to team');
@@ -140,43 +155,51 @@ const TeamMemberManagement: React.FC<TeamMemberManagementProps> = ({
   };
 
   const handleRemoveMember = async (memberId: string) => {
-    if (!window.confirm('Are you sure you want to remove this member from the team?')) {
-      return;
-    }
+    const member = team.members.find(m => m._id === memberId);
+    const memberName = member ? `${member.firstName} ${member.lastName}` : 'this member';
+    
+    setConfirmDialog({
+      isOpen: true,
+      title: 'Remove Team Member',
+      message: `Are you sure you want to remove ${memberName} from the team?`,
+      type: 'danger',
+      onConfirm: async () => {
+        setLoading(true);
+        setError(null);
 
-    setLoading(true);
-    setError(null);
+        try {
+          const token = localStorage.getItem('sb_token');
+          const response = await fetch(`${API_BASE_URL}/api/companies/users/${memberId}/team`, {
+            method: 'DELETE',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            },
+            credentials: 'include',
+            body: JSON.stringify({
+              teamName: team.name
+            })
+          });
 
-    try {
-      const token = localStorage.getItem('sb_token');
-      const response = await fetch(`${API_BASE_URL}/api/companies/users/${memberId}/team`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          teamName: team.name
-        })
-      });
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Failed to remove member from team');
+          }
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to remove member from team');
+          // Update UI immediately - add user back to available list
+          if (member) {
+            setAvailableUsers(prev => [...prev, member]);
+          }
+          
+          // Also update the parent component
+          onUpdate();
+        } catch (err) {
+          setError(err instanceof Error ? err.message : 'Failed to remove member from team');
+        } finally {
+          setLoading(false);
+        }
       }
-
-      // Add user back to available list
-      const removedUser = team.members.find(m => m._id === memberId);
-      if (removedUser) {
-        setAvailableUsers(prev => [...prev, removedUser]);
-      }
-      onUpdate();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to remove member from team');
-    } finally {
-      setLoading(false);
-    }
+    });
   };
 
   return (
@@ -296,6 +319,18 @@ const TeamMemberManagement: React.FC<TeamMemberManagementProps> = ({
           </button>
         </div>
       </div>
+      
+      {/* Custom Confirmation Dialog */}
+      <CustomConfirmDialog
+        isOpen={confirmDialog.isOpen}
+        onClose={() => setConfirmDialog(prev => ({ ...prev, isOpen: false }))}
+        onConfirm={confirmDialog.onConfirm}
+        title={confirmDialog.title}
+        message={confirmDialog.message}
+        type={confirmDialog.type}
+        confirmText="Remove"
+        cancelText="Cancel"
+      />
     </div>
   );
 };
