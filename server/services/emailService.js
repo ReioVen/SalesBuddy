@@ -177,8 +177,83 @@ const testEmailConnection = async () => {
   }
 };
 
+// Send feedback email
+const sendFeedbackEmail = async (feedback) => {
+  try {
+    const transporter = createTransporter();
+    
+    const mailOptions = {
+      from: {
+        name: 'SalesBuddy',
+        address: process.env.EMAIL_USER
+      },
+      to: 'revotechSB@gmail.com',
+      subject: `🚨 HIGH PRIORITY FEEDBACK: ${feedback.title}`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: #dc2626; margin: 0;">🚨 High Priority Feedback</h1>
+            <p style="color: #6b7280; margin: 5px 0 0 0;">SalesBuddy Beta Feedback System</p>
+          </div>
+          
+          <div style="background: #f8fafc; border-radius: 8px; padding: 30px; margin-bottom: 20px;">
+            <h2 style="color: #1f2937; margin: 0 0 20px 0;">Feedback Details</h2>
+            
+            <p style="color: #374151; margin: 0 0 20px 0;">
+              <strong>Title:</strong> ${feedback.title}
+            </p>
+            
+            <p style="color: #374151; margin: 0 0 20px 0;">
+              <strong>Description:</strong><br>
+              <span style="background: #f9fafb; padding: 10px; border-radius: 4px; display: block; margin-top: 5px;">${feedback.description}</span>
+            </p>
+            
+            <p style="color: #374151; margin: 0 0 20px 0;">
+              <strong>User:</strong> ${feedback.userName} (${feedback.userEmail})
+            </p>
+            
+            <p style="color: #374151; margin: 0 0 20px 0;">
+              <strong>Priority:</strong> <span style="color: #dc2626; font-weight: bold;">${feedback.priority.toUpperCase()}</span>
+            </p>
+            
+            <p style="color: #374151; margin: 0 0 20px 0;">
+              <strong>Type:</strong> ${feedback.type}
+            </p>
+            
+            <p style="color: #374151; margin: 0 0 20px 0;">
+              <strong>URL:</strong> <a href="${feedback.url}" style="color: #2563eb;">${feedback.url}</a>
+            </p>
+            
+            <div style="background: #f3f4f6; padding: 15px; border-radius: 4px; margin-top: 20px;">
+              <p style="color: #6b7280; margin: 0 0 10px 0; font-size: 14px;">
+                <strong>User Agent:</strong><br>
+                <span style="font-size: 12px; word-break: break-all;">${feedback.userAgent}</span>
+              </p>
+              <p style="color: #6b7280; margin: 0; font-size: 14px;">
+                <strong>Timestamp:</strong> ${feedback.createdAt}
+              </p>
+            </div>
+          </div>
+          
+          <div style="text-align: center; color: #6b7280; font-size: 14px;">
+            <p style="margin: 0;">This is an automated notification from SalesBuddy Beta Feedback System.</p>
+          </div>
+        </div>
+      `
+    };
+
+    const result = await transporter.sendMail(mailOptions);
+    console.log('📧 [EMAIL SERVICE] Feedback email sent successfully:', result.messageId);
+    return true;
+  } catch (error) {
+    console.error('❌ [EMAIL SERVICE] Error sending feedback email:', error);
+    return false;
+  }
+};
+
 module.exports = {
   sendPasswordResetEmail,
   sendWelcomeEmail,
+  sendFeedbackEmail,
   testEmailConnection
 };

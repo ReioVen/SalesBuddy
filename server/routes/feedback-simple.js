@@ -2,97 +2,11 @@ const express = require('express');
 const { body, validationResult } = require('express-validator');
 const { authenticateToken } = require('../middleware/auth');
 const Feedback = require('../models/Feedback');
-const { sendPasswordResetEmail } = require('../services/emailService');
-const nodemailer = require('nodemailer');
+const { sendFeedbackEmail } = require('../services/emailService');
 
 const router = express.Router();
 
-// Function to send feedback email using the same email service as forgot password
-const sendFeedbackEmail = async (feedback) => {
-  try {
-    const transporter = nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASSWORD
-      }
-    });
-    
-    const mailOptions = {
-      from: {
-        name: 'SalesBuddy Feedback System',
-        address: process.env.EMAIL_USER
-      },
-      to: 'revotechSB@gmail.com',
-      subject: `🚨 HIGH PRIORITY FEEDBACK: ${feedback.title}`,
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <div style="text-align: center; margin-bottom: 30px;">
-            <h1 style="color: #dc2626; margin: 0;">🚨 High Priority Feedback</h1>
-            <p style="color: #6b7280; margin: 5px 0 0 0;">SalesBuddy Beta Feedback System</p>
-          </div>
-          
-          <div style="background: #fef2f2; border-radius: 8px; padding: 30px; margin-bottom: 20px; border-left: 4px solid #dc2626;">
-            <h2 style="color: #dc2626; margin: 0 0 20px 0;">Feedback Details</h2>
-            
-            <div style="margin-bottom: 15px;">
-              <strong style="color: #374151;">Title:</strong>
-              <span style="color: #1f2937; margin-left: 10px;">${feedback.title}</span>
-            </div>
-            
-            <div style="margin-bottom: 15px;">
-              <strong style="color: #374151;">Description:</strong>
-              <p style="color: #1f2937; margin: 5px 0 0 0; background: #f9fafb; padding: 10px; border-radius: 4px;">${feedback.description}</p>
-            </div>
-            
-            <div style="margin-bottom: 15px;">
-              <strong style="color: #374151;">User:</strong>
-              <span style="color: #1f2937; margin-left: 10px;">${feedback.userName} (${feedback.userEmail})</span>
-            </div>
-            
-            <div style="margin-bottom: 15px;">
-              <strong style="color: #374151;">Priority:</strong>
-              <span style="color: #dc2626; font-weight: bold; margin-left: 10px; background: #fef2f2; padding: 4px 8px; border-radius: 4px;">${feedback.priority.toUpperCase()}</span>
-            </div>
-            
-            <div style="margin-bottom: 15px;">
-              <strong style="color: #374151;">Type:</strong>
-              <span style="color: #1f2937; margin-left: 10px;">${feedback.type}</span>
-            </div>
-            
-            <div style="margin-bottom: 15px;">
-              <strong style="color: #374151;">URL:</strong>
-              <a href="${feedback.url}" style="color: #2563eb; margin-left: 10px;">${feedback.url}</a>
-            </div>
-          </div>
-          
-          <div style="background: #f3f4f6; border-radius: 8px; padding: 20px; margin-bottom: 20px;">
-            <h3 style="color: #374151; margin: 0 0 15px 0;">Technical Details</h3>
-            <div style="margin-bottom: 10px;">
-              <strong style="color: #6b7280;">User Agent:</strong>
-              <p style="color: #6b7280; margin: 5px 0 0 0; font-size: 12px; word-break: break-all;">${feedback.userAgent}</p>
-            </div>
-            <div>
-              <strong style="color: #6b7280;">Timestamp:</strong>
-              <span style="color: #6b7280; margin-left: 10px;">${feedback.createdAt}</span>
-            </div>
-          </div>
-          
-          <div style="text-align: center; color: #6b7280; font-size: 14px;">
-            <p style="margin: 0;">This is an automated notification from SalesBuddy Beta Feedback System.</p>
-          </div>
-        </div>
-      `
-    };
-
-    const result = await transporter.sendMail(mailOptions);
-    console.log('📧 [FEEDBACK EMAIL] Email sent successfully:', result.messageId);
-    return true;
-  } catch (error) {
-    console.error('❌ [FEEDBACK EMAIL] Error sending email:', error);
-    return false;
-  }
-};
+// Using the email service function directly
 
 // Debug route loading
 console.log('🔍 [FEEDBACK] Loading feedback routes...');
