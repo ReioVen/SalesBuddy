@@ -262,14 +262,29 @@ const Conversations: React.FC = () => {
       
       setLoadingHistory(true);
       try {
+        console.log('🔍 [CLIENT] Loading conversation history for user:', user._id);
+        
+        // Debug: Check conversations debug endpoint
+        try {
+          const debugResponse = await axios.get(`${API_BASE_URL}/api/ai/conversations/debug`, {
+            withCredentials: true
+          });
+          console.log('🔍 [CLIENT] Debug response:', debugResponse.data);
+        } catch (debugError) {
+          console.log('🔍 [CLIENT] Debug endpoint failed:', debugError);
+        }
+        
         const response = await axios.get(`${API_BASE_URL}/api/ai/conversations`, {
           withCredentials: true
         });
+        console.log('🔍 [CLIENT] Conversations API response:', response.data);
+        
         // Map _id to id for frontend compatibility
         const conversations = (response.data.conversations || []).map((conv: any) => ({
           ...conv,
           id: conv._id || conv.id
         }));
+        console.log('🔍 [CLIENT] Mapped conversations:', conversations.length);
         setConversationHistory(conversations);
         setDataLoaded(true);
       } catch (error: any) {
