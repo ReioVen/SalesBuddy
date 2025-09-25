@@ -646,14 +646,12 @@ class DatabaseTranslationService {
 
     // Try exact match in static translations
     if (staticTranslations[language] && staticTranslations[language][text]) {
-      console.log(`Found static exact match for "${text}" -> "${staticTranslations[language][text]}"`);
       return staticTranslations[language][text];
     }
 
     // Try case-insensitive match
     const lowerText = text.toLowerCase();
     if (staticTranslations[language] && staticTranslations[language][lowerText]) {
-      console.log(`Found case-insensitive static exact match for "${text}" -> "${staticTranslations[language][lowerText]}"`);
       return staticTranslations[language][lowerText];
     }
 
@@ -836,7 +834,6 @@ class DatabaseTranslationService {
         for (let i = 0; i < texts.length; i++) {
           if (!this.cache[language] || !this.cache[language][texts[i]]) {
             const translatedText = response.data.translations[uncachedIndex];
-            console.log(`Updating cache for "${texts[i]}" -> "${translatedText}"`);
             if (translatedText) {
               if (!this.cache[language]) {
                 this.cache[language] = {};
@@ -870,13 +867,11 @@ class DatabaseTranslationService {
 
     // First, try exact match in cache
     if (translations[text]) {
-      console.log(`Found exact match for "${text}" -> "${translations[text]}"`);
       return translations[text];
     }
 
     // Then try exact match in static translations
     if (staticTranslations[language] && staticTranslations[language][text]) {
-      console.log(`Found static exact match for "${text}" -> "${staticTranslations[language][text]}"`);
       return staticTranslations[language][text];
     }
 

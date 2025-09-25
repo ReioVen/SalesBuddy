@@ -64,22 +64,6 @@ const AddUserToCompany: React.FC<AddUserToCompanyProps> = ({
     }
 
     try {
-      // Debug: Check if token exists
-      const token = localStorage.getItem('sb_token');
-      console.log('🔐 [AddUserToCompany] Token check:', {
-        hasToken: !!token,
-        tokenLength: token ? token.length : 0,
-        tokenStart: token ? token.substring(0, 20) + '...' : 'none',
-        userRole: user?.role,
-        isCompanyAdmin: user?.isCompanyAdmin,
-        canManageUsers: user?.role === 'company_admin' || user?.isCompanyAdmin
-      });
-
-      // Debug: Check all localStorage items
-      console.log('🔐 [AddUserToCompany] All localStorage items:', Object.keys(localStorage).map(key => ({
-        key,
-        value: key === 'sb_token' ? localStorage.getItem(key)?.substring(0, 20) + '...' : localStorage.getItem(key)
-      })));
 
       // Check if user has permission to add users
       if (!(user?.role === 'company_admin' || user?.isCompanyAdmin)) {
@@ -97,24 +81,16 @@ const AddUserToCompany: React.FC<AddUserToCompanyProps> = ({
 
       // Test token validity by making a request to /api/auth/me
       try {
-        console.log('🔐 [AddUserToCompany] Testing token validity...');
         const testResponse = await axios.get('/api/auth/me', {
           withCredentials: true,
           headers: {
             'Authorization': `Bearer ${token}`
           }
         });
-        console.log('✅ [AddUserToCompany] Token is valid, user:', testResponse.data.user?.email);
       } catch (testError: any) {
-        console.log('❌ [AddUserToCompany] Token test failed:', {
-          status: testError.response?.status,
-          message: testError.response?.data?.error,
-          fullError: testError.message
-        });
         
         // Try with fetch as fallback
         try {
-          console.log('🔄 [AddUserToCompany] Trying token test with fetch...');
           const fetchTestResponse = await fetch('https://salesbuddy-production.up.railway.app/api/auth/me', {
             method: 'GET',
             headers: {
@@ -125,16 +101,13 @@ const AddUserToCompany: React.FC<AddUserToCompanyProps> = ({
           
           if (fetchTestResponse.ok) {
             const testData = await fetchTestResponse.json();
-            console.log('✅ [AddUserToCompany] Fetch token test succeeded, user:', testData.user?.email);
           } else {
             const errorData = await fetchTestResponse.json();
-            console.log('❌ [AddUserToCompany] Fetch token test failed:', errorData);
             setError('Authentication token is invalid. Please log in again.');
             setLoading(false);
             return;
           }
         } catch (fetchTestError) {
-          console.log('❌ [AddUserToCompany] Fetch token test error:', fetchTestError);
           setError('Authentication token is invalid. Please log in again.');
           setLoading(false);
           return;
@@ -161,7 +134,6 @@ const AddUserToCompany: React.FC<AddUserToCompanyProps> = ({
         }
       }
 
-      console.log('🔐 [AddUserToCompany] Making request with formData:', formData);
 
       // Manually add the Authorization header to ensure it's included
       const requestConfig = {
@@ -172,28 +144,13 @@ const AddUserToCompany: React.FC<AddUserToCompanyProps> = ({
         }
       };
 
-      console.log('🔐 [AddUserToCompany] Request config:', {
-        url: '/api/companies/users',
-        hasAuthHeader: !!requestConfig.headers.Authorization,
-        authHeaderValue: requestConfig.headers.Authorization ? requestConfig.headers.Authorization.substring(0, 30) + '...' : 'none',
-        withCredentials: requestConfig.withCredentials,
-        axiosBaseURL: axios.defaults.baseURL,
-        axiosWithCredentials: axios.defaults.withCredentials
-      });
 
       // Try with axios first
       let response;
       try {
         response = await axios.post('/api/companies/users', formData, requestConfig);
       } catch (axiosError: any) {
-        console.log('❌ [AddUserToCompany] Axios request failed:', {
-          status: axiosError.response?.status,
-          message: axiosError.response?.data?.error,
-          headers: axiosError.response?.headers
-        });
-
         // Fallback: Try with fetch
-        console.log('🔄 [AddUserToCompany] Trying fallback with fetch...');
         const fetchResponse = await fetch('https://salesbuddy-production.up.railway.app/api/companies/users', {
           method: 'POST',
           headers: {
@@ -211,7 +168,6 @@ const AddUserToCompany: React.FC<AddUserToCompanyProps> = ({
 
         const result = await fetchResponse.json();
         response = { data: result };
-        console.log('✅ [AddUserToCompany] Fetch request succeeded');
       }
 
       // Reset form and notify parent

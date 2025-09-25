@@ -94,17 +94,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     // Add request interceptor to include auth token in headers
     axios.interceptors.request.use((config) => {
       const token = localStorage.getItem('sb_token');
-      console.log('🔐 [AXIOS INTERCEPTOR] Request interceptor called:', {
-        url: config.url,
-        hasToken: !!token,
-        tokenLength: token ? token.length : 0,
-        tokenStart: token ? token.substring(0, 20) + '...' : 'none'
-      });
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
-        console.log('🔐 [AXIOS INTERCEPTOR] Authorization header set');
-      } else {
-        console.log('❌ [AXIOS INTERCEPTOR] No token found in localStorage');
       }
       return config;
     });
@@ -117,16 +108,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       authCheckCompleted.current = true;
       
       try {
-        console.log('🔐 [CLIENT] Checking auth on app start');
-        
         const response = await axios.get('/api/auth/me', {
           withCredentials: true
-        });
-        
-        console.log('🔐 [CLIENT] Auth check response:', { 
-          status: response.status,
-          hasUser: !!response.data.user,
-          userEmail: response.data.user?.email 
         });
         
         const user = response.data.user;
@@ -134,11 +117,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         
         // Password setup is now handled by a modal in App.tsx
       } catch (error: any) {
-        console.log('❌ [CLIENT] Auth check failed:', {
-          status: error.response?.status,
-          message: error.response?.data?.error,
-          fullError: error.message
-        });
         setUser(null);
       }
       setLoading(false);
@@ -149,16 +127,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const login = async (email: string, password: string) => {
     try {
-      console.log('🔐 [CLIENT] Attempting login:', { email });
-      
       const response = await axios.post('/api/auth/login', { email, password }, {
         withCredentials: true
-      });
-      
-      console.log('🔐 [CLIENT] Login response:', { 
-        status: response.status,
-        hasUser: !!response.data.user,
-        userEmail: response.data.user?.email 
       });
       
       const { user, token } = response.data;
@@ -167,28 +137,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       // Store token in localStorage for cross-origin requests
       if (token) {
         localStorage.setItem('sb_token', token);
-        console.log('🔐 [CLIENT] Token stored in localStorage:', token.substring(0, 20) + '...');
-      }
-      
-      // Test cookie debug endpoint after login
-      try {
-        const debugResponse = await axios.get('/api/auth/debug-cookies', {
-          withCredentials: true
-        });
-        console.log('🍪 [CLIENT] Cookie debug after login:', debugResponse.data);
-      } catch (debugError) {
-        console.log('❌ [CLIENT] Cookie debug failed:', debugError);
       }
       
       // Password setup is now handled by a modal in App.tsx
       toast.success('Login successful!');
       return { success: true } as const;
     } catch (error: any) {
-      console.log('❌ [CLIENT] Login error:', {
-        status: error.response?.status,
-        message: error.response?.data?.error,
-        fullError: error.message
-      });
       const message = error.response?.data?.error || 'Invalid email or password';
       toast.error(message);
       return { success: false, message } as const;
@@ -208,7 +162,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       // Store token in localStorage for cross-origin requests
       if (token) {
         localStorage.setItem('sb_token', token);
-        console.log('🔐 [CLIENT] Token stored in localStorage after registration');
       }
       
       toast.success('Registration successful!');

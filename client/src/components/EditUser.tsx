@@ -76,12 +76,6 @@ const EditUser: React.FC<EditUserProps> = ({
         ...(form.teamId ? { teamId: form.teamId } : {})
       };
 
-      console.log('🔐 [EditUser] Updating user (v2.0):', {
-        userId: user._id,
-        hasToken: !!token,
-        apiData,
-        timestamp: new Date().toISOString()
-      });
       
       const response = await axios.put(`/api/companies/users/${user._id}`, apiData, {
         withCredentials: true,
@@ -91,14 +85,8 @@ const EditUser: React.FC<EditUserProps> = ({
         }
       });
 
-      console.log('✅ [EditUser] User updated successfully');
       onUserUpdated();
     } catch (err: any) {
-      console.log('❌ [EditUser] Update failed:', {
-        status: err.response?.status,
-        message: err.response?.data?.error,
-        errors: err.response?.data?.errors
-      });
 
       if (err.response?.data?.errors && Array.isArray(err.response.data.errors)) {
         // Handle validation errors
