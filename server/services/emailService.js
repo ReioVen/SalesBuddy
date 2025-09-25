@@ -63,34 +63,39 @@ const createTransporter = (config = 'gmail') => {
   return nodemailer.createTransport(configs[config] || configs.gmail);
 };
 
-// Webhook-based email service (works on Railway)
-const sendEmailViaWebhook = async (email, subject, html) => {
+// HTTP-based email service using Resend API (works on Railway)
+const sendEmailViaHTTP = async (email, subject, html) => {
   try {
-    console.log('📧 [WEBHOOK EMAIL] Sending email via webhook...');
+    console.log('📧 [HTTP EMAIL] Sending email via Resend API...');
     
-    // Using a webhook service like Zapier, IFTTT, or custom webhook
-    const webhookUrl = process.env.EMAIL_WEBHOOK_URL || 'https://hooks.zapier.com/hooks/catch/your-webhook-url';
+    // Using Resend API (free tier available)
+    const resendApiKey = process.env.RESEND_API_KEY;
     
-    const webhookData = {
-      to: email,
-      subject: subject,
-      html: html,
+    if (!resendApiKey) {
+      console.log('❌ [HTTP EMAIL] No Resend API key configured, skipping HTTP email');
+      return { success: false, error: 'No API key configured' };
+    }
+    
+    const emailData = {
       from: 'SalesBuddy <noreply@salesbuddy.pro>',
-      timestamp: new Date().toISOString()
+      to: [email],
+      subject: subject,
+      html: html
     };
     
-    const response = await axios.post(webhookUrl, webhookData, {
+    const response = await axios.post('https://api.resend.com/emails', emailData, {
       headers: {
+        'Authorization': `Bearer ${resendApiKey}`,
         'Content-Type': 'application/json'
       },
       timeout: 10000
     });
     
-    console.log('✅ [WEBHOOK EMAIL] Email sent successfully via webhook:', response.status);
-    return { success: true, messageId: `webhook-${Date.now()}` };
+    console.log('✅ [HTTP EMAIL] Email sent successfully via Resend:', response.data.id);
+    return { success: true, messageId: response.data.id };
     
   } catch (error) {
-    console.error('❌ [WEBHOOK EMAIL] Webhook email failed:', error.message);
+    console.error('❌ [HTTP EMAIL] Resend API failed:', error.response?.data || error.message);
     return { success: false, error: error.message };
   }
 };
@@ -151,16 +156,16 @@ const sendPasswordResetEmail = async (email, resetToken, firstName) => {
     </div>
   `;
 
-  // Try webhook-based email first (works on Railway)
-  console.log('📧 [EMAIL SERVICE] Trying webhook-based email service...');
-  const webhookResult = await sendEmailViaWebhook(email, 'Password Reset - SalesBuddy', html);
+  // Try HTTP-based email first (works on Railway)
+  console.log('📧 [EMAIL SERVICE] Trying HTTP-based email service...');
+  const httpResult = await sendEmailViaHTTP(email, 'Password Reset - SalesBuddy', html);
   
-  if (webhookResult.success) {
-    console.log('✅ [EMAIL SERVICE] Webhook email sent successfully');
-    return webhookResult;
+  if (httpResult.success) {
+    console.log('✅ [EMAIL SERVICE] HTTP email sent successfully');
+    return httpResult;
   }
   
-  console.log('❌ [EMAIL SERVICE] Webhook email failed, trying SMTP fallback...');
+  console.log('❌ [EMAIL SERVICE] HTTP email failed, trying SMTP fallback...');
   
   // Fallback to SMTP configurations
   const configs = ['gmail', 'gmail_ssl', 'outlook'];

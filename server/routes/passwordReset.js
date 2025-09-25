@@ -70,6 +70,10 @@ router.post('/forgot-password', passwordResetLimiter, [
       console.log('📧 [PASSWORD RESET] Reset URL:', `${process.env.CLIENT_URL || 'http://localhost:3000'}/reset-password?token=${resetRequest.token}`);
       console.log('📧 [PASSWORD RESET] Expires At:', resetRequest.expiresAt);
       console.log('📧 [PASSWORD RESET] =================================');
+      console.log('📧 [PASSWORD RESET] MANUAL RESET LINK:');
+      console.log('📧 [PASSWORD RESET] Copy this link and send it to the user manually:');
+      console.log('📧 [PASSWORD RESET]', `${process.env.CLIENT_URL || 'http://localhost:3000'}/reset-password?token=${resetRequest.token}`);
+      console.log('📧 [PASSWORD RESET] =================================');
       
       return res.status(500).json({
         error: 'Failed to send password reset email. Please try again or contact support.'
