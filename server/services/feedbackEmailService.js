@@ -7,9 +7,15 @@ class FeedbackEmailService {
   }
 
   initializeTransporter() {
-    // Hardcoded email credentials for revotechSB@gmail.com
-    const emailUser = process.env.EMAIL_USER || 'revotechSB@gmail.com';
-    const emailPass = process.env.EMAIL_PASS || 'your-gmail-app-password'; // Replace with actual Gmail App Password
+    // Use environment variables or fallback to a working email service
+    const emailUser = process.env.EMAIL_USER;
+    const emailPass = process.env.EMAIL_PASS;
+    
+    if (!emailUser || !emailPass) {
+      console.log('📧 [FEEDBACK EMAIL] No email credentials configured - email notifications disabled');
+      this.transporter = null;
+      return;
+    }
     
     this.transporter = nodemailer.createTransport({
       service: 'gmail',
@@ -22,7 +28,7 @@ class FeedbackEmailService {
     console.log('📧 [FEEDBACK EMAIL] Email service initialized with:', {
       user: emailUser,
       hasPassword: !!emailPass,
-      usingEnvVars: !!(process.env.EMAIL_USER && process.env.EMAIL_PASS)
+      usingEnvVars: true
     });
   }
 
@@ -33,17 +39,14 @@ class FeedbackEmailService {
         return false;
       }
 
-      // Check if we have valid email credentials (either from env vars or hardcoded)
-      const emailUser = process.env.EMAIL_USER || 'revotechSB@gmail.com';
-      const emailPass = process.env.EMAIL_PASS || 'your-gmail-app-password';
-      
-      if (!emailUser || !emailPass || emailPass === 'your-gmail-app-password') {
-        console.error('❌ [FEEDBACK EMAIL] Email credentials not configured. Please set EMAIL_USER and EMAIL_PASS environment variables or update the hardcoded credentials.');
+      // Check if we have valid email credentials
+      if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+        console.error('❌ [FEEDBACK EMAIL] Email credentials not configured. Please set EMAIL_USER and EMAIL_PASS environment variables.');
         return false;
       }
 
       const mailOptions = {
-        from: emailUser,
+        from: process.env.EMAIL_USER,
         to: 'revotechSB@gmail.com',
         subject: `🚨 HIGH PRIORITY FEEDBACK: ${feedback.title}`,
         html: this.generateFeedbackEmailHTML(feedback)

@@ -2,7 +2,7 @@ const express = require('express');
 const { body, validationResult } = require('express-validator');
 const { authenticateToken } = require('../middleware/auth');
 const Feedback = require('../models/Feedback');
-const feedbackEmailService = require('../services/feedbackEmailService');
+const simpleEmailService = require('../services/simpleEmailService');
 
 const router = express.Router();
 
@@ -13,7 +13,7 @@ console.log('🔍 [FEEDBACK] Router type:', typeof router);
 
 // Check email service configuration
 console.log('📧 [FEEDBACK] Email service configuration:', {
-  hasEmailService: !!feedbackEmailService,
+  hasEmailService: !!simpleEmailService,
   emailUser: process.env.EMAIL_USER ? 'Set' : 'Not set',
   emailPass: process.env.EMAIL_PASS ? 'Set' : 'Not set'
 });
@@ -45,7 +45,7 @@ router.post('/test-email', async (req, res) => {
       createdAt: new Date()
     };
     
-    const emailSent = await feedbackEmailService.sendHighPriorityFeedbackNotification(testFeedback);
+    const emailSent = await simpleEmailService.sendHighPriorityFeedbackNotification(testFeedback);
     res.json({ 
       message: 'Email test completed', 
       emailSent,
@@ -183,7 +183,7 @@ router.post('/', (req, res, next) => {
     if (savedFeedback.priority === 'high') {
       try {
         console.log('📧 [BETA FEEDBACK] Sending high priority email notification...');
-        const emailSent = await feedbackEmailService.sendHighPriorityFeedbackNotification(savedFeedback);
+        const emailSent = await simpleEmailService.sendHighPriorityFeedbackNotification(savedFeedback);
         if (emailSent) {
           // Update feedback to mark email as sent
           await Feedback.findByIdAndUpdate(savedFeedback._id, {
