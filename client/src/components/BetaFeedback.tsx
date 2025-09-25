@@ -75,6 +75,13 @@ const BetaFeedback: React.FC = () => {
           userName: user ? `${user.firstName} ${user.lastName}` : 'Anonymous'
         })
       });
+      
+      console.log('🔍 [FEEDBACK] Request body:', {
+        ...feedback,
+        userId: user?._id || null,
+        userEmail: user?.email || 'anonymous@example.com',
+        userName: user ? `${user.firstName} ${user.lastName}` : 'Anonymous'
+      });
 
       if (response.ok) {
         const result = await response.json();
