@@ -2136,14 +2136,8 @@ router.get('/conversations', authenticateToken, async (req, res) => {
     const { page = 1, limit = 20 } = req.query;
     const skip = (page - 1) * limit;
 
-    console.log('🔍 [CONVERSATIONS] Fetching conversations for user:', req.user._id);
-    console.log('🔍 [CONVERSATIONS] Query params:', { page, limit, skip });
-
     const conversations = await Conversation.getUserHistory(req.user._id, parseInt(limit), skip);
     const total = await Conversation.countDocuments({ userId: req.user._id, isActive: true });
-
-    console.log('🔍 [CONVERSATIONS] Found conversations:', conversations.length);
-    console.log('🔍 [CONVERSATIONS] Total count:', total);
 
     res.json({
       conversations,
@@ -2163,9 +2157,7 @@ router.get('/conversations', authenticateToken, async (req, res) => {
 // Get conversation count
 router.get('/conversations/count', authenticateToken, async (req, res) => {
   try {
-    console.log('🔍 [CONVERSATIONS COUNT] Getting count for user:', req.user._id);
     const count = await Conversation.countDocuments({ userId: req.user._id, isActive: true });
-    console.log('🔍 [CONVERSATIONS COUNT] Found count:', count);
     res.json({ count });
   } catch (error) {
     console.error('Get conversation count error:', error);
@@ -2173,35 +2165,6 @@ router.get('/conversations/count', authenticateToken, async (req, res) => {
   }
 });
 
-// Debug endpoint to check conversations
-router.get('/conversations/debug', authenticateToken, async (req, res) => {
-  try {
-    console.log('🔍 [DEBUG] Checking conversations for user:', req.user._id);
-    
-    // Check total conversations for this user
-    const totalCount = await Conversation.countDocuments({ userId: req.user._id });
-    console.log('🔍 [DEBUG] Total conversations for user:', totalCount);
-    
-    // Check active conversations
-    const activeCount = await Conversation.countDocuments({ userId: req.user._id, isActive: true });
-    console.log('🔍 [DEBUG] Active conversations for user:', activeCount);
-    
-    // Get a sample conversation
-    const sampleConversation = await Conversation.findOne({ userId: req.user._id });
-    console.log('🔍 [DEBUG] Sample conversation:', sampleConversation ? 'Found' : 'None');
-    
-    res.json({
-      userId: req.user._id,
-      totalCount,
-      activeCount,
-      hasSample: !!sampleConversation,
-      sampleId: sampleConversation?._id
-    });
-  } catch (error) {
-    console.error('Debug conversations error:', error);
-    res.status(500).json({ error: 'Debug failed' });
-  }
-});
 
 // Get current usage status
 router.get('/usage', authenticateToken, async (req, res) => {

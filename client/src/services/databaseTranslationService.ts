@@ -992,7 +992,6 @@ class DatabaseTranslationService {
   clearLanguageCache(language: Language) {
     delete this.cache[language];
     delete this.cacheTimestamp[language];
-    console.log(`Cleared cache for language: ${language}`);
   }
 
   /**
@@ -1013,7 +1012,6 @@ class DatabaseTranslationService {
     // Conversations are typically ordered with newest first (index 0 is newest)
     const isLatestConversation = conversationIndex < 3;
     
-    console.log(`Translating conversation feedback (index: ${conversationIndex}/${totalConversations}, isLatest: ${isLatestConversation}):`, feedback);
 
     if (isLatestConversation) {
       // Use Google Translate for latest 3 conversations
