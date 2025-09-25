@@ -163,9 +163,7 @@ const ConversationSummaryCard: React.FC<ConversationSummaryCardProps> = ({ summa
             ];
 
             // Batch translate all texts at once
-            console.log('Original texts to translate:', allTexts);
             const translatedTexts = await databaseTranslationService.batchTranslateTexts(allTexts, language);
-            console.log('Translated texts result:', translatedTexts);
 
             // Reconstruct the translated summary
             let textIndex = 0;
@@ -173,18 +171,15 @@ const ConversationSummaryCard: React.FC<ConversationSummaryCardProps> = ({ summa
               ...summary,
               strengths: summary.strengths.map((originalText) => {
                 const translated = translatedTexts[textIndex++];
-                console.log(`Mapping strength: "${originalText}" -> "${translated}"`);
                 return translated;
               }),
               improvements: summary.improvements.map((originalText) => {
                 const translated = translatedTexts[textIndex++];
-                console.log(`Mapping improvement: "${originalText}" -> "${translated}"`);
                 return translated;
               }),
               stageRatings: Object.fromEntries(
                 Object.entries(summary.stageRatings).map(([stage, rating]) => {
                   const translated = translatedTexts[textIndex++];
-                  console.log(`Mapping stage ${stage} feedback: "${rating.feedback}" -> "${translated}"`);
                   return [
                     stage,
                     {
@@ -198,28 +193,23 @@ const ConversationSummaryCard: React.FC<ConversationSummaryCardProps> = ({ summa
                 ...summary.aiAnalysis,
                 personalityInsights: (() => {
                   const translated = translatedTexts[textIndex++];
-                  console.log(`Mapping personality insights: "${summary.aiAnalysis.personalityInsights}" -> "${translated}"`);
                   return translated;
                 })(),
                 communicationStyle: (() => {
                   const translated = translatedTexts[textIndex++];
-                  console.log(`Mapping communication style: "${summary.aiAnalysis.communicationStyle}" -> "${translated}"`);
                   return translated;
                 })(),
                 recommendedFocus: summary.aiAnalysis.recommendedFocus.map((originalText) => {
                   const translated = translatedTexts[textIndex++];
-                  console.log(`Mapping recommended focus: "${originalText}" -> "${translated}"`);
                   return translated;
                 }),
                 nextSteps: summary.aiAnalysis.nextSteps.map((originalText) => {
                   const translated = translatedTexts[textIndex++];
-                  console.log(`Mapping next step: "${originalText}" -> "${translated}"`);
                   return translated;
                 })
               }
             };
             
-            console.log('Setting translatedSummary:', translatedSummary);
             setTranslatedSummary(translatedSummary);
             setTranslationAttempted(true);
           } catch (error) {

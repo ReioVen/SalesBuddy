@@ -775,7 +775,6 @@ class DatabaseTranslationService {
 
     // Wait if batch translation is already in progress for this language
     while (this.batchTranslationInProgress[language]) {
-      console.log(`Batch translation in progress for ${language}, waiting...`);
       await new Promise(resolve => setTimeout(resolve, 100));
     }
 
@@ -804,11 +803,6 @@ class DatabaseTranslationService {
 
     try {
       // Batch translate uncached texts
-      console.log('Batch translation request:', {
-        textsCount: uncachedTexts.length,
-        targetLanguage: language,
-        usingCookies: true
-      });
       
       const response = await axios.post(`${API_BASE_URL}/api/dynamic-translation/batch-translate`, {
         texts: uncachedTexts,
@@ -821,12 +815,6 @@ class DatabaseTranslationService {
         }
       });
       
-      console.log('Batch translation response:', {
-        success: response.data.success,
-        translationsCount: response.data.translations ? response.data.translations.length : 0,
-        method: response.data.method,
-        firstTranslation: response.data.translations ? response.data.translations[0] : 'none'
-      });
       
       if (response.data.success && response.data.translations) {
         // Update cache and results
@@ -844,7 +832,6 @@ class DatabaseTranslationService {
             uncachedIndex++;
           }
         }
-        console.log('Final results after cache update:', results);
       }
     } catch (error) {
       console.error('Batch translation error:', error);
@@ -1077,7 +1064,6 @@ class DatabaseTranslationService {
       const result = await response.json();
       
       if (result.success) {
-        console.log(`Conversation feedback translation: "${feedback}" -> "${result.translatedText}" (${language})`);
         // Cache the result
         this.translationCache[cacheKey] = result.translatedText;
         return result.translatedText;
