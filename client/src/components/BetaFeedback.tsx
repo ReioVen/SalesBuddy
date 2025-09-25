@@ -39,9 +39,12 @@ const BetaFeedback: React.FC = () => {
     });
 
     try {
+      // Use the correct API base URL
+      const API_BASE_URL = 'https://salesbuddy-production.up.railway.app';
+      
       // Test if server is running updated code
-      console.log('🔍 [FEEDBACK] Testing server with:', '/api/test');
-      const testResponse = await fetch('/api/test');
+      console.log('🔍 [FEEDBACK] Testing server with:', `${API_BASE_URL}/api/test`);
+      const testResponse = await fetch(`${API_BASE_URL}/api/test`);
       if (testResponse.ok) {
         const testResult = await testResponse.json();
         console.log('✅ [FEEDBACK] Server test successful:', testResult);
@@ -50,8 +53,8 @@ const BetaFeedback: React.FC = () => {
       }
       
       // Test with direct route first
-      console.log('🔍 [FEEDBACK] Making request to:', '/api/feedback/direct');
-      const response = await fetch('/api/feedback/direct', {
+      console.log('🔍 [FEEDBACK] Making request to:', `${API_BASE_URL}/api/feedback/direct`);
+      const response = await fetch(`${API_BASE_URL}/api/feedback/direct`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -90,7 +93,7 @@ const BetaFeedback: React.FC = () => {
         // If direct route fails, try the simple route
         if (response.status === 405) {
           console.log('🔄 [FEEDBACK] Direct route failed, trying simple route...');
-          const simpleResponse = await fetch('/api/feedback/simple', {
+          const simpleResponse = await fetch(`${API_BASE_URL}/api/feedback/simple`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -123,7 +126,7 @@ const BetaFeedback: React.FC = () => {
           
           // If simple route also fails, try the main route
           console.log('🔄 [FEEDBACK] Simple route also failed, trying main route...');
-          const mainResponse = await fetch('/api/feedback', {
+          const mainResponse = await fetch(`${API_BASE_URL}/api/feedback`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
