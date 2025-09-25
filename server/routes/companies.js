@@ -197,6 +197,33 @@ router.get('/details', authenticateToken, async (req, res) => {
   }
 });
 
+// Get company users (must be before /:id route)
+router.get('/users', authenticateToken, canManageUsers, async (req, res) => {
+  try {
+    console.log('🔍 [COMPANIES USERS] Request from user:', req.user._id, 'role:', req.user.role);
+    const company = await Company.findById(req.user.companyId)
+      .populate({
+        path: 'users',
+        select: 'firstName lastName email role teamId isTeamLeader isCompanyAdmin isAdmin isSuperAdmin createdAt companyJoinedAt lastLogin',
+        match: { role: { $ne: 'super_admin' }, isSuperAdmin: { $ne: true } }
+      })
+      .populate('teams.members', 'firstName lastName email')
+      .populate('teams.teamLeader', 'firstName lastName email');
+
+    if (!company) {
+      return res.status(404).json({ error: 'Company not found' });
+    }
+
+    res.json({
+      users: company.users,
+      teams: company.teams
+    });
+  } catch (error) {
+    console.error('Get users error:', error);
+    res.status(500).json({ error: 'Failed to get users' });
+  }
+});
+
 // Get company details by ID (for company management)
 router.get('/:id', authenticateToken, async (req, res) => {
   
@@ -449,33 +476,6 @@ router.post('/users', authenticateToken, canManageUsers, [
   } catch (error) {
     console.error('User creation error:', error);
     res.status(500).json({ error: 'User creation failed' });
-  }
-});
-
-// Get all company users
-router.get('/users', authenticateToken, canManageUsers, async (req, res) => {
-  try {
-    console.log('🔍 [COMPANIES USERS] Request from user:', req.user._id, 'role:', req.user.role);
-    const company = await Company.findById(req.user.companyId)
-      .populate({
-        path: 'users',
-        select: 'firstName lastName email role teamId isTeamLeader isCompanyAdmin isAdmin isSuperAdmin createdAt companyJoinedAt lastLogin',
-        match: { role: { $ne: 'super_admin' }, isSuperAdmin: { $ne: true } }
-      })
-      .populate('teams.members', 'firstName lastName email')
-      .populate('teams.teamLeader', 'firstName lastName email');
-
-    if (!company) {
-      return res.status(404).json({ error: 'Company not found' });
-    }
-
-    res.json({
-      users: company.users,
-      teams: company.teams
-    });
-  } catch (error) {
-    console.error('Get users error:', error);
-    res.status(500).json({ error: 'Failed to get users' });
   }
 });
 
