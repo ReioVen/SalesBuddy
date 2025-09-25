@@ -16,7 +16,15 @@ class SimpleEmailService {
       auth: {
         user: process.env.EMAIL_USER || 'revotechSB@gmail.com',
         pass: process.env.EMAIL_PASSWORD || process.env.EMAIL_PASS || 'your-password-here'
-      }
+      },
+      connectionTimeout: 60000, // 60 seconds
+      greetingTimeout: 30000, // 30 seconds
+      socketTimeout: 60000, // 60 seconds
+      pool: true,
+      maxConnections: 1,
+      maxMessages: 3,
+      rateDelta: 20000, // 20 seconds
+      rateLimit: 5
     });
     
     console.log('📧 [SIMPLE EMAIL] Email service initialized with:', {
