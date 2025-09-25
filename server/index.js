@@ -186,6 +186,12 @@ try {
     res.json({ message: 'Feedback API is working!', timestamp: new Date().toISOString() });
   });
   console.log('✅ [ROUTES] Feedback test route added');
+  
+  // List all registered routes for debugging
+  console.log('🔍 [ROUTES] Registered feedback routes:');
+  feedbackRoutes.stack.forEach((route) => {
+    console.log(`  ${route.route?.methods || 'unknown'} ${route.route?.path || 'unknown'}`);
+  });
 } catch (error) {
   console.error('❌ [ROUTES] Failed to load feedback routes:', error);
 }
@@ -262,20 +268,6 @@ app.use((err, req, res, next) => {
     error: 'Something went wrong!',
     message: process.env.NODE_ENV === 'development' ? err.message : 'Internal server error'
   });
-});
-
-// Debug all requests
-app.use('*', (req, res, next) => {
-  if (req.path.startsWith('/api/feedback')) {
-    console.log('🔍 [SERVER] Feedback route request:', {
-      method: req.method,
-      url: req.url,
-      path: req.path,
-      headers: req.headers,
-      timestamp: new Date().toISOString()
-    });
-  }
-  next();
 });
 
 // 404 handler

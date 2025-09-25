@@ -12,8 +12,28 @@ router.get('/test', (req, res) => {
   res.json({ message: 'Feedback routes are working!', timestamp: new Date().toISOString() });
 });
 
+// Test POST route without authentication
+router.post('/test', (req, res) => {
+  res.json({ message: 'Feedback POST route is working!', timestamp: new Date().toISOString() });
+});
+
+// Simple POST route without authentication for testing
+router.post('/simple', (req, res) => {
+  console.log('🔍 [FEEDBACK] Simple POST route hit:', req.body);
+  res.json({ message: 'Simple feedback route working!', data: req.body });
+});
+
 // Simple feedback submission (without database for now)
-router.post('/', authenticateToken, [
+router.post('/', (req, res, next) => {
+  console.log('🔍 [FEEDBACK] POST / route hit:', {
+    method: req.method,
+    url: req.url,
+    path: req.path,
+    body: req.body,
+    headers: req.headers
+  });
+  next();
+}, authenticateToken, [
   body('type').isIn(['bug', 'issue', 'feature', 'other']),
   body('priority').isIn(['low', 'medium', 'high']),
   body('title').trim().isLength({ min: 1, max: 200 }),

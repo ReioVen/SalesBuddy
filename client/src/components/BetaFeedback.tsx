@@ -39,7 +39,8 @@ const BetaFeedback: React.FC = () => {
     });
 
     try {
-      const response = await fetch('/api/feedback', {
+      // Test with simple route first
+      const response = await fetch('/api/feedback/simple', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
