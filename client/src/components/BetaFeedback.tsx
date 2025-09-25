@@ -40,6 +40,7 @@ const BetaFeedback: React.FC = () => {
 
     try {
       // Test with simple route first
+      console.log('🔍 [FEEDBACK] Making request to:', '/api/feedback/simple');
       const response = await fetch('/api/feedback/simple', {
         method: 'POST',
         headers: {
@@ -75,6 +76,42 @@ const BetaFeedback: React.FC = () => {
           statusText: response.statusText,
           error: errorText
         });
+        
+        // If simple route fails, try the main route
+        if (response.status === 405) {
+          console.log('🔄 [FEEDBACK] Simple route failed, trying main route...');
+          const mainResponse = await fetch('/api/feedback', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            },
+            body: JSON.stringify({
+              ...feedback,
+              userId: user?._id,
+              userEmail: user?.email,
+              userName: user ? `${user.firstName} ${user.lastName}` : 'Anonymous'
+            })
+          });
+          
+          if (mainResponse.ok) {
+            const result = await mainResponse.json();
+            console.log('✅ [FEEDBACK] Main route worked:', result);
+            alert('Thank you for your feedback! We\'ll review it soon.');
+            setFeedback({
+              type: 'bug',
+              priority: 'medium',
+              title: '',
+              description: '',
+              userAgent: navigator.userAgent,
+              url: window.location.href,
+              timestamp: new Date().toISOString()
+            });
+            setIsOpen(false);
+            return;
+          }
+        }
+        
         throw new Error(`Failed to submit feedback: ${response.status} ${response.statusText}`);
       }
     } catch (error) {

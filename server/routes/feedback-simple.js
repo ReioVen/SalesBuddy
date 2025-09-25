@@ -19,8 +19,13 @@ router.post('/test', (req, res) => {
 
 // Simple POST route without authentication for testing
 router.post('/simple', (req, res) => {
-  console.log('🔍 [FEEDBACK] Simple POST route hit:', req.body);
-  res.json({ message: 'Simple feedback route working!', data: req.body });
+  console.log('🔍 [FEEDBACK] Simple POST route hit:', {
+    body: req.body,
+    method: req.method,
+    url: req.url,
+    timestamp: new Date().toISOString()
+  });
+  res.json({ message: 'Simple feedback route working!', data: req.body, timestamp: new Date().toISOString() });
 });
 
 // Simple feedback submission (without database for now)

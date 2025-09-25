@@ -189,9 +189,13 @@ try {
   
   // List all registered routes for debugging
   console.log('🔍 [ROUTES] Registered feedback routes:');
-  feedbackRoutes.stack.forEach((route) => {
-    console.log(`  ${route.route?.methods || 'unknown'} ${route.route?.path || 'unknown'}`);
-  });
+  if (feedbackRoutes.stack) {
+    feedbackRoutes.stack.forEach((route) => {
+      console.log(`  ${route.route?.methods || 'unknown'} ${route.route?.path || 'unknown'}`);
+    });
+  } else {
+    console.log('  No routes found in feedbackRoutes.stack');
+  }
 } catch (error) {
   console.error('❌ [ROUTES] Failed to load feedback routes:', error);
 }
