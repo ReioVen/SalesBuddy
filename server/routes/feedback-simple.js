@@ -15,7 +15,7 @@ console.log('🔍 [FEEDBACK] Router type:', typeof router);
 console.log('📧 [FEEDBACK] Email service configuration:', {
   hasEmailService: !!simpleEmailService,
   emailUser: process.env.EMAIL_USER ? 'Set' : 'Not set',
-  emailPass: process.env.EMAIL_PASS ? 'Set' : 'Not set'
+  emailPassword: (process.env.EMAIL_PASSWORD || process.env.EMAIL_PASS) ? 'Set' : 'Not set'
 });
 
 // Test route to verify feedback routes are working

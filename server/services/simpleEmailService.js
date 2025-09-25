@@ -15,14 +15,14 @@ class SimpleEmailService {
       secure: false, // true for 465, false for other ports
       auth: {
         user: process.env.EMAIL_USER || 'revotechSB@gmail.com',
-        pass: process.env.EMAIL_PASS || 'your-password-here'
+        pass: process.env.EMAIL_PASSWORD || process.env.EMAIL_PASS || 'your-password-here'
       }
     });
     
     console.log('📧 [SIMPLE EMAIL] Email service initialized with:', {
       user: process.env.EMAIL_USER || 'revotechSB@gmail.com',
-      hasPassword: !!process.env.EMAIL_PASS,
-      usingEnvVars: !!(process.env.EMAIL_USER && process.env.EMAIL_PASS)
+      hasPassword: !!(process.env.EMAIL_PASSWORD || process.env.EMAIL_PASS),
+      usingEnvVars: !!(process.env.EMAIL_USER && (process.env.EMAIL_PASSWORD || process.env.EMAIL_PASS))
     });
   }
 
@@ -34,7 +34,7 @@ class SimpleEmailService {
       }
 
       // Check if we have email credentials
-      if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+      if (!process.env.EMAIL_USER || (!process.env.EMAIL_PASSWORD && !process.env.EMAIL_PASS)) {
         console.log('📧 [SIMPLE EMAIL] No email credentials - logging feedback instead');
         console.log('📧 [SIMPLE EMAIL] HIGH PRIORITY FEEDBACK RECEIVED:');
         console.log('📧 [SIMPLE EMAIL] Title:', feedback.title);
