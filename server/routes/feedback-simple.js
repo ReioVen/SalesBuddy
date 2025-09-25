@@ -192,7 +192,7 @@ router.post('/', (req, res, next) => {
             emailSent: true,
             emailSentAt: new Date()
           });
-          console.log('✅ [BETA FEEDBACK] High priority email notification sent to revotechSB@gmail.com');
+          console.log('✅ [BETA FEEDBACK] High priority email notification sent to admin');
         } else {
           console.log('❌ [BETA FEEDBACK] Failed to send email - feedback logged to console');
           // Log feedback details as fallback

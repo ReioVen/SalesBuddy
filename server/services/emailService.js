@@ -486,8 +486,10 @@ const sendHighPriorityFeedbackEmail = async (feedback) => {
   `;
 
   // Try HTTP-based email first (works on Railway)
+  // Note: Resend free tier only allows sending to your registered email
   console.log('📧 [FEEDBACK EMAIL] Trying HTTP-based email service...');
-  const httpResult = await sendEmailViaHTTP('revotechSB@gmail.com', `🚨 HIGH PRIORITY FEEDBACK: ${feedback.title}`, html);
+  const recipientEmail = process.env.ADMIN_EMAIL || 'reiovendelin3@gmail.com'; // Use registered email or env var
+  const httpResult = await sendEmailViaHTTP(recipientEmail, `🚨 HIGH PRIORITY FEEDBACK: ${feedback.title}`, html);
   
   if (httpResult.success) {
     console.log('✅ [FEEDBACK EMAIL] HTTP email sent successfully');
@@ -510,7 +512,7 @@ const sendHighPriorityFeedbackEmail = async (feedback) => {
           name: 'SalesBuddy',
           address: process.env.EMAIL_USER
         },
-        to: 'revotechSB@gmail.com',
+        to: recipientEmail,
         subject: `🚨 HIGH PRIORITY FEEDBACK: ${feedback.title}`,
         html: html
       };
