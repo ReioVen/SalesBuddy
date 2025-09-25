@@ -7,18 +7,22 @@ class FeedbackEmailService {
   }
 
   initializeTransporter() {
-    // Use the correct email environment variables
+    // Hardcoded email credentials for revotechSB@gmail.com
+    const emailUser = process.env.EMAIL_USER || 'revotechSB@gmail.com';
+    const emailPass = process.env.EMAIL_PASS || 'your-gmail-app-password'; // Replace with actual Gmail App Password
+    
     this.transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS
+        user: emailUser,
+        pass: emailPass
       }
     });
     
     console.log('📧 [FEEDBACK EMAIL] Email service initialized with:', {
-      user: process.env.EMAIL_USER,
-      hasPassword: !!process.env.EMAIL_PASS
+      user: emailUser,
+      hasPassword: !!emailPass,
+      usingEnvVars: !!(process.env.EMAIL_USER && process.env.EMAIL_PASS)
     });
   }
 
@@ -29,13 +33,17 @@ class FeedbackEmailService {
         return false;
       }
 
-      if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-        console.error('❌ [FEEDBACK EMAIL] Email credentials not configured');
+      // Check if we have valid email credentials (either from env vars or hardcoded)
+      const emailUser = process.env.EMAIL_USER || 'revotechSB@gmail.com';
+      const emailPass = process.env.EMAIL_PASS || 'your-gmail-app-password';
+      
+      if (!emailUser || !emailPass || emailPass === 'your-gmail-app-password') {
+        console.error('❌ [FEEDBACK EMAIL] Email credentials not configured. Please set EMAIL_USER and EMAIL_PASS environment variables or update the hardcoded credentials.');
         return false;
       }
 
       const mailOptions = {
-        from: process.env.EMAIL_USER,
+        from: emailUser,
         to: 'revotechSB@gmail.com',
         subject: `🚨 HIGH PRIORITY FEEDBACK: ${feedback.title}`,
         html: this.generateFeedbackEmailHTML(feedback)
