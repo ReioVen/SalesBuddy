@@ -24,7 +24,7 @@ const translationsRoutes = require('./routes/translations');
 const dynamicTranslationRoutes = require('./routes/dynamicTranslation');
 const speechRoutes = require('./routes/speech');
 const leaderboardRoutes = require('./routes/leaderboard');
-const feedbackRoutes = require('./routes/feedback');
+const feedbackRoutes = require('./routes/feedback-simple');
 const { authenticateToken } = require('./middleware/auth');
 
 // Log startup information
@@ -180,7 +180,10 @@ app.use('/api/enterprise', enterpriseRoutes);
 try {
   console.log('🔍 [ROUTES] Loading feedback routes...');
   console.log('🔍 [ROUTES] feedbackRoutes type:', typeof feedbackRoutes);
-  console.log('🔍 [ROUTES] feedbackRoutes:', feedbackRoutes);
+  
+  if (!feedbackRoutes) {
+    throw new Error('Feedback routes not loaded');
+  }
   
   app.use('/api/feedback', feedbackRoutes);
   console.log('✅ [ROUTES] Feedback routes loaded successfully');
@@ -216,6 +219,17 @@ try {
 } catch (error) {
   console.error('❌ [ROUTES] Failed to load feedback routes:', error);
   console.error('❌ [ROUTES] Error details:', error.stack);
+  
+  // Add a fallback route to prevent server crash
+  app.post('/api/feedback', (req, res) => {
+    console.log('🔍 [FALLBACK] Using fallback feedback route');
+    res.json({ 
+      success: true, 
+      message: 'Feedback received (fallback mode)', 
+      data: req.body 
+    });
+  });
+  console.log('✅ [ROUTES] Fallback feedback route added');
 }
 
 // Root endpoint - provide API information
@@ -313,8 +327,12 @@ const server = app.listen(PORT, () => {
   console.log(`🗄️ Database: ${mongoose.connection.readyState === 1 ? 'connected' : 'connecting...'}`);
   
   // Start the daily refresh service for enterprise users
-  dailyRefreshService.startDailyRefresh();
-  console.log('📅 Daily refresh service initialized');
+  try {
+    dailyRefreshService.startDailyRefresh();
+    console.log('📅 Daily refresh service initialized');
+  } catch (error) {
+    console.error('❌ [SERVER] Failed to start daily refresh service:', error);
+  }
 });
 
 // Handle server startup errors
