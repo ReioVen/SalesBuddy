@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext.tsx';
+import { useTranslation } from '../hooks/useTranslation.ts';
 
 interface FeedbackData {
   type: 'bug' | 'issue' | 'feature' | 'other';
@@ -13,6 +14,7 @@ interface FeedbackData {
 
 const BetaFeedback: React.FC = () => {
   const { user } = useAuth();
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -36,12 +38,12 @@ const BetaFeedback: React.FC = () => {
     
     // Basic client-side validation
     if (!feedback.title.trim()) {
-      alert('Please enter a title for your feedback.');
+      alert(t('pleaseEnterTitle'));
       return;
     }
     
     if (!feedback.description.trim()) {
-      alert('Please enter a description for your feedback.');
+      alert(t('pleaseEnterDescription'));
       return;
     }
 
@@ -169,7 +171,7 @@ const BetaFeedback: React.FC = () => {
       <button
         onClick={() => setIsOpen(true)}
         className="fixed bottom-6 right-6 z-50 bg-blue-600 hover:bg-blue-700 text-white p-4 rounded-full shadow-lg transition-all duration-300 hover:scale-110 group"
-        title="Report Bug or Issue"
+        title={t('reportBugOrIssue')}
       >
         <svg 
           className="w-6 h-6" 
@@ -198,10 +200,10 @@ const BetaFeedback: React.FC = () => {
               <div className="flex justify-between items-center mb-4">
                 <div>
                   <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                    Beta Feedback
+                    {t('betaFeedback')}
                   </h2>
                   <p className="text-gray-600 dark:text-gray-400">
-                    Help us improve by reporting bugs or issues
+                    {t('helpUsImproveFeedback')}
                   </p>
                 </div>
                 <button
@@ -219,14 +221,14 @@ const BetaFeedback: React.FC = () => {
                 {/* Type Selection */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    What type of feedback is this?
+                    {t('whatTypeOfFeedback')}
                   </label>
                   <div className="grid grid-cols-2 gap-2">
                     {[
-                      { value: 'bug', label: 'Bug Report', icon: '🐛' },
-                      { value: 'issue', label: 'Issue', icon: '⚠️' },
-                      { value: 'feature', label: 'Feature Request', icon: '💡' },
-                      { value: 'other', label: 'Other', icon: '📝' }
+                      { value: 'bug', label: t('bugReport'), icon: '🐛' },
+                      { value: 'issue', label: t('issue'), icon: '⚠️' },
+                      { value: 'feature', label: t('featureRequest'), icon: '💡' },
+                      { value: 'other', label: t('other'), icon: '📝' }
                     ].map((option) => (
                       <label
                         key={option.value}
@@ -256,13 +258,13 @@ const BetaFeedback: React.FC = () => {
                 {/* Priority Selection */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Priority Level
+                    {t('priorityLevel')}
                   </label>
                   <div className="flex space-x-2">
                     {[
-                      { value: 'low', label: 'Low', color: 'green' },
-                      { value: 'medium', label: 'Medium', color: 'yellow' },
-                      { value: 'high', label: 'High', color: 'red' }
+                      { value: 'low', label: t('low'), color: 'green' },
+                      { value: 'medium', label: t('medium'), color: 'yellow' },
+                      { value: 'high', label: t('high'), color: 'red' }
                     ].map((option) => (
                       <label
                         key={option.value}
@@ -295,13 +297,13 @@ const BetaFeedback: React.FC = () => {
                 {/* Title */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Title *
+                    {t('title')} *
                   </label>
                   <input
                     type="text"
                     value={feedback.title}
                     onChange={(e) => handleInputChange('title', e.target.value)}
-                    placeholder="Brief description of the issue (e.g., 'Login button not working')"
+                    placeholder={t('titlePlaceholder')}
                     required
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
                   />
@@ -310,12 +312,12 @@ const BetaFeedback: React.FC = () => {
                 {/* Description */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Description *
+                    {t('description')} *
                   </label>
                   <textarea
                     value={feedback.description}
                     onChange={(e) => handleInputChange('description', e.target.value)}
-                    placeholder="Please provide detailed information about the issue, steps to reproduce, and any error messages you saw. (e.g., 'When I click the login button, nothing happens. I tried refreshing the page but it still doesn't work.')"
+                    placeholder={t('descriptionPlaceholder')}
                     required
                     rows={3}
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
@@ -325,14 +327,14 @@ const BetaFeedback: React.FC = () => {
                 {/* System Info */}
                 <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
                   <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    System Information (automatically included)
+                    {t('systemInformationAutoIncluded')}
                   </h4>
                   <div className="text-xs text-gray-600 dark:text-gray-400 space-y-1">
-                    <div><strong>URL:</strong> {feedback.url}</div>
-                    <div><strong>Browser:</strong> {feedback.userAgent.split(' ').slice(-2).join(' ')}</div>
-                    <div><strong>Timestamp:</strong> {new Date(feedback.timestamp).toLocaleString()}</div>
+                    <div><strong>{t('url')}:</strong> {feedback.url}</div>
+                    <div><strong>{t('browser')}:</strong> {feedback.userAgent.split(' ').slice(-2).join(' ')}</div>
+                    <div><strong>{t('timestamp')}:</strong> {new Date(feedback.timestamp).toLocaleString()}</div>
                     {user && (
-                      <div><strong>User:</strong> {user.firstName} {user.lastName} ({user.email})</div>
+                      <div><strong>{t('user')}:</strong> {user.firstName} {user.lastName} ({user.email})</div>
                     )}
                   </div>
                 </div>
@@ -344,14 +346,14 @@ const BetaFeedback: React.FC = () => {
                     onClick={() => setIsOpen(false)}
                     className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
                   >
-                    Cancel
+                    {t('cancel')}
                   </button>
                   <button
                     type="submit"
                     disabled={isSubmitting || !feedback.title || !feedback.description}
                     className="px-6 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white rounded-lg transition-colors"
                   >
-                    {isSubmitting ? 'Submitting...' : 'Submit Feedback'}
+                    {isSubmitting ? t('submitting') : t('submitFeedback')}
                   </button>
                 </div>
               </form>
@@ -371,16 +373,16 @@ const BetaFeedback: React.FC = () => {
                 </svg>
               </div>
               <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-                Thank You!
+                {t('thankYou')}!
               </h3>
               <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-                Your feedback has been submitted successfully. We'll review it soon and get back to you if needed.
+                {t('feedbackSubmittedSuccessfully')}
               </p>
               <button
                 onClick={() => setShowSuccessModal(false)}
                 className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition-colors"
               >
-                Close
+                {t('close')}
               </button>
             </div>
           </div>
