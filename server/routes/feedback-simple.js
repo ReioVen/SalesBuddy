@@ -2,6 +2,8 @@ const express = require('express');
 const { body, validationResult } = require('express-validator');
 const { authenticateToken } = require('../middleware/auth');
 const Feedback = require('../models/Feedback');
+const reliableEmailService = require('../services/reliableEmailService');
+const webhookEmailService = require('../services/webhookEmailService');
 const simpleEmailService = require('../services/simpleEmailService');
 const alternativeEmailService = require('../services/alternativeEmailService');
 
@@ -184,12 +186,54 @@ router.post('/', (req, res, next) => {
     if (savedFeedback.priority === 'high') {
       try {
         console.log('📧 [BETA FEEDBACK] Sending high priority email notification...');
-        let emailSent = await simpleEmailService.sendHighPriorityFeedbackNotification(savedFeedback);
+        let emailSent = false;
         
-        // If main email service fails, try alternative service
+        // Try reliable email service first (most reliable)
+        try {
+          emailSent = await reliableEmailService.sendHighPriorityFeedbackNotification(savedFeedback);
+          if (emailSent) {
+            console.log('📧 [BETA FEEDBACK] Reliable email service succeeded');
+          }
+        } catch (error) {
+          console.log('📧 [BETA FEEDBACK] Reliable email service failed:', error.message);
+        }
+        
+        // If reliable service fails, try webhook email service
         if (!emailSent) {
-          console.log('📧 [BETA FEEDBACK] Main email service failed, trying alternative service...');
-          emailSent = await alternativeEmailService.sendHighPriorityFeedbackNotification(savedFeedback);
+          try {
+            emailSent = await webhookEmailService.sendHighPriorityFeedbackNotification(savedFeedback);
+            if (emailSent) {
+              console.log('📧 [BETA FEEDBACK] Webhook email service succeeded');
+            }
+          } catch (error) {
+            console.log('📧 [BETA FEEDBACK] Webhook email service failed:', error.message);
+          }
+        }
+        
+        // If webhook fails, try simple email service
+        if (!emailSent) {
+          try {
+            console.log('📧 [BETA FEEDBACK] Trying simple email service...');
+            emailSent = await simpleEmailService.sendHighPriorityFeedbackNotification(savedFeedback);
+            if (emailSent) {
+              console.log('📧 [BETA FEEDBACK] Simple email service succeeded');
+            }
+          } catch (error) {
+            console.log('📧 [BETA FEEDBACK] Simple email service failed:', error.message);
+          }
+        }
+        
+        // If simple service fails, try alternative service
+        if (!emailSent) {
+          try {
+            console.log('📧 [BETA FEEDBACK] Trying alternative email service...');
+            emailSent = await alternativeEmailService.sendHighPriorityFeedbackNotification(savedFeedback);
+            if (emailSent) {
+              console.log('📧 [BETA FEEDBACK] Alternative email service succeeded');
+            }
+          } catch (error) {
+            console.log('📧 [BETA FEEDBACK] Alternative email service failed:', error.message);
+          }
         }
         
         if (emailSent) {
@@ -198,12 +242,12 @@ router.post('/', (req, res, next) => {
             emailSent: true,
             emailSentAt: new Date()
           });
-          console.log('📧 [BETA FEEDBACK] High priority email notification sent to revotechSB@gmail.com');
+          console.log('📧 [BETA FEEDBACK] High priority email notification sent successfully');
         } else {
-          console.log('❌ [BETA FEEDBACK] Both email services failed - feedback logged to console');
+          console.log('❌ [BETA FEEDBACK] All email services failed - feedback logged to console');
         }
       } catch (error) {
-        console.error('❌ [BETA FEEDBACK] Error sending high priority email:', error);
+        console.error('❌ [BETA FEEDBACK] Error in email notification system:', error);
         // Don't fail the request if email fails
       }
     }
