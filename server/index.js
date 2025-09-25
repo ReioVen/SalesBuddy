@@ -24,8 +24,13 @@ const translationsRoutes = require('./routes/translations');
 const dynamicTranslationRoutes = require('./routes/dynamicTranslation');
 const speechRoutes = require('./routes/speech');
 const leaderboardRoutes = require('./routes/leaderboard');
-const feedbackRoutes = require('./routes/feedback');
+const feedbackRoutes = require('./routes/feedback-simple');
 const { authenticateToken } = require('./middleware/auth');
+
+// Log startup information
+console.log('🚀 [SERVER] Starting SalesBuddy server...');
+console.log('📊 [SERVER] Environment:', process.env.NODE_ENV || 'development');
+console.log('🔧 [SERVER] Port:', process.env.PORT || 5002);
 const dailyRefreshService = require('./services/dailyRefreshService');
 
 const app = express();
@@ -171,7 +176,13 @@ app.use('/api/dynamic-translation', dynamicTranslationRoutes);
 app.use('/api/speech', authenticateToken, speechRoutes);
 app.use('/api/leaderboard', leaderboardRoutes);
 app.use('/api/enterprise', enterpriseRoutes);
-app.use('/api/feedback', feedbackRoutes);
+// Feedback routes with error handling
+try {
+  app.use('/api/feedback', feedbackRoutes);
+  console.log('✅ [ROUTES] Feedback routes loaded successfully');
+} catch (error) {
+  console.error('❌ [ROUTES] Failed to load feedback routes:', error);
+}
 
 // Root endpoint - provide API information
 app.get('/', (req, res) => {
@@ -260,7 +271,10 @@ app.use('*', (req, res) => {
 
 const server = app.listen(PORT, () => {
   console.log(`✅ SalesBuddy server running on port ${PORT}`);
-  console.log(`🌐 Health check available at: http://localhost:${PORT}/api/health`);
+  console.log(`🌐 Health check available at: http://localhost:${PORT}/health`);
+  console.log(`🌐 API health check available at: http://localhost:${PORT}/api/health`);
+  console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`🗄️ Database: ${mongoose.connection.readyState === 1 ? 'connected' : 'connecting...'}`);
   
   // Start the daily refresh service for enterprise users
   dailyRefreshService.startDailyRefresh();
