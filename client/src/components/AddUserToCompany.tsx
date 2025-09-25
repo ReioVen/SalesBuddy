@@ -72,6 +72,9 @@ const AddUserToCompany: React.FC<AddUserToCompanyProps> = ({
         return;
       }
 
+      // Get authentication token
+      const token = localStorage.getItem('sb_token');
+      
       // Check if token exists
       if (!token) {
         setError('Authentication token not found. Please log in again.');
