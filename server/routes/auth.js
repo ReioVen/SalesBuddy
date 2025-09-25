@@ -130,8 +130,8 @@ router.post('/login', [
     const normalizedEmail = User.normalizeEmail(email);
     console.log('🔍 [LOGIN] Email normalization:', { original: email, normalized: normalizedEmail });
 
-    // Find user (case-insensitive)
-    const user = await User.findByEmail(email);
+    // Find user using comprehensive lookup
+    const user = await User.findUserByEmail(email);
     
     if (!user) {
       console.log('❌ [LOGIN] User not found for email:', email);

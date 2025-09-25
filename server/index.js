@@ -72,32 +72,27 @@ app.use((req, res, next) => {
 
 // CORS configuration
 const allowedOrigins = [
-  process.env.CLIENT_URL || 'https://salesbuddy.pro',
   'https://salesbuddy.pro',
-  'https://www.salesbuddy.pro',
+  'https://www.salesbuddy.pro', 
   'https://app.salesbuddy.pro',
   'https://salesbuddy-client.vercel.app',
   'https://sales-buddy.vercel.app',
-  'https://salesbuddy-production.up.railway.app'
+  'https://salesbuddy-production.up.railway.app',
+  'http://localhost:3000', // For local development
+  'http://localhost:3001'  // For local development
 ];
 
 app.use(cors({
   origin: function (origin, callback) {
-    const allowedOrigins = [
-      'https://salesbuddy.pro',
-      'https://www.salesbuddy.pro', 
-      'https://app.salesbuddy.pro',
-      'https://salesbuddy-client.vercel.app',
-      'https://sales-buddy.vercel.app',
-      'https://salesbuddy-production.up.railway.app',
-      'http://localhost:3000', // For local development
-      'http://localhost:3001'  // For local development
-    ];
+    console.log('🔍 [CORS] Request from origin:', origin);
     
     // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
+    if (!origin) {
+      console.log('✅ [CORS] Allowing request with no origin');
+      return callback(null, true);
+    }
     
-    if (allowedOrigins.indexOf(origin) !== -1) {
+    if (allowedOrigins.includes(origin)) {
       console.log('✅ [CORS] Allowed origin:', origin);
       callback(null, true);
     } else {
@@ -115,11 +110,40 @@ app.use(cors({
 // Handle preflight OPTIONS requests explicitly
 app.options('*', (req, res) => {
   console.log('🔄 [CORS] Handling OPTIONS preflight request:', req.url);
-  res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
-  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
-  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Cookie, X-Requested-With');
-  res.header('Access-Control-Allow-Credentials', 'true');
+  
+  const allowedOrigins = [
+    'https://salesbuddy.pro',
+    'https://www.salesbuddy.pro', 
+    'https://app.salesbuddy.pro',
+    'https://salesbuddy-client.vercel.app',
+    'https://sales-buddy.vercel.app',
+    'https://salesbuddy-production.up.railway.app',
+    'http://localhost:3000',
+    'http://localhost:3001'
+  ];
+  
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin)) {
+    res.header('Access-Control-Allow-Origin', origin);
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Cookie, X-Requested-With');
+    res.header('Access-Control-Allow-Credentials', 'true');
+    console.log('✅ [CORS] OPTIONS request allowed for origin:', origin);
+  } else {
+    console.log('❌ [CORS] OPTIONS request blocked for origin:', origin);
+  }
+  
   res.status(200).end();
+});
+
+// Additional CORS middleware to ensure headers are set on all responses
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin)) {
+    res.header('Access-Control-Allow-Origin', origin);
+    res.header('Access-Control-Allow-Credentials', 'true');
+  }
+  next();
 });
 
 // Database connection (guard missing URI)
