@@ -126,14 +126,20 @@ app.use((req, res, next) => {
   next();
 });
 
-// Database connection (guard missing URI)
+// Database connection (use short timeouts so startup never hangs)
 const mongoUri = (process.env.MONGODB_URI && process.env.MONGODB_URI.trim() !== '')
   ? process.env.MONGODB_URI
   : 'mongodb://127.0.0.1:27017/salesbuddy';
 
-mongoose.connect(mongoUri)
-.then(() => console.log(`Connected to MongoDB: ${mongoUri.includes('127.0.0.1') ? 'local' : 'remote'}`))
-.catch(err => console.error('MongoDB connection error:', err));
+mongoose
+  .connect(mongoUri, {
+    // Fail fast if DB is unreachable (important in Railway containers)
+    serverSelectionTimeoutMS: 5000,
+    connectTimeoutMS: 5000,
+    socketTimeoutMS: 10000
+  })
+  .then(() => console.log(`Connected to MongoDB: ${mongoUri.includes('127.0.0.1') ? 'local' : 'remote'}`))
+  .catch(err => console.error('MongoDB connection error:', err.message || err));
 
 // Request logging middleware (disabled in production)
 // app.use('/api', (req, res, next) => {
