@@ -24,7 +24,7 @@ const translationsRoutes = require('./routes/translations');
 const dynamicTranslationRoutes = require('./routes/dynamicTranslation');
 const speechRoutes = require('./routes/speech');
 const leaderboardRoutes = require('./routes/leaderboard');
-const feedbackRoutes = require('./routes/feedback');
+const feedbackRoutes = require('./routes/feedback-simple');
 const { authenticateToken } = require('./middleware/auth');
 
 // Log startup information

@@ -1,6 +1,7 @@
 const express = require('express');
 const { body, validationResult } = require('express-validator');
 const { authenticateToken } = require('../middleware/auth');
+const Feedback = require('../models/Feedback');
 
 const router = express.Router();
 
@@ -74,7 +75,7 @@ router.post('/anonymous', (req, res) => {
   });
 });
 
-// Simple feedback submission (without database for now)
+// Simple feedback submission (with database storage)
 router.post('/', (req, res, next) => {
   console.log('🔍 [FEEDBACK] POST / route hit:', {
     method: req.method,
@@ -85,7 +86,7 @@ router.post('/', (req, res, next) => {
     authHeader: req.headers.authorization
   });
   next();
-}, authenticateToken, [
+}, [
   body('type').isIn(['bug', 'issue', 'feature', 'other']),
   body('priority').isIn(['low', 'medium', 'high']),
   body('title').trim().isLength({ min: 1, max: 200 }),
@@ -108,36 +109,47 @@ router.post('/', (req, res, next) => {
       });
     }
 
-    const feedback = {
-      id: Date.now().toString(),
+    // Create feedback document (handle both authenticated and anonymous users)
+    const feedbackData = {
       ...req.body,
-      timestamp: new Date().toISOString(),
-      status: 'open',
-      adminNotes: '',
-      userId: req.user._id,
-      userEmail: req.user.email,
-      userName: `${req.user.firstName} ${req.user.lastName}`
+      userId: req.body.userId || null,
+      userEmail: req.body.userEmail || 'anonymous@example.com',
+      userName: req.body.userName || 'Anonymous'
     };
+    
+    // If user is authenticated, use their information
+    if (req.user) {
+      feedbackData.userId = req.user._id;
+      feedbackData.userEmail = req.user.email;
+      feedbackData.userName = `${req.user.firstName} ${req.user.lastName}`;
+    }
+    
+    const feedback = new Feedback(feedbackData);
+
+    // Save to database
+    const savedFeedback = await feedback.save();
 
     // Log feedback for monitoring
     console.log('🔍 [BETA FEEDBACK] New feedback submitted:', {
-      id: feedback.id,
-      type: feedback.type,
-      priority: feedback.priority,
-      title: feedback.title,
-      user: feedback.userName || 'Anonymous',
-      timestamp: feedback.timestamp
+      id: savedFeedback._id,
+      type: savedFeedback.type,
+      priority: savedFeedback.priority,
+      title: savedFeedback.title,
+      user: savedFeedback.userName || 'Anonymous',
+      timestamp: savedFeedback.createdAt,
+      savedToDatabase: true
     });
 
-    // TODO: Save to database and send email for high priority
-    if (feedback.priority === 'high') {
+    // TODO: Send email for high priority (email service not included to avoid startup issues)
+    if (savedFeedback.priority === 'high') {
       console.log('📧 [BETA FEEDBACK] High priority feedback - would send email to revotechSB@gmail.com');
     }
 
     res.status(201).json({
       success: true,
       message: 'Feedback submitted successfully',
-      feedbackId: feedback.id
+      feedbackId: savedFeedback._id,
+      savedToDatabase: true
     });
 
   } catch (error) {
