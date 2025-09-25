@@ -60,10 +60,9 @@ const BetaFeedback: React.FC = () => {
         console.log('❌ [FEEDBACK] Server test failed:', testResponse.status);
       }
       
-      // Submit feedback to appropriate route
-      const route = (!user || !token) ? '/api/feedback/anonymous' : '/api/feedback';
-      console.log('🔍 [FEEDBACK] Making request to:', `${API_BASE_URL}${route}`);
-      const response = await fetch(`${API_BASE_URL}${route}`, {
+      // Submit feedback to main route (now handles both authenticated and anonymous)
+      console.log('🔍 [FEEDBACK] Making request to:', `${API_BASE_URL}/api/feedback`);
+      const response = await fetch(`${API_BASE_URL}/api/feedback`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -6,8 +6,8 @@ const feedbackEmailService = require('../services/feedbackEmailService');
 
 const router = express.Router();
 
-// Submit feedback
-router.post('/', authenticateToken, [
+// Submit feedback (with optional authentication)
+router.post('/', [
   body('type').isIn(['bug', 'issue', 'feature', 'other']),
   body('priority').isIn(['low', 'medium', 'high']),
   body('title').trim().isLength({ min: 1, max: 200 }),
@@ -27,13 +27,22 @@ router.post('/', authenticateToken, [
       });
     }
 
-    // Create feedback document
-    const feedback = new Feedback({
+    // Create feedback document (handle both authenticated and anonymous users)
+    const feedbackData = {
       ...req.body,
-      userId: req.user._id,
-      userEmail: req.user.email,
-      userName: `${req.user.firstName} ${req.user.lastName}`
-    });
+      userId: req.body.userId || null,
+      userEmail: req.body.userEmail || 'anonymous@example.com',
+      userName: req.body.userName || 'Anonymous'
+    };
+    
+    // If user is authenticated, use their information
+    if (req.user) {
+      feedbackData.userId = req.user._id;
+      feedbackData.userEmail = req.user.email;
+      feedbackData.userName = `${req.user.firstName} ${req.user.lastName}`;
+    }
+    
+    const feedback = new Feedback(feedbackData);
 
     // Save to database
     const savedFeedback = await feedback.save();
@@ -45,7 +54,8 @@ router.post('/', authenticateToken, [
       priority: savedFeedback.priority,
       title: savedFeedback.title,
       user: savedFeedback.userName || 'Anonymous',
-      timestamp: savedFeedback.createdAt
+      timestamp: savedFeedback.createdAt,
+      savedToDatabase: true
     });
 
     // Send email notification for high priority feedback
