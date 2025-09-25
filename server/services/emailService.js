@@ -1,20 +1,38 @@
 const nodemailer = require('nodemailer');
 
-// Create transporter for Gmail SMTP
+// Create transporter for Gmail SMTP with robust configuration
 const createTransporter = () => {
   return nodemailer.createTransport({
-    service: 'gmail',
+    host: 'smtp.gmail.com',
+    port: 587,
+    secure: false, // true for 465, false for other ports
     auth: {
       user: process.env.EMAIL_USER,
       pass: process.env.EMAIL_PASSWORD
-    }
+    },
+    tls: {
+      rejectUnauthorized: false
+    },
+    connectionTimeout: 10000, // 10 seconds
+    greetingTimeout: 5000, // 5 seconds
+    socketTimeout: 10000, // 10 seconds
+    pool: false, // disable connection pooling
+    maxConnections: 1,
+    maxMessages: 1,
+    rateDelta: 1000, // 1 second
+    rateLimit: 1
   });
 };
 
-// Send password reset email
+// Send password reset email with retry logic
 const sendPasswordResetEmail = async (email, resetToken, firstName) => {
-  try {
-    const transporter = createTransporter();
+  const maxRetries = 3;
+  let lastError;
+  
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      console.log(`📧 [EMAIL SERVICE] Attempt ${attempt}/${maxRetries} - Creating transporter...`);
+      const transporter = createTransporter();
     
     const resetUrl = `${process.env.CLIENT_URL || 'http://localhost:3000'}/reset-password?token=${resetToken}`;
     
@@ -88,13 +106,25 @@ const sendPasswordResetEmail = async (email, resetToken, firstName) => {
       `
     };
 
-    const result = await transporter.sendMail(mailOptions);
-    console.log('Password reset email sent:', result.messageId);
-    return { success: true, messageId: result.messageId };
-  } catch (error) {
-    console.error('Error sending password reset email:', error);
-    return { success: false, error: error.message };
+      console.log(`📧 [EMAIL SERVICE] Attempt ${attempt}/${maxRetries} - Sending email...`);
+      const result = await transporter.sendMail(mailOptions);
+      console.log(`✅ [EMAIL SERVICE] Password reset email sent successfully on attempt ${attempt}:`, result.messageId);
+      return { success: true, messageId: result.messageId };
+      
+    } catch (error) {
+      lastError = error;
+      console.error(`❌ [EMAIL SERVICE] Attempt ${attempt}/${maxRetries} failed:`, error.message);
+      
+      if (attempt < maxRetries) {
+        console.log(`🔄 [EMAIL SERVICE] Retrying in 2 seconds...`);
+        await new Promise(resolve => setTimeout(resolve, 2000));
+      }
+    }
   }
+  
+  // All attempts failed
+  console.error(`❌ [EMAIL SERVICE] All ${maxRetries} attempts failed. Last error:`, lastError.message);
+  return { success: false, error: lastError.message };
 };
 
 // Send welcome email
