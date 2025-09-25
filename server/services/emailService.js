@@ -1,4 +1,5 @@
 const nodemailer = require('nodemailer');
+const axios = require('axios');
 
 // Create multiple transporter configurations for fallback
 const createTransporter = (config = 'gmail') => {
@@ -62,8 +63,106 @@ const createTransporter = (config = 'gmail') => {
   return nodemailer.createTransport(configs[config] || configs.gmail);
 };
 
-// Send password reset email with multiple fallback configurations
+// Webhook-based email service (works on Railway)
+const sendEmailViaWebhook = async (email, subject, html) => {
+  try {
+    console.log('📧 [WEBHOOK EMAIL] Sending email via webhook...');
+    
+    // Using a webhook service like Zapier, IFTTT, or custom webhook
+    const webhookUrl = process.env.EMAIL_WEBHOOK_URL || 'https://hooks.zapier.com/hooks/catch/your-webhook-url';
+    
+    const webhookData = {
+      to: email,
+      subject: subject,
+      html: html,
+      from: 'SalesBuddy <noreply@salesbuddy.pro>',
+      timestamp: new Date().toISOString()
+    };
+    
+    const response = await axios.post(webhookUrl, webhookData, {
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      timeout: 10000
+    });
+    
+    console.log('✅ [WEBHOOK EMAIL] Email sent successfully via webhook:', response.status);
+    return { success: true, messageId: `webhook-${Date.now()}` };
+    
+  } catch (error) {
+    console.error('❌ [WEBHOOK EMAIL] Webhook email failed:', error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+// Send password reset email with HTTP first, then SMTP fallback
 const sendPasswordResetEmail = async (email, resetToken, firstName) => {
+  const resetUrl = `${process.env.CLIENT_URL || 'http://localhost:3000'}/reset-password?token=${resetToken}`;
+  
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+      <div style="text-align: center; margin-bottom: 30px;">
+        <h1 style="color: #2563eb; margin: 0;">SalesBuddy</h1>
+        <p style="color: #6b7280; margin: 5px 0 0 0;">AI-Powered Sales Assistant</p>
+      </div>
+      
+      <div style="background: #f8fafc; border-radius: 8px; padding: 30px; margin-bottom: 20px;">
+        <h2 style="color: #1f2937; margin: 0 0 20px 0;">Password Reset Request</h2>
+        
+        <p style="color: #374151; margin: 0 0 20px 0;">
+          Hi ${firstName},
+        </p>
+        
+        <p style="color: #374151; margin: 0 0 20px 0;">
+          We received a request to reset your password for your SalesBuddy account. 
+          Click the button below to reset your password:
+        </p>
+        
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="${resetUrl}" 
+             style="background: #2563eb; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: 600;">
+            Reset Password
+          </a>
+        </div>
+        
+        <p style="color: #6b7280; font-size: 14px; margin: 20px 0 0 0;">
+          If the button doesn't work, copy and paste this link into your browser:
+        </p>
+        <p style="color: #2563eb; font-size: 14px; word-break: break-all; margin: 5px 0 0 0;">
+          ${resetUrl}
+        </p>
+      </div>
+      
+      <div style="text-align: center; color: #6b7280; font-size: 12px;">
+        <p style="margin: 0 0 10px 0;">
+          This link will expire in 1 hour for security reasons.
+        </p>
+        <p style="margin: 0;">
+          If you didn't request this password reset, please ignore this email.
+        </p>
+      </div>
+      
+      <div style="text-align: center; color: #9ca3af; font-size: 11px; margin-top: 30px;">
+        <p style="margin: 0;">
+          Best regards,<br>
+          The SalesBuddy Team
+        </p>
+      </div>
+    </div>
+  `;
+
+  // Try webhook-based email first (works on Railway)
+  console.log('📧 [EMAIL SERVICE] Trying webhook-based email service...');
+  const webhookResult = await sendEmailViaWebhook(email, 'Password Reset - SalesBuddy', html);
+  
+  if (webhookResult.success) {
+    console.log('✅ [EMAIL SERVICE] Webhook email sent successfully');
+    return webhookResult;
+  }
+  
+  console.log('❌ [EMAIL SERVICE] Webhook email failed, trying SMTP fallback...');
+  
+  // Fallback to SMTP configurations
   const configs = ['gmail', 'gmail_ssl', 'outlook'];
   let lastError;
   
