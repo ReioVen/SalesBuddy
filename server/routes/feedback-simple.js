@@ -2,6 +2,7 @@ const express = require('express');
 const { body, validationResult } = require('express-validator');
 const { authenticateToken } = require('../middleware/auth');
 const Feedback = require('../models/Feedback');
+const feedbackEmailService = require('../services/feedbackEmailService');
 
 const router = express.Router();
 
@@ -9,6 +10,13 @@ const router = express.Router();
 console.log('🔍 [FEEDBACK] Loading feedback routes...');
 console.log('🔍 [FEEDBACK] Router created:', !!router);
 console.log('🔍 [FEEDBACK] Router type:', typeof router);
+
+// Check email service configuration
+console.log('📧 [FEEDBACK] Email service configuration:', {
+  hasEmailService: !!feedbackEmailService,
+  emailUser: process.env.EMAIL_USER ? 'Set' : 'Not set',
+  emailPass: process.env.EMAIL_PASS ? 'Set' : 'Not set'
+});
 
 // Test route to verify feedback routes are working
 router.get('/test', (req, res) => {
@@ -20,6 +28,36 @@ router.get('/test', (req, res) => {
 router.post('/test', (req, res) => {
   console.log('🔍 [FEEDBACK] POST /test route hit');
   res.json({ message: 'Feedback POST route is working!', timestamp: new Date().toISOString() });
+});
+
+// Test email service
+router.post('/test-email', async (req, res) => {
+  try {
+    console.log('📧 [FEEDBACK] Testing email service...');
+    const testFeedback = {
+      _id: 'test-id',
+      type: 'bug',
+      priority: 'high',
+      title: 'Test High Priority Feedback',
+      description: 'This is a test email to verify the email service is working.',
+      userName: 'Test User',
+      userEmail: 'test@example.com',
+      createdAt: new Date()
+    };
+    
+    const emailSent = await feedbackEmailService.sendHighPriorityFeedbackNotification(testFeedback);
+    res.json({ 
+      message: 'Email test completed', 
+      emailSent,
+      timestamp: new Date().toISOString() 
+    });
+  } catch (error) {
+    console.error('❌ [FEEDBACK] Email test failed:', error);
+    res.status(500).json({ 
+      error: 'Email test failed', 
+      message: error.message 
+    });
+  }
 });
 
 // Simple POST route without authentication for testing
@@ -141,9 +179,25 @@ router.post('/', (req, res, next) => {
       savedToDatabase: true
     });
 
-    // TODO: Send email for high priority (email service not included to avoid startup issues)
+    // Send email notification for high priority feedback
     if (savedFeedback.priority === 'high') {
-      console.log('📧 [BETA FEEDBACK] High priority feedback - would send email to revotechSB@gmail.com');
+      try {
+        console.log('📧 [BETA FEEDBACK] Sending high priority email notification...');
+        const emailSent = await feedbackEmailService.sendHighPriorityFeedbackNotification(savedFeedback);
+        if (emailSent) {
+          // Update feedback to mark email as sent
+          await Feedback.findByIdAndUpdate(savedFeedback._id, {
+            emailSent: true,
+            emailSentAt: new Date()
+          });
+          console.log('📧 [BETA FEEDBACK] High priority email notification sent to revotechSB@gmail.com');
+        } else {
+          console.log('❌ [BETA FEEDBACK] Failed to send high priority email notification');
+        }
+      } catch (error) {
+        console.error('❌ [BETA FEEDBACK] Error sending high priority email:', error);
+        // Don't fail the request if email fails
+      }
     }
 
     res.status(201).json({
