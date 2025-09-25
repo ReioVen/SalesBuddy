@@ -101,7 +101,7 @@ console.log('🔍 [FEEDBACK] Router type:', typeof router);
 
 // Check email service configuration
 console.log('📧 [FEEDBACK] Email service configuration:', {
-  hasEmailService: !!simpleEmailService,
+  hasEmailService: true, // Using built-in email function
   emailUser: process.env.EMAIL_USER ? 'Set' : 'Not set',
   emailPassword: (process.env.EMAIL_PASSWORD || process.env.EMAIL_PASS) ? 'Set' : 'Not set'
 });
