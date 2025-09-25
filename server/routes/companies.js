@@ -33,11 +33,15 @@ const requireCompanyAdmin = async (req, res, next) => {
 // Middleware to check if user can manage users (admin or team leader)
 const canManageUsers = async (req, res, next) => {
   try {
+    console.log('🔍 [CAN MANAGE USERS] Checking user:', req.user._id, 'role:', req.user.role, 'canManageUsers:', req.user.canManageUsers());
     if (!req.user.canManageUsers()) {
+      console.log('❌ [CAN MANAGE USERS] Access denied for user:', req.user._id);
       return res.status(403).json({ error: 'User management access required' });
     }
+    console.log('✅ [CAN MANAGE USERS] Access granted for user:', req.user._id);
     next();
   } catch (error) {
+    console.log('❌ [CAN MANAGE USERS] Error:', error);
     res.status(500).json({ error: 'Authorization check failed' });
   }
 };
@@ -451,6 +455,7 @@ router.post('/users', authenticateToken, canManageUsers, [
 // Get all company users
 router.get('/users', authenticateToken, canManageUsers, async (req, res) => {
   try {
+    console.log('🔍 [COMPANIES USERS] Request from user:', req.user._id, 'role:', req.user.role);
     const company = await Company.findById(req.user.companyId)
       .populate({
         path: 'users',
@@ -585,16 +590,7 @@ router.delete('/users/:userId/team', authenticateToken, canManageUsers, [
       });
     }
 
-    // Team leaders can only remove regular users from their team, not other team leaders or admins
-    if (req.user.role === 'company_team_leader') {
-      if (user.role !== 'company_user') {
-        return res.status(403).json({ 
-          error: 'You can only remove regular users from your team',
-          userRole: user.role,
-          yourRole: req.user.role
-        });
-      }
-    }
+    // Team leaders can remove any user from their team
 
     // Remove user from team
     await company.removeUserFromTeam(userId, teamName);

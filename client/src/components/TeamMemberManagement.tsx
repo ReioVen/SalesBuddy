@@ -45,19 +45,36 @@ const TeamMemberManagement: React.FC<TeamMemberManagementProps> = ({
   // Fetch available users (company users not in this team)
   useEffect(() => {
     const fetchAvailableUsers = async () => {
-      try {
-        const response = await fetch(`${API_BASE_URL}/api/companies/users`, {
-          credentials: 'include'
-        });
+       try {
+         const token = localStorage.getItem('sb_token');
+         console.log('🔍 [TEAM MANAGEMENT] Token check:', {
+           hasToken: !!token,
+           tokenLength: token ? token.length : 0,
+           tokenStart: token ? token.substring(0, 20) + '...' : 'none'
+         });
+         
+         const response = await fetch(`${API_BASE_URL}/api/companies/users`, {
+           credentials: 'include',
+           headers: {
+             'Authorization': `Bearer ${token}`,
+             'Content-Type': 'application/json'
+           }
+         });
+        
+        console.log('🔍 [TEAM MANAGEMENT] Response status:', response.status);
         
         if (response.ok) {
           const data = await response.json();
+          console.log('🔍 [TEAM MANAGEMENT] Response data:', data);
           // Filter out users already in this team and team leaders
           const available = data.users.filter((user: TeamMember) => 
             user.role === 'company_user' && 
             (!user.teamId || user.teamId !== team._id)
           );
           setAvailableUsers(available);
+        } else {
+          const errorData = await response.json();
+          console.log('🔍 [TEAM MANAGEMENT] Error response:', errorData);
         }
       } catch (err) {
         console.error('Failed to fetch available users:', err);
@@ -74,9 +91,11 @@ const TeamMemberManagement: React.FC<TeamMemberManagementProps> = ({
     setError(null);
 
     try {
+      const token = localStorage.getItem('sb_token');
       const response = await fetch(`${API_BASE_URL}/api/companies/users/${selectedUser}/team`, {
         method: 'PUT',
         headers: {
+          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
         credentials: 'include',
@@ -110,9 +129,11 @@ const TeamMemberManagement: React.FC<TeamMemberManagementProps> = ({
     setError(null);
 
     try {
+      const token = localStorage.getItem('sb_token');
       const response = await fetch(`${API_BASE_URL}/api/companies/users/${memberId}/team`, {
         method: 'DELETE',
         headers: {
+          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
         credentials: 'include',
@@ -141,14 +162,14 @@ const TeamMemberManagement: React.FC<TeamMemberManagementProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+      <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-semibold text-gray-900">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
             Manage Team Members - {team.name}
           </h2>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600"
+            className="text-gray-400 hover:text-gray-600 dark:text-gray-300 dark:hover:text-gray-100"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -157,42 +178,42 @@ const TeamMemberManagement: React.FC<TeamMemberManagementProps> = ({
         </div>
 
         {error && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-            <p className="text-red-700 text-sm">{error}</p>
+          <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+            <p className="text-red-700 dark:text-red-300 text-sm">{error}</p>
           </div>
         )}
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Current Team Members */}
           <div>
-            <h3 className="text-lg font-medium text-gray-900 mb-4">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
               Current Members ({team.members.length})
             </h3>
             
             {team.teamLeader && (
-              <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                <h4 className="text-sm font-medium text-blue-900 mb-1">Team Leader</h4>
-                <p className="text-sm text-blue-700">
+              <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                <h4 className="text-sm font-medium text-blue-900 dark:text-blue-300 mb-1">Team Leader</h4>
+                <p className="text-sm text-blue-700 dark:text-blue-300">
                   {team.teamLeader.firstName} {team.teamLeader.lastName}
                 </p>
-                <p className="text-xs text-blue-600">{team.teamLeader.email}</p>
+                <p className="text-xs text-blue-600 dark:text-blue-400">{team.teamLeader.email}</p>
               </div>
             )}
 
             <div className="space-y-2">
               {team.members.map((member) => (
-                <div key={member._id} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
+                <div key={member._id} className="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700">
                   <div>
-                    <p className="text-sm font-medium text-gray-900">
+                    <p className="text-sm font-medium text-gray-900 dark:text-white">
                       {member.firstName} {member.lastName}
                     </p>
-                    <p className="text-xs text-gray-500">{member.email}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">{member.email}</p>
                   </div>
                   {member._id !== team.teamLeader?._id && (
                     <button
                       onClick={() => handleRemoveMember(member._id)}
                       disabled={loading}
-                      className="text-red-600 hover:text-red-800 text-sm disabled:opacity-50"
+                      className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 text-sm disabled:opacity-50"
                     >
                       Remove
                     </button>
@@ -201,7 +222,7 @@ const TeamMemberManagement: React.FC<TeamMemberManagementProps> = ({
               ))}
               
               {team.members.length === 0 && (
-                <p className="text-gray-500 text-sm text-center py-4">
+                <p className="text-gray-500 dark:text-gray-400 text-sm text-center py-4">
                   No members in this team yet.
                 </p>
               )}
@@ -210,7 +231,7 @@ const TeamMemberManagement: React.FC<TeamMemberManagementProps> = ({
 
           {/* Add Members */}
           <div>
-            <h3 className="text-lg font-medium text-gray-900 mb-4">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
               Add Members ({availableUsers.length} available)
             </h3>
             
@@ -220,7 +241,7 @@ const TeamMemberManagement: React.FC<TeamMemberManagementProps> = ({
                   <select
                     value={selectedUser}
                     onChange={(e) => setSelectedUser(e.target.value)}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   >
                     <option value="">Select a user to add</option>
                     {availableUsers.map((user) => (
@@ -240,7 +261,7 @@ const TeamMemberManagement: React.FC<TeamMemberManagementProps> = ({
                 </button>
               </div>
             ) : (
-              <p className="text-gray-500 text-sm text-center py-4">
+              <p className="text-gray-500 dark:text-gray-400 text-sm text-center py-4">
                 No available users to add to this team.
               </p>
             )}
@@ -250,7 +271,7 @@ const TeamMemberManagement: React.FC<TeamMemberManagementProps> = ({
         <div className="mt-6 flex justify-end">
           <button
             onClick={onClose}
-            className="px-4 py-2 text-gray-600 hover:text-gray-800"
+            className="px-4 py-2 text-gray-600 hover:text-gray-800 dark:text-gray-300 dark:hover:text-gray-100"
           >
             Close
           </button>
