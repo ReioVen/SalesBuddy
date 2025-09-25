@@ -124,20 +124,32 @@ router.post('/login', [
 
     const { email, password } = req.body;
 
+    console.log('🔐 [LOGIN] Attempting login for:', { email, passwordLength: password.length });
+
     // Find user (case-insensitive)
     const user = await User.findByEmail(email);
     
     if (!user) {
-      console.log('User not found for email:', email);
+      console.log('❌ [LOGIN] User not found for email:', email);
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
+    console.log('✅ [LOGIN] User found:', { 
+      id: user._id, 
+      email: user.email, 
+      needsPasswordSetup: user.needsPasswordSetup 
+    });
+
     // Check if user needs password setup
     if (user.needsPasswordSetup) {
+      console.log('🔐 [LOGIN] User needs password setup, checking temporary password');
       // For users who need password setup, allow login with temporary password
       const isPasswordValid = await user.comparePassword(password);
       
+      console.log('🔐 [LOGIN] Password validation result:', { isPasswordValid });
+      
       if (!isPasswordValid) {
+        console.log('❌ [LOGIN] Temporary password incorrect');
         return res.status(401).json({ error: 'Incorrect email or password' });
       }
 
@@ -173,9 +185,13 @@ router.post('/login', [
     }
 
     // Regular login for users who don't need password setup
+    console.log('🔐 [LOGIN] Regular login flow, checking password');
     const isPasswordValid = await user.comparePassword(password);
     
+    console.log('🔐 [LOGIN] Password validation result:', { isPasswordValid });
+    
     if (!isPasswordValid) {
+      console.log('❌ [LOGIN] Password incorrect for regular user');
       return res.status(401).json({ error: 'Incorrect email or password' });
     }
 
@@ -238,6 +254,64 @@ router.get('/debug-cookies', (req, res) => {
     hasSbToken: !!req.cookies?.sb_token,
     allHeaders: req.headers
   });
+});
+
+// Debug endpoint to check user by email
+router.post('/debug-user', async (req, res) => {
+  try {
+    const { email } = req.body;
+    
+    if (!email) {
+      return res.status(400).json({ error: 'Email is required' });
+    }
+    
+    console.log('🔍 [DEBUG] Looking up user for email:', email);
+    
+    // Test email normalization
+    const normalizedEmail = User.normalizeEmail(email);
+    console.log('🔍 [DEBUG] Normalized email:', normalizedEmail);
+    
+    // Try to find user
+    const user = await User.findByEmail(email);
+    
+    if (!user) {
+      console.log('❌ [DEBUG] User not found');
+      return res.json({
+        found: false,
+        originalEmail: email,
+        normalizedEmail: normalizedEmail,
+        message: 'User not found'
+      });
+    }
+    
+    console.log('✅ [DEBUG] User found:', {
+      id: user._id,
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      needsPasswordSetup: user.needsPasswordSetup,
+      role: user.role
+    });
+    
+    res.json({
+      found: true,
+      originalEmail: email,
+      normalizedEmail: normalizedEmail,
+      user: {
+        id: user._id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        needsPasswordSetup: user.needsPasswordSetup,
+        role: user.role,
+        subscription: user.subscription
+      }
+    });
+    
+  } catch (error) {
+    console.error('❌ [DEBUG] Error:', error);
+    res.status(500).json({ error: 'Debug failed', details: error.message });
+  }
 });
 
 // Get current user
