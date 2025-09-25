@@ -29,11 +29,11 @@ const PageRenderer: React.FC = () => {
   // All pages are rendered simultaneously but only the current one is visible
   // Using absolute positioning to stack them and only show the active one
   return (
-    <div className="relative bg-gray-50 dark:bg-dark-900 min-h-screen">
+    <div className="relative bg-gray-50 dark:bg-dark-900 h-full">
       {/* Home Page */}
       <div 
         className={`absolute inset-0 w-full bg-gray-50 dark:bg-dark-900 ${currentPath === '/' ? 'block' : 'hidden'}`}
-        style={{ zIndex: currentPath === '/' ? 10 : 1, minHeight: '100vh', overflow: 'visible' }}
+        style={{ zIndex: currentPath === '/' ? 10 : 1 }}
       >
         <Home />
       </div>
@@ -41,7 +41,7 @@ const PageRenderer: React.FC = () => {
       {/* Pricing Page */}
       <div 
         className={`absolute inset-0 w-full bg-gray-50 dark:bg-dark-900 ${currentPath === '/pricing' ? 'block' : 'hidden'}`}
-        style={{ zIndex: currentPath === '/pricing' ? 10 : 1, minHeight: '100vh', overflow: 'visible' }}
+        style={{ zIndex: currentPath === '/pricing' ? 10 : 1 }}
       >
         <Pricing />
       </div>
@@ -49,7 +49,7 @@ const PageRenderer: React.FC = () => {
       {/* Login Page */}
       <div 
         className={`absolute inset-0 w-full bg-gray-50 dark:bg-dark-900 ${currentPath === '/login' ? 'block' : 'hidden'}`}
-        style={{ zIndex: currentPath === '/login' ? 10 : 1, minHeight: '100vh', overflow: 'visible' }}
+        style={{ zIndex: currentPath === '/login' ? 10 : 1 }}
       >
         <Login />
       </div>
@@ -57,7 +57,7 @@ const PageRenderer: React.FC = () => {
       {/* Register Page */}
       <div 
         className={`absolute inset-0 w-full bg-gray-50 dark:bg-dark-900 ${currentPath === '/register' ? 'block' : 'hidden'}`}
-        style={{ zIndex: currentPath === '/register' ? 10 : 1, minHeight: '100vh', overflow: 'visible' }}
+        style={{ zIndex: currentPath === '/register' ? 10 : 1 }}
       >
         <Register />
       </div>
@@ -65,7 +65,7 @@ const PageRenderer: React.FC = () => {
       {/* Forgot Password Page */}
       <div 
         className={`absolute inset-0 w-full bg-gray-50 dark:bg-dark-900 ${currentPath === '/forgot-password' ? 'block' : 'hidden'}`}
-        style={{ zIndex: currentPath === '/forgot-password' ? 10 : 1, minHeight: '100vh', overflow: 'visible' }}
+        style={{ zIndex: currentPath === '/forgot-password' ? 10 : 1 }}
       >
         <ForgotPassword />
       </div>
@@ -73,7 +73,7 @@ const PageRenderer: React.FC = () => {
       {/* Reset Password Page */}
       <div 
         className={`absolute inset-0 w-full bg-gray-50 dark:bg-dark-900 ${currentPath === '/reset-password' ? 'block' : 'hidden'}`}
-        style={{ zIndex: currentPath === '/reset-password' ? 10 : 1, minHeight: '100vh', overflow: 'visible' }}
+        style={{ zIndex: currentPath === '/reset-password' ? 10 : 1 }}
       >
         <ResetPassword />
       </div>
@@ -81,7 +81,7 @@ const PageRenderer: React.FC = () => {
       {/* Password Setup Page */}
       <div 
         className={`absolute inset-0 w-full bg-gray-50 dark:bg-dark-900 ${currentPath === '/password-setup' ? 'block' : 'hidden'}`}
-        style={{ zIndex: currentPath === '/password-setup' ? 10 : 1, minHeight: '100vh', overflow: 'visible' }}
+        style={{ zIndex: currentPath === '/password-setup' ? 10 : 1 }}
       >
         <PasswordSetup />
       </div>
@@ -89,7 +89,7 @@ const PageRenderer: React.FC = () => {
       {/* Conversations Page */}
       <div 
         className={`absolute inset-0 w-full bg-gray-50 dark:bg-dark-900 ${currentPath === '/conversations' ? 'block' : 'hidden'}`}
-        style={{ zIndex: currentPath === '/conversations' ? 10 : 1, minHeight: '100vh', overflow: 'visible' }}
+        style={{ zIndex: currentPath === '/conversations' ? 10 : 1 }}
       >
         <Conversations />
       </div>
@@ -97,7 +97,7 @@ const PageRenderer: React.FC = () => {
       {/* Conversation Summaries Page */}
       <div 
         className={`absolute inset-0 w-full bg-gray-50 dark:bg-dark-900 ${currentPath === '/conversation-summaries' ? 'block' : 'hidden'}`}
-        style={{ zIndex: currentPath === '/conversation-summaries' ? 10 : 1, minHeight: '100vh', overflow: 'visible' }}
+        style={{ zIndex: currentPath === '/conversation-summaries' ? 10 : 1 }}
       >
         <ConversationSummaries />
       </div>
@@ -105,7 +105,7 @@ const PageRenderer: React.FC = () => {
       {/* Profile Page */}
       <div 
         className={`absolute inset-0 w-full bg-gray-50 dark:bg-dark-900 ${currentPath === '/profile' ? 'block' : 'hidden'}`}
-        style={{ zIndex: currentPath === '/profile' ? 10 : 1, minHeight: '100vh', overflow: 'visible' }}
+        style={{ zIndex: currentPath === '/profile' ? 10 : 1 }}
       >
         <Profile />
       </div>
@@ -113,7 +113,7 @@ const PageRenderer: React.FC = () => {
       {/* Settings Page */}
       <div 
         className={`absolute inset-0 w-full bg-gray-50 dark:bg-dark-900 ${currentPath === '/settings' ? 'block' : 'hidden'}`}
-        style={{ zIndex: currentPath === '/settings' ? 10 : 1, minHeight: '100vh', overflow: 'visible' }}
+        style={{ zIndex: currentPath === '/settings' ? 10 : 1 }}
       >
         <Settings />
       </div>
@@ -121,7 +121,7 @@ const PageRenderer: React.FC = () => {
       {/* Company Page */}
       <div 
         className={`absolute inset-0 w-full bg-gray-50 dark:bg-dark-900 ${currentPath === '/company' ? 'block' : 'hidden'}`}
-        style={{ zIndex: currentPath === '/company' ? 10 : 1, minHeight: '100vh', overflow: 'visible' }}
+        style={{ zIndex: currentPath === '/company' ? 10 : 1 }}
       >
         <Company />
       </div>
@@ -129,14 +129,14 @@ const PageRenderer: React.FC = () => {
       {/* Admin Dashboard Page */}
       <div 
         className={`absolute inset-0 w-full bg-gray-50 dark:bg-dark-900 ${currentPath === '/admin' ? 'block' : 'hidden'}`}
-        style={{ zIndex: currentPath === '/admin' ? 10 : 1, minHeight: '100vh', overflow: 'visible' }}
+        style={{ zIndex: currentPath === '/admin' ? 10 : 1 }}
       >
         <AdminDashboard />
       </div>
 
       {/* 404 Fallback - redirect to home */}
       {!['/', '/pricing', '/login', '/register', '/forgot-password', '/reset-password', '/password-setup', '/conversations', '/conversation-summaries', '/profile', '/settings', '/company', '/admin'].includes(currentPath) && (
-        <div className="absolute inset-0 w-full block bg-gray-50 dark:bg-dark-900" style={{ zIndex: 10, minHeight: '100vh', overflow: 'visible' }}>
+        <div className="absolute inset-0 w-full block bg-gray-50 dark:bg-dark-900" style={{ zIndex: 10 }}>
           <Home />
         </div>
       )}
@@ -164,9 +164,9 @@ const App: React.FC = () => {
 
   return (
     <ThemeProvider>
-      <div className="min-h-screen bg-gray-50 dark:bg-dark-900 transition-colors">
+      <div className="min-h-screen bg-gray-50 dark:bg-dark-900 transition-colors overflow-hidden">
         <Navbar />
-        <main className="pt-14 bg-gray-50 dark:bg-dark-900 min-h-screen">
+        <main className="pt-14 bg-gray-50 dark:bg-dark-900 min-h-screen overflow-y-auto">
           <PageRenderer />
         </main>
         
