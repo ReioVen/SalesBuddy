@@ -3,6 +3,7 @@ const { body, validationResult } = require('express-validator');
 const { authenticateToken } = require('../middleware/auth');
 const Feedback = require('../models/Feedback');
 const simpleEmailService = require('../services/simpleEmailService');
+const alternativeEmailService = require('../services/alternativeEmailService');
 
 const router = express.Router();
 
@@ -183,7 +184,14 @@ router.post('/', (req, res, next) => {
     if (savedFeedback.priority === 'high') {
       try {
         console.log('📧 [BETA FEEDBACK] Sending high priority email notification...');
-        const emailSent = await simpleEmailService.sendHighPriorityFeedbackNotification(savedFeedback);
+        let emailSent = await simpleEmailService.sendHighPriorityFeedbackNotification(savedFeedback);
+        
+        // If main email service fails, try alternative service
+        if (!emailSent) {
+          console.log('📧 [BETA FEEDBACK] Main email service failed, trying alternative service...');
+          emailSent = await alternativeEmailService.sendHighPriorityFeedbackNotification(savedFeedback);
+        }
+        
         if (emailSent) {
           // Update feedback to mark email as sent
           await Feedback.findByIdAndUpdate(savedFeedback._id, {
@@ -192,7 +200,7 @@ router.post('/', (req, res, next) => {
           });
           console.log('📧 [BETA FEEDBACK] High priority email notification sent to revotechSB@gmail.com');
         } else {
-          console.log('❌ [BETA FEEDBACK] Failed to send high priority email notification');
+          console.log('❌ [BETA FEEDBACK] Both email services failed - feedback logged to console');
         }
       } catch (error) {
         console.error('❌ [BETA FEEDBACK] Error sending high priority email:', error);

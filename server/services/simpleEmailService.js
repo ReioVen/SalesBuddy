@@ -10,21 +10,22 @@ class SimpleEmailService {
     // Use a simple SMTP configuration that works without App Passwords
     // This uses a generic SMTP setup that should work with most email providers
     this.transporter = nodemailer.createTransport({
-      host: 'smtp.gmail.com',
-      port: 587,
-      secure: false, // true for 465, false for other ports
+      service: 'gmail',
       auth: {
         user: process.env.EMAIL_USER || 'revotechSB@gmail.com',
         pass: process.env.EMAIL_PASSWORD || process.env.EMAIL_PASS || 'your-password-here'
       },
-      connectionTimeout: 60000, // 60 seconds
-      greetingTimeout: 30000, // 30 seconds
-      socketTimeout: 60000, // 60 seconds
-      pool: true,
+      tls: {
+        rejectUnauthorized: false
+      },
+      connectionTimeout: 30000, // 30 seconds
+      greetingTimeout: 15000, // 15 seconds
+      socketTimeout: 30000, // 30 seconds
+      pool: false, // Disable pooling for better reliability
       maxConnections: 1,
-      maxMessages: 3,
-      rateDelta: 20000, // 20 seconds
-      rateLimit: 5
+      maxMessages: 1,
+      rateDelta: 10000, // 10 seconds
+      rateLimit: 1
     });
     
     console.log('📧 [SIMPLE EMAIL] Email service initialized with:', {
@@ -95,6 +96,19 @@ class SimpleEmailService {
         response: error.response,
         responseCode: error.responseCode
       });
+      
+      // Fallback: Log the feedback details since email failed
+      console.log('📧 [SIMPLE EMAIL] FALLBACK - Logging high priority feedback:');
+      console.log('📧 [SIMPLE EMAIL] Title:', feedback.title);
+      console.log('📧 [SIMPLE EMAIL] Description:', feedback.description);
+      console.log('📧 [SIMPLE EMAIL] User:', feedback.userName);
+      console.log('📧 [SIMPLE EMAIL] Email:', feedback.userEmail);
+      console.log('📧 [SIMPLE EMAIL] Priority:', feedback.priority);
+      console.log('📧 [SIMPLE EMAIL] Type:', feedback.type);
+      console.log('📧 [SIMPLE EMAIL] URL:', feedback.url);
+      console.log('📧 [SIMPLE EMAIL] User Agent:', feedback.userAgent);
+      console.log('📧 [SIMPLE EMAIL] Timestamp:', feedback.createdAt);
+      
       return false;
     }
   }
