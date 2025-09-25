@@ -177,7 +177,41 @@ router.post('/', (req, res, next) => {
       savedToDatabase: true
     });
 
-    // Email functionality removed - feedback is saved to database only
+    // Send email notification for high priority feedback using Resend API
+    if (savedFeedback.priority === 'high') {
+      try {
+        console.log('📧 [BETA FEEDBACK] Sending high priority email notification...');
+        
+        // Import the email service function
+        const { sendHighPriorityFeedbackEmail } = require('../services/emailService');
+        const emailSent = await sendHighPriorityFeedbackEmail(savedFeedback);
+        
+        if (emailSent.success) {
+          // Update feedback to mark email as sent
+          await Feedback.findByIdAndUpdate(savedFeedback._id, {
+            emailSent: true,
+            emailSentAt: new Date()
+          });
+          console.log('✅ [BETA FEEDBACK] High priority email notification sent to revotechSB@gmail.com');
+        } else {
+          console.log('❌ [BETA FEEDBACK] Failed to send email - feedback logged to console');
+          // Log feedback details as fallback
+          console.log('📧 [BETA FEEDBACK] FALLBACK - High priority feedback details:');
+          console.log('📧 [BETA FEEDBACK] Title:', savedFeedback.title);
+          console.log('📧 [BETA FEEDBACK] Description:', savedFeedback.description);
+          console.log('📧 [BETA FEEDBACK] User:', savedFeedback.userName);
+          console.log('📧 [BETA FEEDBACK] Email:', savedFeedback.userEmail);
+          console.log('📧 [BETA FEEDBACK] Priority:', savedFeedback.priority);
+          console.log('📧 [BETA FEEDBACK] Type:', savedFeedback.type);
+          console.log('📧 [BETA FEEDBACK] URL:', savedFeedback.url);
+          console.log('📧 [BETA FEEDBACK] User Agent:', savedFeedback.userAgent);
+          console.log('📧 [BETA FEEDBACK] Timestamp:', savedFeedback.createdAt);
+        }
+      } catch (error) {
+        console.error('❌ [BETA FEEDBACK] Error sending high priority email:', error);
+        // Don't fail the request if email fails
+      }
+    }
 
     res.status(201).json({
       success: true,

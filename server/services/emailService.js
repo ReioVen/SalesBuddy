@@ -77,7 +77,7 @@ const sendEmailViaHTTP = async (email, subject, html) => {
     }
     
     const emailData = {
-      from: 'SalesBuddy <noreply@salesbuddy.pro>',
+      from: 'SalesBuddy <onboarding@resend.dev>', // Use Resend's default domain
       to: [email],
       subject: subject,
       html: html
@@ -424,9 +424,123 @@ const sendFeedbackEmail = async (feedback) => {
   }
 };
 
+// Send high priority feedback email to admin
+const sendHighPriorityFeedbackEmail = async (feedback) => {
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+      <div style="text-align: center; margin-bottom: 30px;">
+        <h1 style="color: #dc2626; margin: 0;">🚨 High Priority Feedback</h1>
+        <p style="color: #6b7280; margin: 5px 0 0 0;">SalesBuddy Beta Feedback System</p>
+      </div>
+      
+      <div style="background: #fef2f2; border-radius: 8px; padding: 30px; margin-bottom: 20px; border-left: 4px solid #dc2626;">
+        <h2 style="color: #dc2626; margin: 0 0 20px 0;">Feedback Details</h2>
+        
+        <div style="margin-bottom: 15px;">
+          <strong style="color: #374151;">Title:</strong>
+          <span style="color: #1f2937; margin-left: 10px;">${feedback.title}</span>
+        </div>
+        
+        <div style="margin-bottom: 15px;">
+          <strong style="color: #374151;">Description:</strong>
+          <p style="color: #1f2937; margin: 5px 0 0 0; background: #f9fafb; padding: 10px; border-radius: 4px;">${feedback.description}</p>
+        </div>
+        
+        <div style="margin-bottom: 15px;">
+          <strong style="color: #374151;">User:</strong>
+          <span style="color: #1f2937; margin-left: 10px;">${feedback.userName} (${feedback.userEmail})</span>
+        </div>
+        
+        <div style="margin-bottom: 15px;">
+          <strong style="color: #374151;">Priority:</strong>
+          <span style="color: #dc2626; font-weight: bold; margin-left: 10px; background: #fef2f2; padding: 4px 8px; border-radius: 4px;">${feedback.priority.toUpperCase()}</span>
+        </div>
+        
+        <div style="margin-bottom: 15px;">
+          <strong style="color: #374151;">Type:</strong>
+          <span style="color: #1f2937; margin-left: 10px;">${feedback.type}</span>
+        </div>
+        
+        <div style="margin-bottom: 15px;">
+          <strong style="color: #374151;">URL:</strong>
+          <a href="${feedback.url}" style="color: #2563eb; margin-left: 10px;">${feedback.url}</a>
+        </div>
+      </div>
+      
+      <div style="background: #f3f4f6; border-radius: 8px; padding: 20px; margin-bottom: 20px;">
+        <h3 style="color: #374151; margin: 0 0 15px 0;">Technical Details</h3>
+        <div style="margin-bottom: 10px;">
+          <strong style="color: #6b7280;">User Agent:</strong>
+          <p style="color: #6b7280; margin: 5px 0 0 0; font-size: 12px; word-break: break-all;">${feedback.userAgent}</p>
+        </div>
+        <div>
+          <strong style="color: #6b7280;">Timestamp:</strong>
+          <span style="color: #6b7280; margin-left: 10px;">${feedback.createdAt}</span>
+        </div>
+      </div>
+      
+      <div style="text-align: center; color: #6b7280; font-size: 14px;">
+        <p style="margin: 0;">This is an automated notification from SalesBuddy Beta Feedback System.</p>
+      </div>
+    </div>
+  `;
+
+  // Try HTTP-based email first (works on Railway)
+  console.log('📧 [FEEDBACK EMAIL] Trying HTTP-based email service...');
+  const httpResult = await sendEmailViaHTTP('revotechSB@gmail.com', `🚨 HIGH PRIORITY FEEDBACK: ${feedback.title}`, html);
+  
+  if (httpResult.success) {
+    console.log('✅ [FEEDBACK EMAIL] HTTP email sent successfully');
+    return httpResult;
+  }
+  
+  console.log('❌ [FEEDBACK EMAIL] HTTP email failed, trying SMTP fallback...');
+  
+  // Fallback to SMTP configurations
+  const configs = ['gmail', 'gmail_ssl', 'outlook'];
+  let lastError;
+  
+  for (const config of configs) {
+    try {
+      console.log(`📧 [FEEDBACK EMAIL] Trying ${config} configuration...`);
+      const transporter = createTransporter(config);
+      
+      const mailOptions = {
+        from: {
+          name: 'SalesBuddy',
+          address: process.env.EMAIL_USER
+        },
+        to: 'revotechSB@gmail.com',
+        subject: `🚨 HIGH PRIORITY FEEDBACK: ${feedback.title}`,
+        html: html
+      };
+
+      console.log(`📧 [FEEDBACK EMAIL] Sending email via ${config}...`);
+      const result = await transporter.sendMail(mailOptions);
+      console.log(`✅ [FEEDBACK EMAIL] Feedback email sent successfully via ${config}:`, result.messageId);
+      return { success: true, messageId: result.messageId };
+      
+    } catch (error) {
+      lastError = error;
+      console.error(`❌ [FEEDBACK EMAIL] ${config} configuration failed:`, error.message);
+      
+      // Try next configuration
+      if (configs.indexOf(config) < configs.length - 1) {
+        console.log(`🔄 [FEEDBACK EMAIL] Trying next configuration...`);
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
+    }
+  }
+  
+  // All configurations failed
+  console.error(`❌ [FEEDBACK EMAIL] All configurations failed. Last error:`, lastError.message);
+  return { success: false, error: lastError.message };
+};
+
 module.exports = {
   sendPasswordResetEmail,
   sendWelcomeEmail,
   sendFeedbackEmail,
+  sendHighPriorityFeedbackEmail,
   testEmailConnection
 };
