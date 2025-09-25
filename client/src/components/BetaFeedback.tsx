@@ -29,6 +29,15 @@ const BetaFeedback: React.FC = () => {
     e.preventDefault();
     setIsSubmitting(true);
 
+    // Debug authentication
+    const token = localStorage.getItem('token');
+    console.log('🔍 [FEEDBACK] Submitting feedback:', {
+      hasToken: !!token,
+      tokenLength: token?.length,
+      user: user ? `${user.firstName} ${user.lastName}` : 'No user',
+      feedback: feedback
+    });
+
     try {
       const response = await fetch('/api/feedback', {
         method: 'POST',
@@ -45,6 +54,8 @@ const BetaFeedback: React.FC = () => {
       });
 
       if (response.ok) {
+        const result = await response.json();
+        console.log('✅ [FEEDBACK] Feedback submitted successfully:', result);
         alert('Thank you for your feedback! We\'ll review it soon.');
         setFeedback({
           type: 'bug',
@@ -57,7 +68,13 @@ const BetaFeedback: React.FC = () => {
         });
         setIsOpen(false);
       } else {
-        throw new Error('Failed to submit feedback');
+        const errorText = await response.text();
+        console.error('❌ [FEEDBACK] Server error:', {
+          status: response.status,
+          statusText: response.statusText,
+          error: errorText
+        });
+        throw new Error(`Failed to submit feedback: ${response.status} ${response.statusText}`);
       }
     } catch (error) {
       console.error('Error submitting feedback:', error);

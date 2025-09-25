@@ -4,6 +4,14 @@ const { authenticateToken } = require('../middleware/auth');
 
 const router = express.Router();
 
+// Debug route loading
+console.log('🔍 [FEEDBACK] Loading feedback routes...');
+
+// Test route to verify feedback routes are working
+router.get('/test', (req, res) => {
+  res.json({ message: 'Feedback routes are working!', timestamp: new Date().toISOString() });
+});
+
 // Simple feedback submission (without database for now)
 router.post('/', authenticateToken, [
   body('type').isIn(['bug', 'issue', 'feature', 'other']),
@@ -12,8 +20,16 @@ router.post('/', authenticateToken, [
   body('description').trim().isLength({ min: 10, max: 2000 })
 ], async (req, res) => {
   try {
+    console.log('🔍 [FEEDBACK] Received feedback submission:', {
+      method: req.method,
+      url: req.url,
+      body: req.body,
+      user: req.user ? req.user.email : 'No user'
+    });
+
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
+      console.log('❌ [FEEDBACK] Validation errors:', errors.array());
       return res.status(400).json({
         error: 'Validation failed',
         details: errors.array()
