@@ -6,14 +6,18 @@ const router = express.Router();
 
 // Debug route loading
 console.log('🔍 [FEEDBACK] Loading feedback routes...');
+console.log('🔍 [FEEDBACK] Router created:', !!router);
+console.log('🔍 [FEEDBACK] Router type:', typeof router);
 
 // Test route to verify feedback routes are working
 router.get('/test', (req, res) => {
+  console.log('🔍 [FEEDBACK] GET /test route hit');
   res.json({ message: 'Feedback routes are working!', timestamp: new Date().toISOString() });
 });
 
 // Test POST route without authentication
 router.post('/test', (req, res) => {
+  console.log('🔍 [FEEDBACK] POST /test route hit');
   res.json({ message: 'Feedback POST route is working!', timestamp: new Date().toISOString() });
 });
 
@@ -101,5 +105,8 @@ router.post('/', (req, res, next) => {
     });
   }
 });
+
+console.log('🔍 [FEEDBACK] Routes defined, exporting router...');
+console.log('🔍 [FEEDBACK] Router stack length:', router.stack?.length || 0);
 
 module.exports = router;

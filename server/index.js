@@ -178,6 +178,10 @@ app.use('/api/leaderboard', leaderboardRoutes);
 app.use('/api/enterprise', enterpriseRoutes);
 // Feedback routes with error handling
 try {
+  console.log('🔍 [ROUTES] Loading feedback routes...');
+  console.log('🔍 [ROUTES] feedbackRoutes type:', typeof feedbackRoutes);
+  console.log('🔍 [ROUTES] feedbackRoutes:', feedbackRoutes);
+  
   app.use('/api/feedback', feedbackRoutes);
   console.log('✅ [ROUTES] Feedback routes loaded successfully');
   
@@ -198,6 +202,7 @@ try {
   }
 } catch (error) {
   console.error('❌ [ROUTES] Failed to load feedback routes:', error);
+  console.error('❌ [ROUTES] Error details:', error.stack);
 }
 
 // Root endpoint - provide API information
