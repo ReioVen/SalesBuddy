@@ -27,20 +27,39 @@ const BetaFeedback: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
     
     // Basic client-side validation
     if (!feedback.title.trim()) {
       alert('Please enter a title for your feedback.');
-      setIsSubmitting(false);
       return;
     }
     
     if (!feedback.description.trim()) {
       alert('Please enter a description for your feedback.');
-      setIsSubmitting(false);
       return;
     }
+
+    // Close modal immediately and show success message
+    setIsOpen(false);
+    alert('Thank you for your feedback! We\'ll review it soon.');
+    
+    // Reset form
+    setFeedback({
+      type: 'bug',
+      priority: 'medium',
+      title: '',
+      description: '',
+      userAgent: navigator.userAgent,
+      url: window.location.href,
+      timestamp: new Date().toISOString()
+    });
+
+    // Process feedback in background (don't await)
+    processFeedbackInBackground();
+  };
+
+  const processFeedbackInBackground = async () => {
+    setIsSubmitting(true);
 
     // Debug authentication
     const token = localStorage.getItem('token');
@@ -98,18 +117,7 @@ const BetaFeedback: React.FC = () => {
 
       if (response.ok) {
         const result = await response.json();
-        console.log('✅ [FEEDBACK] Feedback submitted successfully:', result);
-        alert('Thank you for your feedback! We\'ll review it soon.');
-        setFeedback({
-          type: 'bug',
-          priority: 'medium',
-          title: '',
-          description: '',
-          userAgent: navigator.userAgent,
-          url: window.location.href,
-          timestamp: new Date().toISOString()
-        });
-        setIsOpen(false);
+        console.log('✅ [FEEDBACK] Feedback submitted successfully in background:', result);
       } else {
         const errorText = await response.text();
         console.error('❌ [FEEDBACK] Server error:', {
@@ -126,8 +134,8 @@ const BetaFeedback: React.FC = () => {
         throw new Error(`Failed to submit feedback: ${response.status} ${response.statusText}`);
       }
     } catch (error) {
-      console.error('Error submitting feedback:', error);
-      alert('Failed to submit feedback. Please try again.');
+      console.error('❌ [FEEDBACK] Error submitting feedback in background:', error);
+      // Don't show alert to user since modal is already closed
     } finally {
       setIsSubmitting(false);
     }
