@@ -39,9 +39,9 @@ const BetaFeedback: React.FC = () => {
     });
 
     try {
-      // Test with simple route first
-      console.log('🔍 [FEEDBACK] Making request to:', '/api/feedback/simple');
-      const response = await fetch('/api/feedback/simple', {
+      // Test with direct route first
+      console.log('🔍 [FEEDBACK] Making request to:', '/api/feedback/direct');
+      const response = await fetch('/api/feedback/direct', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -77,9 +77,42 @@ const BetaFeedback: React.FC = () => {
           error: errorText
         });
         
-        // If simple route fails, try the main route
+        // If direct route fails, try the simple route
         if (response.status === 405) {
-          console.log('🔄 [FEEDBACK] Simple route failed, trying main route...');
+          console.log('🔄 [FEEDBACK] Direct route failed, trying simple route...');
+          const simpleResponse = await fetch('/api/feedback/simple', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            },
+            body: JSON.stringify({
+              ...feedback,
+              userId: user?._id,
+              userEmail: user?.email,
+              userName: user ? `${user.firstName} ${user.lastName}` : 'Anonymous'
+            })
+          });
+          
+          if (simpleResponse.ok) {
+            const result = await simpleResponse.json();
+            console.log('✅ [FEEDBACK] Simple route worked:', result);
+            alert('Thank you for your feedback! We\'ll review it soon.');
+            setFeedback({
+              type: 'bug',
+              priority: 'medium',
+              title: '',
+              description: '',
+              userAgent: navigator.userAgent,
+              url: window.location.href,
+              timestamp: new Date().toISOString()
+            });
+            setIsOpen(false);
+            return;
+          }
+          
+          // If simple route also fails, try the main route
+          console.log('🔄 [FEEDBACK] Simple route also failed, trying main route...');
           const mainResponse = await fetch('/api/feedback', {
             method: 'POST',
             headers: {

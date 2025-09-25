@@ -191,6 +191,13 @@ try {
   });
   console.log('✅ [ROUTES] Feedback test route added');
   
+  // Direct feedback routes for testing
+  app.post('/api/feedback/direct', (req, res) => {
+    console.log('🔍 [DIRECT] Direct feedback route hit:', req.body);
+    res.json({ message: 'Direct feedback route working!', data: req.body });
+  });
+  console.log('✅ [ROUTES] Direct feedback route added');
+  
   // List all registered routes for debugging
   console.log('🔍 [ROUTES] Registered feedback routes:');
   if (feedbackRoutes.stack) {
