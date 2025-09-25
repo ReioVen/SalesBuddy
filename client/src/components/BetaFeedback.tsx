@@ -177,11 +177,11 @@ const BetaFeedback: React.FC = () => {
 
       {/* Modal */}
       {isOpen && (
-        <div className="fixed inset-0 z-50 bg-black bg-opacity-50">
-          <div className="bg-white dark:bg-gray-800 w-full h-full flex flex-col">
-            <div className="p-6 flex-1 overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-2xl mx-4">
+            <div className="p-6">
               {/* Header */}
-              <div className="flex justify-between items-center mb-6">
+              <div className="flex justify-between items-center mb-4">
                 <div>
                   <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
                     Beta Feedback
@@ -201,13 +201,13 @@ const BetaFeedback: React.FC = () => {
               </div>
 
               {/* Form */}
-              <form onSubmit={handleSubmit} className="space-y-6">
+              <form onSubmit={handleSubmit} className="space-y-4">
                 {/* Type Selection */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     What type of feedback is this?
                   </label>
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-2 gap-2">
                     {[
                       { value: 'bug', label: 'Bug Report', icon: '🐛' },
                       { value: 'issue', label: 'Issue', icon: '⚠️' },
@@ -216,7 +216,7 @@ const BetaFeedback: React.FC = () => {
                     ].map((option) => (
                       <label
                         key={option.value}
-                        className={`flex items-center p-3 border rounded-lg cursor-pointer transition-colors ${
+                        className={`flex items-center p-2 border rounded-lg cursor-pointer transition-colors ${
                           feedback.type === option.value
                             ? 'border-blue-500 bg-blue-50 dark:bg-blue-900'
                             : 'border-gray-300 dark:border-gray-600 hover:border-gray-400'
@@ -244,7 +244,7 @@ const BetaFeedback: React.FC = () => {
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Priority Level
                   </label>
-                  <div className="flex space-x-3">
+                  <div className="flex space-x-2">
                     {[
                       { value: 'low', label: 'Low', color: 'green' },
                       { value: 'medium', label: 'Medium', color: 'yellow' },
@@ -303,7 +303,7 @@ const BetaFeedback: React.FC = () => {
                     onChange={(e) => handleInputChange('description', e.target.value)}
                     placeholder="Please provide detailed information about the issue, steps to reproduce, and any error messages you saw. (e.g., 'When I click the login button, nothing happens. I tried refreshing the page but it still doesn't work.')"
                     required
-                    rows={4}
+                    rows={3}
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
                   />
                 </div>
