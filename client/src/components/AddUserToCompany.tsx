@@ -65,8 +65,8 @@ const AddUserToCompany: React.FC<AddUserToCompanyProps> = ({
 
     try {
 
-      // Check if user has permission to add users
-      if (!(user?.role === 'company_admin' || user?.isCompanyAdmin)) {
+      // Check if user has permission to add users (admins and team leaders)
+      if (!(user?.role === 'company_admin' || user?.isCompanyAdmin || user?.role === 'company_team_leader' || user?.isTeamLeader)) {
         setError('You do not have permission to add users to the company');
         setLoading(false);
         return;

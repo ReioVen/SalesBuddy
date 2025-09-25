@@ -461,8 +461,8 @@ const CompanyManagement: React.FC = () => {
             <div className="space-y-6">
               <div className="flex justify-between items-center">
                 <h2 className="text-xl font-semibold text-gray-900 dark:text-white">{t('companyUsers')}</h2>
-                {/* Only company admins can add users */}
-                {(user?.role === 'company_admin' || user?.isCompanyAdmin) && (
+                {/* Company admins and team leaders can add users */}
+                {(user?.role === 'company_admin' || user?.isCompanyAdmin || user?.role === 'company_team_leader' || user?.isTeamLeader) && (
                   <button 
                     onClick={() => setShowAddUser(!showAddUser)}
                     className="bg-blue-600 dark:bg-blue-700 text-white px-4 py-2 rounded hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors duration-200"
