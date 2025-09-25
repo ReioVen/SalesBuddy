@@ -39,6 +39,16 @@ const BetaFeedback: React.FC = () => {
     });
 
     try {
+      // Test if server is running updated code
+      console.log('🔍 [FEEDBACK] Testing server with:', '/api/test');
+      const testResponse = await fetch('/api/test');
+      if (testResponse.ok) {
+        const testResult = await testResponse.json();
+        console.log('✅ [FEEDBACK] Server test successful:', testResult);
+      } else {
+        console.log('❌ [FEEDBACK] Server test failed:', testResponse.status);
+      }
+      
       // Test with direct route first
       console.log('🔍 [FEEDBACK] Making request to:', '/api/feedback/direct');
       const response = await fetch('/api/feedback/direct', {

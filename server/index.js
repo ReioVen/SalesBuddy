@@ -198,6 +198,12 @@ try {
   });
   console.log('✅ [ROUTES] Direct feedback route added');
   
+  // Simple test route
+  app.get('/api/test', (req, res) => {
+    res.json({ message: 'Server is running updated code!', timestamp: new Date().toISOString() });
+  });
+  console.log('✅ [ROUTES] Test route added');
+  
   // List all registered routes for debugging
   console.log('🔍 [ROUTES] Registered feedback routes:');
   if (feedbackRoutes.stack) {
@@ -225,9 +231,11 @@ app.get('/', (req, res) => {
       users: '/api/users',
       companies: '/api/companies',
       ai: '/api/ai',
-      admin: '/api/admin'
+      admin: '/api/admin',
+      feedback: '/api/feedback'
     },
-    documentation: 'This is an API-only server. Use the frontend application to interact with the system.'
+    documentation: 'This is an API-only server. Use the frontend application to interact with the system.',
+    feedbackTest: 'Try /api/feedback/direct for testing'
   });
 });
 
