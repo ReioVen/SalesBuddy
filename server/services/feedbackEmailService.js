@@ -7,7 +7,7 @@ class FeedbackEmailService {
   }
 
   initializeTransporter() {
-    // Use the same email configuration as the existing email service
+    // Use the correct email environment variables
     this.transporter = nodemailer.createTransporter({
       service: 'gmail',
       auth: {
@@ -15,12 +15,22 @@ class FeedbackEmailService {
         pass: process.env.EMAIL_PASS
       }
     });
+    
+    console.log('📧 [FEEDBACK EMAIL] Email service initialized with:', {
+      user: process.env.EMAIL_USER,
+      hasPassword: !!process.env.EMAIL_PASS
+    });
   }
 
   async sendHighPriorityFeedbackNotification(feedback) {
     try {
       if (!this.transporter) {
-        console.error('Email transporter not initialized');
+        console.error('❌ [FEEDBACK EMAIL] Email transporter not initialized');
+        return false;
+      }
+
+      if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+        console.error('❌ [FEEDBACK EMAIL] Email credentials not configured');
         return false;
       }
 

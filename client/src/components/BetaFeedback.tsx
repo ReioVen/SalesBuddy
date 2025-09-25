@@ -52,9 +52,9 @@ const BetaFeedback: React.FC = () => {
         console.log('❌ [FEEDBACK] Server test failed:', testResponse.status);
       }
       
-      // Test with direct route first
-      console.log('🔍 [FEEDBACK] Making request to:', `${API_BASE_URL}/api/feedback/direct`);
-      const response = await fetch(`${API_BASE_URL}/api/feedback/direct`, {
+      // Submit feedback to main route (with database and email)
+      console.log('🔍 [FEEDBACK] Making request to:', `${API_BASE_URL}/api/feedback`);
+      const response = await fetch(`${API_BASE_URL}/api/feedback`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -90,72 +90,9 @@ const BetaFeedback: React.FC = () => {
           error: errorText
         });
         
-        // If direct route fails, try the simple route
+        // If main route fails, show error
         if (response.status === 405) {
-          console.log('🔄 [FEEDBACK] Direct route failed, trying simple route...');
-          const simpleResponse = await fetch(`${API_BASE_URL}/api/feedback/simple`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
-            },
-            body: JSON.stringify({
-              ...feedback,
-              userId: user?._id,
-              userEmail: user?.email,
-              userName: user ? `${user.firstName} ${user.lastName}` : 'Anonymous'
-            })
-          });
-          
-          if (simpleResponse.ok) {
-            const result = await simpleResponse.json();
-            console.log('✅ [FEEDBACK] Simple route worked:', result);
-            alert('Thank you for your feedback! We\'ll review it soon.');
-            setFeedback({
-              type: 'bug',
-              priority: 'medium',
-              title: '',
-              description: '',
-              userAgent: navigator.userAgent,
-              url: window.location.href,
-              timestamp: new Date().toISOString()
-            });
-            setIsOpen(false);
-            return;
-          }
-          
-          // If simple route also fails, try the main route
-          console.log('🔄 [FEEDBACK] Simple route also failed, trying main route...');
-          const mainResponse = await fetch(`${API_BASE_URL}/api/feedback`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
-            },
-            body: JSON.stringify({
-              ...feedback,
-              userId: user?._id,
-              userEmail: user?.email,
-              userName: user ? `${user.firstName} ${user.lastName}` : 'Anonymous'
-            })
-          });
-          
-          if (mainResponse.ok) {
-            const result = await mainResponse.json();
-            console.log('✅ [FEEDBACK] Main route worked:', result);
-            alert('Thank you for your feedback! We\'ll review it soon.');
-            setFeedback({
-              type: 'bug',
-              priority: 'medium',
-              title: '',
-              description: '',
-              userAgent: navigator.userAgent,
-              url: window.location.href,
-              timestamp: new Date().toISOString()
-            });
-            setIsOpen(false);
-            return;
-          }
+          console.log('❌ [FEEDBACK] Main route failed with 405 - route not found');
         }
         
         throw new Error(`Failed to submit feedback: ${response.status} ${response.statusText}`);

@@ -8,6 +8,16 @@ async function testFeedbackEmail() {
   try {
     console.log('🧪 [TEST] Starting feedback email test...');
     
+    // Check environment variables
+    console.log('📧 [TEST] Email configuration:');
+    console.log('  EMAIL_USER:', process.env.EMAIL_USER ? 'Set' : 'Not set');
+    console.log('  EMAIL_PASS:', process.env.EMAIL_PASS ? 'Set' : 'Not set');
+    
+    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+      console.error('❌ [TEST] Email credentials not configured');
+      return;
+    }
+    
     // Test email connection
     console.log('📧 [TEST] Testing email connection...');
     const emailConnected = await feedbackEmailService.testEmailConnection();
