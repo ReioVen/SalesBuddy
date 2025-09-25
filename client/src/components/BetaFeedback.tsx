@@ -16,6 +16,11 @@ const BetaFeedback: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+
+  // Only show feedback component if user is logged in
+  if (!user) {
+    return null;
+  }
   const [feedback, setFeedback] = useState<FeedbackData>({
     type: 'bug',
     priority: 'medium',
