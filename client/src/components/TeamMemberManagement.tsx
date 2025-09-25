@@ -66,11 +66,30 @@ const TeamMemberManagement: React.FC<TeamMemberManagementProps> = ({
         if (response.ok) {
           const data = await response.json();
           console.log('🔍 [TEAM MANAGEMENT] Response data:', data);
+          console.log('🔍 [TEAM MANAGEMENT] Current team ID:', team._id);
+          console.log('🔍 [TEAM MANAGEMENT] All users:', data.users);
+          
           // Filter out users already in this team and team leaders
-          const available = data.users.filter((user: TeamMember) => 
-            user.role === 'company_user' && 
-            (!user.teamId || user.teamId !== team._id)
-          );
+          const available = data.users.filter((user: TeamMember) => {
+            const isRegularUser = user.role === 'company_user';
+            const notInThisTeam = !user.teamId || user.teamId.toString() !== team._id.toString();
+            const notTeamLeader = user.role !== 'company_team_leader';
+            
+            console.log('🔍 [TEAM MANAGEMENT] User filter:', {
+              user: user.email,
+              role: user.role,
+              teamId: user.teamId,
+              currentTeamId: team._id,
+              isRegularUser,
+              notInThisTeam,
+              notTeamLeader,
+              willInclude: isRegularUser && notInThisTeam && notTeamLeader
+            });
+            
+            return isRegularUser && notInThisTeam && notTeamLeader;
+          });
+          
+          console.log('🔍 [TEAM MANAGEMENT] Available users after filtering:', available);
           setAvailableUsers(available);
         } else {
           const errorData = await response.json();
