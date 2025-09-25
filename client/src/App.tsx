@@ -10,6 +10,7 @@ import ForgotPassword from './pages/ForgotPassword.tsx';
 import ResetPassword from './pages/ResetPassword.tsx';
 import PasswordSetup from './pages/PasswordSetup.tsx';
 import PasswordSetupModal from './components/PasswordSetupModal.tsx';
+import BetaFeedback from './components/BetaFeedback.tsx';
 import Navbar from './components/Navbar.tsx';
 import Conversations from './pages/Conversations.tsx';
 import ConversationSummaries from './pages/ConversationSummaries.tsx';
@@ -174,6 +175,9 @@ const App: React.FC = () => {
           isOpen={showPasswordSetupModal}
           onClose={() => setShowPasswordSetupModal(false)}
         />
+        
+        {/* Beta Feedback System */}
+        <BetaFeedback />
       </div>
     </ThemeProvider>
   );
