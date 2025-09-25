@@ -328,13 +328,23 @@ router.post('/users', authenticateToken, canManageUsers, [
     // Normalize email for consistent storage
     const normalizedEmail = User.normalizeEmail(email);
 
-    // Only company admins can create users
+    // Check if user can manage users (admins and team leaders)
     if (!req.user.canManageUsers()) {
       return res.status(403).json({ 
-        error: 'Only company admins can create users',
-        requiredRole: 'company_admin',
+        error: 'User management access required',
         userRole: req.user.role
       });
+    }
+
+    // Team leaders can only create regular users, not other team leaders or admins
+    if (req.user.role === 'company_team_leader' || req.user.isTeamLeader) {
+      if (role !== 'company_user') {
+        return res.status(403).json({ 
+          error: 'Team leaders can only create regular users',
+          attemptedRole: role,
+          allowedRole: 'company_user'
+        });
+      }
     }
 
     // Check if team leader is trying to create another team leader

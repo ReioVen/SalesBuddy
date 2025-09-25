@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 
+const API_BASE_URL = 'https://salesbuddy-production.up.railway.app';
+
 interface TeamMember {
   _id: string;
   firstName: string;
@@ -44,7 +46,7 @@ const TeamMemberManagement: React.FC<TeamMemberManagementProps> = ({
   useEffect(() => {
     const fetchAvailableUsers = async () => {
       try {
-        const response = await fetch(`/api/companies/users`, {
+        const response = await fetch(`${API_BASE_URL}/api/companies/users`, {
           credentials: 'include'
         });
         
@@ -72,7 +74,7 @@ const TeamMemberManagement: React.FC<TeamMemberManagementProps> = ({
     setError(null);
 
     try {
-      const response = await fetch(`/api/companies/users/${selectedUser}/team`, {
+      const response = await fetch(`${API_BASE_URL}/api/companies/users/${selectedUser}/team`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'
@@ -108,7 +110,7 @@ const TeamMemberManagement: React.FC<TeamMemberManagementProps> = ({
     setError(null);
 
     try {
-      const response = await fetch(`/api/companies/users/${memberId}/team`, {
+      const response = await fetch(`${API_BASE_URL}/api/companies/users/${memberId}/team`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json'

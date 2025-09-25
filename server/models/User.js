@@ -563,7 +563,7 @@ userSchema.methods.canCreateTeamLeaders = function() {
 
 // Check if user can manage users in their company
 userSchema.methods.canManageUsers = function() {
-  return this.role === 'company_admin' || this.isCompanyAdmin;
+  return this.role === 'company_admin' || this.isCompanyAdmin || this.role === 'company_team_leader' || this.isTeamLeader;
 };
 
 // Check if user can edit/delete a specific user
