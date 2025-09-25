@@ -21,45 +21,61 @@ router.post('/forgot-password', passwordResetLimiter, [
   body('email').isEmail().withMessage('Please enter a valid email').normalizeEmail()
 ], async (req, res) => {
   try {
+    console.log('🔍 [PASSWORD RESET] Forgot password request received:', { email: req.body.email });
+    
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
+      console.log('❌ [PASSWORD RESET] Validation errors:', errors.array());
       return res.status(400).json({ errors: errors.array() });
     }
 
     const { email } = req.body;
+    console.log('🔍 [PASSWORD RESET] Processing email:', email);
 
     // Check if user exists (case-insensitive)
+    console.log('🔍 [PASSWORD RESET] Looking up user for email:', email);
     const user = await User.findByEmail(email);
     if (!user) {
+      console.log('❌ [PASSWORD RESET] User not found for email:', email);
       // Don't reveal if email exists or not for security
       return res.json({
         message: 'If an account with that email exists, we have sent a password reset link.'
       });
     }
+    console.log('✅ [PASSWORD RESET] User found:', { id: user._id, firstName: user.firstName });
 
     // Create password reset request
+    console.log('🔍 [PASSWORD RESET] Creating reset request...');
     const resetRequest = await PasswordReset.createResetRequest(email);
-    console.log('Created password reset request for:', email, 'Token:', resetRequest.token ? `${resetRequest.token.substring(0, 8)}...` : 'null');
+    console.log('✅ [PASSWORD RESET] Created password reset request for:', email, 'Token:', resetRequest.token ? `${resetRequest.token.substring(0, 8)}...` : 'null');
 
     // Send reset email
+    console.log('🔍 [PASSWORD RESET] Sending reset email...');
     const emailResult = await sendPasswordResetEmail(
       email,
       resetRequest.token,
       user.firstName
     );
+    console.log('📧 [PASSWORD RESET] Email result:', emailResult);
 
     if (!emailResult.success) {
-      console.error('Failed to send password reset email:', emailResult.error);
+      console.error('❌ [PASSWORD RESET] Failed to send password reset email:', emailResult.error);
       return res.status(500).json({
         error: 'Failed to send password reset email. Please try again.'
       });
     }
 
+    console.log('✅ [PASSWORD RESET] Password reset email sent successfully');
     res.json({
       message: 'If an account with that email exists, we have sent a password reset link.'
     });
   } catch (error) {
-    console.error('Password reset request error:', error);
+    console.error('❌ [PASSWORD RESET] Password reset request error:', error);
+    console.error('❌ [PASSWORD RESET] Error details:', {
+      message: error.message,
+      stack: error.stack,
+      name: error.name
+    });
     res.status(500).json({ error: 'Failed to process password reset request' });
   }
 });
