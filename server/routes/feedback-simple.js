@@ -2,12 +2,97 @@ const express = require('express');
 const { body, validationResult } = require('express-validator');
 const { authenticateToken } = require('../middleware/auth');
 const Feedback = require('../models/Feedback');
-const reliableEmailService = require('../services/reliableEmailService');
-const webhookEmailService = require('../services/webhookEmailService');
-const simpleEmailService = require('../services/simpleEmailService');
-const alternativeEmailService = require('../services/alternativeEmailService');
+const { sendPasswordResetEmail } = require('../services/emailService');
+const nodemailer = require('nodemailer');
 
 const router = express.Router();
+
+// Function to send feedback email using the same email service as forgot password
+const sendFeedbackEmail = async (feedback) => {
+  try {
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASSWORD
+      }
+    });
+    
+    const mailOptions = {
+      from: {
+        name: 'SalesBuddy Feedback System',
+        address: process.env.EMAIL_USER
+      },
+      to: 'revotechSB@gmail.com',
+      subject: `🚨 HIGH PRIORITY FEEDBACK: ${feedback.title}`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: #dc2626; margin: 0;">🚨 High Priority Feedback</h1>
+            <p style="color: #6b7280; margin: 5px 0 0 0;">SalesBuddy Beta Feedback System</p>
+          </div>
+          
+          <div style="background: #fef2f2; border-radius: 8px; padding: 30px; margin-bottom: 20px; border-left: 4px solid #dc2626;">
+            <h2 style="color: #dc2626; margin: 0 0 20px 0;">Feedback Details</h2>
+            
+            <div style="margin-bottom: 15px;">
+              <strong style="color: #374151;">Title:</strong>
+              <span style="color: #1f2937; margin-left: 10px;">${feedback.title}</span>
+            </div>
+            
+            <div style="margin-bottom: 15px;">
+              <strong style="color: #374151;">Description:</strong>
+              <p style="color: #1f2937; margin: 5px 0 0 0; background: #f9fafb; padding: 10px; border-radius: 4px;">${feedback.description}</p>
+            </div>
+            
+            <div style="margin-bottom: 15px;">
+              <strong style="color: #374151;">User:</strong>
+              <span style="color: #1f2937; margin-left: 10px;">${feedback.userName} (${feedback.userEmail})</span>
+            </div>
+            
+            <div style="margin-bottom: 15px;">
+              <strong style="color: #374151;">Priority:</strong>
+              <span style="color: #dc2626; font-weight: bold; margin-left: 10px; background: #fef2f2; padding: 4px 8px; border-radius: 4px;">${feedback.priority.toUpperCase()}</span>
+            </div>
+            
+            <div style="margin-bottom: 15px;">
+              <strong style="color: #374151;">Type:</strong>
+              <span style="color: #1f2937; margin-left: 10px;">${feedback.type}</span>
+            </div>
+            
+            <div style="margin-bottom: 15px;">
+              <strong style="color: #374151;">URL:</strong>
+              <a href="${feedback.url}" style="color: #2563eb; margin-left: 10px;">${feedback.url}</a>
+            </div>
+          </div>
+          
+          <div style="background: #f3f4f6; border-radius: 8px; padding: 20px; margin-bottom: 20px;">
+            <h3 style="color: #374151; margin: 0 0 15px 0;">Technical Details</h3>
+            <div style="margin-bottom: 10px;">
+              <strong style="color: #6b7280;">User Agent:</strong>
+              <p style="color: #6b7280; margin: 5px 0 0 0; font-size: 12px; word-break: break-all;">${feedback.userAgent}</p>
+            </div>
+            <div>
+              <strong style="color: #6b7280;">Timestamp:</strong>
+              <span style="color: #6b7280; margin-left: 10px;">${feedback.createdAt}</span>
+            </div>
+          </div>
+          
+          <div style="text-align: center; color: #6b7280; font-size: 14px;">
+            <p style="margin: 0;">This is an automated notification from SalesBuddy Beta Feedback System.</p>
+          </div>
+        </div>
+      `
+    };
+
+    const result = await transporter.sendMail(mailOptions);
+    console.log('📧 [FEEDBACK EMAIL] Email sent successfully:', result.messageId);
+    return true;
+  } catch (error) {
+    console.error('❌ [FEEDBACK EMAIL] Error sending email:', error);
+    return false;
+  }
+};
 
 // Debug route loading
 console.log('🔍 [FEEDBACK] Loading feedback routes...');
@@ -182,59 +267,11 @@ router.post('/', (req, res, next) => {
       savedToDatabase: true
     });
 
-    // Send email notification for high priority feedback
+    // Send email notification for high priority feedback using the same email service as forgot password
     if (savedFeedback.priority === 'high') {
       try {
         console.log('📧 [BETA FEEDBACK] Sending high priority email notification...');
-        let emailSent = false;
-        
-        // Try reliable email service first (most reliable)
-        try {
-          emailSent = await reliableEmailService.sendHighPriorityFeedbackNotification(savedFeedback);
-          if (emailSent) {
-            console.log('📧 [BETA FEEDBACK] Reliable email service succeeded');
-          }
-        } catch (error) {
-          console.log('📧 [BETA FEEDBACK] Reliable email service failed:', error.message);
-        }
-        
-        // If reliable service fails, try webhook email service
-        if (!emailSent) {
-          try {
-            emailSent = await webhookEmailService.sendHighPriorityFeedbackNotification(savedFeedback);
-            if (emailSent) {
-              console.log('📧 [BETA FEEDBACK] Webhook email service succeeded');
-            }
-          } catch (error) {
-            console.log('📧 [BETA FEEDBACK] Webhook email service failed:', error.message);
-          }
-        }
-        
-        // If webhook fails, try simple email service
-        if (!emailSent) {
-          try {
-            console.log('📧 [BETA FEEDBACK] Trying simple email service...');
-            emailSent = await simpleEmailService.sendHighPriorityFeedbackNotification(savedFeedback);
-            if (emailSent) {
-              console.log('📧 [BETA FEEDBACK] Simple email service succeeded');
-            }
-          } catch (error) {
-            console.log('📧 [BETA FEEDBACK] Simple email service failed:', error.message);
-          }
-        }
-        
-        // If simple service fails, try alternative service
-        if (!emailSent) {
-          try {
-            console.log('📧 [BETA FEEDBACK] Trying alternative email service...');
-            emailSent = await alternativeEmailService.sendHighPriorityFeedbackNotification(savedFeedback);
-            if (emailSent) {
-              console.log('📧 [BETA FEEDBACK] Alternative email service succeeded');
-            }
-          } catch (error) {
-            console.log('📧 [BETA FEEDBACK] Alternative email service failed:', error.message);
-          }
-        }
+        const emailSent = await sendFeedbackEmail(savedFeedback);
         
         if (emailSent) {
           // Update feedback to mark email as sent
@@ -242,12 +279,23 @@ router.post('/', (req, res, next) => {
             emailSent: true,
             emailSentAt: new Date()
           });
-          console.log('📧 [BETA FEEDBACK] High priority email notification sent successfully');
+          console.log('📧 [BETA FEEDBACK] High priority email notification sent to revotechSB@gmail.com');
         } else {
-          console.log('❌ [BETA FEEDBACK] All email services failed - feedback logged to console');
+          console.log('❌ [BETA FEEDBACK] Failed to send email - feedback logged to console');
+          // Log feedback details as fallback
+          console.log('📧 [BETA FEEDBACK] FALLBACK - High priority feedback details:');
+          console.log('📧 [BETA FEEDBACK] Title:', savedFeedback.title);
+          console.log('📧 [BETA FEEDBACK] Description:', savedFeedback.description);
+          console.log('📧 [BETA FEEDBACK] User:', savedFeedback.userName);
+          console.log('📧 [BETA FEEDBACK] Email:', savedFeedback.userEmail);
+          console.log('📧 [BETA FEEDBACK] Priority:', savedFeedback.priority);
+          console.log('📧 [BETA FEEDBACK] Type:', savedFeedback.type);
+          console.log('📧 [BETA FEEDBACK] URL:', savedFeedback.url);
+          console.log('📧 [BETA FEEDBACK] User Agent:', savedFeedback.userAgent);
+          console.log('📧 [BETA FEEDBACK] Timestamp:', savedFeedback.createdAt);
         }
       } catch (error) {
-        console.error('❌ [BETA FEEDBACK] Error in email notification system:', error);
+        console.error('❌ [BETA FEEDBACK] Error sending high priority email:', error);
         // Don't fail the request if email fails
       }
     }
