@@ -15,6 +15,7 @@ const BetaFeedback: React.FC = () => {
   const { user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [feedback, setFeedback] = useState<FeedbackData>({
     type: 'bug',
     priority: 'medium',
@@ -39,9 +40,9 @@ const BetaFeedback: React.FC = () => {
       return;
     }
 
-    // Close modal immediately and show success message
+    // Close modal immediately and show custom success modal
     setIsOpen(false);
-    alert('Thank you for your feedback! We\'ll review it soon.');
+    setShowSuccessModal(true);
     
     // Reset form
     setFeedback({
@@ -349,6 +350,33 @@ const BetaFeedback: React.FC = () => {
                   </button>
                 </div>
               </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Custom Success Modal */}
+      {showSuccessModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md mx-4 shadow-xl">
+            <div className="text-center">
+              <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100 dark:bg-green-900 mb-4">
+                <svg className="h-6 w-6 text-green-600 dark:text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                Thank You!
+              </h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                Your feedback has been submitted successfully. We'll review it soon and get back to you if needed.
+              </p>
+              <button
+                onClick={() => setShowSuccessModal(false)}
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition-colors"
+              >
+                Close
+              </button>
             </div>
           </div>
         </div>
