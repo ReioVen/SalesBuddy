@@ -217,17 +217,14 @@ userSchema.methods.comparePassword = async function(candidatePassword) {
 userSchema.statics.findByEmail = function(email) {
   // Normalize email for Gmail addresses (remove dots and convert to lowercase)
   const normalizedEmail = this.normalizeEmail(email);
-  console.log('🔍 [USER] findByEmail called:', { original: email, normalized: normalizedEmail });
   
   // Try the normalized email first
   return this.findOne({ email: normalizedEmail }).then(user => {
     if (user) {
-      console.log('✅ [USER] User found with normalized email');
       return user;
     }
     
     // If not found, try case-insensitive search as fallback
-    console.log('🔍 [USER] Trying case-insensitive search');
     return this.findOne({ email: { $regex: `^${email}$`, $options: 'i' } });
   });
 };
@@ -251,27 +248,22 @@ userSchema.statics.normalizeEmail = function(email) {
 
 // Comprehensive user lookup with multiple fallback methods
 userSchema.statics.findUserByEmail = async function(email) {
-  console.log('🔍 [USER] Comprehensive lookup for:', email);
-  
   // Method 1: Normalized email
   const normalizedEmail = this.normalizeEmail(email);
   let user = await this.findOne({ email: normalizedEmail });
   if (user) {
-    console.log('✅ [USER] Found with normalized email');
     return user;
   }
   
   // Method 2: Case-insensitive exact match
   user = await this.findOne({ email: { $regex: `^${email}$`, $options: 'i' } });
   if (user) {
-    console.log('✅ [USER] Found with case-insensitive search');
     return user;
   }
   
   // Method 3: Case-insensitive normalized match
   user = await this.findOne({ email: { $regex: `^${normalizedEmail}$`, $options: 'i' } });
   if (user) {
-    console.log('✅ [USER] Found with case-insensitive normalized search');
     return user;
   }
   
@@ -283,12 +275,10 @@ userSchema.statics.findUserByEmail = async function(email) {
     
     user = await this.findOne({ email: gmailNormalized });
     if (user) {
-      console.log('✅ [USER] Found with Gmail dot removal');
       return user;
     }
   }
   
-  console.log('❌ [USER] User not found with any method');
   return null;
 };
 

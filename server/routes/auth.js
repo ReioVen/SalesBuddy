@@ -14,16 +14,6 @@ const generateToken = (userId) => {
 
 // Helper to set cookie
 const setAuthCookie = (res, token) => {
-  console.log('🍪 [COOKIE] Setting cookie with config:', {
-    name: 'sb_token',
-    httpOnly: true,
-    secure: false,
-    sameSite: 'lax',
-    maxAge: 7 * 24 * 60 * 60 * 1000,
-    path: '/',
-    tokenLength: token.length
-  });
-  
   res.cookie('sb_token', token, {
     httpOnly: true,
     secure: false, // Set to false to work in all environments
@@ -32,8 +22,6 @@ const setAuthCookie = (res, token) => {
     path: '/',
     domain: undefined // Let browser handle domain automatically
   });
-  
-  console.log('🍪 [COOKIE] Cookie set successfully');
 };
 
 // Register user
@@ -124,152 +112,20 @@ router.post('/login', [
 
     const { email, password } = req.body;
 
-    console.log('🔐 [LOGIN] Attempting login for:', { email, passwordLength: password.length });
-
-    // Test email normalization
-    const normalizedEmail = User.normalizeEmail(email);
-    console.log('🔍 [LOGIN] Email normalization:', { original: email, normalized: normalizedEmail });
-
     // Find user using comprehensive lookup
     const user = await User.findUserByEmail(email);
     
     if (!user) {
       console.log('❌ [LOGIN] User not found for email:', email);
-      
-      // Try alternative lookup methods for debugging
-      const directLookup = await User.findOne({ email: normalizedEmail });
-      const caseInsensitiveLookup = await User.findOne({ email: { $regex: `^${email}$`, $options: 'i' } });
-      
-      console.log('🔍 [LOGIN] Alternative lookups:', {
-        directLookup: !!directLookup,
-        caseInsensitiveLookup: !!caseInsensitiveLookup,
-        directEmail: directLookup?.email,
-        caseInsensitiveEmail: caseInsensitiveLookup?.email
-      });
-      
-      // If we found a user with alternative methods, use that user
-      const foundUser = directLookup || caseInsensitiveLookup;
-      if (foundUser) {
-        console.log('✅ [LOGIN] User found with alternative lookup method');
-        // Continue with the found user
-        const user = foundUser;
-        
-        // Check if user needs password setup
-        if (user.needsPasswordSetup) {
-          console.log('🔐 [LOGIN] User needs password setup, checking temporary password');
-          const isPasswordValid = await user.comparePassword(password);
-          
-          console.log('🔐 [LOGIN] Password validation result:', { isPasswordValid });
-          
-          if (!isPasswordValid) {
-            console.log('❌ [LOGIN] Temporary password incorrect');
-            return res.status(401).json({ error: 'Incorrect email or password' });
-          }
-
-          // Generate token for password setup flow
-          const token = generateToken(user._id);
-          setAuthCookie(res, token);
-
-          res.json({
-            message: 'Login successful - password setup required',
-            user: {
-              id: user._id,
-              email: user.email,
-              firstName: user.firstName,
-              lastName: user.lastName,
-              company: user.company,
-              companyPermissions: user.companyPermissions,
-              companyId: user.companyId,
-              role: user.role,
-              teamId: user.teamId,
-              isCompanyAdmin: user.isCompanyAdmin,
-              isTeamLeader: user.isTeamLeader,
-              isSuperAdmin: user.isSuperAdmin,
-              isAdmin: user.isAdmin,
-              adminPermissions: user.adminPermissions,
-              subscription: user.subscription,
-              usage: user.usage,
-              settings: user.settings,
-              needsPasswordSetup: user.needsPasswordSetup
-            },
-            token: token
-          });
-          return;
-        }
-
-        // Regular login for users who don't need password setup
-        console.log('🔐 [LOGIN] Regular login flow, checking password');
-        const isPasswordValid = await user.comparePassword(password);
-        
-        console.log('🔐 [LOGIN] Password validation result:', { isPasswordValid });
-        
-        if (!isPasswordValid) {
-          console.log('❌ [LOGIN] Password incorrect for regular user');
-          return res.status(401).json({ error: 'Incorrect email or password' });
-        }
-
-        // Generate token
-        const token = generateToken(user._id);
-        console.log('🔐 [LOGIN] Generated token for user:', { 
-          userId: user._id, 
-          email: user.email,
-          tokenLength: token.length 
-        });
-        
-        setAuthCookie(res, token);
-        console.log('🍪 [LOGIN] Cookie set with token');
-
-        // Update last login
-        user.lastLogin = new Date();
-        await user.save();
-
-        console.log('✅ [LOGIN] Login successful for user:', user.email);
-        res.json({
-          message: 'Login successful',
-          token: token, // Include token in response for cross-origin requests
-          user: {
-            id: user._id,
-            email: user.email,
-            firstName: user.firstName,
-            lastName: user.lastName,
-            company: user.company,
-            companyPermissions: user.companyPermissions,
-            companyId: user.companyId,
-            role: user.role,
-            teamId: user.teamId,
-            isCompanyAdmin: user.isCompanyAdmin,
-            isTeamLeader: user.isTeamLeader,
-            isSuperAdmin: user.isSuperAdmin,
-            isAdmin: user.isAdmin,
-            adminPermissions: user.adminPermissions,
-            subscription: user.subscription,
-            usage: user.usage,
-            settings: user.settings,
-            needsPasswordSetup: user.needsPasswordSetup
-          }
-        });
-        return;
-      }
-      
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
-    console.log('✅ [LOGIN] User found:', { 
-      id: user._id, 
-      email: user.email, 
-      needsPasswordSetup: user.needsPasswordSetup 
-    });
-
     // Check if user needs password setup
     if (user.needsPasswordSetup) {
-      console.log('🔐 [LOGIN] User needs password setup, checking temporary password');
       // For users who need password setup, allow login with temporary password
       const isPasswordValid = await user.comparePassword(password);
       
-      console.log('🔐 [LOGIN] Password validation result:', { isPasswordValid });
-      
       if (!isPasswordValid) {
-        console.log('❌ [LOGIN] Temporary password incorrect');
         return res.status(401).json({ error: 'Incorrect email or password' });
       }
 
@@ -305,32 +161,19 @@ router.post('/login', [
     }
 
     // Regular login for users who don't need password setup
-    console.log('🔐 [LOGIN] Regular login flow, checking password');
     const isPasswordValid = await user.comparePassword(password);
     
-    console.log('🔐 [LOGIN] Password validation result:', { isPasswordValid });
-    
     if (!isPasswordValid) {
-      console.log('❌ [LOGIN] Password incorrect for regular user');
       return res.status(401).json({ error: 'Incorrect email or password' });
     }
 
     // Generate token
     const token = generateToken(user._id);
-    console.log('🔐 [LOGIN] Generated token for user:', { 
-      userId: user._id, 
-      email: user.email,
-      tokenLength: token.length 
-    });
-    
     setAuthCookie(res, token);
-    console.log('🍪 [LOGIN] Cookie set with token');
 
     // Update last login
     user.lastLogin = new Date();
     await user.save();
-
-    console.log('✅ [LOGIN] Login successful for user:', user.email);
     res.json({
       message: 'Login successful',
       token: token, // Include token in response for cross-origin requests
