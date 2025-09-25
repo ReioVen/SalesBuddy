@@ -73,11 +73,17 @@ Get feedback statistics (admin only)
 
 ## Data Storage
 
-Currently uses in-memory storage for simplicity. In production, consider:
-- MongoDB collection for persistence
-- Redis for caching
-- Email notifications for high-priority issues
-- Integration with support ticket systems
+**Database Integration:**
+- **MongoDB Collection**: All feedback is stored in the `feedback` collection
+- **Indexed Fields**: Optimized queries on status, priority, type, and timestamps
+- **User Association**: Linked to user accounts for better tracking
+- **Audit Trail**: Complete history with timestamps and admin notes
+
+**Email Notifications:**
+- **High Priority Alerts**: Automatic email to `revotechSB@gmail.com` for high-priority feedback
+- **Rich HTML Emails**: Formatted notifications with all relevant details
+- **Email Tracking**: Database tracks whether emails were sent successfully
+- **Fallback Handling**: System continues to work even if email fails
 
 ## Usage
 
@@ -124,6 +130,26 @@ Currently uses in-memory storage for simplicity. In production, consider:
 - Feedback categorization
 - Automated triage based on keywords
 
+## Testing
+
+### Email System Test
+```bash
+# Test email notifications
+node server/scripts/testFeedbackEmail.js
+```
+
+This will:
+- Verify email service connection
+- Send a test high-priority notification
+- Confirm email delivery to `revotechSB@gmail.com`
+
+### Database Verification
+```bash
+# Check feedback collection
+mongo your-database-name
+db.feedback.find().sort({createdAt: -1}).limit(5)
+```
+
 ## Monitoring
 
 The system logs all feedback submissions with:
@@ -132,5 +158,9 @@ The system logs all feedback submissions with:
 - Priority level
 - Feedback type
 - System information
+- Email delivery status
 
-Monitor server logs for feedback activity and system health.
+Monitor server logs for feedback activity and system health:
+- `🔍 [BETA FEEDBACK]` - General feedback operations
+- `📧 [BETA FEEDBACK]` - Email notification status
+- `❌ [BETA FEEDBACK]` - Error conditions

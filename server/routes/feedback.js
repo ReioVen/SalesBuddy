@@ -1,11 +1,10 @@
 const express = require('express');
 const { body, validationResult } = require('express-validator');
 const { authenticateToken } = require('../middleware/auth');
+const Feedback = require('../models/Feedback');
+const feedbackEmailService = require('../services/feedbackEmailService');
 
 const router = express.Router();
-
-// Store feedback in memory (in production, you'd want to use a database)
-let feedbackStore = [];
 
 // Submit feedback
 router.post('/', authenticateToken, [
@@ -28,37 +27,50 @@ router.post('/', authenticateToken, [
       });
     }
 
-    const feedback = {
-      id: Date.now().toString(),
+    // Create feedback document
+    const feedback = new Feedback({
       ...req.body,
-      timestamp: new Date().toISOString(),
-      status: 'open',
-      adminNotes: ''
-    };
+      userId: req.user._id,
+      userEmail: req.user.email,
+      userName: `${req.user.firstName} ${req.user.lastName}`
+    });
 
-    // Store feedback
-    feedbackStore.push(feedback);
+    // Save to database
+    const savedFeedback = await feedback.save();
 
     // Log feedback for monitoring
     console.log('🔍 [BETA FEEDBACK] New feedback submitted:', {
-      id: feedback.id,
-      type: feedback.type,
-      priority: feedback.priority,
-      title: feedback.title,
-      user: feedback.userName || 'Anonymous',
-      timestamp: feedback.timestamp
+      id: savedFeedback._id,
+      type: savedFeedback.type,
+      priority: savedFeedback.priority,
+      title: savedFeedback.title,
+      user: savedFeedback.userName || 'Anonymous',
+      timestamp: savedFeedback.createdAt
     });
 
-    // In production, you might want to:
-    // 1. Save to database
-    // 2. Send email notification to admin
-    // 3. Create ticket in support system
-    // 4. Send to monitoring service
+    // Send email notification for high priority feedback
+    if (savedFeedback.isHighPriority()) {
+      try {
+        const emailSent = await feedbackEmailService.sendHighPriorityFeedbackNotification(savedFeedback);
+        if (emailSent) {
+          // Update feedback to mark email as sent
+          await Feedback.findByIdAndUpdate(savedFeedback._id, {
+            emailSent: true,
+            emailSentAt: new Date()
+          });
+          console.log('📧 [BETA FEEDBACK] High priority email notification sent');
+        }
+      } catch (error) {
+        console.error('❌ [BETA FEEDBACK] Failed to send email notification:', error);
+        // Don't fail the request if email fails
+      }
+    }
 
     res.status(201).json({
       success: true,
       message: 'Feedback submitted successfully',
-      feedbackId: feedback.id
+      feedbackId: savedFeedback._id,
+      emailSent: savedFeedback.isHighPriority()
     });
 
   } catch (error) {
@@ -81,15 +93,35 @@ router.get('/', authenticateToken, async (req, res) => {
       });
     }
 
-    // Sort by timestamp (newest first)
-    const sortedFeedback = feedbackStore.sort((a, b) => 
-      new Date(b.timestamp) - new Date(a.timestamp)
-    );
+    // Get query parameters for filtering and pagination
+    const { status, priority, type, page = 1, limit = 50 } = req.query;
+    
+    // Build filter object
+    const filter = {};
+    if (status) filter.status = status;
+    if (priority) filter.priority = priority;
+    if (type) filter.type = type;
+
+    // Calculate pagination
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+
+    // Fetch feedback with pagination and sorting
+    const feedback = await Feedback.find(filter)
+      .populate('userId', 'firstName lastName email')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(parseInt(limit));
+
+    // Get total count for pagination
+    const total = await Feedback.countDocuments(filter);
 
     res.json({
       success: true,
-      feedback: sortedFeedback,
-      total: sortedFeedback.length
+      feedback,
+      total,
+      page: parseInt(page),
+      limit: parseInt(limit),
+      totalPages: Math.ceil(total / parseInt(limit))
     });
 
   } catch (error) {
@@ -118,18 +150,23 @@ router.patch('/:id', authenticateToken, [
     const { id } = req.params;
     const { status, adminNotes } = req.body;
 
-    const feedbackIndex = feedbackStore.findIndex(f => f.id === id);
-    if (feedbackIndex === -1) {
+    // Find and update feedback
+    const updateData = {};
+    if (status) updateData.status = status;
+    if (adminNotes !== undefined) updateData.adminNotes = adminNotes;
+
+    const updatedFeedback = await Feedback.findByIdAndUpdate(
+      id,
+      updateData,
+      { new: true }
+    );
+
+    if (!updatedFeedback) {
       return res.status(404).json({
         error: 'Not found',
         message: 'Feedback not found'
       });
     }
-
-    // Update feedback
-    if (status) feedbackStore[feedbackIndex].status = status;
-    if (adminNotes !== undefined) feedbackStore[feedbackIndex].adminNotes = adminNotes;
-    feedbackStore[feedbackIndex].updatedAt = new Date().toISOString();
 
     console.log('🔍 [BETA FEEDBACK] Feedback updated:', {
       id,
@@ -140,7 +177,7 @@ router.patch('/:id', authenticateToken, [
     res.json({
       success: true,
       message: 'Feedback updated successfully',
-      feedback: feedbackStore[feedbackIndex]
+      feedback: updatedFeedback
     });
 
   } catch (error) {
@@ -163,27 +200,8 @@ router.get('/stats', authenticateToken, async (req, res) => {
       });
     }
 
-    const stats = {
-      total: feedbackStore.length,
-      byType: {},
-      byPriority: {},
-      byStatus: {},
-      recent: feedbackStore.filter(f => 
-        new Date(f.timestamp) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
-      ).length
-    };
-
-    // Calculate statistics
-    feedbackStore.forEach(feedback => {
-      // By type
-      stats.byType[feedback.type] = (stats.byType[feedback.type] || 0) + 1;
-      
-      // By priority
-      stats.byPriority[feedback.priority] = (stats.byPriority[feedback.priority] || 0) + 1;
-      
-      // By status
-      stats.byStatus[feedback.status] = (stats.byStatus[feedback.status] || 0) + 1;
-    });
+    // Get statistics using the model's static method
+    const stats = await Feedback.getStats();
 
     res.json({
       success: true,
