@@ -35,8 +35,16 @@ const BetaFeedback: React.FC = () => {
       hasToken: !!token,
       tokenLength: token?.length,
       user: user ? `${user.firstName} ${user.lastName}` : 'No user',
+      userEmail: user?.email,
+      userId: user?._id,
       feedback: feedback
     });
+    
+    // Check if user is authenticated
+    if (!user || !token) {
+      console.log('⚠️ [FEEDBACK] User not authenticated, using anonymous feedback');
+      // Continue with anonymous feedback
+    }
 
     try {
       // Use the correct API base URL
@@ -52,9 +60,10 @@ const BetaFeedback: React.FC = () => {
         console.log('❌ [FEEDBACK] Server test failed:', testResponse.status);
       }
       
-      // Submit feedback to main route (with database and email)
-      console.log('🔍 [FEEDBACK] Making request to:', `${API_BASE_URL}/api/feedback`);
-      const response = await fetch(`${API_BASE_URL}/api/feedback`, {
+      // Submit feedback to appropriate route
+      const route = (!user || !token) ? '/api/feedback/anonymous' : '/api/feedback';
+      console.log('🔍 [FEEDBACK] Making request to:', `${API_BASE_URL}${route}`);
+      const response = await fetch(`${API_BASE_URL}${route}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -62,8 +71,8 @@ const BetaFeedback: React.FC = () => {
         },
         body: JSON.stringify({
           ...feedback,
-          userId: user?._id,
-          userEmail: user?.email,
+          userId: user?._id || null,
+          userEmail: user?.email || 'anonymous@example.com',
           userName: user ? `${user.firstName} ${user.lastName}` : 'Anonymous'
         })
       });

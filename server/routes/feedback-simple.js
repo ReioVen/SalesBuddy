@@ -32,6 +32,48 @@ router.post('/simple', (req, res) => {
   res.json({ message: 'Simple feedback route working!', data: req.body, timestamp: new Date().toISOString() });
 });
 
+// Anonymous feedback route (no authentication required)
+router.post('/anonymous', (req, res) => {
+  console.log('🔍 [FEEDBACK] Anonymous feedback route hit:', {
+    body: req.body,
+    method: req.method,
+    url: req.url,
+    timestamp: new Date().toISOString()
+  });
+  
+  const feedback = {
+    id: Date.now().toString(),
+    ...req.body,
+    timestamp: new Date().toISOString(),
+    status: 'open',
+    adminNotes: '',
+    userId: null,
+    userEmail: req.body.userEmail || 'anonymous@example.com',
+    userName: req.body.userName || 'Anonymous'
+  };
+  
+  // Log feedback for monitoring
+  console.log('🔍 [BETA FEEDBACK] Anonymous feedback submitted:', {
+    id: feedback.id,
+    type: feedback.type,
+    priority: feedback.priority,
+    title: feedback.title,
+    user: feedback.userName,
+    timestamp: feedback.timestamp
+  });
+  
+  // TODO: Save to database and send email for high priority
+  if (feedback.priority === 'high') {
+    console.log('📧 [BETA FEEDBACK] High priority feedback - would send email to revotechSB@gmail.com');
+  }
+  
+  res.json({
+    success: true,
+    message: 'Anonymous feedback submitted successfully',
+    feedbackId: feedback.id
+  });
+});
+
 // Simple feedback submission (without database for now)
 router.post('/', (req, res, next) => {
   console.log('🔍 [FEEDBACK] POST / route hit:', {
@@ -39,7 +81,8 @@ router.post('/', (req, res, next) => {
     url: req.url,
     path: req.path,
     body: req.body,
-    headers: req.headers
+    headers: req.headers,
+    authHeader: req.headers.authorization
   });
   next();
 }, authenticateToken, [
