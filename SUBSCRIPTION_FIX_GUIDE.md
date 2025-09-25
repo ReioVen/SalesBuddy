@@ -107,7 +107,7 @@ node comprehensive_subscription_fix.js
 | Plan | Price | Conversations | AI Tips | Features |
 |------|-------|---------------|---------|----------|
 | Free | $0 | 10/month | 0 | Basic scenarios |
-| Basic | $49.99 | 30/month | 10 | Tips, lessons, email support |
+| Basic | $59.99 | 30/month | 10 | Tips, lessons, email support |
 | Pro | $89.99 | 50/month | 25 | Customization, feedback, priority support |
 | Unlimited | $349 | 200/month | 50 | All features, dedicated support |
 | Enterprise | Custom | 50/day | 50 | Team management, all features |

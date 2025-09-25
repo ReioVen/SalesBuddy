@@ -24,7 +24,7 @@ const SUBSCRIPTION_PLANS = {
   },
   basic: {
     name: 'Basic',
-    price: 49.99,
+    price: 59.99,
     stripePriceId: process.env.STRIPE_BASIC_PRICE_ID,
     features: ['30 AI conversations per month', '10 AI Tips per month', 'Tips and Lessons', 'Basic sales scenarios', 'Email support'],
     limits: { conversations: 30, aiTips: 10 }

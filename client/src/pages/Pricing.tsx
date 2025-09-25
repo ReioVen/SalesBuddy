@@ -78,7 +78,7 @@ const Pricing: React.FC = () => {
     },
     {
       name: language === 'et' ? 'Põhi' : 'Basic',
-      price: 49.99,
+      price: 59.99,
       period: language === 'et' ? 'kuu' : 'month',
       features: [
         language === 'et' ? '30 AI Vestlust kuus' : '30 AI conversations per month',
