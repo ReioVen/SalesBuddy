@@ -73,9 +73,20 @@ class SimpleEmailService {
 
       const result = await this.transporter.sendMail(mailOptions);
       console.log('📧 [SIMPLE EMAIL] Email sent successfully:', result.messageId);
+      console.log('📧 [SIMPLE EMAIL] Email response:', {
+        accepted: result.accepted,
+        rejected: result.rejected,
+        response: result.response
+      });
       return true;
     } catch (error) {
       console.error('❌ [SIMPLE EMAIL] Error sending email:', error);
+      console.error('❌ [SIMPLE EMAIL] Error details:', {
+        code: error.code,
+        command: error.command,
+        response: error.response,
+        responseCode: error.responseCode
+      });
       return false;
     }
   }
