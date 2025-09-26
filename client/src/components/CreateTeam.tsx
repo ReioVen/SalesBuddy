@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useTranslation } from '../hooks/useTranslation';
+import { useTranslation } from '../hooks/useTranslation.ts';
 
 const API_BASE_URL = 'https://salesbuddy-production.up.railway.app';
 
