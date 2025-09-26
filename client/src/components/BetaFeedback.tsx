@@ -70,7 +70,7 @@ const BetaFeedback: React.FC = () => {
     setIsSubmitting(true);
 
     // Debug authentication
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('sb_token');
     console.log('🔍 [FEEDBACK] Submitting feedback:', {
       hasToken: !!token,
       tokenLength: token?.length,
@@ -106,7 +106,7 @@ const BetaFeedback: React.FC = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${localStorage.getItem('sb_token')}`
         },
         body: JSON.stringify({
           ...feedback,

@@ -51,7 +51,7 @@ const Profile: React.FC = () => {
     setDeleteError('');
 
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('sb_token');
       const response = await fetch(`${API_BASE_URL}/api/users/delete-account`, {
         method: 'DELETE',
         headers: {

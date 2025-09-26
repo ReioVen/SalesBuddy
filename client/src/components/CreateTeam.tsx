@@ -31,10 +31,20 @@ const CreateTeam: React.FC<CreateTeamProps> = ({
     setError(null);
 
     try {
+      // Get authentication token
+      const token = localStorage.getItem('sb_token');
+      
+      if (!token) {
+        setError('Authentication token not found. Please log in again.');
+        setLoading(false);
+        return;
+      }
+
       const response = await fetch(`${API_BASE_URL}/api/companies/teams/create`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
         credentials: 'include',
         body: JSON.stringify({

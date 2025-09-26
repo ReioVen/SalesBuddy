@@ -35,7 +35,7 @@ const FeedbackAdmin: React.FC = () => {
     try {
       const response = await fetch('/api/feedback', {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${localStorage.getItem('sb_token')}`
         }
       });
       
@@ -54,7 +54,7 @@ const FeedbackAdmin: React.FC = () => {
     try {
       const response = await fetch('/api/feedback/stats', {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${localStorage.getItem('sb_token')}`
         }
       });
       
@@ -73,7 +73,7 @@ const FeedbackAdmin: React.FC = () => {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${localStorage.getItem('sb_token')}`
         },
         body: JSON.stringify({
           status,
