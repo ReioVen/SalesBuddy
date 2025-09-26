@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from '../hooks/useTranslation';
 
 const API_BASE_URL = 'https://salesbuddy-production.up.railway.app';
 
@@ -18,6 +19,7 @@ const CreateTeam: React.FC<CreateTeamProps> = ({
   onTeamCreated, 
   onCancel 
 }) => {
+  const { t } = useTranslation();
   const [form, setForm] = useState<CreateTeamForm>({
     name: '',
     description: ''
@@ -35,7 +37,7 @@ const CreateTeam: React.FC<CreateTeamProps> = ({
       const token = localStorage.getItem('sb_token');
       
       if (!token) {
-        setError('Authentication token not found. Please log in again.');
+        setError(t('authenticationTokenNotFound'));
         setLoading(false);
         return;
       }
@@ -55,7 +57,7 @@ const CreateTeam: React.FC<CreateTeamProps> = ({
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to create team');
+        throw new Error(errorData.error || t('failedToCreateTeam'));
       }
 
       // Reset form and notify parent
@@ -65,7 +67,7 @@ const CreateTeam: React.FC<CreateTeamProps> = ({
       });
       onTeamCreated();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create team');
+      setError(err instanceof Error ? err.message : t('failedToCreateTeam'));
     } finally {
       setLoading(false);
     }
@@ -73,7 +75,7 @@ const CreateTeam: React.FC<CreateTeamProps> = ({
 
   return (
     <div className="bg-white dark:bg-dark-800 border border-gray-200 dark:border-dark-600 rounded-lg p-6">
-      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Create New Team</h3>
+      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">{t('createNewTeam')}</h3>
       
       {error && (
         <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 mb-6">
@@ -84,7 +86,7 @@ const CreateTeam: React.FC<CreateTeamProps> = ({
               </svg>
             </div>
             <div className="ml-3">
-              <h3 className="text-sm font-medium text-red-800 dark:text-red-200">Error</h3>
+              <h3 className="text-sm font-medium text-red-800 dark:text-red-200">{t('error')}</h3>
               <p className="mt-1 text-sm text-red-700 dark:text-red-300">{error}</p>
             </div>
           </div>
@@ -94,7 +96,7 @@ const CreateTeam: React.FC<CreateTeamProps> = ({
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Team Name *
+            {t('teamName')} *
           </label>
           <input
             type="text"
@@ -103,13 +105,13 @@ const CreateTeam: React.FC<CreateTeamProps> = ({
             value={form.name}
             onChange={(e) => setForm({ ...form, name: e.target.value })}
             className="w-full border border-gray-300 dark:border-dark-600 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-dark-700 text-gray-900 dark:text-white"
-            placeholder="Enter team name"
+            placeholder={t('enterTeamName')}
           />
         </div>
 
         <div>
           <label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Description
+            {t('teamDescription')}
           </label>
           <textarea
             id="description"
@@ -117,17 +119,17 @@ const CreateTeam: React.FC<CreateTeamProps> = ({
             onChange={(e) => setForm({ ...form, description: e.target.value })}
             rows={3}
             className="w-full border border-gray-300 dark:border-dark-600 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-dark-700 text-gray-900 dark:text-white"
-            placeholder="Enter team description (optional)"
+            placeholder={t('enterTeamDescription')}
           />
         </div>
 
         <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-          <h3 className="text-sm font-medium text-blue-800 dark:text-blue-200 mb-2">What happens next?</h3>
+          <h3 className="text-sm font-medium text-blue-800 dark:text-blue-200 mb-2">{t('whatHappensNext')}</h3>
           <ul className="text-sm text-blue-700 dark:text-blue-300 space-y-1">
-            <li>• Team will be created and ready for members</li>
-            <li>• You can assign a team leader to this team</li>
-            <li>• Team members can be added from the Users tab</li>
-            <li>• Team settings can be managed later</li>
+            <li>• {t('teamWillBeCreated')}</li>
+            <li>• {t('canAssignTeamLeader')}</li>
+            <li>• {t('teamMembersCanBeAdded')}</li>
+            <li>• {t('teamSettingsCanBeManaged')}</li>
           </ul>
         </div>
 
@@ -137,14 +139,14 @@ const CreateTeam: React.FC<CreateTeamProps> = ({
             onClick={onCancel}
             className="flex-1 bg-gray-300 dark:bg-dark-600 text-gray-700 dark:text-gray-300 py-2 px-4 rounded-lg font-medium hover:bg-gray-400 dark:hover:bg-dark-500 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
           >
-            Cancel
+            {t('cancel')}
           </button>
           <button
             type="submit"
             disabled={loading}
             className="flex-1 bg-blue-600 dark:bg-blue-700 text-white py-2 px-4 rounded-lg font-medium hover:bg-blue-700 dark:hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? 'Creating Team...' : 'Create Team'}
+            {loading ? t('creatingTeam') : t('createTeam')}
           </button>
         </div>
       </form>

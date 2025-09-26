@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext.tsx';
+import { useTranslation } from '../hooks/useTranslation';
 import axios from 'axios';
 
 interface AddUserForm {
@@ -32,6 +33,7 @@ const AddUserToCompany: React.FC<AddUserToCompanyProps> = ({
   onCancel 
 }) => {
   const { user } = useAuth();
+  const { t } = useTranslation();
   const [form, setForm] = useState<AddUserForm>({
     email: '',
     password: '',
@@ -52,7 +54,7 @@ const AddUserToCompany: React.FC<AddUserToCompanyProps> = ({
 
     // Client-side validation
     if (form.password !== form.confirmPassword) {
-      setPasswordMatchError('Passwords do not match');
+      setPasswordMatchError(t('passwordsDoNotMatch'));
       setLoading(false);
       return;
     }
@@ -192,7 +194,7 @@ const AddUserToCompany: React.FC<AddUserToCompanyProps> = ({
 
   return (
     <div className="bg-white dark:bg-dark-800 border border-gray-200 dark:border-dark-600 rounded-lg p-6">
-      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Add User to Company</h3>
+      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">{t('addNewUser')}</h3>
       
       {error && (
         <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 mb-6">
@@ -214,7 +216,7 @@ const AddUserToCompany: React.FC<AddUserToCompanyProps> = ({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              First Name *
+              {t('firstName')} *
             </label>
             <input
               type="text"
@@ -223,13 +225,13 @@ const AddUserToCompany: React.FC<AddUserToCompanyProps> = ({
               value={form.firstName}
               onChange={(e) => setForm({ ...form, firstName: e.target.value })}
               className="w-full border border-gray-300 dark:border-dark-600 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-dark-700 text-gray-900 dark:text-white"
-              placeholder="Enter first name"
+              placeholder={t('enterFirstName')}
             />
           </div>
 
           <div>
             <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Last Name *
+              {t('lastName')} *
             </label>
             <input
               type="text"
@@ -238,14 +240,14 @@ const AddUserToCompany: React.FC<AddUserToCompanyProps> = ({
               value={form.lastName}
               onChange={(e) => setForm({ ...form, lastName: e.target.value })}
               className="w-full border border-gray-300 dark:border-dark-600 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-dark-700 text-gray-900 dark:text-white"
-              placeholder="Enter last name"
+              placeholder={t('enterLastName')}
             />
           </div>
         </div>
 
         <div>
           <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Email Address *
+            {t('emailAddress')} *
           </label>
           <input
             type="email"
@@ -254,13 +256,13 @@ const AddUserToCompany: React.FC<AddUserToCompanyProps> = ({
             value={form.email}
             onChange={(e) => setForm({ ...form, email: e.target.value })}
             className="w-full border border-gray-300 dark:border-dark-600 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-dark-700 text-gray-900 dark:text-white"
-            placeholder="Enter email address"
+            placeholder={t('enterEmail')}
           />
         </div>
 
         <div>
           <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Password *
+            {t('password')} *
           </label>
           <input
             type="password"
@@ -270,13 +272,13 @@ const AddUserToCompany: React.FC<AddUserToCompanyProps> = ({
             value={form.password}
             onChange={(e) => setForm({ ...form, password: e.target.value })}
             className="w-full border border-gray-300 dark:border-dark-600 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-dark-700 text-gray-900 dark:text-white"
-            placeholder="Enter password (min 8 characters)"
+            placeholder={t('enterPassword')}
           />
         </div>
 
         <div>
           <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Confirm Password *
+            {t('confirmPassword')} *
           </label>
           <input
             type="password"
@@ -287,7 +289,7 @@ const AddUserToCompany: React.FC<AddUserToCompanyProps> = ({
             onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })}
             onBlur={() => {
               if (form.confirmPassword && form.password !== form.confirmPassword) {
-                setPasswordMatchError('Passwords do not match');
+                setPasswordMatchError(t('passwordsDoNotMatch'));
               } else {
                 setPasswordMatchError(null);
               }
@@ -295,7 +297,7 @@ const AddUserToCompany: React.FC<AddUserToCompanyProps> = ({
             className={`w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-dark-700 text-gray-900 dark:text-white ${
               passwordMatchError ? 'border-red-500 ring-2 ring-red-500' : 'border-gray-300 dark:border-dark-600'
             }`}
-            placeholder="Confirm password"
+            placeholder={t('confirmPasswordPlaceholder')}
           />
           {passwordMatchError && (
             <p className="mt-1 text-sm text-red-600 dark:text-red-400">{passwordMatchError}</p>
@@ -304,7 +306,7 @@ const AddUserToCompany: React.FC<AddUserToCompanyProps> = ({
 
         <div>
           <label htmlFor="role" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Role *
+            {t('role')} *
           </label>
           <select
             id="role"
@@ -324,7 +326,7 @@ const AddUserToCompany: React.FC<AddUserToCompanyProps> = ({
         {user?.role === 'company_admin' && teams.length > 0 && (
           <div>
             <label htmlFor="teamId" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Team {form.role === 'company_team_leader' ? '*' : '(optional)'}
+              {t('team')} {form.role === 'company_team_leader' ? '*' : '(optional)'}
             </label>
             <select
               id="teamId"
@@ -363,14 +365,14 @@ const AddUserToCompany: React.FC<AddUserToCompanyProps> = ({
             onClick={onCancel}
             className="flex-1 bg-gray-300 dark:bg-dark-600 text-gray-700 dark:text-gray-300 py-2 px-4 rounded-lg font-medium hover:bg-gray-400 dark:hover:bg-dark-500 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
           >
-            Cancel
+            {t('cancel')}
           </button>
           <button
             type="submit"
             disabled={loading || (form.role === 'company_team_leader' && teams.length === 0)}
             className="flex-1 bg-blue-600 dark:bg-blue-700 text-white py-2 px-4 rounded-lg font-medium hover:bg-blue-700 dark:hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? 'Adding User...' : 'Add User'}
+            {loading ? t('addingUser') : t('addUser')}
           </button>
         </div>
       </form>
