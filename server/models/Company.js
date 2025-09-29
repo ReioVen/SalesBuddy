@@ -63,16 +63,16 @@ const companySchema = new mongoose.Schema({
     plan: {
       type: String,
       enum: ['free', 'basic', 'pro', 'unlimited', 'enterprise'],
-      default: 'free',
+      default: 'enterprise',
       set: function(value) {
         // Normalize to lowercase
-        return value ? value.toLowerCase() : 'free';
+        return value ? value.toLowerCase() : 'enterprise';
       }
     },
     status: {
       type: String,
       enum: ['active', 'inactive', 'cancelled', 'past_due'],
-      default: 'inactive'
+      default: 'active'
     },
     stripeCustomerId: String,
     stripeSubscriptionId: String,
@@ -84,7 +84,7 @@ const companySchema = new mongoose.Schema({
     },
     maxUsers: {
       type: Number,
-      default: 5 // Free tier limit
+      default: -1 // Unlimited for enterprise
     },
     monthlyConversationLimit: {
       type: Number,
