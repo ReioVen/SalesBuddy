@@ -540,7 +540,9 @@ router.put('/users/:userId/team', authenticateToken, canManageUsers, [
     user.teamId = team._id;
     await user.save();
 
-    // Get updated team information
+    // Get updated team information with populated data
+    await company.populate('teams.members', 'firstName lastName email');
+    await company.populate('teams.teamLeader', 'firstName lastName email');
     const updatedTeam = company.teams.find(t => t.name === teamName);
     
     res.json({
@@ -621,7 +623,9 @@ router.delete('/users/:userId/team', authenticateToken, canManageUsers, [
     user.teamId = null;
     await user.save();
 
-    // Get updated team information
+    // Get updated team information with populated data
+    await company.populate('teams.members', 'firstName lastName email');
+    await company.populate('teams.teamLeader', 'firstName lastName email');
     const updatedTeam = company.teams.find(t => t.name === teamName);
     
     res.json({

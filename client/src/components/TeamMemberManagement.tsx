@@ -149,7 +149,6 @@ const TeamMemberManagement: React.FC<TeamMemberManagementProps> = ({
   const [currentTeam, setCurrentTeam] = useState(team);
   
   useEffect(() => {
-    console.log('🔍 [TEAM INIT] Initial team data:', team);
     setCurrentTeam(team);
   }, [team]);
 
@@ -262,10 +261,7 @@ const TeamMemberManagement: React.FC<TeamMemberManagementProps> = ({
       
       // Update current team state immediately with the new team data from response
       if (responseData.team) {
-        console.log('🔍 [TEAM UPDATE] Updating team with response data:', responseData.team);
         setCurrentTeam(responseData.team);
-      } else {
-        console.log('🔍 [TEAM UPDATE] No team data in response:', responseData);
       }
       
       // Also update the parent component to refresh team data
@@ -318,10 +314,7 @@ const TeamMemberManagement: React.FC<TeamMemberManagementProps> = ({
           
           // Update current team state immediately with the new team data from response
           if (responseData.team) {
-            console.log('🔍 [TEAM UPDATE] Updating team with response data:', responseData.team);
             setCurrentTeam(responseData.team);
-          } else {
-            console.log('🔍 [TEAM UPDATE] No team data in response:', responseData);
           }
           
           // Also update the parent component to refresh team data
@@ -364,12 +357,6 @@ const TeamMemberManagement: React.FC<TeamMemberManagementProps> = ({
             <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
               Current Members ({currentTeam.members?.length || 0})
             </h3>
-            {/* Debug info - remove after fixing */}
-            <div className="mb-2 p-2 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded text-xs">
-              <p>Debug - Team ID: {currentTeam._id}</p>
-              <p>Debug - Members: {JSON.stringify(currentTeam.members)}</p>
-              <p>Debug - Team Leader: {JSON.stringify(currentTeam.teamLeader)}</p>
-            </div>
             
             {currentTeam.teamLeader && (
               <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
