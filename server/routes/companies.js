@@ -37,7 +37,15 @@ const requireCompanyAdmin = async (req, res, next) => {
 // Middleware to check if user can manage users (admin or team leader)
 const canManageUsers = async (req, res, next) => {
   try {
-    console.log('🔍 [CAN MANAGE USERS] Checking user:', req.user._id, 'role:', req.user.role, 'canManageUsers:', req.user.canManageUsers());
+    console.log('🔍 [CAN MANAGE USERS] ===== MIDDLEWARE DEBUG =====');
+    console.log('🔍 [CAN MANAGE USERS] User ID:', req.user._id);
+    console.log('🔍 [CAN MANAGE USERS] User email:', req.user.email);
+    console.log('🔍 [CAN MANAGE USERS] User role:', req.user.role);
+    console.log('🔍 [CAN MANAGE USERS] isCompanyAdmin:', req.user.isCompanyAdmin);
+    console.log('🔍 [CAN MANAGE USERS] isTeamLeader:', req.user.isTeamLeader);
+    console.log('🔍 [CAN MANAGE USERS] canManageUsers result:', req.user.canManageUsers());
+    console.log('🔍 [CAN MANAGE USERS] =============================');
+    
     if (!req.user.canManageUsers()) {
       console.log('❌ [CAN MANAGE USERS] Access denied for user:', req.user._id);
       return res.status(403).json({ error: 'User management access required' });
@@ -514,33 +522,55 @@ router.put('/users/:userId/team', authenticateToken, canManageUsers, [
     }
 
     // Check permissions based on user role
-    console.log('🔍 [TEAM ASSIGNMENT] User role:', req.user.role, 'isCompanyAdmin:', req.user.isCompanyAdmin);
-    console.log('🔍 [TEAM ASSIGNMENT] Team leader:', team.teamLeader, 'User ID:', req.user._id);
+    console.log('🔍 [TEAM ASSIGNMENT] ===== DETAILED DEBUG INFO =====');
+    console.log('🔍 [TEAM ASSIGNMENT] Request user ID:', req.user._id);
+    console.log('🔍 [TEAM ASSIGNMENT] Request user email:', req.user.email);
+    console.log('🔍 [TEAM ASSIGNMENT] Request user role:', req.user.role);
+    console.log('🔍 [TEAM ASSIGNMENT] Request user isCompanyAdmin:', req.user.isCompanyAdmin);
+    console.log('🔍 [TEAM ASSIGNMENT] Request user isTeamLeader:', req.user.isTeamLeader);
+    console.log('🔍 [TEAM ASSIGNMENT] Target user ID:', userId);
+    console.log('🔍 [TEAM ASSIGNMENT] Target user email:', user.email);
+    console.log('🔍 [TEAM ASSIGNMENT] Target user role:', user.role);
+    console.log('🔍 [TEAM ASSIGNMENT] Team name:', teamName);
+    console.log('🔍 [TEAM ASSIGNMENT] Team ID:', team._id);
+    console.log('🔍 [TEAM ASSIGNMENT] Team leader:', team.teamLeader);
+    console.log('🔍 [TEAM ASSIGNMENT] Team leader equals user ID:', team.teamLeader && team.teamLeader.equals(req.user._id));
+    console.log('🔍 [TEAM ASSIGNMENT] ======================================');
     
     if (req.user.role === 'company_team_leader') {
+      console.log('🔍 [TEAM ASSIGNMENT] User is team leader - checking team leadership');
       // Team leaders can only manage their own team
       if (!team.teamLeader || !team.teamLeader.equals(req.user._id)) {
         console.log('❌ [TEAM ASSIGNMENT] Team leader trying to manage team they don\'t lead');
+        console.log('❌ [TEAM ASSIGNMENT] Team leader ID:', team.teamLeader);
+        console.log('❌ [TEAM ASSIGNMENT] Current user ID:', req.user._id);
+        console.log('❌ [TEAM ASSIGNMENT] IDs equal:', team.teamLeader && team.teamLeader.equals(req.user._id));
         return res.status(403).json({ 
           error: 'You can only manage members of your own team',
           teamName: teamName,
-          userRole: req.user.role
+          userRole: req.user.role,
+          teamLeader: team.teamLeader,
+          currentUser: req.user._id
         });
       }
       
       // Team leaders can only add regular users to their team, not other team leaders or admins
       if (user.role !== 'company_user') {
         console.log('❌ [TEAM ASSIGNMENT] Team leader trying to add non-regular user');
+        console.log('❌ [TEAM ASSIGNMENT] Target user role:', user.role);
         return res.status(403).json({ 
           error: 'You can only add regular users to your team',
           userRole: user.role,
           yourRole: req.user.role
         });
       }
+      console.log('✅ [TEAM ASSIGNMENT] Team leader can manage this team');
     } else if (req.user.role === 'company_admin' || req.user.isCompanyAdmin) {
       console.log('✅ [TEAM ASSIGNMENT] Company admin - allowing team assignment');
     } else {
       console.log('❌ [TEAM ASSIGNMENT] User does not have permission to manage teams');
+      console.log('❌ [TEAM ASSIGNMENT] User role:', req.user.role);
+      console.log('❌ [TEAM ASSIGNMENT] isCompanyAdmin:', req.user.isCompanyAdmin);
       return res.status(403).json({ 
         error: 'You do not have permission to manage teams',
         userRole: req.user.role
