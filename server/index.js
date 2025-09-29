@@ -37,7 +37,10 @@ const app = express();
 const PORT = process.env.PORT || 5002;
 
 // Security middleware
-app.use(helmet());
+app.use(helmet({
+  crossOriginEmbedderPolicy: false,
+  contentSecurityPolicy: false
+}));
 app.use(compression());
 app.use(cookieParser());
 
@@ -73,6 +76,16 @@ app.use((req, res, next) => {
     userAgent: req.headers['user-agent']?.substring(0, 50),
     timestamp: new Date().toISOString()
   });
+  
+  // Log CORS-related headers
+  if (req.method === 'OPTIONS' || req.headers.origin) {
+    console.log('🔍 [CORS] Preflight/Cross-origin request:', {
+      origin: req.headers.origin,
+      method: req.method,
+      headers: req.headers
+    });
+  }
+  
   next();
 });
 
@@ -128,6 +141,8 @@ app.use((req, res, next) => {
   if (allowedOrigins.includes(origin)) {
     res.header('Access-Control-Allow-Origin', origin);
     res.header('Access-Control-Allow-Credentials', 'true');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Cookie, X-Requested-With');
   }
   next();
 });
