@@ -963,7 +963,7 @@ router.put('/users/:userId', authenticateToken, requireCompanyAdmin, [
   body('firstName').trim().notEmpty().withMessage('First name is required'),
   body('lastName').trim().notEmpty().withMessage('Last name is required'),
   body('email').isEmail().withMessage('Please enter a valid email').normalizeEmail(),
-  body('role').isIn(['company_user', 'company_team_leader']).withMessage('Invalid role'),
+  body('role').isIn(['company_user', 'company_team_leader', 'company_admin']).withMessage('Invalid role'),
   body('teamId').optional().custom((value) => {
     if (value === undefined || value === null || value === '') {
       return true; // Allow empty values
@@ -1033,6 +1033,7 @@ router.put('/users/:userId', authenticateToken, requireCompanyAdmin, [
     user.email = email;
     user.role = role;
     user.isTeamLeader = role === 'company_team_leader';
+    user.isCompanyAdmin = role === 'company_admin';
     user.teamId = teamId || null;
 
     await user.save();
@@ -1076,6 +1077,18 @@ router.put('/users/:userId', authenticateToken, requireCompanyAdmin, [
             team.members = team.members.filter(id => !id.equals(userId));
             teamAssignmentChanged = true;
           }
+        }
+      }
+    } else if (role === 'company_admin') {
+      // Remove from team leader positions and teams - company admins don't belong to specific teams
+      for (const team of company.teams) {
+        if (team.teamLeader && team.teamLeader.equals(userId)) {
+          team.teamLeader = null;
+          teamAssignmentChanged = true;
+        }
+        if (team.members.includes(userId)) {
+          team.members = team.members.filter(id => !id.equals(userId));
+          teamAssignmentChanged = true;
         }
       }
     }
