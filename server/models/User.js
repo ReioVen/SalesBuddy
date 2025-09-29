@@ -723,12 +723,19 @@ userSchema.statics.createWithCompanySubscription = async function(userData, comp
     throw new Error('Company is required for company user creation');
   }
 
+  console.log('🏢 [CREATE USER] Creating user with company subscription:', {
+    companyName: company.name,
+    companyPlan: company.subscription?.plan,
+    companyStatus: company.subscription?.status,
+    monthlyLimit: company.subscription?.monthlyConversationLimit
+  });
+
   // Create user with company's subscription settings
   const user = new this({
     ...userData,
     subscription: {
-      plan: company.subscription.plan || 'enterprise',
-      status: company.subscription.status || 'active',
+      plan: company.subscription?.plan || 'enterprise',
+      status: company.subscription?.status || 'active',
       stripeCustomerId: 'enterprise_customer',
       currentPeriodStart: new Date(),
       currentPeriodEnd: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 year
@@ -736,13 +743,24 @@ userSchema.statics.createWithCompanySubscription = async function(userData, comp
     },
     usage: {
       aiConversations: 0,
-      monthlyLimit: company.subscription.monthlyConversationLimit || 50,
+      monthlyLimit: company.subscription?.monthlyConversationLimit || 50,
       lastResetDate: new Date(),
       lastDailyResetDate: new Date()
     }
   });
 
+  console.log('👤 [CREATE USER] User subscription before save:', user.subscription);
+  console.log('👤 [CREATE USER] User usage before save:', user.usage);
+
   await user.save();
+
+  console.log('✅ [CREATE USER] User created successfully:', {
+    userId: user._id,
+    email: user.email,
+    subscription: user.subscription,
+    usage: user.usage
+  });
+
   return user;
 };
 
