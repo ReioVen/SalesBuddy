@@ -2,14 +2,33 @@ const mongoose = require('mongoose');
 const User = require('../models/User');
 const Company = require('../models/Company');
 
-// Connect to MongoDB
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/salesbuddy', {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-});
+// Connect to MongoDB with proper error handling
+const connectToDatabase = async () => {
+  try {
+    const mongoUri = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/salesbuddy';
+    console.log('🔗 Connecting to MongoDB...');
+    
+    await mongoose.connect(mongoUri, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+      serverSelectionTimeoutMS: 30000, // 30 seconds
+      connectTimeoutMS: 30000, // 30 seconds
+      socketTimeoutMS: 30000, // 30 seconds
+    });
+    
+    console.log('✅ Connected to MongoDB successfully');
+  } catch (error) {
+    console.error('❌ MongoDB connection error:', error.message);
+    console.error('Please check your MONGODB_URI environment variable or ensure MongoDB is running locally');
+    process.exit(1);
+  }
+};
 
 async function fixExistingUsers() {
   try {
+    // Connect to database first
+    await connectToDatabase();
+    
     console.log('🔧 Fixing existing users with incorrect subscription settings...');
     
     // Find all users who have a companyId but have wrong subscription settings

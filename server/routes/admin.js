@@ -639,6 +639,124 @@ router.put('/companies/:companyId/subscription', authenticateToken, canManageCom
   }
 });
 
+// Fix all company user subscriptions (simple version)
+router.get('/fix-subscriptions', async (req, res) => {
+  try {
+    console.log('🔧 [ADMIN] Fixing all company user subscriptions...');
+    
+    // Find all users who have a companyId
+    const usersToFix = await User.find({
+      companyId: { $exists: true, $ne: null }
+    });
+
+    console.log(`Found ${usersToFix.length} company users to fix`);
+
+    let fixedCount = 0;
+    for (const user of usersToFix) {
+      console.log(`👤 Fixing user: ${user.email}`);
+      
+      // Get the company
+      const company = await Company.findById(user.companyId);
+      if (!company) continue;
+
+      // Update user subscription
+      user.subscription = {
+        plan: 'enterprise',
+        status: 'active',
+        stripeCustomerId: 'enterprise_customer',
+        currentPeriodStart: new Date(),
+        currentPeriodEnd: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
+        cancelAtPeriodEnd: false
+      };
+
+      // Update usage limits
+      user.usage.monthlyLimit = company.subscription?.monthlyConversationLimit || 50;
+      
+      await user.save();
+      fixedCount++;
+      
+      console.log(`✅ Fixed ${user.email}: ${user.subscription.plan} plan, ${user.usage.monthlyLimit} limit`);
+    }
+
+    res.json({
+      success: true,
+      message: `Fixed ${fixedCount} users successfully!`,
+      fixedCount,
+      totalUsers: usersToFix.length
+    });
+
+  } catch (error) {
+    console.error('❌ Error fixing subscriptions:', error);
+    res.status(500).json({ error: 'Failed to fix subscriptions: ' + error.message });
+  }
+});
+
+// Fix all company user subscriptions
+router.post('/fix-user-subscriptions', authenticateToken, canManageAllUsers, async (req, res) => {
+  try {
+    console.log('🔧 [ADMIN] Fixing all company user subscriptions...');
+    
+    // Find all users who have a companyId but have wrong subscription settings
+    const usersToFix = await User.find({
+      companyId: { $exists: true, $ne: null },
+      $or: [
+        { 'subscription.plan': { $ne: 'enterprise' } },
+        { 'subscription.plan': { $exists: false } },
+        { 'subscription.status': { $ne: 'active' } },
+        { 'usage.monthlyLimit': { $lt: 50 } } // Less than 50 monthly limit
+      ]
+    });
+
+    console.log(`Found ${usersToFix.length} users to fix`);
+
+    let fixedCount = 0;
+    for (const user of usersToFix) {
+      console.log(`\n👤 Fixing user: ${user.email} (${user._id})`);
+      
+      // Get the company to check its subscription
+      const company = await Company.findById(user.companyId);
+      if (!company) {
+        console.log(`   ❌ Company not found for user ${user.email}`);
+        continue;
+      }
+
+      console.log(`   Company: ${company.name} (${company.subscription?.plan})`);
+
+      // Update user subscription to match company
+      const oldSubscription = { ...user.subscription };
+      const oldUsage = { ...user.usage };
+      
+      user.subscription = {
+        plan: company.subscription?.plan || 'enterprise',
+        status: company.subscription?.status || 'active',
+        stripeCustomerId: 'enterprise_customer',
+        currentPeriodStart: new Date(),
+        currentPeriodEnd: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 year
+        cancelAtPeriodEnd: false
+      };
+
+      // Update usage limits based on company's monthly conversation limit
+      user.usage.monthlyLimit = company.subscription?.monthlyConversationLimit || 50;
+
+      await user.save();
+      fixedCount++;
+
+      console.log(`   ✅ Updated subscription from ${oldSubscription.plan || 'none'} to ${user.subscription.plan}`);
+      console.log(`   ✅ Updated monthly limit from ${oldUsage.monthlyLimit || 'none'} to ${user.usage.monthlyLimit}`);
+    }
+
+    res.json({
+      message: 'User subscriptions fixed successfully',
+      fixedCount,
+      totalUsers: usersToFix.length
+    });
+
+  } catch (error) {
+    console.error('❌ Error fixing user subscriptions:', error);
+    res.status(500).json({ error: 'Failed to fix user subscriptions' });
+  }
+});
+
 // Get admin permissions
 router.get('/permissions', authenticateToken, requireAdmin, async (req, res) => {
   try {
