@@ -639,7 +639,7 @@ router.put('/companies/:companyId/subscription', authenticateToken, canManageCom
   }
 });
 
-// Fix all company user subscriptions (simple version)
+// Fix all company user subscriptions (simple version - no auth needed for one-time fix)
 router.get('/fix-subscriptions', async (req, res) => {
   try {
     console.log('🔧 [ADMIN] Fixing all company user subscriptions...');

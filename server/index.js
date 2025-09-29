@@ -314,6 +314,61 @@ app.get('/api/health', (req, res) => {
   }
 });
 
+// Fix user subscriptions endpoint (no auth required for one-time fix)
+app.get('/fix-subscriptions', async (req, res) => {
+  try {
+    const User = require('./models/User');
+    const Company = require('./models/Company');
+    
+    console.log('🔧 [FIX] Fixing all company user subscriptions...');
+    
+    // Find all users who have a companyId
+    const usersToFix = await User.find({
+      companyId: { $exists: true, $ne: null }
+    });
+
+    console.log(`Found ${usersToFix.length} company users to fix`);
+
+    let fixedCount = 0;
+    for (const user of usersToFix) {
+      console.log(`👤 Fixing user: ${user.email}`);
+      
+      // Get the company
+      const company = await Company.findById(user.companyId);
+      if (!company) continue;
+
+      // Update user subscription
+      user.subscription = {
+        plan: 'enterprise',
+        status: 'active',
+        stripeCustomerId: 'enterprise_customer',
+        currentPeriodStart: new Date(),
+        currentPeriodEnd: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
+        cancelAtPeriodEnd: false
+      };
+
+      // Update usage limits
+      user.usage.monthlyLimit = company.subscription?.monthlyConversationLimit || 50;
+      
+      await user.save();
+      fixedCount++;
+      
+      console.log(`✅ Fixed ${user.email}: ${user.subscription.plan} plan, ${user.usage.monthlyLimit} limit`);
+    }
+
+    res.json({
+      success: true,
+      message: `Fixed ${fixedCount} users successfully!`,
+      fixedCount,
+      totalUsers: usersToFix.length
+    });
+
+  } catch (error) {
+    console.error('❌ Error fixing subscriptions:', error);
+    res.status(500).json({ error: 'Failed to fix subscriptions: ' + error.message });
+  }
+});
+
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
