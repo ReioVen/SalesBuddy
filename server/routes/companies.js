@@ -537,7 +537,10 @@ router.put('/users/:userId/team', authenticateToken, canManageUsers, [
     console.log('🔍 [TEAM ASSIGNMENT] Team leader equals user ID:', team.teamLeader && team.teamLeader.equals(req.user._id));
     console.log('🔍 [TEAM ASSIGNMENT] ======================================');
     
-    if (req.user.role === 'company_team_leader') {
+    // Check if user is company admin first (highest priority)
+    if (req.user.isCompanyAdmin || req.user.role === 'company_admin') {
+      console.log('✅ [TEAM ASSIGNMENT] Company admin - allowing team assignment');
+    } else if (req.user.role === 'company_team_leader') {
       console.log('🔍 [TEAM ASSIGNMENT] User is team leader - checking team leadership');
       // Team leaders can only manage their own team
       if (!team.teamLeader || !team.teamLeader.equals(req.user._id)) {
@@ -565,8 +568,6 @@ router.put('/users/:userId/team', authenticateToken, canManageUsers, [
         });
       }
       console.log('✅ [TEAM ASSIGNMENT] Team leader can manage this team');
-    } else if (req.user.role === 'company_admin' || req.user.isCompanyAdmin) {
-      console.log('✅ [TEAM ASSIGNMENT] Company admin - allowing team assignment');
     } else {
       console.log('❌ [TEAM ASSIGNMENT] User does not have permission to manage teams');
       console.log('❌ [TEAM ASSIGNMENT] User role:', req.user.role);
@@ -633,7 +634,10 @@ router.delete('/users/:userId/team', authenticateToken, canManageUsers, [
     console.log('🔍 [TEAM REMOVAL] User role:', req.user.role, 'isCompanyAdmin:', req.user.isCompanyAdmin);
     console.log('🔍 [TEAM REMOVAL] Team leader:', team.teamLeader, 'User ID:', req.user._id);
     
-    if (req.user.role === 'company_team_leader') {
+    // Check if user is company admin first (highest priority)
+    if (req.user.isCompanyAdmin || req.user.role === 'company_admin') {
+      console.log('✅ [TEAM REMOVAL] Company admin - allowing team removal');
+    } else if (req.user.role === 'company_team_leader') {
       // Team leaders can only remove users from their own team
       if (!team.teamLeader || !team.teamLeader.equals(req.user._id)) {
         console.log('❌ [TEAM REMOVAL] Team leader trying to remove from team they don\'t lead');
@@ -643,8 +647,6 @@ router.delete('/users/:userId/team', authenticateToken, canManageUsers, [
           userRole: req.user.role
         });
       }
-    } else if (req.user.role === 'company_admin' || req.user.isCompanyAdmin) {
-      console.log('✅ [TEAM REMOVAL] Company admin - allowing team removal');
     } else {
       console.log('❌ [TEAM REMOVAL] User does not have permission to manage teams');
       return res.status(403).json({ 
