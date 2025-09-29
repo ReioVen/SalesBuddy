@@ -567,6 +567,30 @@ const CompanyManagement: React.FC = () => {
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                             <div className="flex items-center space-x-2">
+                              {/* Only company admins can edit users, but not themselves or other company admins */}
+                              {(user?.role === 'company_admin' || user?.isCompanyAdmin) && 
+                               companyUser._id !== user?._id && 
+                               !companyUser.isCompanyAdmin && 
+                               companyUser.role !== 'company_admin' && (
+                                <button 
+                                  onClick={() => handleEditUser(companyUser)}
+                                  className="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300"
+                                >
+                                  Edit
+                                </button>
+                              )}
+
+                              {/* Team leads and admins can view user details, but not for company admins */}
+                              {(user?.role === 'company_admin' || user?.role === 'company_team_leader') && 
+                               !companyUser.isCompanyAdmin && 
+                               companyUser.role !== 'company_admin' && (
+                                <button 
+                                  onClick={() => handleViewUser(companyUser)}
+                                  className="text-green-600 dark:text-green-400 hover:text-green-900 dark:hover:text-green-300"
+                                >
+                                  {t('viewDetails')}
+                                </button>
+                              )}
                               
                               {/* Only company admins can delete users, but not themselves or other company admins */}
                               {(user?.role === 'company_admin' || user?.isCompanyAdmin) && 
