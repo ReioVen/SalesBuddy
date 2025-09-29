@@ -414,8 +414,8 @@ router.post('/users', authenticateToken, canManageUsers, [
 
     // Use the password provided by the admin as the temporary password
     
-    // Create new user with enterprise plan
-    const user = new User({
+    // Create new user with company's subscription settings
+    const user = await User.createWithCompanySubscription({
       email: normalizedEmail,
       password: password, // Use the password provided by the admin
       firstName,
@@ -425,24 +425,8 @@ router.post('/users', authenticateToken, canManageUsers, [
       role,
       teamId: team ? team._id : null,
       isTeamLeader: role === 'company_team_leader',
-      needsPasswordSetup: true, // Flag user to set up their password on first login
-      subscription: {
-        plan: 'enterprise',
-        status: 'active',
-        stripeCustomerId: 'enterprise_customer', // Special identifier for enterprise users
-        currentPeriodStart: new Date(),
-        currentPeriodEnd: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 year from now
-        cancelAtPeriodEnd: false
-      },
-      usage: {
-        aiConversations: 0,
-        monthlyLimit: company.subscription.monthlyConversationLimit || 50, // Use company's limit
-        lastResetDate: new Date(),
-        lastDailyResetDate: new Date()
-      }
-    });
-
-    await user.save();
+      needsPasswordSetup: true // Flag user to set up their password on first login
+    }, company);
 
     // Add user to company
     await company.addUser(user._id);
@@ -844,8 +828,8 @@ router.post('/users/add', authenticateToken, requireCompanyAdmin, [
     // Use the password provided by the admin as the temporary password
     console.log('Using admin-provided password for', email);
     
-    // Create new user with enterprise plan
-    const newUser = new User({
+    // Create new user with company's subscription settings
+    const newUser = await User.createWithCompanySubscription({
       email: normalizedEmail,
       password: password, // Use the password provided by the admin
       firstName,
@@ -857,26 +841,10 @@ router.post('/users/add', authenticateToken, requireCompanyAdmin, [
       isCompanyAdmin: false,
       isTeamLeader: role === 'company_team_leader',
       needsPasswordSetup: true, // Flag user to set up their password on first login
-      subscription: {
-        plan: 'enterprise',
-        status: 'active',
-        stripeCustomerId: 'enterprise_customer', // Special identifier for enterprise users
-        currentPeriodStart: new Date(),
-        currentPeriodEnd: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 year from now
-        cancelAtPeriodEnd: false
-      },
-      usage: {
-        aiConversations: 0,
-        monthlyLimit: company.subscription.monthlyConversationLimit || 50, // Use company's limit
-        lastResetDate: new Date(),
-        lastDailyResetDate: new Date()
-      },
       settings: {
         experienceLevel: 'beginner'
       }
-    });
-
-    await newUser.save();
+    }, company);
 
     // Add user to company
     await company.addUser(newUser._id);

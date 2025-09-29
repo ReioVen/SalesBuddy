@@ -347,39 +347,61 @@ router.post('/users/create', authenticateToken, canManageAllUsers, [
       }
     }
     
-    // Create new user - assign enterprise plan if they belong to a company
-    const newUser = new User({
-      email: normalizedEmail,
-      password: password, // Use the password provided by the admin
-      firstName,
-      lastName,
-      role,
-      companyId: companyId || null,
-      companyJoinedAt: companyId ? new Date() : null, // Set company join date if user belongs to company
-      teamId: teamId || null,
-      isCompanyAdmin: role === 'company_admin',
-      isTeamLeader: role === 'company_team_leader',
-      needsPasswordSetup: companyId ? true : false, // Flag company users to set up their password on first login
-      subscription: {
-        plan: companyId ? 'enterprise' : 'free', // Enterprise for company users, free for individual users
-        status: 'active',
-        stripeCustomerId: companyId ? 'enterprise_customer' : undefined, // Special identifier for enterprise users
-        currentPeriodStart: companyId ? new Date() : undefined,
-        currentPeriodEnd: companyId ? new Date(Date.now() + 365 * 24 * 60 * 60 * 1000) : undefined, // 1 year for enterprise
-        cancelAtPeriodEnd: false
-      },
-      usage: {
-        aiConversations: 0,
-        monthlyLimit: companyId ? companyMonthlyLimit : 50, // Use company's limit for company users, default for others
-        lastResetDate: new Date(),
-        lastDailyResetDate: new Date()
-      },
-      settings: {
-        experienceLevel: 'beginner'
+    // Create new user - use company subscription if they belong to a company
+    let newUser;
+    if (companyId) {
+      // Get company to use its subscription settings
+      const company = await Company.findById(companyId);
+      if (!company) {
+        return res.status(404).json({ error: 'Company not found' });
       }
-    });
-
-    await newUser.save();
+      
+      newUser = await User.createWithCompanySubscription({
+        email: normalizedEmail,
+        password: password, // Use the password provided by the admin
+        firstName,
+        lastName,
+        role,
+        companyId: companyId,
+        companyJoinedAt: new Date(), // Set company join date if user belongs to company
+        teamId: teamId || null,
+        isCompanyAdmin: role === 'company_admin',
+        isTeamLeader: role === 'company_team_leader',
+        needsPasswordSetup: true, // Flag company users to set up their password on first login
+        settings: {
+          experienceLevel: 'beginner'
+        }
+      }, company);
+    } else {
+      // Create individual user with free plan
+      newUser = new User({
+        email: normalizedEmail,
+        password: password,
+        firstName,
+        lastName,
+        role,
+        companyId: null,
+        companyJoinedAt: null,
+        teamId: null,
+        isCompanyAdmin: false,
+        isTeamLeader: false,
+        needsPasswordSetup: false,
+        subscription: {
+          plan: 'free',
+          status: 'active'
+        },
+        usage: {
+          aiConversations: 0,
+          monthlyLimit: 50,
+          lastResetDate: new Date(),
+          lastDailyResetDate: new Date()
+        },
+        settings: {
+          experienceLevel: 'beginner'
+        }
+      });
+      await newUser.save();
+    }
 
     // Add user to company if specified
     if (companyId) {

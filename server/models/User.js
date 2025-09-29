@@ -680,27 +680,23 @@ userSchema.methods.syncWithCompanySubscription = async function() {
     return false;
   }
 
-  // Update subscription to enterprise if company has enterprise plan
-  if (company.subscription.plan === 'enterprise') {
-    this.subscription = {
-      plan: 'enterprise',
-      status: 'active',
-      stripeCustomerId: 'enterprise_customer',
-      currentPeriodStart: new Date(),
-      currentPeriodEnd: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 year
-      cancelAtPeriodEnd: false
-    };
+  // Always sync with company's subscription settings
+  this.subscription = {
+    plan: company.subscription.plan || 'enterprise',
+    status: company.subscription.status || 'active',
+    stripeCustomerId: 'enterprise_customer',
+    currentPeriodStart: new Date(),
+    currentPeriodEnd: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 year
+    cancelAtPeriodEnd: false
+  };
 
-    // Update monthly limit based on company's setting
-    if (company.subscription.monthlyConversationLimit) {
-      this.usage.monthlyLimit = company.subscription.monthlyConversationLimit;
-    }
-
-    await this.save();
-    return true;
+  // Update monthly limit based on company's setting
+  if (company.subscription.monthlyConversationLimit) {
+    this.usage.monthlyLimit = company.subscription.monthlyConversationLimit;
   }
 
-  return false;
+  await this.save();
+  return true;
 };
 
 // Static method to sync all company users with their company subscriptions
@@ -719,6 +715,35 @@ userSchema.statics.syncAllCompanyUsers = async function() {
   }
 
   return syncedCount;
+};
+
+// Static method to create user with company subscription settings
+userSchema.statics.createWithCompanySubscription = async function(userData, company) {
+  if (!company) {
+    throw new Error('Company is required for company user creation');
+  }
+
+  // Create user with company's subscription settings
+  const user = new this({
+    ...userData,
+    subscription: {
+      plan: company.subscription.plan || 'enterprise',
+      status: company.subscription.status || 'active',
+      stripeCustomerId: 'enterprise_customer',
+      currentPeriodStart: new Date(),
+      currentPeriodEnd: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 year
+      cancelAtPeriodEnd: false
+    },
+    usage: {
+      aiConversations: 0,
+      monthlyLimit: company.subscription.monthlyConversationLimit || 50,
+      lastResetDate: new Date(),
+      lastDailyResetDate: new Date()
+    }
+  });
+
+  await user.save();
+  return user;
 };
 
 module.exports = mongoose.model('User', userSchema); 
