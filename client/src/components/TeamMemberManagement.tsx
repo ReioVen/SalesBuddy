@@ -152,16 +152,47 @@ const TeamMemberManagement: React.FC<TeamMemberManagementProps> = ({
     setCurrentTeam(team);
   }, [team]);
 
+  // Refresh available users when team members change
+  useEffect(() => {
+    const refreshAvailableUsers = async () => {
+      try {
+        const token = localStorage.getItem('sb_token');
+        
+        const response = await fetch(`${API_BASE_URL}/api/companies/users`, {
+          credentials: 'include',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+       
+       if (response.ok) {
+         const data = await response.json();
+         
+         // Filter out users already in this team and team leaders
+         const available = data.users.filter((user: TeamMember) => {
+           const isRegularUser = user.role === 'company_user';
+           const notInThisTeam = !user.teamId || user.teamId.toString() !== currentTeam._id.toString();
+           const notTeamLeader = user.role !== 'company_team_leader';
+           
+           return isRegularUser && notInThisTeam && notTeamLeader;
+         });
+         
+         setAvailableUsers(available);
+       }
+     } catch (err) {
+       console.error('Failed to refresh available users:', err);
+     }
+   };
+
+   refreshAvailableUsers();
+  }, [currentTeam.members.length]);
+
   // Fetch available users (company users not in this team)
   useEffect(() => {
     const fetchAvailableUsers = async () => {
        try {
          const token = localStorage.getItem('sb_token');
-         console.log('🔍 [TEAM MANAGEMENT] Token check:', {
-           hasToken: !!token,
-           tokenLength: token ? token.length : 0,
-           tokenStart: token ? token.substring(0, 20) + '...' : 'none'
-         });
          
          const response = await fetch(`${API_BASE_URL}/api/companies/users`, {
            credentials: 'include',
@@ -171,39 +202,23 @@ const TeamMemberManagement: React.FC<TeamMemberManagementProps> = ({
            }
          });
         
-        console.log('🔍 [TEAM MANAGEMENT] Response status:', response.status);
         
         if (response.ok) {
           const data = await response.json();
-          console.log('🔍 [TEAM MANAGEMENT] Response data:', data);
-          console.log('🔍 [TEAM MANAGEMENT] Current team ID:', team._id);
-          console.log('🔍 [TEAM MANAGEMENT] All users:', data.users);
           
           // Filter out users already in this team and team leaders
           const available = data.users.filter((user: TeamMember) => {
             const isRegularUser = user.role === 'company_user';
-            const notInThisTeam = !user.teamId || user.teamId.toString() !== team._id.toString();
+            const notInThisTeam = !user.teamId || user.teamId.toString() !== currentTeam._id.toString();
             const notTeamLeader = user.role !== 'company_team_leader';
             
-            console.log('🔍 [TEAM MANAGEMENT] User filter:', {
-              user: user.email,
-              role: user.role,
-              teamId: user.teamId,
-              currentTeamId: team._id,
-              isRegularUser,
-              notInThisTeam,
-              notTeamLeader,
-              willInclude: isRegularUser && notInThisTeam && notTeamLeader
-            });
             
             return isRegularUser && notInThisTeam && notTeamLeader;
           });
           
-          console.log('🔍 [TEAM MANAGEMENT] Available users after filtering:', available);
           setAvailableUsers(available);
         } else {
           const errorData = await response.json();
-          console.log('🔍 [TEAM MANAGEMENT] Error response:', errorData);
         }
       } catch (err) {
         console.error('Failed to fetch available users:', err);
@@ -211,7 +226,7 @@ const TeamMemberManagement: React.FC<TeamMemberManagementProps> = ({
     };
 
     fetchAvailableUsers();
-  }, [team._id]);
+  }, [currentTeam._id, currentTeam.members.length]);
 
   const handleAddMember = async () => {
     if (!selectedUser) return;
@@ -243,6 +258,11 @@ const TeamMemberManagement: React.FC<TeamMemberManagementProps> = ({
       // Update UI immediately - remove user from available list
       setAvailableUsers(prev => prev.filter(u => u._id !== selectedUser));
       setSelectedUser('');
+      
+      // Update current team state immediately with the new team data from response
+      if (responseData.team) {
+        setCurrentTeam(responseData.team);
+      }
       
       // Also update the parent component to refresh team data
       onUpdate();
@@ -290,6 +310,11 @@ const TeamMemberManagement: React.FC<TeamMemberManagementProps> = ({
           // Update UI immediately - add user back to available list
           if (member) {
             setAvailableUsers(prev => [...prev, member]);
+          }
+          
+          // Update current team state immediately with the new team data from response
+          if (responseData.team) {
+            setCurrentTeam(responseData.team);
           }
           
           // Also update the parent component to refresh team data
