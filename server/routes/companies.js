@@ -21,15 +21,11 @@ const generateTempPassword = () => {
 // Middleware to check if user is company admin
 const requireCompanyAdmin = async (req, res, next) => {
   try {
-    console.log('🔍 [REQUIRE COMPANY ADMIN] Checking user:', req.user._id, 'role:', req.user.role, 'isCompanyAdmin:', req.user.isCompanyAdmin);
     if (!(req.user.role === 'company_admin' || req.user.isCompanyAdmin)) {
-      console.log('❌ [REQUIRE COMPANY ADMIN] Access denied for user:', req.user._id);
       return res.status(403).json({ error: 'Company admin access required' });
     }
-    console.log('✅ [REQUIRE COMPANY ADMIN] Access granted for user:', req.user._id);
     next();
   } catch (error) {
-    console.log('❌ [REQUIRE COMPANY ADMIN] Error:', error);
     res.status(500).json({ error: 'Authorization check failed' });
   }
 };
@@ -37,23 +33,11 @@ const requireCompanyAdmin = async (req, res, next) => {
 // Middleware to check if user can manage users (admin or team leader)
 const canManageUsers = async (req, res, next) => {
   try {
-    console.log('🔍 [CAN MANAGE USERS] ===== MIDDLEWARE DEBUG =====');
-    console.log('🔍 [CAN MANAGE USERS] User ID:', req.user._id);
-    console.log('🔍 [CAN MANAGE USERS] User email:', req.user.email);
-    console.log('🔍 [CAN MANAGE USERS] User role:', req.user.role);
-    console.log('🔍 [CAN MANAGE USERS] isCompanyAdmin:', req.user.isCompanyAdmin);
-    console.log('🔍 [CAN MANAGE USERS] isTeamLeader:', req.user.isTeamLeader);
-    console.log('🔍 [CAN MANAGE USERS] canManageUsers result:', req.user.canManageUsers());
-    console.log('🔍 [CAN MANAGE USERS] =============================');
-    
     if (!req.user.canManageUsers()) {
-      console.log('❌ [CAN MANAGE USERS] Access denied for user:', req.user._id);
       return res.status(403).json({ error: 'User management access required' });
     }
-    console.log('✅ [CAN MANAGE USERS] Access granted for user:', req.user._id);
     next();
   } catch (error) {
-    console.log('❌ [CAN MANAGE USERS] Error:', error);
     res.status(500).json({ error: 'Authorization check failed' });
   }
 };
@@ -522,56 +506,27 @@ router.put('/users/:userId/team', authenticateToken, canManageUsers, [
     }
 
     // Check permissions based on user role
-    console.log('🔍 [TEAM ASSIGNMENT] ===== DETAILED DEBUG INFO =====');
-    console.log('🔍 [TEAM ASSIGNMENT] Request user ID:', req.user._id);
-    console.log('🔍 [TEAM ASSIGNMENT] Request user email:', req.user.email);
-    console.log('🔍 [TEAM ASSIGNMENT] Request user role:', req.user.role);
-    console.log('🔍 [TEAM ASSIGNMENT] Request user isCompanyAdmin:', req.user.isCompanyAdmin);
-    console.log('🔍 [TEAM ASSIGNMENT] Request user isTeamLeader:', req.user.isTeamLeader);
-    console.log('🔍 [TEAM ASSIGNMENT] Target user ID:', userId);
-    console.log('🔍 [TEAM ASSIGNMENT] Target user email:', user.email);
-    console.log('🔍 [TEAM ASSIGNMENT] Target user role:', user.role);
-    console.log('🔍 [TEAM ASSIGNMENT] Team name:', teamName);
-    console.log('🔍 [TEAM ASSIGNMENT] Team ID:', team._id);
-    console.log('🔍 [TEAM ASSIGNMENT] Team leader:', team.teamLeader);
-    console.log('🔍 [TEAM ASSIGNMENT] Team leader equals user ID:', team.teamLeader && team.teamLeader.equals(req.user._id));
-    console.log('🔍 [TEAM ASSIGNMENT] ======================================');
-    
-    // Check if user is company admin first (highest priority)
     if (req.user.isCompanyAdmin || req.user.role === 'company_admin') {
-      console.log('✅ [TEAM ASSIGNMENT] Company admin - allowing team assignment');
+      // Company admins can manage all teams
     } else if (req.user.role === 'company_team_leader') {
-      console.log('🔍 [TEAM ASSIGNMENT] User is team leader - checking team leadership');
       // Team leaders can only manage their own team
       if (!team.teamLeader || !team.teamLeader.equals(req.user._id)) {
-        console.log('❌ [TEAM ASSIGNMENT] Team leader trying to manage team they don\'t lead');
-        console.log('❌ [TEAM ASSIGNMENT] Team leader ID:', team.teamLeader);
-        console.log('❌ [TEAM ASSIGNMENT] Current user ID:', req.user._id);
-        console.log('❌ [TEAM ASSIGNMENT] IDs equal:', team.teamLeader && team.teamLeader.equals(req.user._id));
         return res.status(403).json({ 
           error: 'You can only manage members of your own team',
           teamName: teamName,
-          userRole: req.user.role,
-          teamLeader: team.teamLeader,
-          currentUser: req.user._id
+          userRole: req.user.role
         });
       }
       
       // Team leaders can only add regular users to their team, not other team leaders or admins
       if (user.role !== 'company_user') {
-        console.log('❌ [TEAM ASSIGNMENT] Team leader trying to add non-regular user');
-        console.log('❌ [TEAM ASSIGNMENT] Target user role:', user.role);
         return res.status(403).json({ 
           error: 'You can only add regular users to your team',
           userRole: user.role,
           yourRole: req.user.role
         });
       }
-      console.log('✅ [TEAM ASSIGNMENT] Team leader can manage this team');
     } else {
-      console.log('❌ [TEAM ASSIGNMENT] User does not have permission to manage teams');
-      console.log('❌ [TEAM ASSIGNMENT] User role:', req.user.role);
-      console.log('❌ [TEAM ASSIGNMENT] isCompanyAdmin:', req.user.isCompanyAdmin);
       return res.status(403).json({ 
         error: 'You do not have permission to manage teams',
         userRole: req.user.role
@@ -585,13 +540,23 @@ router.put('/users/:userId/team', authenticateToken, canManageUsers, [
     user.teamId = team._id;
     await user.save();
 
+    // Get updated team information
+    const updatedTeam = company.teams.find(t => t.name === teamName);
+    
     res.json({
       message: 'User assigned to team successfully',
       user: {
         id: user._id,
         firstName: user.firstName,
         lastName: user.lastName,
+        email: user.email,
         teamId: user.teamId
+      },
+      team: {
+        id: updatedTeam._id,
+        name: updatedTeam.name,
+        members: updatedTeam.members,
+        teamLeader: updatedTeam.teamLeader
       }
     });
   } catch (error) {
@@ -631,16 +596,11 @@ router.delete('/users/:userId/team', authenticateToken, canManageUsers, [
     }
 
     // Check permissions based on user role
-    console.log('🔍 [TEAM REMOVAL] User role:', req.user.role, 'isCompanyAdmin:', req.user.isCompanyAdmin);
-    console.log('🔍 [TEAM REMOVAL] Team leader:', team.teamLeader, 'User ID:', req.user._id);
-    
-    // Check if user is company admin first (highest priority)
     if (req.user.isCompanyAdmin || req.user.role === 'company_admin') {
-      console.log('✅ [TEAM REMOVAL] Company admin - allowing team removal');
+      // Company admins can manage all teams
     } else if (req.user.role === 'company_team_leader') {
       // Team leaders can only remove users from their own team
       if (!team.teamLeader || !team.teamLeader.equals(req.user._id)) {
-        console.log('❌ [TEAM REMOVAL] Team leader trying to remove from team they don\'t lead');
         return res.status(403).json({ 
           error: 'You can only manage members of your own team',
           teamName: teamName,
@@ -648,7 +608,6 @@ router.delete('/users/:userId/team', authenticateToken, canManageUsers, [
         });
       }
     } else {
-      console.log('❌ [TEAM REMOVAL] User does not have permission to manage teams');
       return res.status(403).json({ 
         error: 'You do not have permission to manage teams',
         userRole: req.user.role
@@ -662,13 +621,23 @@ router.delete('/users/:userId/team', authenticateToken, canManageUsers, [
     user.teamId = null;
     await user.save();
 
+    // Get updated team information
+    const updatedTeam = company.teams.find(t => t.name === teamName);
+    
     res.json({
       message: 'User removed from team successfully',
       user: {
         id: user._id,
         firstName: user.firstName,
         lastName: user.lastName,
+        email: user.email,
         teamId: user.teamId
+      },
+      team: {
+        id: updatedTeam._id,
+        name: updatedTeam.name,
+        members: updatedTeam.members,
+        teamLeader: updatedTeam.teamLeader
       }
     });
   } catch (error) {
@@ -1278,55 +1247,6 @@ async function checkUserViewPermission(viewerId, targetUserId) {
 
   return false;
 }
-
-// Fix user role to company admin (for debugging/fixing permissions)
-router.post('/fix-user-role', authenticateToken, async (req, res) => {
-  try {
-    const { email, newRole } = req.body;
-    
-    if (!email || !newRole) {
-      return res.status(400).json({ error: 'Email and newRole are required' });
-    }
-    
-    const user = await User.findOne({ email: email.toLowerCase() });
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-    
-    console.log('🔧 [FIX USER ROLE] Current user details:');
-    console.log('  - ID:', user._id);
-    console.log('  - Email:', user.email);
-    console.log('  - Current role:', user.role);
-    console.log('  - isCompanyAdmin:', user.isCompanyAdmin);
-    console.log('  - isTeamLeader:', user.isTeamLeader);
-    
-    // Update the user role
-    user.role = newRole;
-    user.isCompanyAdmin = newRole === 'company_admin';
-    user.isTeamLeader = newRole === 'company_team_leader';
-    
-    await user.save();
-    
-    console.log('✅ [FIX USER ROLE] User role updated successfully!');
-    console.log('  - New role:', user.role);
-    console.log('  - isCompanyAdmin:', user.isCompanyAdmin);
-    console.log('  - isTeamLeader:', user.isTeamLeader);
-    
-    res.json({
-      message: 'User role updated successfully',
-      user: {
-        id: user._id,
-        email: user.email,
-        role: user.role,
-        isCompanyAdmin: user.isCompanyAdmin,
-        isTeamLeader: user.isTeamLeader
-      }
-    });
-  } catch (error) {
-    console.error('❌ [FIX USER ROLE] Error:', error);
-    res.status(500).json({ error: 'Failed to update user role' });
-  }
-});
 
 // Fix team leader assignments (Admin only)
 router.post('/fix-team-leaders', authenticateToken, requireCompanyAdmin, async (req, res) => {

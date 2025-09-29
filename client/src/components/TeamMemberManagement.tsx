@@ -145,6 +145,13 @@ const TeamMemberManagement: React.FC<TeamMemberManagementProps> = ({
     onConfirm: () => {}
   });
 
+  // Force re-render when team data changes
+  const [currentTeam, setCurrentTeam] = useState(team);
+  
+  useEffect(() => {
+    setCurrentTeam(team);
+  }, [team]);
+
   // Fetch available users (company users not in this team)
   useEffect(() => {
     const fetchAvailableUsers = async () => {
@@ -222,7 +229,7 @@ const TeamMemberManagement: React.FC<TeamMemberManagementProps> = ({
         },
         credentials: 'include',
         body: JSON.stringify({
-          teamName: team.name
+          teamName: currentTeam.name
         })
       });
 
@@ -231,11 +238,13 @@ const TeamMemberManagement: React.FC<TeamMemberManagementProps> = ({
         throw new Error(errorData.error || 'Failed to add member to team');
       }
 
+      const responseData = await response.json();
+      
       // Update UI immediately - remove user from available list
       setAvailableUsers(prev => prev.filter(u => u._id !== selectedUser));
       setSelectedUser('');
       
-      // Also update the parent component
+      // Also update the parent component to refresh team data
       onUpdate();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to add member to team');
@@ -245,7 +254,7 @@ const TeamMemberManagement: React.FC<TeamMemberManagementProps> = ({
   };
 
   const handleRemoveMember = async (memberId: string) => {
-    const member = team.members.find(m => m._id === memberId);
+    const member = currentTeam.members.find(m => m._id === memberId);
     const memberName = member ? `${member.firstName} ${member.lastName}` : 'this member';
     
     setConfirmDialog({
@@ -267,7 +276,7 @@ const TeamMemberManagement: React.FC<TeamMemberManagementProps> = ({
             },
             credentials: 'include',
             body: JSON.stringify({
-              teamName: team.name
+              teamName: currentTeam.name
             })
           });
 
@@ -276,12 +285,14 @@ const TeamMemberManagement: React.FC<TeamMemberManagementProps> = ({
             throw new Error(errorData.error || 'Failed to remove member from team');
           }
 
+          const responseData = await response.json();
+          
           // Update UI immediately - add user back to available list
           if (member) {
             setAvailableUsers(prev => [...prev, member]);
           }
           
-          // Also update the parent component
+          // Also update the parent component to refresh team data
           onUpdate();
         } catch (err) {
           setError(err instanceof Error ? err.message : 'Failed to remove member from team');
@@ -297,7 +308,7 @@ const TeamMemberManagement: React.FC<TeamMemberManagementProps> = ({
       <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-            Manage Team Members - {team.name}
+            Manage Team Members - {currentTeam.name}
           </h2>
           <button
             onClick={onClose}
@@ -319,21 +330,21 @@ const TeamMemberManagement: React.FC<TeamMemberManagementProps> = ({
           {/* Current Team Members */}
           <div>
             <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
-              Current Members ({team.members.length})
+              Current Members ({currentTeam.members.length})
             </h3>
             
-            {team.teamLeader && (
+            {currentTeam.teamLeader && (
               <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
                 <h4 className="text-sm font-medium text-blue-900 dark:text-blue-300 mb-1">Team Leader</h4>
                 <p className="text-sm text-blue-700 dark:text-blue-300">
-                  {team.teamLeader.firstName} {team.teamLeader.lastName}
+                  {currentTeam.teamLeader.firstName} {currentTeam.teamLeader.lastName}
                 </p>
-                <p className="text-xs text-blue-600 dark:text-blue-400">{team.teamLeader.email}</p>
+                <p className="text-xs text-blue-600 dark:text-blue-400">{currentTeam.teamLeader.email}</p>
               </div>
             )}
 
             <div className="space-y-2">
-              {team.members.map((member) => (
+              {currentTeam.members.map((member) => (
                 <div key={member._id} className="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700">
                   <div>
                     <p className="text-sm font-medium text-gray-900 dark:text-white">
@@ -341,7 +352,7 @@ const TeamMemberManagement: React.FC<TeamMemberManagementProps> = ({
                     </p>
                     <p className="text-xs text-gray-500 dark:text-gray-400">{member.email}</p>
                   </div>
-                  {member._id !== team.teamLeader?._id && (
+                  {member._id !== currentTeam.teamLeader?._id && (
                     <button
                       onClick={() => handleRemoveMember(member._id)}
                       disabled={loading}
@@ -353,7 +364,7 @@ const TeamMemberManagement: React.FC<TeamMemberManagementProps> = ({
                 </div>
               ))}
               
-              {team.members.length === 0 && (
+              {currentTeam.members.length === 0 && (
                 <p className="text-gray-500 dark:text-gray-400 text-sm text-center py-4">
                   No members in this team yet.
                 </p>

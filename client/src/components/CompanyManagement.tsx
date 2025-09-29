@@ -747,6 +747,7 @@ const CompanyManagement: React.FC = () => {
       {/* Team Member Management Modal */}
       {managingTeam && (
         <TeamMemberManagement
+          key={`${managingTeam._id}-${managingTeam.members.length}`}
           team={managingTeam}
           companyId={company?._id || ''}
           onClose={() => setManagingTeam(null)}
