@@ -322,7 +322,7 @@ app.get('/fix-subscriptions', async (req, res) => {
     
     console.log('🔧 [FIX] Fixing all company user subscriptions...');
     
-    // Find all users who have a companyId
+    // Find all users who have a companyId (including company admins)
     const usersToFix = await User.find({
       companyId: { $exists: true, $ne: null }
     });

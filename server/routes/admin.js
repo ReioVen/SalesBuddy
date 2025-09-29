@@ -201,8 +201,8 @@ router.post('/companies', authenticateToken, canManageCompanies, [
 
     await company.save();
 
-    // Create admin user with company's monthly conversation limit
-    const adminUser = new User({
+    // Create admin user with company's subscription settings
+    const adminUser = await User.createWithCompanySubscription({
       email: adminEmail,
       password: adminPassword,
       firstName: adminFirstName,
@@ -210,23 +210,8 @@ router.post('/companies', authenticateToken, canManageCompanies, [
       companyId: company._id,
       role: 'company_admin',
       isCompanyAdmin: true,
-      subscription: {
-        plan: 'enterprise',
-        status: 'active',
-        stripeCustomerId: 'enterprise_customer',
-        currentPeriodStart: new Date(),
-        currentPeriodEnd: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000) // 1 year
-      },
-      usage: {
-        aiConversations: 0,
-        monthlyLimit: company.subscription.monthlyConversationLimit,
-        dailyLimit: 50, // Daily limit for enterprise users
-        lastResetDate: new Date(),
-        lastDailyResetDate: new Date()
-      }
-    });
-
-    await adminUser.save();
+      companyJoinedAt: new Date()
+    }, company);
 
     // Set company admin
     company.admin = adminUser._id;
