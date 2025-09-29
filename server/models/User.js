@@ -573,7 +573,12 @@ userSchema.methods.canEditUser = function(targetUser) {
     return false;
   }
   
-  // Company admins can edit any user in their company
+  // Prevent company admins from editing themselves
+  if (this._id.equals(targetUser._id)) {
+    return false;
+  }
+  
+  // Company admins can edit any user in their company (except themselves)
   return targetUser.companyId && targetUser.companyId.equals(this.companyId);
 };
 
@@ -584,7 +589,12 @@ userSchema.methods.canDeleteUser = function(targetUser) {
     return false;
   }
   
-  // Company admins can delete any user in their company
+  // Prevent company admins from deleting themselves
+  if (this._id.equals(targetUser._id)) {
+    return false;
+  }
+  
+  // Company admins can delete any user in their company (except themselves)
   return targetUser.companyId && targetUser.companyId.equals(this.companyId);
 };
 
