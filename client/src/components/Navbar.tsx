@@ -91,7 +91,7 @@ const Navbar: React.FC = () => {
               {user ? (
                 <Link to="/settings" className="btn-secondary px-5 py-2.5">{t('settings')}</Link>
               ) : (
-                <Link to="/pricing" className="btn-primary px-5 py-2.5">{t('getStarted')}</Link>
+                <Link to="/register" className="btn-primary px-5 py-2.5">{t('getStarted')}</Link>
               )}
             </div>
 
@@ -155,7 +155,7 @@ const Navbar: React.FC = () => {
                     {t('settings')}
                   </Link>
                 ) : (
-                  <Link to="/pricing" className="btn-primary mt-2 px-5 py-2.5 text-center" onClick={() => setOpen(false)}>
+                  <Link to="/register" className="btn-primary mt-2 px-5 py-2.5 text-center" onClick={() => setOpen(false)}>
                     {t('getStarted')}
                   </Link>
                 )}

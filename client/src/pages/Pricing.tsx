@@ -101,6 +101,7 @@ const Pricing: React.FC = () => {
         language === 'et' ? 'Nõuanded ja õppetunnid' : 'Tips and Lessons',
         language === 'et' ? 'Rohkem kliendi kohandamist' : 'More Client Customization',
         language === 'et' ? 'Isiklik kokkuvõtte tagasiside' : 'Personal Summary Feedback',
+        language === 'et' ? 'Häälega vestlused ja kõned' : 'Voice conversations and calls',
         language === 'et' ? 'Prioriteetne tugi' : 'Priority support'
       ],
       popular: true,
@@ -118,6 +119,7 @@ const Pricing: React.FC = () => {
         language === 'et' ? 'Nõuanded ja õppetunnid' : 'Tips and Lessons',
         language === 'et' ? 'Rohkem kliendi kohandamist' : 'More Client Customization',
         language === 'et' ? 'Isiklik kokkuvõtte tagasiside' : 'Personal Summary Feedback',
+        language === 'et' ? 'Häälega vestlused ja kõned' : 'Voice conversations and calls',
         language === 'et' ? 'Pühendatud tugi' : 'Dedicated support'
       ],
       buttonText: language === 'et' ? 'Vali plaan' : 'Get Plan',
@@ -134,6 +136,7 @@ const Pricing: React.FC = () => {
         language === 'et' ? 'Nõuanded ja õppetunnid' : 'Tips and Lessons',
         language === 'et' ? 'Rohkem kliendi kohandamist' : 'More Client Customization',
         language === 'et' ? 'Isiklik kokkuvõtte tagasiside' : 'Personal Summary Feedback',
+        language === 'et' ? 'Häälega vestlused ja kõned' : 'Voice conversations and calls',
         language === 'et' ? 'Täpsem meeskonna juhtimine' : 'Advanced Team Management',
         language === 'et' ? 'Ettevõtte edetabelid' : 'Company Leaderboards',
         language === 'et' ? 'SSO integratsioon' : 'SSO Integration',
@@ -365,7 +368,7 @@ const Pricing: React.FC = () => {
                 {language === 'et' ? 'Kas teil on tasuta prooviversioon?' : 'Is there a free trial?'}
               </h3>
               <p className="text-gray-600 dark:text-gray-400">
-                {language === 'et' ? 'Jah! Alusta meie tasuta tasemega, mis sisaldab 10 vestlust kuus. Kokkuvõtted on lukustatud, kuni uuendad.' : 'Yes! Start with our free tier that includes 10 conversations per month. Summaries are locked until you upgrade.'}
+                {language === 'et' ? 'Jah! Alusta meie tasuta tasemega, mis sisaldab 3 vestlust kuus. Kokkuvõtted on lukustatud, kuni uuendad.' : 'Yes! Start with our free tier that includes 3 conversations per month. Summaries are locked until you upgrade.'}
               </p>
             </div>
             <div>

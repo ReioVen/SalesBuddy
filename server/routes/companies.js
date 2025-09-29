@@ -21,11 +21,15 @@ const generateTempPassword = () => {
 // Middleware to check if user is company admin
 const requireCompanyAdmin = async (req, res, next) => {
   try {
+    console.log('🔍 [REQUIRE COMPANY ADMIN] Checking user:', req.user._id, 'role:', req.user.role, 'isCompanyAdmin:', req.user.isCompanyAdmin);
     if (!(req.user.role === 'company_admin' || req.user.isCompanyAdmin)) {
+      console.log('❌ [REQUIRE COMPANY ADMIN] Access denied for user:', req.user._id);
       return res.status(403).json({ error: 'Company admin access required' });
     }
+    console.log('✅ [REQUIRE COMPANY ADMIN] Access granted for user:', req.user._id);
     next();
   } catch (error) {
+    console.log('❌ [REQUIRE COMPANY ADMIN] Error:', error);
     res.status(500).json({ error: 'Authorization check failed' });
   }
 };
@@ -1186,8 +1190,11 @@ async function checkUserViewPermission(viewerId, targetUserId) {
     const company = await Company.findById(viewer.companyId);
     if (company) {
       const viewerTeam = company.teams.find(team => team.teamLeader && team.teamLeader.equals(viewerId));
-      if (viewerTeam && viewerTeam.members.some(memberId => memberId.equals(targetUserId))) {
-        return true;
+      if (viewerTeam) {
+        // Team leader can view themselves and their team members
+        if (viewerId.equals(targetUserId) || viewerTeam.members.some(memberId => memberId.equals(targetUserId))) {
+          return true;
+        }
       }
     }
   }

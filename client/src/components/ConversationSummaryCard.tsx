@@ -285,15 +285,12 @@ const ConversationSummaryCard: React.FC<ConversationSummaryCardProps> = ({ summa
     }
   }, [summary, language, isExpanded, index]);
 
-  // Trigger translation when summary is expanded (for summaries not in latest 2)
+  // Trigger translation when summary is expanded (for all summaries)
   useEffect(() => {
     if (isExpanded && language !== 'en' && summary && !translationAttempted) {
-      const isLatestSummary = index < 2; // First 2 summaries are the latest
-      if (!isLatestSummary) {
-        setTranslationAttempted(false); // Reset to allow translation
-      }
+      setTranslationAttempted(false); // Reset to allow translation for all summaries
     }
-  }, [isExpanded, language, summary, translationAttempted, index]);
+  }, [isExpanded, language, summary, translationAttempted]);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
