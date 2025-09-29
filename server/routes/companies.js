@@ -1277,6 +1277,55 @@ async function checkUserViewPermission(viewerId, targetUserId) {
   return false;
 }
 
+// Fix user role to company admin (for debugging/fixing permissions)
+router.post('/fix-user-role', authenticateToken, async (req, res) => {
+  try {
+    const { email, newRole } = req.body;
+    
+    if (!email || !newRole) {
+      return res.status(400).json({ error: 'Email and newRole are required' });
+    }
+    
+    const user = await User.findOne({ email: email.toLowerCase() });
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    
+    console.log('🔧 [FIX USER ROLE] Current user details:');
+    console.log('  - ID:', user._id);
+    console.log('  - Email:', user.email);
+    console.log('  - Current role:', user.role);
+    console.log('  - isCompanyAdmin:', user.isCompanyAdmin);
+    console.log('  - isTeamLeader:', user.isTeamLeader);
+    
+    // Update the user role
+    user.role = newRole;
+    user.isCompanyAdmin = newRole === 'company_admin';
+    user.isTeamLeader = newRole === 'company_team_leader';
+    
+    await user.save();
+    
+    console.log('✅ [FIX USER ROLE] User role updated successfully!');
+    console.log('  - New role:', user.role);
+    console.log('  - isCompanyAdmin:', user.isCompanyAdmin);
+    console.log('  - isTeamLeader:', user.isTeamLeader);
+    
+    res.json({
+      message: 'User role updated successfully',
+      user: {
+        id: user._id,
+        email: user.email,
+        role: user.role,
+        isCompanyAdmin: user.isCompanyAdmin,
+        isTeamLeader: user.isTeamLeader
+      }
+    });
+  } catch (error) {
+    console.error('❌ [FIX USER ROLE] Error:', error);
+    res.status(500).json({ error: 'Failed to update user role' });
+  }
+});
+
 // Fix team leader assignments (Admin only)
 router.post('/fix-team-leaders', authenticateToken, requireCompanyAdmin, async (req, res) => {
   try {
