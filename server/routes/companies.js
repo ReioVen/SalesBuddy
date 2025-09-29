@@ -514,9 +514,13 @@ router.put('/users/:userId/team', authenticateToken, canManageUsers, [
     }
 
     // Check permissions based on user role
+    console.log('🔍 [TEAM ASSIGNMENT] User role:', req.user.role, 'isCompanyAdmin:', req.user.isCompanyAdmin);
+    console.log('🔍 [TEAM ASSIGNMENT] Team leader:', team.teamLeader, 'User ID:', req.user._id);
+    
     if (req.user.role === 'company_team_leader') {
       // Team leaders can only manage their own team
       if (!team.teamLeader || !team.teamLeader.equals(req.user._id)) {
+        console.log('❌ [TEAM ASSIGNMENT] Team leader trying to manage team they don\'t lead');
         return res.status(403).json({ 
           error: 'You can only manage members of your own team',
           teamName: teamName,
@@ -526,14 +530,22 @@ router.put('/users/:userId/team', authenticateToken, canManageUsers, [
       
       // Team leaders can only add regular users to their team, not other team leaders or admins
       if (user.role !== 'company_user') {
+        console.log('❌ [TEAM ASSIGNMENT] Team leader trying to add non-regular user');
         return res.status(403).json({ 
           error: 'You can only add regular users to your team',
           userRole: user.role,
           yourRole: req.user.role
         });
       }
+    } else if (req.user.role === 'company_admin' || req.user.isCompanyAdmin) {
+      console.log('✅ [TEAM ASSIGNMENT] Company admin - allowing team assignment');
+    } else {
+      console.log('❌ [TEAM ASSIGNMENT] User does not have permission to manage teams');
+      return res.status(403).json({ 
+        error: 'You do not have permission to manage teams',
+        userRole: req.user.role
+      });
     }
-    // Company admins can manage all teams and all users in their company (no restrictions)
 
     // Add user to team
     await company.addUserToTeam(userId, teamName);
@@ -588,17 +600,28 @@ router.delete('/users/:userId/team', authenticateToken, canManageUsers, [
     }
 
     // Check permissions based on user role
+    console.log('🔍 [TEAM REMOVAL] User role:', req.user.role, 'isCompanyAdmin:', req.user.isCompanyAdmin);
+    console.log('🔍 [TEAM REMOVAL] Team leader:', team.teamLeader, 'User ID:', req.user._id);
+    
     if (req.user.role === 'company_team_leader') {
       // Team leaders can only remove users from their own team
       if (!team.teamLeader || !team.teamLeader.equals(req.user._id)) {
+        console.log('❌ [TEAM REMOVAL] Team leader trying to remove from team they don\'t lead');
         return res.status(403).json({ 
           error: 'You can only manage members of your own team',
           teamName: teamName,
           userRole: req.user.role
         });
       }
+    } else if (req.user.role === 'company_admin' || req.user.isCompanyAdmin) {
+      console.log('✅ [TEAM REMOVAL] Company admin - allowing team removal');
+    } else {
+      console.log('❌ [TEAM REMOVAL] User does not have permission to manage teams');
+      return res.status(403).json({ 
+        error: 'You do not have permission to manage teams',
+        userRole: req.user.role
+      });
     }
-    // Company admins can remove users from any team (no restrictions)
 
     // Remove user from team
     await company.removeUserFromTeam(userId, teamName);
