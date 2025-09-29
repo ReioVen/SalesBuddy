@@ -513,17 +513,18 @@ router.put('/users/:userId/team', authenticateToken, canManageUsers, [
       return res.status(404).json({ error: 'User not found in company' });
     }
 
-    // Check if team leader is trying to add user to a team they don't lead
-    if (req.user.role === 'company_team_leader' && (!team.teamLeader || !team.teamLeader.equals(req.user._id))) {
-      return res.status(403).json({ 
-        error: 'You can only manage members of your own team',
-        teamName: teamName,
-        userRole: req.user.role
-      });
-    }
-
-    // Team leaders can only add regular users to their team, not other team leaders or admins
+    // Check permissions based on user role
     if (req.user.role === 'company_team_leader') {
+      // Team leaders can only manage their own team
+      if (!team.teamLeader || !team.teamLeader.equals(req.user._id)) {
+        return res.status(403).json({ 
+          error: 'You can only manage members of your own team',
+          teamName: teamName,
+          userRole: req.user.role
+        });
+      }
+      
+      // Team leaders can only add regular users to their team, not other team leaders or admins
       if (user.role !== 'company_user') {
         return res.status(403).json({ 
           error: 'You can only add regular users to your team',
@@ -532,6 +533,7 @@ router.put('/users/:userId/team', authenticateToken, canManageUsers, [
         });
       }
     }
+    // Company admins can manage all teams and all users in their company (no restrictions)
 
     // Add user to team
     await company.addUserToTeam(userId, teamName);
@@ -585,16 +587,18 @@ router.delete('/users/:userId/team', authenticateToken, canManageUsers, [
       return res.status(404).json({ error: 'User not found in company' });
     }
 
-    // Check if team leader is trying to remove user from a team they don't lead
-    if (req.user.role === 'company_team_leader' && (!team.teamLeader || !team.teamLeader.equals(req.user._id))) {
-      return res.status(403).json({ 
-        error: 'You can only manage members of your own team',
-        teamName: teamName,
-        userRole: req.user.role
-      });
+    // Check permissions based on user role
+    if (req.user.role === 'company_team_leader') {
+      // Team leaders can only remove users from their own team
+      if (!team.teamLeader || !team.teamLeader.equals(req.user._id)) {
+        return res.status(403).json({ 
+          error: 'You can only manage members of your own team',
+          teamName: teamName,
+          userRole: req.user.role
+        });
+      }
     }
-
-    // Team leaders can remove any user from their team
+    // Company admins can remove users from any team (no restrictions)
 
     // Remove user from team
     await company.removeUserFromTeam(userId, teamName);
