@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from '../hooks/useTranslation.ts';
 
+const API_BASE_URL = 'https://salesbuddy-production.up.railway.app';
+
 interface Message {
   _id: string;
   role: 'user' | 'assistant';
@@ -72,7 +74,7 @@ const ConversationReaderModal: React.FC<ConversationReaderModalProps> = ({
         headers['Authorization'] = `Bearer ${token}`;
       }
 
-      const url = `/api/companies/users/${userId}/conversations/${conversationId}`;
+      const url = `${API_BASE_URL}/api/companies/users/${userId}/conversations/${conversationId}`;
       console.log('[ConversationReaderModal] Fetching from URL:', url);
 
       const response = await fetch(url, {

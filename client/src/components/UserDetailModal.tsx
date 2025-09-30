@@ -169,7 +169,13 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, onClose }) => {
       if (response.ok) {
         const data = await response.json();
         console.log('[UserDetailModal] Summaries data:', data);
-        console.log('[UserDetailModal] First summary translations:', data.summaries[0]?.translations);
+        console.log('[UserDetailModal] Number of summaries:', data.summaries?.length);
+        if (data.summaries && data.summaries.length > 0) {
+          console.log('[UserDetailModal] First summary full object:', data.summaries[0]);
+          console.log('[UserDetailModal] First summary translations:', data.summaries[0]?.translations);
+          console.log('[UserDetailModal] First summary strengths:', data.summaries[0]?.strengths);
+          console.log('[UserDetailModal] Current language:', language);
+        }
         setSummaries(data.summaries);
       } else {
         const errorData = await response.json();
@@ -401,7 +407,7 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, onClose }) => {
                                     <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                                   </svg>
                                 ))}
-                                <span className="ml-2 text-sm font-medium text-gray-700">
+                                <span className="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300">
                                   {summary.overallRating}/10
                                 </span>
                               </div>
@@ -410,7 +416,7 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, onClose }) => {
 
                           {/* Stage Ratings */}
                           <div className="mb-4">
-                            <h4 className="text-sm font-medium text-gray-700 mb-2">{t('stageRatings')}:</h4>
+                            <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('stageRatings')}:</h4>
                             <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
                               {summary.stageRatings && Object.entries(summary.stageRatings).map(([stage, ratingData]) => {
                                 // Handle both number and object formats
@@ -420,7 +426,7 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, onClose }) => {
                                     <div className={`px-2 py-1 text-xs font-semibold rounded-full mb-1 ${getStageColor(stage)}`}>
                                       {translateStage(stage)}
                                     </div>
-                                    <div className="text-sm font-medium">{rating}/10</div>
+                                    <div className="text-sm font-medium dark:text-gray-200">{rating}/10</div>
                                   </div>
                                 );
                               })}
@@ -434,7 +440,19 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, onClose }) => {
                               <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
                                 {summary.strengths && summary.strengths.map((strength, index) => {
                                   // Use translated version if available, otherwise translate on frontend
-                                  const translatedStrength = summary.translations?.[language]?.strengths?.[index] || translateAIContent(strength, language);
+                                  const backendTranslation = summary.translations?.[language]?.strengths?.[index];
+                                  const translatedStrength = backendTranslation || translateAIContent(strength, language);
+                                  
+                                  if (index === 0) {
+                                    console.log('[UserDetailModal] Strength translation:', {
+                                      original: strength,
+                                      backendTranslation,
+                                      finalTranslation: translatedStrength,
+                                      hasBackendTranslation: !!backendTranslation,
+                                      language
+                                    });
+                                  }
+                                  
                                   return (
                                     <li key={index} className="flex items-start">
                                       <span className="text-green-500 mr-2">•</span>
