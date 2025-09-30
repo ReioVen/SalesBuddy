@@ -1168,7 +1168,7 @@ router.get('/users/:userId/conversations/:conversationId', authenticateToken, as
     }
 
     // Verify the conversation belongs to the specified user
-    if (!conversation.userId._id.equals(userId)) {
+    if (conversation.userId._id.toString() !== userId.toString()) {
       return res.status(403).json({ error: 'Conversation does not belong to this user' });
     }
 

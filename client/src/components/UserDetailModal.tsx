@@ -42,9 +42,22 @@ interface ConversationSummary {
     notes: string;
   }>;
   aiAnalysis: {
-    keyInsights: string[];
-    recommendations: string[];
-    trends: string[];
+    personalityInsights: string;
+    communicationStyle: string;
+    recommendedFocus: string[];
+    nextSteps: string[];
+  };
+  translations?: {
+    [language: string]: {
+      strengths: string[];
+      improvements: string[];
+      aiAnalysis: {
+        personalityInsights: string;
+        communicationStyle: string;
+        recommendedFocus: string[];
+        nextSteps: string[];
+      };
+    };
   };
   createdAt: string;
 }
@@ -404,25 +417,33 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, onClose }) => {
                           {/* Strengths and Improvements */}
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                             <div>
-                              <h4 className="text-sm font-medium text-gray-700 mb-2">{t('strengths')}:</h4>
-                              <ul className="text-sm text-gray-600 space-y-1">
-                                {summary.strengths && summary.strengths.map((strength, index) => (
-                                  <li key={index} className="flex items-start">
-                                    <span className="text-green-500 mr-2">•</span>
-                                    {translateAIContent(strength, language)}
-                                  </li>
-                                ))}
+                              <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('strengths')}:</h4>
+                              <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
+                                {summary.strengths && summary.strengths.map((strength, index) => {
+                                  // Use translated version if available, otherwise translate on frontend
+                                  const translatedStrength = summary.translations?.[language]?.strengths?.[index] || translateAIContent(strength, language);
+                                  return (
+                                    <li key={index} className="flex items-start">
+                                      <span className="text-green-500 mr-2">•</span>
+                                      {translatedStrength}
+                                    </li>
+                                  );
+                                })}
                               </ul>
                             </div>
                             <div>
-                              <h4 className="text-sm font-medium text-gray-700 mb-2">{t('areasForImprovement')}:</h4>
-                              <ul className="text-sm text-gray-600 space-y-1">
-                                {summary.improvements && summary.improvements.map((improvement, index) => (
-                                  <li key={index} className="flex items-start">
-                                    <span className="text-orange-500 mr-2">•</span>
-                                    {translateAIContent(improvement, language)}
-                                  </li>
-                                ))}
+                              <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('areasForImprovement')}:</h4>
+                              <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
+                                {summary.improvements && summary.improvements.map((improvement, index) => {
+                                  // Use translated version if available, otherwise translate on frontend
+                                  const translatedImprovement = summary.translations?.[language]?.improvements?.[index] || translateAIContent(improvement, language);
+                                  return (
+                                    <li key={index} className="flex items-start">
+                                      <span className="text-orange-500 mr-2">•</span>
+                                      {translatedImprovement}
+                                    </li>
+                                  );
+                                })}
                               </ul>
                             </div>
                           </div>
@@ -430,22 +451,22 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, onClose }) => {
                           {/* Example Conversations */}
                           {summary.exampleConversations && summary.exampleConversations.length > 0 && (
                             <div className="mb-4">
-                              <h4 className="text-sm font-medium text-gray-700 mb-2">{t('exampleConversations')}:</h4>
+                              <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('exampleConversations')}:</h4>
                               <div className="space-y-2">
                                 {summary.exampleConversations && summary.exampleConversations.map((example, index) => (
-                                  <div key={index} className="bg-gray-50 rounded-lg p-3">
+                                  <div key={index} className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
                                     <div className="flex items-center justify-between mb-2">
-                                      <span className="text-sm font-medium text-gray-900">
+                                      <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
                                         {example.conversationId.title}
                                       </span>
                                       <div className="flex items-center space-x-2">
                                         <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getStageColor(example.stage)}`}>
-                                          {translateAIContent(example.stage, language)}
+                                          {translateStage(example.stage)}
                                         </span>
-                                        <span className="text-sm font-medium">{example.rating}/10</span>
+                                        <span className="text-sm font-medium dark:text-gray-200">{example.rating}/10</span>
                                       </div>
                                     </div>
-                                    <p className="text-sm text-gray-600">{translateAIContent(example.notes, language)}</p>
+                                    <p className="text-sm text-gray-600 dark:text-gray-400">{translateAIContent(example.notes, language)}</p>
                                   </div>
                                 ))}
                               </div>
@@ -455,12 +476,12 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, onClose }) => {
                           {/* AI Analysis */}
                           {summary.aiAnalysis && (
                             <div>
-                              <h4 className="text-sm font-medium text-gray-700 mb-2">{t('aiInsights')}:</h4>
+                              <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('aiInsights')}:</h4>
                               <div className="space-y-3">
                                 {summary.aiAnalysis.personalityInsights && (
-                                  <div className="bg-blue-50 rounded-lg p-3">
-                                    <h5 className="text-sm font-medium text-blue-900 mb-1">{t('personalityInsights')}:</h5>
-                                    <p className="text-sm text-blue-800">
+                                  <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3">
+                                    <h5 className="text-sm font-medium text-blue-900 dark:text-blue-300 mb-1">{t('personalityInsights')}:</h5>
+                                    <p className="text-sm text-blue-800 dark:text-blue-200">
                                       {summary.translations && summary.translations[language] && summary.translations[language].aiAnalysis?.personalityInsights 
                                         ? summary.translations[language].aiAnalysis.personalityInsights
                                         : translateAIContent(summary.aiAnalysis.personalityInsights, language)
@@ -470,9 +491,9 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, onClose }) => {
                                 )}
                                 
                                 {summary.aiAnalysis.communicationStyle && (
-                                  <div className="bg-green-50 rounded-lg p-3">
-                                    <h5 className="text-sm font-medium text-green-900 mb-1">{t('communicationStyle')}:</h5>
-                                    <p className="text-sm text-green-800">
+                                  <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-3">
+                                    <h5 className="text-sm font-medium text-green-900 dark:text-green-300 mb-1">{t('communicationStyle')}:</h5>
+                                    <p className="text-sm text-green-800 dark:text-green-200">
                                       {summary.translations && summary.translations[language] && summary.translations[language].aiAnalysis?.communicationStyle 
                                         ? summary.translations[language].aiAnalysis.communicationStyle
                                         : translateAIContent(summary.aiAnalysis.communicationStyle, language)
@@ -482,15 +503,15 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, onClose }) => {
                                 )}
                                 
                                 {summary.aiAnalysis.recommendedFocus && summary.aiAnalysis.recommendedFocus.length > 0 && (
-                                  <div className="bg-yellow-50 rounded-lg p-3">
-                                    <h5 className="text-sm font-medium text-yellow-900 mb-1">{t('recommendedFocusAreas')}:</h5>
-                                    <ul className="text-sm text-yellow-800 space-y-1">
+                                  <div className="bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-3">
+                                    <h5 className="text-sm font-medium text-yellow-900 dark:text-yellow-300 mb-1">{t('recommendedFocusAreas')}:</h5>
+                                    <ul className="text-sm text-yellow-800 dark:text-yellow-200 space-y-1">
                                       {(summary.translations && summary.translations[language] && summary.translations[language].aiAnalysis?.recommendedFocus 
                                         ? summary.translations[language].aiAnalysis.recommendedFocus
-                                        : summary.aiAnalysis.recommendedFocus
+                                        : summary.aiAnalysis.recommendedFocus.map(focus => translateAIContent(focus, language))
                                       ).map((focus, index) => (
                                         <li key={index} className="flex items-start">
-                                          <span className="text-yellow-600 mr-2">•</span>
+                                          <span className="text-yellow-600 dark:text-yellow-400 mr-2">•</span>
                                           {focus}
                                         </li>
                                       ))}
@@ -499,15 +520,15 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, onClose }) => {
                                 )}
                                 
                                 {summary.aiAnalysis.nextSteps && summary.aiAnalysis.nextSteps.length > 0 && (
-                                  <div className="bg-purple-50 rounded-lg p-3">
-                                    <h5 className="text-sm font-medium text-purple-900 mb-1">{t('nextSteps')}:</h5>
-                                    <ul className="text-sm text-purple-800 space-y-1">
+                                  <div className="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-3">
+                                    <h5 className="text-sm font-medium text-purple-900 dark:text-purple-300 mb-1">{t('nextSteps')}:</h5>
+                                    <ul className="text-sm text-purple-800 dark:text-purple-200 space-y-1">
                                       {(summary.translations && summary.translations[language] && summary.translations[language].aiAnalysis?.nextSteps 
                                         ? summary.translations[language].aiAnalysis.nextSteps
-                                        : summary.aiAnalysis.nextSteps
+                                        : summary.aiAnalysis.nextSteps.map(step => translateAIContent(step, language))
                                       ).map((step, index) => (
                                         <li key={index} className="flex items-start">
-                                          <span className="text-purple-600 mr-2">•</span>
+                                          <span className="text-purple-600 dark:text-purple-400 mr-2">•</span>
                                           {step}
                                         </li>
                                       ))}
