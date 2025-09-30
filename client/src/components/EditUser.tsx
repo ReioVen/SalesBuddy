@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import { useTranslation } from '../hooks/useTranslation.ts';
 
 interface EditUserForm {
   firstName: string;
@@ -36,6 +37,7 @@ const EditUser: React.FC<EditUserProps> = ({
   onUserUpdated, 
   onCancel 
 }) => {
+  const { t } = useTranslation();
   const [form, setForm] = useState<EditUserForm>({
     firstName: user.firstName,
     lastName: user.lastName,
@@ -53,7 +55,7 @@ const EditUser: React.FC<EditUserProps> = ({
 
     // Client-side validation
     if (form.role === 'company_team_leader' && !form.teamId) {
-      setError('Please select a team for team leader role');
+      setError(t('pleaseSelectATeamForTeamLeader'));
       setLoading(false);
       return;
     }
@@ -62,7 +64,7 @@ const EditUser: React.FC<EditUserProps> = ({
       // Get token from localStorage for authentication
       const token = localStorage.getItem('sb_token');
       if (!token) {
-        setError('Authentication token not found. Please log in again.');
+        setError(t('authenticationTokenNotFound'));
         setLoading(false);
         return;
       }
@@ -102,7 +104,7 @@ const EditUser: React.FC<EditUserProps> = ({
 
   return (
     <div className="bg-white dark:bg-dark-800 border border-gray-200 dark:border-dark-600 rounded-lg p-6">
-      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Edit User</h3>
+      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">{t('editUser')}</h3>
       
       {error && (
         <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 mb-6">
@@ -113,7 +115,7 @@ const EditUser: React.FC<EditUserProps> = ({
               </svg>
             </div>
             <div className="ml-3">
-              <h3 className="text-sm font-medium text-red-800 dark:text-red-200">Error</h3>
+              <h3 className="text-sm font-medium text-red-800 dark:text-red-200">{t('error')}</h3>
               <p className="mt-1 text-sm text-red-700 dark:text-red-300">{error}</p>
             </div>
           </div>
@@ -124,7 +126,7 @@ const EditUser: React.FC<EditUserProps> = ({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              First Name *
+              {t('firstName')} *
             </label>
             <input
               type="text"
@@ -133,13 +135,13 @@ const EditUser: React.FC<EditUserProps> = ({
               value={form.firstName}
               onChange={(e) => setForm({ ...form, firstName: e.target.value })}
               className="w-full border border-gray-300 dark:border-dark-600 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-dark-700 text-gray-900 dark:text-white"
-              placeholder="Enter first name"
+              placeholder={t('enterFirstName')}
             />
           </div>
 
           <div>
             <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Last Name *
+              {t('lastName')} *
             </label>
             <input
               type="text"
@@ -148,14 +150,14 @@ const EditUser: React.FC<EditUserProps> = ({
               value={form.lastName}
               onChange={(e) => setForm({ ...form, lastName: e.target.value })}
               className="w-full border border-gray-300 dark:border-dark-600 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-dark-700 text-gray-900 dark:text-white"
-              placeholder="Enter last name"
+              placeholder={t('enterLastName')}
             />
           </div>
         </div>
 
         <div>
           <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Email Address *
+            {t('emailAddress')} *
           </label>
           <input
             type="email"
@@ -164,13 +166,13 @@ const EditUser: React.FC<EditUserProps> = ({
             value={form.email}
             onChange={(e) => setForm({ ...form, email: e.target.value })}
             className="w-full border border-gray-300 dark:border-dark-600 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-dark-700 text-gray-900 dark:text-white"
-            placeholder="Enter email address"
+            placeholder={t('enterEmail')}
           />
         </div>
 
         <div>
           <label htmlFor="role" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Role *
+            {t('role')} *
           </label>
           <select
             id="role"
@@ -179,15 +181,15 @@ const EditUser: React.FC<EditUserProps> = ({
             onChange={(e) => setForm({ ...form, role: e.target.value as any })}
             className="w-full border border-gray-300 dark:border-dark-600 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-dark-700 text-gray-900 dark:text-white"
           >
-            <option value="company_user">Company User</option>
-            <option value="company_team_leader">Team Leader</option>
+            <option value="company_user">{t('companyUser')}</option>
+            <option value="company_team_leader">{t('teamLeader')}</option>
           </select>
         </div>
 
         {teams.length > 0 && (
           <div>
             <label htmlFor="teamId" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Team {form.role === 'company_team_leader' ? '*' : ''}
+              {t('team')} {form.role === 'company_team_leader' ? '*' : ''}
             </label>
             <select
               id="teamId"
@@ -196,7 +198,7 @@ const EditUser: React.FC<EditUserProps> = ({
               onChange={(e) => setForm({ ...form, teamId: e.target.value || undefined })}
               className="w-full border border-gray-300 dark:border-dark-600 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-dark-700 text-gray-900 dark:text-white"
             >
-              <option value="">{form.role === 'company_team_leader' ? 'Select a team' : 'No team assigned'}</option>
+              <option value="">{form.role === 'company_team_leader' ? t('selectATeam') : t('noTeamAssigned')}</option>
               {teams.map((team) => (
                 <option key={team._id} value={team._id}>
                   {team.name}
@@ -205,8 +207,8 @@ const EditUser: React.FC<EditUserProps> = ({
             </select>
             <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
               {form.role === 'company_team_leader' 
-                ? 'Select the team this user will lead' 
-                : 'Optionally assign this user to a team'
+                ? t('selectTheTeamThisUserWillLead') 
+                : t('optionallyAssignThisUserToTeam')
               }
             </p>
           </div>
@@ -215,7 +217,7 @@ const EditUser: React.FC<EditUserProps> = ({
         {form.role === 'company_team_leader' && teams.length === 0 && (
           <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
             <p className="text-sm text-yellow-700 dark:text-yellow-300">
-              No teams available. Create a team first before assigning a team leader.
+              {t('noTeamsAvailableCreateFirst')}
             </p>
           </div>
         )}
@@ -226,14 +228,14 @@ const EditUser: React.FC<EditUserProps> = ({
             onClick={onCancel}
             className="flex-1 bg-gray-300 dark:bg-dark-600 text-gray-700 dark:text-gray-300 py-2 px-4 rounded-lg font-medium hover:bg-gray-400 dark:hover:bg-dark-500 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
           >
-            Cancel
+            {t('cancel')}
           </button>
           <button
             type="submit"
             disabled={loading || (form.role === 'company_team_leader' && teams.length === 0) || (form.role === 'company_team_leader' && !form.teamId)}
             className="flex-1 bg-blue-600 dark:bg-blue-700 text-white py-2 px-4 rounded-lg font-medium hover:bg-blue-700 dark:hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? 'Updating User...' : 'Update User'}
+            {loading ? t('updatingUser') : t('updateUser')}
           </button>
         </div>
       </form>

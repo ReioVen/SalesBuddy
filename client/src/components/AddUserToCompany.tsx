@@ -60,7 +60,7 @@ const AddUserToCompany: React.FC<AddUserToCompanyProps> = ({
     }
 
     if (form.role === 'company_team_leader' && !form.teamId) {
-      setError('Please select a team for team leader role');
+      setError(t('pleaseSelectATeamForTeamLeader'));
       setLoading(false);
       return;
     }
@@ -79,7 +79,7 @@ const AddUserToCompany: React.FC<AddUserToCompanyProps> = ({
       
       // Check if token exists
       if (!token) {
-        setError('Authentication token not found. Please log in again.');
+        setError(t('authenticationTokenNotFound'));
         setLoading(false);
         return;
       }
@@ -108,12 +108,12 @@ const AddUserToCompany: React.FC<AddUserToCompanyProps> = ({
             const testData = await fetchTestResponse.json();
           } else {
             const errorData = await fetchTestResponse.json();
-            setError('Authentication token is invalid. Please log in again.');
+            setError(t('authenticationTokenNotFound'));
             setLoading(false);
             return;
           }
         } catch (fetchTestError) {
-          setError('Authentication token is invalid. Please log in again.');
+          setError(t('authenticationTokenNotFound'));
           setLoading(false);
           return;
         }
@@ -205,7 +205,7 @@ const AddUserToCompany: React.FC<AddUserToCompanyProps> = ({
               </svg>
             </div>
             <div className="ml-3">
-              <h3 className="text-sm font-medium text-red-800 dark:text-red-200">Error</h3>
+              <h3 className="text-sm font-medium text-red-800 dark:text-red-200">{t('error')}</h3>
               <p className="mt-1 text-sm text-red-700 dark:text-red-300">{error}</p>
             </div>
           </div>
@@ -314,12 +314,12 @@ const AddUserToCompany: React.FC<AddUserToCompanyProps> = ({
             value={form.role}
             onChange={(e) => setForm({ ...form, role: e.target.value as any, teamId: e.target.value === 'company_user' ? undefined : form.teamId })}
             className="w-full border border-gray-300 dark:border-dark-600 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-dark-700 text-gray-900 dark:text-white"
-          >
-            <option value="company_user">Company User</option>
-            {user?.role === 'company_admin' && (
-              <option value="company_team_leader">Team Leader</option>
-            )}
-          </select>
+            >
+              <option value="company_user">{t('companyUser')}</option>
+              {user?.role === 'company_admin' && (
+                <option value="company_team_leader">{t('teamLeader')}</option>
+              )}
+            </select>
         </div>
 
         {/* Only show team selection for company admins */}
@@ -335,7 +335,7 @@ const AddUserToCompany: React.FC<AddUserToCompanyProps> = ({
               onChange={(e) => setForm({ ...form, teamId: e.target.value || undefined })}
               className="w-full border border-gray-300 dark:border-dark-600 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-dark-700 text-gray-900 dark:text-white"
             >
-              <option value="">Select a team</option>
+              <option value="">{t('selectATeam')}</option>
               {teams.map((team) => (
                 <option key={team._id} value={team._id}>
                   {team.name}
@@ -344,8 +344,8 @@ const AddUserToCompany: React.FC<AddUserToCompanyProps> = ({
             </select>
             <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
               {form.role === 'company_team_leader' 
-                ? 'Select the team this user will lead'
-                : 'Select a team to assign this user to (optional)'
+                ? t('selectTheTeamThisUserWillLead')
+                : t('optionallyAssignThisUserToTeam')
               }
             </p>
           </div>
@@ -354,7 +354,7 @@ const AddUserToCompany: React.FC<AddUserToCompanyProps> = ({
         {teams.length === 0 && (
           <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
             <p className="text-sm text-yellow-700 dark:text-yellow-300">
-              No teams available. Create a team first before assigning users to teams.
+              {t('noTeamsAvailableCreateFirst')}
             </p>
           </div>
         )}

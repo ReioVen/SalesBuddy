@@ -271,7 +271,7 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, onClose }) => {
                 <div>
                   {conversations.length === 0 ? (
                     <div className="text-center py-8">
-                      <p className="text-gray-500">No conversations found for this user.</p>
+                      <p className="text-gray-500">{t('noConversationsFound')}</p>
                     </div>
                   ) : (
                     <div className="space-y-4">
@@ -337,7 +337,7 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, onClose }) => {
                 <div>
                   {summaries.length === 0 ? (
                     <div className="text-center py-8">
-                      <p className="text-gray-500">{t('noAiSummariesAvailable')}</p>
+                      <p className="text-gray-500">{t('noSummariesAvailable')}</p>
                       <p className="text-sm text-gray-400 mt-2">
                         {t('summariesGeneratedAfter')}
                       </p>
