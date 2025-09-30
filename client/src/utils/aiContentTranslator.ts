@@ -2007,6 +2007,12 @@ const analyzeContentLanguage = (content: string, language: Language): 'english' 
   return 'english';
 };
 
+// Helper function to capitalize first letter of a string
+const capitalizeFirstLetter = (str: string): string => {
+  if (!str || str.length === 0) return str;
+  return str.charAt(0).toUpperCase() + str.slice(1);
+};
+
 // Function to translate AI-generated content
 export const translateAIContent = (content: string, language: Language): string => {
   // Handle undefined, null, or empty content
@@ -2015,7 +2021,7 @@ export const translateAIContent = (content: string, language: Language): string 
   }
   
   if (language === 'en') {
-    return content; // No translation needed for English
+    return capitalizeFirstLetter(content); // Capitalize for English too
   }
   
   // For Estonian, always try to fix broken words first, then translate
@@ -2038,31 +2044,38 @@ export const translateAIContent = (content: string, language: Language): string 
       }
     }
     
-    return fixed;
+    return capitalizeFirstLetter(fixed);
   }
   
   // For other languages, use the original logic
   const contentState = analyzeContentLanguage(content, language);
   
+  let translated = '';
   // Handle different content states
   switch (contentState) {
     case 'target':
       // Content is already properly in target language
-      return content;
+      translated = content;
+      break;
       
     case 'broken':
       // Content has broken translations, try to fix them
-      return fixBrokenTranslation(content, language);
+      translated = fixBrokenTranslation(content, language);
+      break;
       
     case 'mixed':
       // Content has both English and target language, needs careful translation
-      return translateMixedContent(content, language);
+      translated = translateMixedContent(content, language);
+      break;
       
     case 'english':
     default:
       // Content is in English, needs full translation
-      return translateEnglishContent(content, language);
+      translated = translateEnglishContent(content, language);
+      break;
   }
+  
+  return capitalizeFirstLetter(translated);
 };
 
 // Function to fix broken translations
