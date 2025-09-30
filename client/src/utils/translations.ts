@@ -939,7 +939,7 @@ export const translations = {
     conversationTitle: 'Vestlus',
     ended: 'Lõpetatud',
     active: 'Aktiivne',
-    messages: 'sõnumid',
+    messages: 'sõnumit',
     noMessagesInConversation: 'Selles vestluses pole sõnumeid.',
     conversationNotFound: 'Vestlust ei leitud.',
     user: 'Kasutaja',

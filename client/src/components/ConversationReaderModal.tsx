@@ -24,6 +24,17 @@ interface Conversation {
     lastName: string;
     email: string;
   };
+  rating?: number;
+  feedback?: string;
+  aiRatings?: {
+    opening?: number;
+    discovery?: number;
+    presentation?: number;
+    objectionHandling?: number;
+    closing?: number;
+    overall?: number;
+  };
+  aiRatingFeedback?: string;
 }
 
 interface ConversationReaderModalProps {
@@ -177,6 +188,56 @@ const ConversationReaderModal: React.FC<ConversationReaderModalProps> = ({
             </div>
           ) : conversation ? (
             <div className="space-y-4">
+              {/* AI Rating Summary - Show at top if available */}
+              {conversation.aiRatings && (
+                <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-4">
+                  <h4 className="text-sm font-semibold text-blue-900 dark:text-blue-300 mb-2">AI Rating</h4>
+                  <div className="grid grid-cols-2 md:grid-cols-6 gap-2 text-xs">
+                    {conversation.aiRatings.overall && (
+                      <div className="text-center">
+                        <div className="font-semibold text-blue-900 dark:text-blue-300">Overall</div>
+                        <div className="text-blue-700 dark:text-blue-400">{conversation.aiRatings.overall}/10</div>
+                      </div>
+                    )}
+                    {conversation.aiRatings.opening && (
+                      <div className="text-center">
+                        <div className="font-semibold text-blue-900 dark:text-blue-300">{t('opening')}</div>
+                        <div className="text-blue-700 dark:text-blue-400">{conversation.aiRatings.opening}/10</div>
+                      </div>
+                    )}
+                    {conversation.aiRatings.discovery && (
+                      <div className="text-center">
+                        <div className="font-semibold text-blue-900 dark:text-blue-300">{t('discovery')}</div>
+                        <div className="text-blue-700 dark:text-blue-400">{conversation.aiRatings.discovery}/10</div>
+                      </div>
+                    )}
+                    {conversation.aiRatings.presentation && (
+                      <div className="text-center">
+                        <div className="font-semibold text-blue-900 dark:text-blue-300">{t('presentation')}</div>
+                        <div className="text-blue-700 dark:text-blue-400">{conversation.aiRatings.presentation}/10</div>
+                      </div>
+                    )}
+                    {conversation.aiRatings.objectionHandling && (
+                      <div className="text-center">
+                        <div className="font-semibold text-blue-900 dark:text-blue-300">{t('objectionHandling')}</div>
+                        <div className="text-blue-700 dark:text-blue-400">{conversation.aiRatings.objectionHandling}/10</div>
+                      </div>
+                    )}
+                    {conversation.aiRatings.closing && (
+                      <div className="text-center">
+                        <div className="font-semibold text-blue-900 dark:text-blue-300">{t('closing')}</div>
+                        <div className="text-blue-700 dark:text-blue-400">{conversation.aiRatings.closing}/10</div>
+                      </div>
+                    )}
+                  </div>
+                  {conversation.aiRatingFeedback && (
+                    <div className="mt-3 pt-3 border-t border-blue-200 dark:border-blue-800">
+                      <p className="text-sm text-blue-800 dark:text-blue-200">{conversation.aiRatingFeedback}</p>
+                    </div>
+                  )}
+                </div>
+              )}
+              
               {conversation.messages.map((message, index) => (
                 <div
                   key={message._id || index}

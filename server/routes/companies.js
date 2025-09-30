@@ -1130,6 +1130,9 @@ router.get('/users/:userId/summaries', authenticateToken, async (req, res) => {
   try {
     const { userId } = req.params;
 
+    console.log('[Companies] Fetching summaries for user:', userId, 'by viewer:', req.user._id);
+    console.log('[Companies] Viewer language:', req.user.language);
+
     // Check if user has permission to view this user's summaries
     const canView = await checkUserViewPermission(req.user._id, userId);
     if (!canView) {
@@ -1140,6 +1143,44 @@ router.get('/users/:userId/summaries', authenticateToken, async (req, res) => {
       .sort({ summaryNumber: -1 })
       .populate('exampleConversations.conversationId', 'title createdAt')
       .lean();
+
+    console.log('[Companies] Found', summaries.length, 'summaries');
+    
+    // If viewer has a language preference and it's not English, ensure translations exist
+    const viewerLanguage = req.user.language || 'en';
+    console.log('[Companies] Viewer language preference:', viewerLanguage);
+    
+    if (viewerLanguage !== 'en' && summaries.length > 0) {
+      const multiLanguageTranslationService = require('../services/multiLanguageTranslationService');
+      
+      for (const summary of summaries) {
+        // Check if translation exists for viewer's language
+        if (!summary.translations || !summary.translations[viewerLanguage]) {
+          console.log('[Companies] Translating summary', summary._id, 'to', viewerLanguage);
+          try {
+            // Generate translation using Google Translate
+            const translatedContent = await multiLanguageTranslationService.translateSummary(summary, viewerLanguage);
+            
+            // Update the summary in the database with the translation
+            await ConversationSummary.findByIdAndUpdate(summary._id, {
+              [`translations.${viewerLanguage}`]: translatedContent
+            });
+            
+            // Add translation to the response
+            if (!summary.translations) {
+              summary.translations = {};
+            }
+            summary.translations[viewerLanguage] = translatedContent;
+            console.log('[Companies] Translation complete for summary', summary._id);
+          } catch (translateError) {
+            console.error('[Companies] Failed to translate summary', summary._id, ':', translateError.message);
+            // Continue without translation rather than failing
+          }
+        } else {
+          console.log('[Companies] Summary', summary._id, 'already has', viewerLanguage, 'translation');
+        }
+      }
+    }
 
     res.json({ summaries });
   } catch (error) {

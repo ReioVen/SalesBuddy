@@ -220,13 +220,13 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, onClose }) => {
 
   const getStageColor = (stage: string) => {
     const colors: { [key: string]: string } = {
-      opening: 'bg-blue-100 text-blue-800',
-      discovery: 'bg-green-100 text-green-800',
-      presentation: 'bg-yellow-100 text-yellow-800',
-      objectionHandling: 'bg-orange-100 text-orange-800',
-      closing: 'bg-purple-100 text-purple-800'
+      opening: 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300',
+      discovery: 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300',
+      presentation: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300',
+      objectionHandling: 'bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-300',
+      closing: 'bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300'
     };
-    return colors[stage] || 'bg-gray-100 text-gray-800';
+    return colors[stage] || 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300';
   };
 
   return (
@@ -485,7 +485,7 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, onClose }) => {
                               <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('exampleConversations')}:</h4>
                               <div className="space-y-2">
                                 {summary.exampleConversations && summary.exampleConversations.map((example, index) => (
-                                  <div key={index} className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
+                                  <div key={index} className="bg-gray-50 dark:bg-dark-700 rounded-lg p-3">
                                     <div className="flex items-center justify-between mb-2">
                                       <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
                                         {example.conversationId.title}
@@ -494,10 +494,10 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, onClose }) => {
                                         <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getStageColor(example.stage)}`}>
                                           {translateStage(example.stage)}
                                         </span>
-                                        <span className="text-sm font-medium dark:text-gray-200">{example.rating}/10</span>
+                                        <span className="text-sm font-medium dark:text-gray-200">{example.rating || 0}/10</span>
                                       </div>
                                     </div>
-                                    <p className="text-sm text-gray-600 dark:text-gray-400">{translateAIContent(example.notes, language)}</p>
+                                    <p className="text-sm text-gray-600 dark:text-gray-300">{translateAIContent(example.notes, language)}</p>
                                   </div>
                                 ))}
                               </div>

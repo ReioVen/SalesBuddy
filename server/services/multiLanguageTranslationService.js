@@ -1020,6 +1020,104 @@ class MultiLanguageTranslationService {
     const context = contextMap[analysisType] || 'general';
     return await this.translateDynamicContent(content, targetLanguage, context);
   }
+
+  /**
+   * Translate an entire conversation summary to target language using Google Translate
+   * @param {Object} summary - The conversation summary object
+   * @param {string} targetLanguage - Target language code ('et', 'es', 'ru')
+   * @returns {Promise<Object>} Translated summary content
+   */
+  async translateSummary(summary, targetLanguage) {
+    console.log(`[Translation Service] Translating summary ${summary._id} to ${targetLanguage}`);
+    
+    const translatedSummary = {
+      strengths: [],
+      improvements: [],
+      stageRatings: {},
+      aiAnalysis: {}
+    };
+
+    try {
+      // Translate strengths using Google Translate
+      if (summary.strengths && Array.isArray(summary.strengths)) {
+        console.log(`[Translation Service] Translating ${summary.strengths.length} strengths`);
+        translatedSummary.strengths = [];
+        for (const strength of summary.strengths) {
+          const translated = await googleTranslateService.translateWithContext(strength, targetLanguage, 'strength_comment');
+          translatedSummary.strengths.push(translated);
+        }
+      }
+
+      // Translate improvements using Google Translate
+      if (summary.improvements && Array.isArray(summary.improvements)) {
+        console.log(`[Translation Service] Translating ${summary.improvements.length} improvements`);
+        translatedSummary.improvements = [];
+        for (const improvement of summary.improvements) {
+          const translated = await googleTranslateService.translateWithContext(improvement, targetLanguage, 'improvement_suggestion');
+          translatedSummary.improvements.push(translated);
+        }
+      }
+
+      // Translate stage ratings feedback
+      if (summary.stageRatings) {
+        console.log(`[Translation Service] Translating stage ratings`);
+        translatedSummary.stageRatings = {};
+        
+        for (const [stage, stageData] of Object.entries(summary.stageRatings)) {
+          if (stageData && stageData.feedback) {
+            translatedSummary.stageRatings[stage] = {
+              rating: stageData.rating,
+              feedback: await googleTranslateService.translateWithContext(stageData.feedback, targetLanguage, 'stage_rating')
+            };
+          }
+        }
+      }
+
+      // Translate AI analysis
+      if (summary.aiAnalysis) {
+        console.log(`[Translation Service] Translating AI analysis`);
+        translatedSummary.aiAnalysis = {};
+        
+        if (summary.aiAnalysis.personalityInsights) {
+          translatedSummary.aiAnalysis.personalityInsights = await googleTranslateService.translateWithContext(
+            summary.aiAnalysis.personalityInsights, 
+            targetLanguage, 
+            'personalityInsights'
+          );
+        }
+        
+        if (summary.aiAnalysis.communicationStyle) {
+          translatedSummary.aiAnalysis.communicationStyle = await googleTranslateService.translateWithContext(
+            summary.aiAnalysis.communicationStyle, 
+            targetLanguage, 
+            'communicationStyle'
+          );
+        }
+        
+        if (summary.aiAnalysis.recommendedFocus && Array.isArray(summary.aiAnalysis.recommendedFocus)) {
+          translatedSummary.aiAnalysis.recommendedFocus = [];
+          for (const focus of summary.aiAnalysis.recommendedFocus) {
+            const translated = await googleTranslateService.translateWithContext(focus, targetLanguage, 'recommendedFocus');
+            translatedSummary.aiAnalysis.recommendedFocus.push(translated);
+          }
+        }
+        
+        if (summary.aiAnalysis.nextSteps && Array.isArray(summary.aiAnalysis.nextSteps)) {
+          translatedSummary.aiAnalysis.nextSteps = [];
+          for (const step of summary.aiAnalysis.nextSteps) {
+            const translated = await googleTranslateService.translateWithContext(step, targetLanguage, 'nextSteps');
+            translatedSummary.aiAnalysis.nextSteps.push(translated);
+          }
+        }
+      }
+
+      console.log(`[Translation Service] Successfully translated summary ${summary._id} to ${targetLanguage}`);
+      return translatedSummary;
+    } catch (error) {
+      console.error(`[Translation Service] Error translating summary:`, error);
+      throw error;
+    }
+  }
 }
 
 module.exports = new MultiLanguageTranslationService();
