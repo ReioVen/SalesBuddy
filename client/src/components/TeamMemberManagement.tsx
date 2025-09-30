@@ -169,16 +169,16 @@ const TeamMemberManagement: React.FC<TeamMemberManagementProps> = ({
        if (response.ok) {
          const data = await response.json();
          
-         // Filter out users already in this team and team leaders
-         const available = data.users.filter((user: TeamMember) => {
-           const isRegularUser = user.role === 'company_user';
-           const notInThisTeam = !user.teamId || user.teamId.toString() !== currentTeam._id.toString();
-           const notTeamLeader = user.role !== 'company_team_leader';
-           
-           return isRegularUser && notInThisTeam && notTeamLeader;
-         });
-         
-         setAvailableUsers(available);
+        // Filter out users already in this team and team leaders
+        const available = data.users.filter((user: TeamMember) => {
+          const isRegularUser = user.role === 'company_user';
+          const notInThisTeam = !user.teamId || String(user.teamId) !== String(currentTeam._id);
+          const notTeamLeader = user.role !== 'company_team_leader';
+          
+          return isRegularUser && notInThisTeam && notTeamLeader;
+        });
+        
+        setAvailableUsers(available);
        }
      } catch (err) {
        console.error('Failed to refresh available users:', err);
@@ -209,7 +209,7 @@ const TeamMemberManagement: React.FC<TeamMemberManagementProps> = ({
           // Filter out users already in this team and team leaders
           const available = data.users.filter((user: TeamMember) => {
             const isRegularUser = user.role === 'company_user';
-            const notInThisTeam = !user.teamId || user.teamId.toString() !== currentTeam._id.toString();
+            const notInThisTeam = !user.teamId || String(user.teamId) !== String(currentTeam._id);
             const notTeamLeader = user.role !== 'company_team_leader';
             
             
