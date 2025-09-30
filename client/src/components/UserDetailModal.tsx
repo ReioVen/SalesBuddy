@@ -107,6 +107,7 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, onClose }) => {
     setLoading(true);
     setError(null);
     try {
+      console.log('[UserDetailModal] Fetching conversations for user:', user._id, 'page:', page);
       // Get token from localStorage for Authorization header
       const token = localStorage.getItem('sb_token');
       const headers: Record<string, string> = {
@@ -122,15 +123,20 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, onClose }) => {
         headers
       });
       
+      console.log('[UserDetailModal] Conversations response status:', response.status);
+      
       if (response.ok) {
         const data = await response.json();
+        console.log('[UserDetailModal] Conversations data:', data);
         setConversations(data.conversations);
         setPagination(data.pagination);
       } else {
         const errorData = await response.json();
+        console.error('[UserDetailModal] Failed to fetch conversations:', errorData);
         setError(errorData.error || 'Failed to fetch conversations');
       }
     } catch (err) {
+      console.error('[UserDetailModal] Conversations fetch error:', err);
       setError('Failed to fetch conversations');
     } finally {
       setLoading(false);
@@ -142,6 +148,7 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, onClose }) => {
     setLoading(true);
     setError(null);
     try {
+      console.log('[UserDetailModal] Fetching summaries for user:', user._id);
       // Get token from localStorage for Authorization header
       const token = localStorage.getItem('sb_token');
       const headers: Record<string, string> = {
@@ -157,14 +164,20 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, onClose }) => {
         headers
       });
       
+      console.log('[UserDetailModal] Summaries response status:', response.status);
+      
       if (response.ok) {
         const data = await response.json();
+        console.log('[UserDetailModal] Summaries data:', data);
+        console.log('[UserDetailModal] First summary translations:', data.summaries[0]?.translations);
         setSummaries(data.summaries);
       } else {
         const errorData = await response.json();
+        console.error('[UserDetailModal] Failed to fetch summaries:', errorData);
         setError(errorData.error || 'Failed to fetch summaries');
       }
     } catch (err) {
+      console.error('[UserDetailModal] Summaries fetch error:', err);
       setError('Failed to fetch summaries');
     } finally {
       setLoading(false);
@@ -212,27 +225,27 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, onClose }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg max-w-6xl w-full max-h-[90vh] overflow-hidden">
+      <div className="bg-white dark:bg-dark-800 rounded-lg max-w-6xl w-full max-h-[90vh] overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+        <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-dark-700">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
               {user.firstName} {user.lastName}
             </h2>
-            <p className="text-sm text-gray-500">{user.email}</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">{user.email}</p>
             <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full mt-2 ${
               user.isCompanyAdmin 
-                ? 'bg-red-100 text-red-800'
+                ? 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300'
                 : user.isTeamLeader
-                ? 'bg-blue-100 text-blue-800'
-                : 'bg-gray-100 text-gray-800'
+                ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300'
+                : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300'
             }`}>
               {user.isCompanyAdmin ? 'Admin' : user.isTeamLeader ? 'Team Leader' : 'User'}
             </span>
           </div>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600"
+            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -241,14 +254,14 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, onClose }) => {
         </div>
 
         {/* Tabs */}
-        <div className="border-b border-gray-200">
+        <div className="border-b border-gray-200 dark:border-dark-700">
           <nav className="flex space-x-8 px-6">
             <button
               onClick={() => setActiveTab('conversations')}
               className={`py-4 px-1 border-b-2 font-medium text-sm ${
                 activeTab === 'conversations'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                  : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'
               }`}
             >
               {t('conversations')} {activeTab === 'conversations' && !loading ? `(${pagination.total})` : activeTab === 'conversations' && loading ? `(${t('loadingEllipsis')})` : ''}
@@ -257,8 +270,8 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, onClose }) => {
               onClick={() => setActiveTab('summaries')}
               className={`py-4 px-1 border-b-2 font-medium text-sm ${
                 activeTab === 'summaries'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                  : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'
               }`}
             >
               {t('aiSummaries')} {activeTab === 'summaries' && !loading ? `(${summaries.length})` : activeTab === 'summaries' && loading ? `(${t('loadingEllipsis')})` : ''}
@@ -269,8 +282,8 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, onClose }) => {
         {/* Content */}
         <div className="p-6 overflow-y-auto max-h-[calc(90vh-200px)]">
           {error && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-              <p className="text-sm text-red-700">{error}</p>
+            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 mb-6">
+              <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
             </div>
           )}
 
@@ -284,34 +297,34 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, onClose }) => {
                 <div>
                   {conversations.length === 0 ? (
                     <div className="text-center py-8">
-                      <p className="text-gray-500">{t('noConversationsFound')}</p>
+                      <p className="text-gray-500 dark:text-gray-400">{t('noConversationsFound')}</p>
                     </div>
                   ) : (
                     <div className="space-y-4">
                       {conversations.map((conversation) => (
                         <div 
                           key={conversation._id} 
-                          className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 cursor-pointer transition-colors"
+                          className="border border-gray-200 dark:border-dark-700 rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-dark-750 cursor-pointer transition-colors"
                           onClick={() => setSelectedConversation(conversation._id)}
                         >
                           <div className="flex items-center justify-between">
                             <div>
-                              <h3 className="text-lg font-medium text-gray-900">
+                              <h3 className="text-lg font-medium text-gray-900 dark:text-white">
                                 {conversation.title}
                               </h3>
-                              <p className="text-sm text-gray-500">
+                              <p className="text-sm text-gray-500 dark:text-gray-400">
                                 {formatDate(conversation.createdAt)} • {conversation.messageCount} messages
                               </p>
                             </div>
                             <div className="flex items-center space-x-2">
                               <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
                                 conversation.isActive 
-                                  ? 'bg-green-100 text-green-800' 
-                                  : 'bg-gray-100 text-gray-800'
+                                  ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300' 
+                                  : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300'
                               }`}>
-                                {conversation.isActive ? 'Active' : 'Ended'}
+                                {conversation.isActive ? t('active') : t('ended')}
                               </span>
-                              <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <svg className="w-4 h-4 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                               </svg>
                             </div>
@@ -325,19 +338,19 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, onClose }) => {
                           <button
                             onClick={() => fetchConversations(pagination.page - 1)}
                             disabled={pagination.page === 1}
-                            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-dark-700 border border-gray-300 dark:border-dark-600 rounded-md hover:bg-gray-50 dark:hover:bg-dark-600 disabled:opacity-50 disabled:cursor-not-allowed"
                           >
-                            Previous
+                            {t('previous')}
                           </button>
-                          <span className="text-sm text-gray-700">
-                            Page {pagination.page} of {pagination.pages}
+                          <span className="text-sm text-gray-700 dark:text-gray-300">
+                            {t('page')} {pagination.page} {t('of')} {pagination.pages}
                           </span>
                           <button
                             onClick={() => fetchConversations(pagination.page + 1)}
                             disabled={pagination.page === pagination.pages}
-                            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-dark-700 border border-gray-300 dark:border-dark-600 rounded-md hover:bg-gray-50 dark:hover:bg-dark-600 disabled:opacity-50 disabled:cursor-not-allowed"
                           >
-                            Next
+                            {t('next')}
                           </button>
                         </div>
                       )}
@@ -350,24 +363,24 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, onClose }) => {
                 <div>
                   {summaries.length === 0 ? (
                     <div className="text-center py-8">
-                      <p className="text-gray-500">{t('noSummariesAvailable')}</p>
-                      <p className="text-sm text-gray-400 mt-2">
+                      <p className="text-gray-500 dark:text-gray-400">{t('noSummariesAvailable')}</p>
+                      <p className="text-sm text-gray-400 dark:text-gray-500 mt-2">
                         {t('summariesGeneratedAfter')}
                       </p>
                     </div>
                   ) : (
                     <div className="space-y-6">
                       {summaries.map((summary) => (
-                        <div key={summary._id} className="border border-gray-200 rounded-lg p-6">
+                        <div key={summary._id} className="border border-gray-200 dark:border-dark-700 rounded-lg p-6 bg-white dark:bg-dark-750">
                           <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-lg font-semibold text-gray-900">
+                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                               {t('summaryNumber')}{summary.summaryNumber}
                             </h3>
                             <div className="flex items-center space-x-4">
-                              <span className="text-sm text-gray-500">
-                                {summary.conversationCount} {t('conversations')}
+                              <span className="text-sm text-gray-500 dark:text-gray-400">
+                                {summary.conversationCount} {t('conversationsCount')}
                               </span>
-                              <span className="text-sm text-gray-500">
+                              <span className="text-sm text-gray-500 dark:text-gray-400">
                                 {formatDate(summary.dateRange.startDate)} - {formatDate(summary.dateRange.endDate)}
                               </span>
                             </div>
@@ -376,7 +389,7 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, onClose }) => {
                           {/* Overall Rating */}
                           <div className="mb-4">
                             <div className="flex items-center space-x-2">
-                              <span className="text-sm font-medium text-gray-700">{t('overallRating')}:</span>
+                              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('overallRating')}:</span>
                               <div className="flex items-center">
                                 {[...Array(10)].map((_, i) => (
                                   <svg

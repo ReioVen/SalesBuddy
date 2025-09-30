@@ -59,8 +59,11 @@ const ConversationReaderModal: React.FC<ConversationReaderModalProps> = ({
     setLoading(true);
     setError(null);
     try {
+      console.log('[ConversationReaderModal] Fetching conversation:', conversationId, 'for user:', userId);
       // Get token from localStorage for Authorization header
       const token = localStorage.getItem('sb_token');
+      console.log('[ConversationReaderModal] Has token:', !!token);
+      
       const headers: Record<string, string> = {
         'Content-Type': 'application/json'
       };
@@ -69,19 +72,27 @@ const ConversationReaderModal: React.FC<ConversationReaderModalProps> = ({
         headers['Authorization'] = `Bearer ${token}`;
       }
 
-      const response = await fetch(`/api/companies/users/${userId}/conversations/${conversationId}`, {
+      const url = `/api/companies/users/${userId}/conversations/${conversationId}`;
+      console.log('[ConversationReaderModal] Fetching from URL:', url);
+
+      const response = await fetch(url, {
         credentials: 'include',
         headers
       });
       
+      console.log('[ConversationReaderModal] Response status:', response.status);
+      
       if (response.ok) {
         const data = await response.json();
+        console.log('[ConversationReaderModal] Conversation data:', data);
         setConversation(data.conversation);
       } else {
         const errorData = await response.json();
+        console.error('[ConversationReaderModal] Failed to fetch conversation:', errorData);
         setError(errorData.error || 'Failed to fetch conversation');
       }
     } catch (err) {
+      console.error('[ConversationReaderModal] Fetch error:', err);
       setError('Failed to fetch conversation');
     } finally {
       setLoading(false);
@@ -107,14 +118,14 @@ const ConversationReaderModal: React.FC<ConversationReaderModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] p-4">
-      <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden">
+      <div className="bg-white dark:bg-dark-800 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+        <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-dark-700">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900">
-              {conversation?.title || 'Conversation'}
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+              {conversation?.title || t('conversationTitle')}
             </h2>
-            <div className="flex items-center space-x-4 mt-2 text-sm text-gray-500">
+            <div className="flex items-center space-x-4 mt-2 text-sm text-gray-500 dark:text-gray-400">
               <span>
                 {conversation?.userId.firstName} {conversation?.userId.lastName}
               </span>
@@ -123,19 +134,19 @@ const ConversationReaderModal: React.FC<ConversationReaderModalProps> = ({
               <span>•</span>
               <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
                 conversation?.isActive 
-                  ? 'bg-green-100 text-green-800' 
-                  : 'bg-gray-100 text-gray-800'
+                  ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300' 
+                  : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300'
               }`}>
-                {conversation?.isActive ? 'Active' : 'Ended'}
+                {conversation?.isActive ? t('active') : t('ended')}
               </span>
             </div>
             {conversation?.scenario && (
               <div className="mt-2">
-                <span className="text-sm text-gray-600">
+                <span className="text-sm text-gray-600 dark:text-gray-400">
                   <strong>Scenario:</strong> {conversation.scenario}
                 </span>
                 {conversation.difficulty && (
-                  <span className="ml-4 text-sm text-gray-600">
+                  <span className="ml-4 text-sm text-gray-600 dark:text-gray-400">
                     <strong>Difficulty:</strong> {conversation.difficulty}
                   </span>
                 )}
@@ -144,7 +155,7 @@ const ConversationReaderModal: React.FC<ConversationReaderModalProps> = ({
           </div>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600"
+            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -159,8 +170,8 @@ const ConversationReaderModal: React.FC<ConversationReaderModalProps> = ({
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
             </div>
           ) : error ? (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-              <p className="text-sm text-red-700">{error}</p>
+            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+              <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
             </div>
           ) : conversation ? (
             <div className="space-y-4">
@@ -172,13 +183,13 @@ const ConversationReaderModal: React.FC<ConversationReaderModalProps> = ({
                   <div
                     className={`max-w-[80%] rounded-lg p-4 ${
                       message.role === 'user'
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-gray-100 text-gray-900'
+                        ? 'bg-blue-600 dark:bg-blue-700 text-white'
+                        : 'bg-gray-100 dark:bg-dark-700 text-gray-900 dark:text-gray-100'
                     }`}
                   >
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-xs font-medium opacity-75">
-                        {message.role === 'user' ? 'User' : 'AI Assistant'}
+                        {message.role === 'user' ? t('user') : t('aiAssistant')}
                       </span>
                       <span className="text-xs opacity-75">
                         {formatMessageTime(message.timestamp)}
@@ -193,27 +204,27 @@ const ConversationReaderModal: React.FC<ConversationReaderModalProps> = ({
               
               {conversation.messages.length === 0 && (
                 <div className="text-center py-8">
-                  <p className="text-gray-500">No messages in this conversation.</p>
+                  <p className="text-gray-500 dark:text-gray-400">{t('noMessagesInConversation')}</p>
                 </div>
               )}
             </div>
           ) : (
             <div className="text-center py-8">
-              <p className="text-gray-500">Conversation not found.</p>
+              <p className="text-gray-500 dark:text-gray-400">{t('conversationNotFound')}</p>
             </div>
           )}
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between p-6 border-t border-gray-200 bg-gray-50">
-          <div className="text-sm text-gray-500">
-            {conversation && `${conversation.messages.length} messages`}
+        <div className="flex items-center justify-between p-6 border-t border-gray-200 dark:border-dark-700 bg-gray-50 dark:bg-dark-750">
+          <div className="text-sm text-gray-500 dark:text-gray-400">
+            {conversation && `${conversation.messages.length} ${t('messages')}`}
           </div>
           <button
             onClick={onClose}
-            className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500"
+            className="px-4 py-2 bg-gray-300 dark:bg-dark-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-400 dark:hover:bg-dark-500 focus:outline-none focus:ring-2 focus:ring-gray-500"
           >
-            Close
+            {t('close')}
           </button>
         </div>
       </div>
