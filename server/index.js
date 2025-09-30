@@ -47,11 +47,39 @@ app.use(cookieParser());
 // When behind a proxy (e.g. CRA dev server), trust it so rate limiter gets real IP
 app.set('trust proxy', 1);
 
-// Rate limiting
+// Rate limiting - more lenient for normal usage
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
-  message: 'Too many requests from this IP, please try again later.'
+  max: 500, // limit each IP to 500 requests per windowMs (increased from 100)
+  message: 'Too many requests from this IP, please try again later.',
+  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+  // Skip rate limiting for successful responses to avoid blocking normal usage
+  skipSuccessfulRequests: false,
+  // Make sure CORS headers are included in rate limit responses
+  handler: (req, res) => {
+    const origin = req.headers.origin;
+    const allowedOrigins = [
+      'https://salesbuddy.pro',
+      'https://www.salesbuddy.pro', 
+      'https://app.salesbuddy.pro',
+      'https://salesbuddy-client.vercel.app',
+      'https://sales-buddy.vercel.app',
+      'https://salesbuddy-production.up.railway.app',
+      'http://localhost:3000',
+      'http://localhost:3001'
+    ];
+    
+    if (allowedOrigins.includes(origin)) {
+      res.header('Access-Control-Allow-Origin', origin);
+      res.header('Access-Control-Allow-Credentials', 'true');
+    }
+    
+    res.status(429).json({
+      error: 'Too many requests from this IP, please try again later.',
+      retryAfter: Math.ceil(req.rateLimit.resetTime / 1000)
+    });
+  }
 });
 app.use('/api/', limiter);
 
