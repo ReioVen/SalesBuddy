@@ -132,6 +132,7 @@ const TeamMemberManagement: React.FC<TeamMemberManagementProps> = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedUser, setSelectedUser] = useState<string>('');
+  const [isUpdating, setIsUpdating] = useState(false); // Flag to prevent race conditions
   const [confirmDialog, setConfirmDialog] = useState<{
     isOpen: boolean;
     title: string;
@@ -154,8 +155,11 @@ const TeamMemberManagement: React.FC<TeamMemberManagementProps> = ({
 
   // Refresh available users when team members change
   useEffect(() => {
-    const refreshAvailableUsers = async () => {
-      try {
+   // Skip if we're in the middle of updating to prevent race conditions
+   if (isUpdating) return;
+   
+   const refreshAvailableUsers = async () => {
+     try {
         const token = localStorage.getItem('sb_token');
         
         const response = await fetch(`${API_BASE_URL}/api/companies/users`, {
@@ -186,10 +190,13 @@ const TeamMemberManagement: React.FC<TeamMemberManagementProps> = ({
    };
 
    refreshAvailableUsers();
-  }, [currentTeam.members.length]);
+  }, [currentTeam.members.length, isUpdating]);
 
   // Fetch available users (company users not in this team)
   useEffect(() => {
+    // Skip if we're in the middle of updating to prevent race conditions
+    if (isUpdating) return;
+    
     const fetchAvailableUsers = async () => {
        try {
          const token = localStorage.getItem('sb_token');
@@ -226,13 +233,14 @@ const TeamMemberManagement: React.FC<TeamMemberManagementProps> = ({
     };
 
     fetchAvailableUsers();
-  }, [currentTeam._id, currentTeam.members.length]);
+  }, [currentTeam._id, currentTeam.members.length, isUpdating]);
 
   const handleAddMember = async () => {
     if (!selectedUser) return;
 
     setLoading(true);
     setError(null);
+    setIsUpdating(true); // Prevent useEffect from running
 
     try {
       const token = localStorage.getItem('sb_token');
@@ -270,6 +278,8 @@ const TeamMemberManagement: React.FC<TeamMemberManagementProps> = ({
       setError(err instanceof Error ? err.message : 'Failed to add member to team');
     } finally {
       setLoading(false);
+      // Re-enable useEffect after a short delay to ensure state updates are complete
+      setTimeout(() => setIsUpdating(false), 500);
     }
   };
 
@@ -285,6 +295,7 @@ const TeamMemberManagement: React.FC<TeamMemberManagementProps> = ({
       onConfirm: async () => {
         setLoading(true);
         setError(null);
+        setIsUpdating(true); // Prevent useEffect from running
 
         try {
           const token = localStorage.getItem('sb_token');
@@ -323,6 +334,8 @@ const TeamMemberManagement: React.FC<TeamMemberManagementProps> = ({
           setError(err instanceof Error ? err.message : 'Failed to remove member from team');
         } finally {
           setLoading(false);
+          // Re-enable useEffect after a short delay to ensure state updates are complete
+          setTimeout(() => setIsUpdating(false), 500);
         }
       }
     });
