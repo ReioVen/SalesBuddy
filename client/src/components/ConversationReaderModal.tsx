@@ -42,6 +42,7 @@ const ConversationReaderModal: React.FC<ConversationReaderModalProps> = ({
 
   useEffect(() => {
     fetchConversation();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [conversationId, userId]);
 
   // Add/remove CSS class to body when modal is open
@@ -58,8 +59,19 @@ const ConversationReaderModal: React.FC<ConversationReaderModalProps> = ({
     setLoading(true);
     setError(null);
     try {
+      // Get token from localStorage for Authorization header
+      const token = localStorage.getItem('sb_token');
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json'
+      };
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
       const response = await fetch(`/api/companies/users/${userId}/conversations/${conversationId}`, {
-        credentials: 'include'
+        credentials: 'include',
+        headers
       });
       
       if (response.ok) {
