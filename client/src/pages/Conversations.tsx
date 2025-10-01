@@ -1042,7 +1042,10 @@ const Conversations: React.FC = () => {
                               
                               // If no Estonian voices found, add a helpful message
                               if (estonianVoices.length === 0) {
+                                const availableLanguages = [...new Set(voices.map(v => v.lang))].sort();
                                 console.log('⚠️ No Estonian voices found. Try using Chrome/Edge for better Estonian support.');
+                                console.log('💡 Available languages:', availableLanguages.slice(0, 5).join(', '), '...');
+                                console.log('🔧 To get Estonian voices: Install Estonian language pack in Windows settings');
                               }
                             } else {
                               // For other languages, sort normally
@@ -1054,13 +1057,22 @@ const Conversations: React.FC = () => {
                               });
                             }
                             
-                            return filteredVoices.map((voice, index) => (
-                              <option key={index} value={voice.name}>
-                                {voice.name} ({voice.lang})
-                                {language === 'et' && (voice.lang.startsWith('et-') || voice.lang === 'et') ? ' 🇪🇪' : ''}
-                                {voice.localService ? ' 🏠' : ' 🌐'}
-                              </option>
-                            ));
+                            return [
+                              // Add helpful message if no Estonian voices
+                              ...(language === 'et' && estonianVoices.length === 0 ? [
+                                <option key="no-estonian" value="" disabled>
+                                  ⚠️ No Estonian voices found - Install Estonian language pack
+                                </option>
+                              ] : []),
+                              // Map all voices
+                              ...filteredVoices.map((voice, index) => (
+                                <option key={index} value={voice.name}>
+                                  {voice.name} ({voice.lang})
+                                  {language === 'et' && (voice.lang.startsWith('et-') || voice.lang === 'et') ? ' 🇪🇪' : ''}
+                                  {voice.localService ? ' 🏠' : ' 🌐'}
+                                </option>
+                              ))
+                            ];
                           })()}
                         </select>
                         <button
