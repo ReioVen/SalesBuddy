@@ -199,7 +199,7 @@ const SubscriptionManagement: React.FC<SubscriptionManagementProps> = ({ onClose
         {/* Usage Information */}
         <div className="mt-3 pt-3 border-t border-gray-200 dark:border-dark-600">
           <div className="flex items-center justify-between text-sm">
-            <span className="text-gray-600 dark:text-gray-300">AI Conversations:</span>
+            <span className="text-gray-600 dark:text-gray-300">{t('aiConversations')}:</span>
             <span className="font-medium text-gray-900 dark:text-white">
               {user.usage?.aiConversations || 0} / {user.usage?.monthlyLimit || '∞'}
             </span>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext.tsx';
 import { useTranslation } from '../hooks/useTranslation.ts';
 import SubscriptionManagement from '../components/SubscriptionManagement.tsx';
@@ -18,6 +18,41 @@ const Profile: React.FC = () => {
   const [deleteError, setDeleteError] = useState('');
   const [deleteStep, setDeleteStep] = useState(1); // Multi-step confirmation
   const [isCancellingSubscription, setIsCancellingSubscription] = useState(false);
+  const [companyName, setCompanyName] = useState<string>('');
+
+  // Fetch company name if user has companyId
+  useEffect(() => {
+    const fetchCompanyName = async () => {
+      if (user?.companyId) {
+        try {
+          const token = localStorage.getItem('sb_token');
+          const headers: Record<string, string> = {
+            'Content-Type': 'application/json'
+          };
+          
+          if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+          }
+
+          const response = await fetch(`${API_BASE_URL}/api/companies/details`, {
+            credentials: 'include',
+            headers
+          });
+          
+          if (response.ok) {
+            const data = await response.json();
+            if (data.company) {
+              setCompanyName(data.company.name);
+            }
+          }
+        } catch (error) {
+          console.error('Failed to fetch company name:', error);
+        }
+      }
+    };
+
+    fetchCompanyName();
+  }, [user?.companyId]);
 
   const handleCancelSubscription = async () => {
     if (!window.confirm('Are you sure you want to cancel your subscription? You will lose access to premium features at the end of your current billing period.')) {
@@ -109,7 +144,9 @@ const Profile: React.FC = () => {
           </div>
           <div>
             <div className="text-gray-500 dark:text-gray-400">{t('company')}</div>
-            <div className="font-medium text-gray-900 dark:text-white">{user.company || '-'}</div>
+            <div className="font-medium text-gray-900 dark:text-white">
+              {companyName || user.company || '-'}
+            </div>
           </div>
           <div>
             <div className="text-gray-500 dark:text-gray-400">{t('plan')}</div>

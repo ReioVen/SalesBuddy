@@ -183,12 +183,6 @@ const Home: React.FC = () => {
               </>
             )}
           </div>
-          <div className="mt-12 flex justify-center">
-            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 flex items-center space-x-4">
-              <Play className="w-6 h-6" />
-              <span>{t('watchDemo')}</span>
-            </div>
-          </div>
         </div>
       </section>
 
