@@ -105,49 +105,42 @@ export const useUniversalTextToSpeech = (): TextToSpeechReturn => {
     // Stop any current speech
     stop();
 
-    // Use universal TTS service for supported languages with random voice selection
+    // Use browser TTS with language matching for supported languages
     if (options.language) {
       const languageCode = options.language.split('-')[0];
       const supportedLangs = universalTtsService.getSupportedLanguages();
       
       if (supportedLangs.includes(languageCode)) {
-        // Get random voice for the language
-        const randomVoice = universalTtsService.getRandomVoiceForLanguage(languageCode);
+        console.log(`🎯 Testing voice for ${languageCode} language`);
         
-        if (randomVoice) {
-          console.log(`🎲 Random voice selected for ${languageCode}:`, randomVoice.name);
-          
-          // For now, use browser TTS with the best available voice for the language
-          // In the future, this will use actual cloud TTS services
-          const utterance = new SpeechSynthesisUtterance(text);
-          utterance.rate = options.rate || 1;
-          utterance.pitch = options.pitch || 1;
-          utterance.volume = options.volume || 1;
-          utterance.lang = options.language;
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.rate = options.rate || 1;
+        utterance.pitch = options.pitch || 1;
+        utterance.volume = options.volume || 1;
+        utterance.lang = options.language;
 
-          // Try to find the best browser voice for the language
-          const matchingVoices = voices.filter(voice => 
-            voice.lang.startsWith(languageCode) || 
-            voice.lang === options.language ||
-            voice.lang === languageCode
-          );
+        // Try to find the best browser voice for the language
+        const matchingVoices = voices.filter(voice => 
+          voice.lang.startsWith(languageCode) || 
+          voice.lang === options.language ||
+          voice.lang === languageCode
+        );
 
-          if (matchingVoices.length > 0) {
-            const localVoice = matchingVoices.find(voice => voice.localService);
-            utterance.voice = localVoice || matchingVoices[0];
-            console.log(`🎤 Using browser voice: ${utterance.voice.name} (${utterance.voice.lang}) for language: ${options.language}`);
-          } else {
-            console.log(`⚠️ No matching browser voice found for language: ${options.language}. Using default voice.`);
-          }
-
-          utterance.onstart = () => { setIsSpeaking(true); };
-          utterance.onend = () => { setIsSpeaking(false); utteranceRef.current = null; };
-          utterance.onerror = (event) => { console.error('Text-to-speech error:', event.error); setIsSpeaking(false); utteranceRef.current = null; };
-
-          utteranceRef.current = utterance;
-          speechSynthesis.speak(utterance);
-          return;
+        if (matchingVoices.length > 0) {
+          const localVoice = matchingVoices.find(voice => voice.localService);
+          utterance.voice = localVoice || matchingVoices[0];
+          console.log(`🎤 Using browser voice: ${utterance.voice.name} (${utterance.voice.lang}) for language: ${options.language}`);
+        } else {
+          console.log(`⚠️ No matching browser voice found for language: ${options.language}. Using default voice.`);
         }
+
+        utterance.onstart = () => { setIsSpeaking(true); };
+        utterance.onend = () => { setIsSpeaking(false); utteranceRef.current = null; };
+        utterance.onerror = (event) => { console.error('Text-to-speech error:', event.error); setIsSpeaking(false); utteranceRef.current = null; };
+
+        utteranceRef.current = utterance;
+        speechSynthesis.speak(utterance);
+        return;
       }
     }
 
