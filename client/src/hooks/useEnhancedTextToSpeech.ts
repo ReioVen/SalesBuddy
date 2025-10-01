@@ -1,5 +1,4 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { cloudTtsService, CloudTtsVoice } from '../services/cloudTtsService';
 
 interface TextToSpeechOptions {
   language?: string;
@@ -14,7 +13,6 @@ interface TextToSpeechReturn {
   isSpeaking: boolean;
   isSupported: boolean;
   voices: SpeechSynthesisVoice[];
-  cloudVoices: CloudTtsVoice[];
   speak: (text: string, options?: TextToSpeechOptions) => void;
   stop: () => void;
   pause: () => void;
@@ -26,7 +24,6 @@ export const useEnhancedTextToSpeech = (): TextToSpeechReturn => {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isSupported, setIsSupported] = useState(false);
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
-  const [cloudVoices, setCloudVoices] = useState<CloudTtsVoice[]>([]);
   const [hasEstonianVoices, setHasEstonianVoices] = useState(false);
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
 
@@ -36,50 +33,25 @@ export const useEnhancedTextToSpeech = (): TextToSpeechReturn => {
     setIsSupported(supported);
     
     if (supported) {
-      // Initialize cloud TTS service
-      cloudTtsService.initialize().then(() => {
-        const cloudVoicesList = cloudTtsService.getVoices();
-        setCloudVoices(cloudVoicesList);
-        
-        // Check if we have Estonian voices (browser or cloud)
-        const browserEstonianVoices = voices.filter(voice => 
-          voice.lang.startsWith('et-') || voice.lang === 'et'
-        );
-        const cloudEstonianVoices = cloudVoicesList.filter(voice => 
-          voice.language.startsWith('et-')
-        );
-        
-        setHasEstonianVoices(browserEstonianVoices.length > 0 || cloudEstonianVoices.length > 0);
-        
-        if (browserEstonianVoices.length > 0) {
-          console.log('🇪🇪 Browser Estonian voices found:', browserEstonianVoices.map(v => `${v.name} (${v.lang})`));
-        }
-        if (cloudEstonianVoices.length > 0) {
-          console.log('🌐 Cloud Estonian voices available:', cloudEstonianVoices.map(v => `${v.name} (${v.language})`));
-        }
-        if (browserEstonianVoices.length === 0 && cloudEstonianVoices.length === 0) {
-          console.log('⚠️ No Estonian voices found. Using fallback voices.');
-          console.log('💡 Available languages:', [...new Set(voices.map(v => v.lang))].sort().slice(0, 5).join(', '));
-        }
-      });
-      
       // Load browser voices
       const loadVoices = () => {
         const availableVoices = speechSynthesis.getVoices();
         setVoices(availableVoices);
         
-        // Check for Estonian voices again after voices load
+        // Check for Estonian voices
         const estonianVoices = availableVoices.filter(voice => 
           voice.lang.startsWith('et-') || voice.lang === 'et'
         );
         
+        setHasEstonianVoices(estonianVoices.length > 0);
+        
         if (estonianVoices.length > 0) {
           console.log('🇪🇪 Estonian voices found:', estonianVoices.map(v => `${v.name} (${v.lang})`));
-          setHasEstonianVoices(true);
         } else {
-          console.log('⚠️ No browser Estonian voices found. Available languages:', 
+          console.log('⚠️ No Estonian voices found. Available languages:', 
             [...new Set(availableVoices.map(v => v.lang))].sort()
           );
+          console.log('💡 Tip: Try using Chrome/Edge for better Estonian support');
         }
       };
       
@@ -178,7 +150,6 @@ export const useEnhancedTextToSpeech = (): TextToSpeechReturn => {
     isSpeaking,
     isSupported,
     voices,
-    cloudVoices,
     speak,
     stop,
     pause,

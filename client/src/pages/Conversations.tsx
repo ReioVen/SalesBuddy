@@ -130,7 +130,7 @@ const Conversations: React.FC = () => {
   const [ttsVolume, setTtsVolume] = useState(0.7); // Default volume at 70%
   
   // Enhanced text-to-speech functionality for voice selection
-  const { voices, cloudVoices, speak: testVoice, hasEstonianVoices } = useEnhancedTextToSpeech();
+  const { voices, speak: testVoice, hasEstonianVoices } = useEnhancedTextToSpeech();
   
   // Function to reconstruct SpeechSynthesisVoice from saved data
   const reconstructVoice = useCallback((savedVoice: any) => {
@@ -1028,41 +1028,29 @@ const Conversations: React.FC = () => {
                             
                             if (language === 'et') {
                               // For Estonian, prioritize Estonian voices, but also show others as fallback
-                              const browserEstonianVoices = voices.filter(voice => 
+                              const estonianVoices = voices.filter(voice => 
                                 voice.lang.startsWith('et-') || voice.lang === 'et'
-                              );
-                              const cloudEstonianVoices = cloudVoices.filter(voice => 
-                                voice.language.startsWith('et-')
                               );
                               const otherVoices = voices.filter(voice => 
                                 !voice.lang.startsWith('et-') && voice.lang !== 'et'
                               );
                               
-                              // Combine browser and cloud Estonian voices
-                              allEstonianVoices = [
-                                ...browserEstonianVoices.map(voice => ({ ...voice, source: 'browser' })),
-                                ...cloudEstonianVoices.map(voice => ({ 
-                                  name: voice.name, 
-                                  lang: voice.language, 
-                                  localService: false,
-                                  source: 'cloud'
-                                }))
-                              ];
-                              
                               // Sort Estonian voices first, then others
                               filteredVoices = [
-                                ...allEstonianVoices.sort((a, b) => a.name.localeCompare(b.name)),
+                                ...estonianVoices.sort((a, b) => a.name.localeCompare(b.name)),
                                 ...otherVoices.sort((a, b) => a.name.localeCompare(b.name))
                               ];
                               
+                              allEstonianVoices = estonianVoices;
+                              
                               // If no Estonian voices found, add a helpful message
-                              if (allEstonianVoices.length === 0) {
+                              if (estonianVoices.length === 0) {
                                 const availableLanguages = [...new Set(voices.map(v => v.lang))].sort();
                                 console.log('⚠️ No Estonian voices found. Using fallback voices.');
                                 console.log('💡 Available languages:', availableLanguages.slice(0, 5).join(', '), '...');
-                                console.log('🌐 Cloud Estonian voices will be available soon!');
+                                console.log('🔧 To get Estonian voices: Install Estonian language pack in Windows settings');
                               } else {
-                                console.log('🇪🇪 Estonian voices available:', allEstonianVoices.length);
+                                console.log('🇪🇪 Estonian voices available:', estonianVoices.length);
                               }
                             } else {
                               // For other languages, sort normally
@@ -1078,7 +1066,7 @@ const Conversations: React.FC = () => {
                               // Add helpful message if no Estonian voices
                               ...(language === 'et' && allEstonianVoices.length === 0 ? [
                                 <option key="no-estonian" value="" disabled>
-                                  ⚠️ No Estonian voices found - Cloud voices coming soon!
+                                  ⚠️ No Estonian voices found - Install Estonian language pack
                                 </option>
                               ] : []),
                               // Map all voices
@@ -1086,7 +1074,7 @@ const Conversations: React.FC = () => {
                                 <option key={index} value={voice.name}>
                                   {voice.name} ({voice.lang})
                                   {language === 'et' && (voice.lang.startsWith('et-') || voice.lang === 'et') ? ' 🇪🇪' : ''}
-                                  {voice.source === 'cloud' ? ' ☁️' : voice.localService ? ' 🏠' : ' 🌐'}
+                                  {voice.localService ? ' 🏠' : ' 🌐'}
                                 </option>
                               ))
                             ];
