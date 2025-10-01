@@ -25,7 +25,7 @@ export const useTextToSpeech = (): TextToSpeechReturn => {
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
 
   // Check for browser support and load voices
-  useState(() => {
+  useEffect(() => {
     const supported = 'speechSynthesis' in window;
     setIsSupported(supported);
     
@@ -45,17 +45,22 @@ export const useTextToSpeech = (): TextToSpeechReturn => {
           console.log('⚠️ No Estonian voices found. Available languages:', 
             [...new Set(availableVoices.map(v => v.lang))].sort()
           );
+          console.log('💡 Tip: Try using Chrome/Edge for better Estonian voice support');
         }
       };
       
+      // Load voices immediately
       loadVoices();
       
       // Some browsers load voices asynchronously
       if (speechSynthesis.onvoiceschanged !== undefined) {
         speechSynthesis.onvoiceschanged = loadVoices;
       }
+      
+      // Also try loading voices after a short delay (some browsers need this)
+      setTimeout(loadVoices, 100);
     }
-  });
+  }, []);
 
   const stop = useCallback(() => {
     if (speechSynthesis.speaking) {
@@ -86,15 +91,23 @@ export const useTextToSpeech = (): TextToSpeechReturn => {
       utterance.voice = options.voice;
     } else if (options.language) {
       // Try to find a voice that matches the language
+      const languageCode = options.language.split('-')[0];
       const matchingVoices = voices.filter(voice => 
-        voice.lang.startsWith(options.language!.split('-')[0]) || 
-        voice.lang === options.language
+        voice.lang.startsWith(languageCode) || 
+        voice.lang === options.language ||
+        voice.lang === languageCode
       );
       
       if (matchingVoices.length > 0) {
         // Prefer local voices over remote ones
         const localVoice = matchingVoices.find(voice => voice.localService);
         utterance.voice = localVoice || matchingVoices[0];
+        
+        console.log(`🎤 Using voice: ${utterance.voice.name} (${utterance.voice.lang}) for language: ${options.language}`);
+      } else {
+        console.log(`⚠️ No matching voice found for language: ${options.language}. Available languages:`, 
+          [...new Set(voices.map(v => v.lang))].sort()
+        );
       }
     }
 

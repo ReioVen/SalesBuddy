@@ -28,9 +28,17 @@ const VoiceTest: React.FC = () => {
   // Filter voices by language
   const getVoicesForLanguage = () => {
     if (language === 'et') {
-      return voices.filter(voice => 
+      const estonianVoices = voices.filter(voice => 
         voice.lang.startsWith('et-') || voice.lang === 'et'
       );
+      
+      // If no Estonian voices, show all voices as fallback
+      if (estonianVoices.length === 0) {
+        console.log('⚠️ No Estonian voices found, showing all voices as fallback');
+        return voices;
+      }
+      
+      return estonianVoices;
     }
     return voices;
   };

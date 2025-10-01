@@ -1022,28 +1022,43 @@ const Conversations: React.FC = () => {
                         >
                           <option value="default">Default Voice</option>
                           {(() => {
-                            // Sort voices to prioritize Estonian voices when language is Estonian
-                            const sortedVoices = [...voices].sort((a, b) => {
-                              if (language === 'et') {
-                                // Prioritize Estonian voices
-                                const aIsEstonian = a.lang.startsWith('et-') || a.lang === 'et';
-                                const bIsEstonian = b.lang.startsWith('et-') || b.lang === 'et';
-                                
-                                if (aIsEstonian && !bIsEstonian) return -1;
-                                if (!aIsEstonian && bIsEstonian) return 1;
-                              }
-                              
-                              // Then sort by language and name
-                              if (a.lang !== b.lang) {
-                                return a.lang.localeCompare(b.lang);
-                              }
-                              return a.name.localeCompare(b.name);
-                            });
+                            // Filter and sort voices based on language
+                            let filteredVoices = [...voices];
                             
-                            return sortedVoices.map((voice, index) => (
+                            if (language === 'et') {
+                              // For Estonian, prioritize Estonian voices, but also show others as fallback
+                              const estonianVoices = voices.filter(voice => 
+                                voice.lang.startsWith('et-') || voice.lang === 'et'
+                              );
+                              const otherVoices = voices.filter(voice => 
+                                !voice.lang.startsWith('et-') && voice.lang !== 'et'
+                              );
+                              
+                              // Sort Estonian voices first, then others
+                              filteredVoices = [
+                                ...estonianVoices.sort((a, b) => a.name.localeCompare(b.name)),
+                                ...otherVoices.sort((a, b) => a.name.localeCompare(b.name))
+                              ];
+                              
+                              // If no Estonian voices found, add a helpful message
+                              if (estonianVoices.length === 0) {
+                                console.log('⚠️ No Estonian voices found. Try using Chrome/Edge for better Estonian support.');
+                              }
+                            } else {
+                              // For other languages, sort normally
+                              filteredVoices = voices.sort((a, b) => {
+                                if (a.lang !== b.lang) {
+                                  return a.lang.localeCompare(b.lang);
+                                }
+                                return a.name.localeCompare(b.name);
+                              });
+                            }
+                            
+                            return filteredVoices.map((voice, index) => (
                               <option key={index} value={voice.name}>
                                 {voice.name} ({voice.lang})
                                 {language === 'et' && (voice.lang.startsWith('et-') || voice.lang === 'et') ? ' 🇪🇪' : ''}
+                                {voice.localService ? ' 🏠' : ' 🌐'}
                               </option>
                             ));
                           })()}
