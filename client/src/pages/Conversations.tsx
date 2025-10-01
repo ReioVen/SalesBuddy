@@ -1160,7 +1160,21 @@ const Conversations: React.FC = () => {
                           onClick={() => {
                             const testText = "Hello, this is a test of the selected voice.";
                             const currentVolume = clientCustomization.ttsVolume || ttsVolume;
-                            testVoice(testText, { voice: clientCustomization.selectedVoice, volume: currentVolume });
+                            
+                            if (clientCustomization.selectedVoice) {
+                              // Test the specific selected voice
+                              testVoice(testText, { 
+                                voice: clientCustomization.selectedVoice, 
+                                volume: currentVolume,
+                                language: clientCustomization.selectedVoice.lang
+                              });
+                            } else {
+                              // Test with random voice for current language
+                              testVoice(testText, { 
+                                volume: currentVolume,
+                                language: language + '-' + language.toUpperCase()
+                              });
+                            }
                           }}
                           className="px-3 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
                         >
@@ -1170,6 +1184,50 @@ const Conversations: React.FC = () => {
                       <p className="text-xs text-gray-500 dark:text-gray-400">
                         Choose a language for text-to-speech. A random voice will be automatically selected from that language. This voice will read both your messages and AI responses.
                       </p>
+                      
+                      {/* Show available voices for selected language */}
+                      {clientCustomization.selectedVoice && (() => {
+                        const voiceLang = clientCustomization.selectedVoice.lang?.split('-')[0];
+                        const availableVoices = universalTtsService.getAllVoicesForLanguage(voiceLang || '');
+                        
+                        if (availableVoices.length > 0) {
+                          return (
+                            <div className="mt-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                              <p className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Available voices for {voiceLang?.toUpperCase()}:
+                              </p>
+                              <div className="flex flex-wrap gap-1">
+                                {availableVoices.map((voice, index) => (
+                                  <button
+                                    key={index}
+                                    onClick={() => {
+                                      const browserVoice = {
+                                        name: voice.name,
+                                        lang: voice.language,
+                                        localService: !voice.isCloud,
+                                        voiceURI: voice.name
+                                      };
+                                      setClientCustomization(prev => ({ ...prev, selectedVoice: browserVoice }));
+                                      console.log(`🎯 Specific voice selected: ${voice.name}`);
+                                    }}
+                                    className={`px-2 py-1 text-xs rounded ${
+                                      clientCustomization.selectedVoice?.name === voice.name
+                                        ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
+                                        : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                                    }`}
+                                  >
+                                    {voice.name}
+                                  </button>
+                                ))}
+                              </div>
+                              <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                                Click a voice to select it specifically, or keep the random selection.
+                              </p>
+                            </div>
+                          );
+                        }
+                        return null;
+                      })()}
                     </div>
                   </div>
 

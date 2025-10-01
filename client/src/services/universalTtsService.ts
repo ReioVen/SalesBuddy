@@ -259,6 +259,18 @@ class UniversalTtsService {
     
     return estonianVoices;
   }
+
+  getAllVoicesForLanguage(languageCode: string): UniversalTtsVoice[] {
+    return this.voices.filter(voice => 
+      voice.language.startsWith(languageCode + '-') || 
+      voice.language === languageCode
+    );
+  }
+
+  getSpecificVoiceForLanguage(languageCode: string, voiceName: string): UniversalTtsVoice | null {
+    const voicesForLang = this.getAllVoicesForLanguage(languageCode);
+    return voicesForLang.find(voice => voice.name === voiceName) || null;
+  }
 }
 
 export const universalTtsService = UniversalTtsService.getInstance();
