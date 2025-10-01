@@ -34,6 +34,18 @@ export const useTextToSpeech = (): TextToSpeechReturn => {
       const loadVoices = () => {
         const availableVoices = speechSynthesis.getVoices();
         setVoices(availableVoices);
+        
+        // Debug: Log Estonian voices if any
+        const estonianVoices = availableVoices.filter(voice => 
+          voice.lang.startsWith('et-') || voice.lang === 'et'
+        );
+        if (estonianVoices.length > 0) {
+          console.log('🇪🇪 Estonian voices found:', estonianVoices.map(v => `${v.name} (${v.lang})`));
+        } else {
+          console.log('⚠️ No Estonian voices found. Available languages:', 
+            [...new Set(availableVoices.map(v => v.lang))].sort()
+          );
+        }
       };
       
       loadVoices();
@@ -69,9 +81,21 @@ export const useTextToSpeech = (): TextToSpeechReturn => {
     utterance.volume = options.volume || 1;
     utterance.lang = options.language || 'en-US';
     
-    
+    // If no specific voice is provided, try to find the best voice for the language
     if (options.voice) {
       utterance.voice = options.voice;
+    } else if (options.language) {
+      // Try to find a voice that matches the language
+      const matchingVoices = voices.filter(voice => 
+        voice.lang.startsWith(options.language!.split('-')[0]) || 
+        voice.lang === options.language
+      );
+      
+      if (matchingVoices.length > 0) {
+        // Prefer local voices over remote ones
+        const localVoice = matchingVoices.find(voice => voice.localService);
+        utterance.voice = localVoice || matchingVoices[0];
+      }
     }
 
     // Event handlers

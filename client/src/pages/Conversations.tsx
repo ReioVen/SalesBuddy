@@ -1021,11 +1021,32 @@ const Conversations: React.FC = () => {
                           className="flex-1 px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                         >
                           <option value="default">Default Voice</option>
-                          {voices.map((voice, index) => (
-                            <option key={index} value={voice.name}>
-                              {voice.name} ({voice.lang})
-                            </option>
-                          ))}
+                          {(() => {
+                            // Sort voices to prioritize Estonian voices when language is Estonian
+                            const sortedVoices = [...voices].sort((a, b) => {
+                              if (language === 'et') {
+                                // Prioritize Estonian voices
+                                const aIsEstonian = a.lang.startsWith('et-') || a.lang === 'et';
+                                const bIsEstonian = b.lang.startsWith('et-') || b.lang === 'et';
+                                
+                                if (aIsEstonian && !bIsEstonian) return -1;
+                                if (!aIsEstonian && bIsEstonian) return 1;
+                              }
+                              
+                              // Then sort by language and name
+                              if (a.lang !== b.lang) {
+                                return a.lang.localeCompare(b.lang);
+                              }
+                              return a.name.localeCompare(b.name);
+                            });
+                            
+                            return sortedVoices.map((voice, index) => (
+                              <option key={index} value={voice.name}>
+                                {voice.name} ({voice.lang})
+                                {language === 'et' && (voice.lang.startsWith('et-') || voice.lang === 'et') ? ' 🇪🇪' : ''}
+                              </option>
+                            ));
+                          })()}
                         </select>
                         <button
                           type="button"
