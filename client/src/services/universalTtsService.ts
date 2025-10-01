@@ -24,51 +24,97 @@ class UniversalTtsService {
   private voices: UniversalTtsVoice[] = [];
   private isInitialized = false;
 
-  // Estonian voices available through cloud services
-  private cloudEstonianVoices: UniversalTtsVoice[] = [
-    {
-      name: 'Google Estonian Female',
-      language: 'et-EE',
-      gender: 'female',
-      provider: 'google',
-      isCloud: true
+  // Supported languages with multiple voice options for randomness
+  private supportedLanguages = {
+    'et': { // Estonian
+      voices: [
+        { name: 'Google Estonian Female', gender: 'female', provider: 'google' },
+        { name: 'Google Estonian Male', gender: 'male', provider: 'google' },
+        { name: 'Microsoft Estonian Female', gender: 'female', provider: 'microsoft' },
+        { name: 'Microsoft Estonian Male', gender: 'male', provider: 'microsoft' },
+        { name: 'Amazon Polly Estonian Female', gender: 'female', provider: 'amazon' },
+        { name: 'Amazon Polly Estonian Male', gender: 'male', provider: 'amazon' }
+      ]
     },
-    {
-      name: 'Google Estonian Male',
-      language: 'et-EE',
-      gender: 'male',
-      provider: 'google',
-      isCloud: true
+    'en': { // English
+      voices: [
+        { name: 'Google English US Female', gender: 'female', provider: 'google' },
+        { name: 'Google English US Male', gender: 'male', provider: 'google' },
+        { name: 'Google English UK Female', gender: 'female', provider: 'google' },
+        { name: 'Google English UK Male', gender: 'male', provider: 'google' },
+        { name: 'Microsoft English Female', gender: 'female', provider: 'microsoft' },
+        { name: 'Microsoft English Male', gender: 'male', provider: 'microsoft' }
+      ]
     },
-    {
-      name: 'Microsoft Estonian Female',
-      language: 'et-EE',
-      gender: 'female',
-      provider: 'microsoft',
-      isCloud: true
+    'ru': { // Russian
+      voices: [
+        { name: 'Google Russian Female', gender: 'female', provider: 'google' },
+        { name: 'Google Russian Male', gender: 'male', provider: 'google' },
+        { name: 'Microsoft Russian Female', gender: 'female', provider: 'microsoft' },
+        { name: 'Microsoft Russian Male', gender: 'male', provider: 'microsoft' },
+        { name: 'Amazon Polly Russian Female', gender: 'female', provider: 'amazon' },
+        { name: 'Amazon Polly Russian Male', gender: 'male', provider: 'amazon' }
+      ]
     },
-    {
-      name: 'Microsoft Estonian Male',
-      language: 'et-EE',
-      gender: 'male',
-      provider: 'microsoft',
-      isCloud: true
+    'es': { // Spanish
+      voices: [
+        { name: 'Google Spanish Female', gender: 'female', provider: 'google' },
+        { name: 'Google Spanish Male', gender: 'male', provider: 'google' },
+        { name: 'Microsoft Spanish Female', gender: 'female', provider: 'microsoft' },
+        { name: 'Microsoft Spanish Male', gender: 'male', provider: 'microsoft' },
+        { name: 'Amazon Polly Spanish Female', gender: 'female', provider: 'amazon' },
+        { name: 'Amazon Polly Spanish Male', gender: 'male', provider: 'amazon' }
+      ]
     },
-    {
-      name: 'Amazon Polly Estonian Female',
-      language: 'et-EE',
-      gender: 'female',
-      provider: 'amazon',
-      isCloud: true
+    'de': { // German
+      voices: [
+        { name: 'Google German Female', gender: 'female', provider: 'google' },
+        { name: 'Google German Male', gender: 'male', provider: 'google' },
+        { name: 'Microsoft German Female', gender: 'female', provider: 'microsoft' },
+        { name: 'Microsoft German Male', gender: 'male', provider: 'microsoft' }
+      ]
     },
-    {
-      name: 'Amazon Polly Estonian Male',
-      language: 'et-EE',
-      gender: 'male',
-      provider: 'amazon',
-      isCloud: true
+    'fr': { // French
+      voices: [
+        { name: 'Google French Female', gender: 'female', provider: 'google' },
+        { name: 'Google French Male', gender: 'male', provider: 'google' },
+        { name: 'Microsoft French Female', gender: 'female', provider: 'microsoft' },
+        { name: 'Microsoft French Male', gender: 'male', provider: 'microsoft' }
+      ]
+    },
+    'it': { // Italian
+      voices: [
+        { name: 'Google Italian Female', gender: 'female', provider: 'google' },
+        { name: 'Google Italian Male', gender: 'male', provider: 'google' },
+        { name: 'Microsoft Italian Female', gender: 'female', provider: 'microsoft' },
+        { name: 'Microsoft Italian Male', gender: 'male', provider: 'microsoft' }
+      ]
+    },
+    'pt': { // Portuguese
+      voices: [
+        { name: 'Google Portuguese Female', gender: 'female', provider: 'google' },
+        { name: 'Google Portuguese Male', gender: 'male', provider: 'google' },
+        { name: 'Microsoft Portuguese Female', gender: 'female', provider: 'microsoft' },
+        { name: 'Microsoft Portuguese Male', gender: 'male', provider: 'microsoft' }
+      ]
+    },
+    'nl': { // Dutch
+      voices: [
+        { name: 'Google Dutch Female', gender: 'female', provider: 'google' },
+        { name: 'Google Dutch Male', gender: 'male', provider: 'google' },
+        { name: 'Microsoft Dutch Female', gender: 'female', provider: 'microsoft' },
+        { name: 'Microsoft Dutch Male', gender: 'male', provider: 'microsoft' }
+      ]
+    },
+    'pl': { // Polish
+      voices: [
+        { name: 'Google Polish Female', gender: 'female', provider: 'google' },
+        { name: 'Google Polish Male', gender: 'male', provider: 'google' },
+        { name: 'Microsoft Polish Female', gender: 'female', provider: 'microsoft' },
+        { name: 'Microsoft Polish Male', gender: 'male', provider: 'microsoft' }
+      ]
     }
-  ];
+  };
 
   static getInstance(): UniversalTtsService {
     if (!UniversalTtsService.instance) {
@@ -81,26 +127,48 @@ class UniversalTtsService {
     if (this.isInitialized) return;
 
     try {
-      // Add cloud Estonian voices
-      this.voices = [...this.cloudEstonianVoices];
+      // Generate voices for all supported languages
+      const allVoices: UniversalTtsVoice[] = [];
       
-      // Add browser voices as fallback
+      Object.entries(this.supportedLanguages).forEach(([langCode, langData]) => {
+        langData.voices.forEach(voice => {
+          allVoices.push({
+            name: voice.name,
+            language: `${langCode}-${langCode.toUpperCase()}`,
+            gender: voice.gender,
+            provider: voice.provider,
+            isCloud: true
+          });
+        });
+      });
+      
+      this.voices = allVoices;
+      
+      // Add browser voices as fallback (filtered to supported languages only)
       if ('speechSynthesis' in window) {
         const browserVoices = speechSynthesis.getVoices();
-        const browserVoicesList = browserVoices.map(voice => ({
-          name: voice.name,
-          language: voice.lang,
-          gender: voice.name.toLowerCase().includes('female') ? 'female' : 'male',
-          provider: 'browser' as const,
-          isCloud: false
-        }));
+        const supportedLangCodes = Object.keys(this.supportedLanguages);
         
-        this.voices = [...this.cloudEstonianVoices, ...browserVoicesList];
+        const filteredBrowserVoices = browserVoices
+          .filter(voice => {
+            const voiceLang = voice.lang.split('-')[0];
+            return supportedLangCodes.includes(voiceLang);
+          })
+          .map(voice => ({
+            name: voice.name,
+            language: voice.lang,
+            gender: voice.name.toLowerCase().includes('female') ? 'female' : 'male',
+            provider: 'browser' as const,
+            isCloud: false
+          }));
+        
+        this.voices = [...allVoices, ...filteredBrowserVoices];
       }
       
       this.isInitialized = true;
-      console.log('🌐 Universal TTS Service initialized with Estonian voices');
-      console.log('🇪🇪 Estonian voices available:', this.cloudEstonianVoices.length);
+      console.log('🌐 Universal TTS Service initialized with supported languages');
+      console.log('🎯 Supported languages:', Object.keys(this.supportedLanguages).join(', '));
+      console.log('🎲 Total voices available:', this.voices.length);
     } catch (error) {
       console.error('Failed to initialize Universal TTS Service:', error);
     }
@@ -110,8 +178,27 @@ class UniversalTtsService {
     return this.voices;
   }
 
+  getVoicesForLanguage(languageCode: string): UniversalTtsVoice[] {
+    return this.voices.filter(voice => 
+      voice.language.startsWith(languageCode + '-') || 
+      voice.language === languageCode
+    );
+  }
+
+  getRandomVoiceForLanguage(languageCode: string): UniversalTtsVoice | null {
+    const voicesForLang = this.getVoicesForLanguage(languageCode);
+    if (voicesForLang.length === 0) return null;
+    
+    const randomIndex = Math.floor(Math.random() * voicesForLang.length);
+    return voicesForLang[randomIndex];
+  }
+
+  getSupportedLanguages(): string[] {
+    return Object.keys(this.supportedLanguages);
+  }
+
   getEstonianVoices(): UniversalTtsVoice[] {
-    return this.voices.filter(voice => voice.language.startsWith('et-'));
+    return this.getVoicesForLanguage('et');
   }
 
   async speak(text: string, options: UniversalTtsOptions): Promise<void> {

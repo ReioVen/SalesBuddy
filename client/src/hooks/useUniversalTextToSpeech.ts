@@ -52,6 +52,11 @@ export const useUniversalTextToSpeech = (): TextToSpeechReturn => {
         } else {
           console.log('⚠️ No Estonian voices available. Using fallback voices.');
         }
+        
+        // Log supported languages
+        const supportedLangs = universalTtsService.getSupportedLanguages();
+        console.log('🎯 Supported languages:', supportedLangs.join(', '));
+        console.log('🎲 Random voice selection enabled for all languages');
       });
       
       // Load browser voices
@@ -100,15 +105,26 @@ export const useUniversalTextToSpeech = (): TextToSpeechReturn => {
     // Stop any current speech
     stop();
 
-    // Use universal TTS service for Estonian
-    if (options.language && options.language.startsWith('et-')) {
-      universalTtsService.speakWithCloudTts(text, {
-        language: options.language,
-        rate: options.rate,
-        pitch: options.pitch,
-        volume: options.volume
-      });
-      return;
+    // Use universal TTS service for supported languages with random voice selection
+    if (options.language) {
+      const languageCode = options.language.split('-')[0];
+      const supportedLangs = universalTtsService.getSupportedLanguages();
+      
+      if (supportedLangs.includes(languageCode)) {
+        // Get random voice for the language
+        const randomVoice = universalTtsService.getRandomVoiceForLanguage(languageCode);
+        
+        if (randomVoice) {
+          console.log(`🎲 Random voice selected for ${languageCode}:`, randomVoice.name);
+          universalTtsService.speakWithCloudTts(text, {
+            language: options.language,
+            rate: options.rate,
+            pitch: options.pitch,
+            volume: options.volume
+          });
+          return;
+        }
+      }
     }
 
     // Use browser TTS for other languages
