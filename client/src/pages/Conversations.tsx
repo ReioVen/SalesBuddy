@@ -9,7 +9,7 @@ import ConversationAIFeedback from '../components/ConversationAIFeedback.tsx';
 import SpeechInput from '../components/SpeechInput.tsx';
 import VoiceCommands from '../components/VoiceCommands.tsx';
 import AITips from '../components/AITips.tsx';
-import { useEnhancedTextToSpeech } from '../hooks/useEnhancedTextToSpeech.ts';
+import { useUniversalTextToSpeech } from '../hooks/useUniversalTextToSpeech.ts';
 
 const API_BASE_URL = 'https://salesbuddy-production.up.railway.app';
 
@@ -130,7 +130,7 @@ const Conversations: React.FC = () => {
   const [ttsVolume, setTtsVolume] = useState(0.7); // Default volume at 70%
   
   // Enhanced text-to-speech functionality for voice selection
-  const { voices, speak: testVoice, hasEstonianVoices } = useEnhancedTextToSpeech();
+  const { voices, universalVoices, speak: testVoice, hasEstonianVoices, estonianVoices } = useUniversalTextToSpeech();
   
   // Function to reconstruct SpeechSynthesisVoice from saved data
   const reconstructVoice = useCallback((savedVoice: any) => {
@@ -1027,30 +1027,60 @@ const Conversations: React.FC = () => {
                             let allEstonianVoices: any[] = [];
                             
                             if (language === 'et') {
-                              // For Estonian, prioritize Estonian voices, but also show others as fallback
-                              const estonianVoices = voices.filter(voice => 
-                                voice.lang.startsWith('et-') || voice.lang === 'et'
-                              );
-                              const otherVoices = voices.filter(voice => 
-                                !voice.lang.startsWith('et-') && voice.lang !== 'et'
-                              );
-                              
-                              // Sort Estonian voices first, then others
-                              filteredVoices = [
-                                ...estonianVoices.sort((a, b) => a.name.localeCompare(b.name)),
-                                ...otherVoices.sort((a, b) => a.name.localeCompare(b.name))
-                              ];
-                              
-                              allEstonianVoices = estonianVoices;
-                              
-                              // If no Estonian voices found, add a helpful message
-                              if (estonianVoices.length === 0) {
+                              // For Estonian, use universal TTS service voices first
+                              if (estonianVoices.length > 0) {
+                                console.log('🇪🇪 Universal Estonian voices available:', estonianVoices.length);
+                                
+                                // Convert universal voices to browser voice format for selection
+                                const universalEstonianOptions = estonianVoices.map(voice => ({
+                                  name: voice.name,
+                                  lang: voice.language,
+                                  localService: !voice.isCloud,
+                                  voiceURI: voice.name
+                                }));
+                                
+                                // Add browser Estonian voices if available
+                                const browserEstonianVoices = voices.filter(voice => 
+                                  voice.lang.startsWith('et-') || voice.lang === 'et'
+                                );
+                                
+                                // Combine universal and browser voices
+                                const allEstonianOptions = [
+                                  ...universalEstonianOptions,
+                                  ...browserEstonianVoices
+                                ];
+                                
+                                const otherVoices = voices.filter(voice => 
+                                  !voice.lang.startsWith('et-') && voice.lang !== 'et'
+                                );
+                                
+                                filteredVoices = [
+                                  ...allEstonianOptions.sort((a, b) => a.name.localeCompare(b.name)),
+                                  ...otherVoices.sort((a, b) => a.name.localeCompare(b.name))
+                                ];
+                                
+                                allEstonianVoices = allEstonianOptions;
+                              } else {
+                                // Fallback to browser voices only
+                                const estonianVoices = voices.filter(voice => 
+                                  voice.lang.startsWith('et-') || voice.lang === 'et'
+                                );
+                                const otherVoices = voices.filter(voice => 
+                                  !voice.lang.startsWith('et-') && voice.lang !== 'et'
+                                );
+                                
+                                filteredVoices = [
+                                  ...estonianVoices.sort((a, b) => a.name.localeCompare(b.name)),
+                                  ...otherVoices.sort((a, b) => a.name.localeCompare(b.name))
+                                ];
+                                
+                                allEstonianVoices = estonianVoices;
+                                
+                                // Show helpful message
                                 const availableLanguages = [...new Set(voices.map(v => v.lang))].sort();
                                 console.log('⚠️ No Estonian voices found. Using fallback voices.');
                                 console.log('💡 Available languages:', availableLanguages.slice(0, 5).join(', '), '...');
-                                console.log('🔧 To get Estonian voices: Install Estonian language pack in Windows settings');
-                              } else {
-                                console.log('🇪🇪 Estonian voices available:', estonianVoices.length);
+                                console.log('🔧 Universal TTS service will provide Estonian voices for all users');
                               }
                             } else {
                               // For other languages, sort normally
@@ -1066,17 +1096,23 @@ const Conversations: React.FC = () => {
                               // Add helpful message if no Estonian voices
                               ...(language === 'et' && allEstonianVoices.length === 0 ? [
                                 <option key="no-estonian" value="" disabled>
-                                  ⚠️ No Estonian voices found - Install Estonian language pack
+                                  ⚠️ No Estonian voices found - Universal TTS will provide Estonian voices
                                 </option>
                               ] : []),
                               // Map all voices
-                              ...filteredVoices.map((voice, index) => (
-                                <option key={index} value={voice.name}>
-                                  {voice.name} ({voice.lang})
-                                  {language === 'et' && (voice.lang.startsWith('et-') || voice.lang === 'et') ? ' 🇪🇪' : ''}
-                                  {voice.localService ? ' 🏠' : ' 🌐'}
-                                </option>
-                              ))
+                              ...filteredVoices.map((voice, index) => {
+                                const isEstonian = language === 'et' && (voice.lang.startsWith('et-') || voice.lang === 'et');
+                                const isCloud = voice.name.includes('Google') || voice.name.includes('Microsoft') || voice.name.includes('Amazon');
+                                
+                                return (
+                                  <option key={index} value={voice.name}>
+                                    {isEstonian ? '🇪🇪 ' : ''}
+                                    {voice.localService ? '🏠 ' : '🌐 '}
+                                    {isCloud ? '☁️ ' : ''}
+                                    {voice.name} ({voice.lang})
+                                  </option>
+                                );
+                              })
                             ];
                           })()}
                         </select>
