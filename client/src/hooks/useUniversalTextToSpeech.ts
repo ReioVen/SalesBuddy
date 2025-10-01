@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { universalTtsService, UniversalTtsVoice } from '../services/universalTtsService';
+import { universalTtsService, UniversalTtsVoice } from '../services/universalTtsService.ts';
 
 interface TextToSpeechOptions {
   language?: string;
