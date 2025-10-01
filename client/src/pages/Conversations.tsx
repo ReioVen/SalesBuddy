@@ -10,6 +10,7 @@ import SpeechInput from '../components/SpeechInput.tsx';
 import VoiceCommands from '../components/VoiceCommands.tsx';
 import AITips from '../components/AITips.tsx';
 import { useUniversalTextToSpeech } from '../hooks/useUniversalTextToSpeech.ts';
+import { universalTtsService } from '../services/universalTtsService.ts';
 
 const API_BASE_URL = 'https://salesbuddy-production.up.railway.app';
 
@@ -1012,9 +1013,16 @@ const Conversations: React.FC = () => {
                     <div className="space-y-3">
                       <div className="flex gap-2">
                         <select
-                          value={clientCustomization.selectedVoice?.name || 'default'}
+                          value={clientCustomization.selectedVoice?.name || '🎲 Random Voice (Auto-select)'}
                           onChange={(e) => {
                             const selectedLanguageName = e.target.value;
+                            
+                            // Handle default selection
+                            if (selectedLanguageName === '🎲 Random Voice (Auto-select)') {
+                              setClientCustomization(prev => ({ ...prev, selectedVoice: null }));
+                              console.log('🎲 Random voice mode selected');
+                              return;
+                            }
                             
                             // Find the language code from the selected name
                             const supportedLanguages = [
@@ -1069,7 +1077,7 @@ const Conversations: React.FC = () => {
                           }}
                           className="flex-1 px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                         >
-                          <option value="default">🎲 Random Voice (Auto-select)</option>
+                          <option value="🎲 Random Voice (Auto-select)">🎲 Random Voice (Auto-select)</option>
                           {(() => {
                             // Filter and sort voices based on language
                             let filteredVoices = [...voices];
