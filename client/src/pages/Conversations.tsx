@@ -1014,112 +1014,111 @@ const Conversations: React.FC = () => {
                         <select
                           value={clientCustomization.selectedVoice?.name || 'default'}
                           onChange={(e) => {
-                            const voiceName = e.target.value;
-                            const voice = voices.find(v => v.name === voiceName) || null;
-                            setClientCustomization(prev => ({ ...prev, selectedVoice: voice }));
+                            const selectedLanguageName = e.target.value;
+                            
+                            // Find the language code from the selected name
+                            const supportedLanguages = [
+                              { code: 'et', name: 'Estonian', flag: '🇪🇪' },
+                              { code: 'en', name: 'English', flag: '🇺🇸' },
+                              { code: 'ru', name: 'Russian', flag: '🇷🇺' },
+                              { code: 'es', name: 'Spanish', flag: '🇪🇸' },
+                              { code: 'de', name: 'German', flag: '🇩🇪' },
+                              { code: 'fr', name: 'French', flag: '🇫🇷' },
+                              { code: 'it', name: 'Italian', flag: '🇮🇹' },
+                              { code: 'pt', name: 'Portuguese', flag: '🇵🇹' },
+                              { code: 'nl', name: 'Dutch', flag: '🇳🇱' },
+                              { code: 'pl', name: 'Polish', flag: '🇵🇱' }
+                            ];
+                            
+                            const selectedLang = supportedLanguages.find(lang => 
+                              selectedLanguageName.includes(lang.name)
+                            );
+                            
+                            if (selectedLang) {
+                              // Get random voice for the selected language
+                              const randomVoice = universalTtsService.getRandomVoiceForLanguage(selectedLang.code);
+                              
+                              if (randomVoice) {
+                                // Convert universal voice to browser voice format
+                                const browserVoice = {
+                                  name: randomVoice.name,
+                                  lang: randomVoice.language,
+                                  localService: !randomVoice.isCloud,
+                                  voiceURI: randomVoice.name
+                                };
+                                
+                                setClientCustomization(prev => ({ ...prev, selectedVoice: browserVoice }));
+                                console.log(`🎲 Random voice selected for ${selectedLang.name}:`, randomVoice.name);
+                              } else {
+                                // Fallback to browser voices for the language
+                                const browserVoicesForLang = voices.filter(voice => 
+                                  voice.lang.startsWith(selectedLang.code + '-') || voice.lang === selectedLang.code
+                                );
+                                
+                                if (browserVoicesForLang.length > 0) {
+                                  const randomIndex = Math.floor(Math.random() * browserVoicesForLang.length);
+                                  const randomBrowserVoice = browserVoicesForLang[randomIndex];
+                                  setClientCustomization(prev => ({ ...prev, selectedVoice: randomBrowserVoice }));
+                                  console.log(`🎲 Random browser voice selected for ${selectedLang.name}:`, randomBrowserVoice.name);
+                                } else {
+                                  setClientCustomization(prev => ({ ...prev, selectedVoice: null }));
+                                  console.log(`⚠️ No voices found for ${selectedLang.name}`);
+                                }
+                              }
+                            }
                           }}
                           className="flex-1 px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                         >
-                          <option value="default">Default Voice</option>
+                          <option value="default">🎲 Random Voice (Auto-select)</option>
                           {(() => {
                             // Filter and sort voices based on language
                             let filteredVoices = [...voices];
                             let allEstonianVoices: any[] = [];
                             
-                            // Filter voices to only show supported languages
-                            const supportedLanguages = ['et', 'en', 'ru', 'es', 'de', 'fr', 'it', 'pt', 'nl', 'pl'];
+                            // Show only language names, not individual voices
+                            const supportedLanguages = [
+                              { code: 'et', name: 'Estonian', flag: '🇪🇪' },
+                              { code: 'en', name: 'English', flag: '🇺🇸' },
+                              { code: 'ru', name: 'Russian', flag: '🇷🇺' },
+                              { code: 'es', name: 'Spanish', flag: '🇪🇸' },
+                              { code: 'de', name: 'German', flag: '🇩🇪' },
+                              { code: 'fr', name: 'French', flag: '🇫🇷' },
+                              { code: 'it', name: 'Italian', flag: '🇮🇹' },
+                              { code: 'pt', name: 'Portuguese', flag: '🇵🇹' },
+                              { code: 'nl', name: 'Dutch', flag: '🇳🇱' },
+                              { code: 'pl', name: 'Polish', flag: '🇵🇱' }
+                            ];
                             
-                            if (supportedLanguages.includes(language)) {
-                              // For supported languages, show universal voices + browser voices
-                              const languageVoices = universalVoices.filter(voice => 
-                                voice.language.startsWith(language + '-') || voice.language === language
-                              );
-                              
-                              const browserVoicesForLang = voices.filter(voice => 
-                                voice.lang.startsWith(language + '-') || voice.lang === language
-                              );
-                              
-                              // Convert universal voices to browser voice format
-                              const universalOptions = languageVoices.map(voice => ({
-                                name: voice.name,
-                                lang: voice.language,
-                                localService: !voice.isCloud,
-                                voiceURI: voice.name
-                              }));
-                              
-                              // Combine universal and browser voices
-                              const allLanguageOptions = [
-                                ...universalOptions,
-                                ...browserVoicesForLang
-                              ];
-                              
-                              // Add other supported languages as fallback
-                              const otherSupportedVoices = voices.filter(voice => {
-                                const voiceLang = voice.lang.split('-')[0];
-                                return supportedLanguages.includes(voiceLang) && voiceLang !== language;
-                              });
-                              
-                              filteredVoices = [
-                                ...allLanguageOptions.sort((a, b) => a.name.localeCompare(b.name)),
-                                ...otherSupportedVoices.sort((a, b) => a.name.localeCompare(b.name))
-                              ];
-                              
-                              if (language === 'et') {
-                                allEstonianVoices = allLanguageOptions;
-                                console.log(`🇪🇪 Estonian voices available: ${allLanguageOptions.length}`);
-                              }
-                              
-                              console.log(`🎯 ${language.toUpperCase()} voices available: ${allLanguageOptions.length}`);
-                              console.log('🎲 Random voice selection enabled');
-                            } else {
-                              // For unsupported languages, show only supported language voices
-                              filteredVoices = voices.filter(voice => {
-                                const voiceLang = voice.lang.split('-')[0];
-                                return supportedLanguages.includes(voiceLang);
-                              }).sort((a, b) => a.name.localeCompare(b.name));
-                              
-                              console.log('⚠️ Language not supported. Showing supported language voices only.');
-                              console.log('🎯 Supported languages:', supportedLanguages.join(', '));
-                            }
+                            // Create language options instead of individual voices
+                            const languageOptions = supportedLanguages.map(lang => ({
+                              name: `${lang.flag} ${lang.name}`,
+                              lang: lang.code,
+                              localService: false,
+                              voiceURI: lang.code,
+                              isLanguageOption: true
+                            }));
+                            
+                            filteredVoices = languageOptions;
+                            
+                            console.log(`🎯 Showing ${supportedLanguages.length} supported languages`);
+                            console.log('🎲 Random voice selection will be automatic for each language');
                             
                             return [
-                              // Add helpful message if no voices for current language
-                              ...(supportedLanguages.includes(language) && filteredVoices.filter(v => v.lang.startsWith(language + '-')).length === 0 ? [
-                                <option key="no-voices" value="" disabled>
-                                  ⚠️ No {language.toUpperCase()} voices found - Universal TTS will provide voices
+                              // Add helpful message
+                              ...(language && !supportedLanguages.find(lang => lang.code === language) ? [
+                                <option key="unsupported" value="" disabled>
+                                  ⚠️ Language not supported - Select a supported language
                                 </option>
                               ] : []),
-                              // Map all voices with language flags and random selection
+                              // Map language options (not individual voices)
                               ...filteredVoices.map((voice, index) => {
-                                const voiceLang = voice.lang.split('-')[0];
-                                const isCurrentLanguage = voiceLang === language;
-                                const isCloud = voice.name.includes('Google') || voice.name.includes('Microsoft') || voice.name.includes('Amazon');
-                                
-                                // Language flags
-                                const getLanguageFlag = (lang: string) => {
-                                  const flags: { [key: string]: string } = {
-                                    'et': '🇪🇪',
-                                    'en': '🇺🇸',
-                                    'ru': '🇷🇺',
-                                    'es': '🇪🇸',
-                                    'de': '🇩🇪',
-                                    'fr': '🇫🇷',
-                                    'it': '🇮🇹',
-                                    'pt': '🇵🇹',
-                                    'nl': '🇳🇱',
-                                    'pl': '🇵🇱'
-                                  };
-                                  return flags[lang] || '🌐';
-                                };
+                                const isCurrentLanguage = voice.lang === language;
                                 
                                 return (
                                   <option key={index} value={voice.name}>
-                                    {getLanguageFlag(voiceLang)} 
-                                    {isCurrentLanguage ? '🎯 ' : ''}
-                                    {voice.localService ? '🏠 ' : '🌐 '}
-                                    {isCloud ? '☁️ ' : ''}
-                                    {isCurrentLanguage ? '🎲 ' : ''}
-                                    {voice.name} ({voice.lang})
+                                    {voice.name}
+                                    {isCurrentLanguage ? ' 🎯' : ''}
+                                    {isCurrentLanguage ? ' 🎲' : ''}
                                   </option>
                                 );
                               })
@@ -1135,11 +1134,11 @@ const Conversations: React.FC = () => {
                           }}
                           className="px-3 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
                         >
-                          Test
+                          Test Voice
                         </button>
                       </div>
                       <p className="text-xs text-gray-500 dark:text-gray-400">
-                        Choose a voice for text-to-speech in hands-free mode. This voice will read both your messages and AI responses.
+                        Choose a language for text-to-speech. A random voice will be automatically selected from that language. This voice will read both your messages and AI responses.
                       </p>
                     </div>
                   </div>
