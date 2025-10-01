@@ -1013,7 +1013,29 @@ const Conversations: React.FC = () => {
                     <div className="space-y-3">
                       <div className="flex gap-2">
                         <select
-                          value={clientCustomization.selectedVoice?.name || '🎲 Random Voice (Auto-select)'}
+                          value={(() => {
+                            if (!clientCustomization.selectedVoice) {
+                              return '🎲 Random Voice (Auto-select)';
+                            }
+                            
+                            // Extract language from the selected voice
+                            const voiceLang = clientCustomization.selectedVoice.lang?.split('-')[0];
+                            const supportedLanguages = [
+                              { code: 'et', name: 'Estonian', flag: '🇪🇪' },
+                              { code: 'en', name: 'English', flag: '🇺🇸' },
+                              { code: 'ru', name: 'Russian', flag: '🇷🇺' },
+                              { code: 'es', name: 'Spanish', flag: '🇪🇸' },
+                              { code: 'de', name: 'German', flag: '🇩🇪' },
+                              { code: 'fr', name: 'French', flag: '🇫🇷' },
+                              { code: 'it', name: 'Italian', flag: '🇮🇹' },
+                              { code: 'pt', name: 'Portuguese', flag: '🇵🇹' },
+                              { code: 'nl', name: 'Dutch', flag: '🇳🇱' },
+                              { code: 'pl', name: 'Polish', flag: '🇵🇱' }
+                            ];
+                            
+                            const selectedLang = supportedLanguages.find(lang => lang.code === voiceLang);
+                            return selectedLang ? `${selectedLang.flag} ${selectedLang.name}` : '🎲 Random Voice (Auto-select)';
+                          })()}
                           onChange={(e) => {
                             const selectedLanguageName = e.target.value;
                             
