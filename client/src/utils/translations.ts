@@ -135,7 +135,7 @@ export const translations = {
     
     // Conversation Summary Requirements
     complete5ConversationsFirst: 'Complete 5 Conversations First',
-    need5ConversationsDescription: 'You need to complete at least 5 conversations before you can generate your first AI-powered summary.',
+    need5ConversationsDescription: 'You need to complete at least 5 conversations before you can generate your first AI-powered summary. You currently have {count} conversation{plural}.',
     needMoreConversations: 'Need {count} more conversation{plural} to unlock your first summary',
     startConversations: 'Start Conversations',
     
@@ -788,7 +788,7 @@ export const translations = {
     
     // Conversation Summary Requirements
     complete5ConversationsFirst: 'Lõpeta Esmalt 5 Vestlust',
-    need5ConversationsDescription: 'Sa pead lõpetama vähemalt 5 vestlust, enne kui saad genereerida oma esimese AI-põhise kokkuvõtte.',
+    need5ConversationsDescription: 'Sa pead lõpetama vähemalt 5 vestlust, enne kui saad genereerida oma esimese AI-põhise kokkuvõtte. Sul on praegu {count} vestlus{plural}.',
     needMoreConversations: 'Vaja veel {count} vestlust{plural} esimese kokkuvõtte avamiseks',
     startConversations: 'Alusta Vestlusi',
     
@@ -1399,7 +1399,7 @@ export const translations = {
     
     // Conversation Summary Requirements
     complete5ConversationsFirst: 'Completa 5 Conversaciones Primero',
-    need5ConversationsDescription: 'Necesitas completar al menos 5 conversaciones antes de poder generar tu primer resumen impulsado por IA.',
+    need5ConversationsDescription: 'Necesitas completar al menos 5 conversaciones antes de poder generar tu primer resumen impulsado por IA. Actualmente tienes {count} conversación{plural}.',
     needMoreConversations: 'Necesitas {count} conversación{plural} más para desbloquear tu primer resumen',
     startConversations: 'Iniciar Conversaciones',
     
@@ -1962,7 +1962,7 @@ export const translations = {
     
     // Conversation Summary Requirements
     complete5ConversationsFirst: 'Сначала Завершите 5 Разговоров',
-    need5ConversationsDescription: 'Вам нужно завершить как минимум 5 разговоров, прежде чем вы сможете сгенерировать свое первое резюме на основе ИИ.',
+    need5ConversationsDescription: 'Вам нужно завершить как минимум 5 разговоров, прежде чем вы сможете сгенерировать свое первое резюме на основе ИИ. У вас сейчас {count} разговор{plural}.',
     needMoreConversations: 'Нужно еще {count} разговор{plural} для разблокировки первого резюме',
     startConversations: 'Начать Разговоры',
     
@@ -2400,8 +2400,17 @@ export const translations = {
   },
 };
 
-export const getTranslation = (key: string, language: Language = 'en'): string => {
-  return translations[language]?.[key] || translations.en[key] || key;
+export const getTranslation = (key: string, language: Language = 'en', variables?: Record<string, any>): string => {
+  let translation = translations[language]?.[key] || translations.en[key] || key;
+  
+  // Handle variable substitution
+  if (variables) {
+    Object.entries(variables).forEach(([varKey, value]) => {
+      translation = translation.replace(new RegExp(`\\{${varKey}\\}`, 'g'), String(value));
+    });
+  }
+  
+  return translation;
 };
 
 export const getCurrentLanguage = (): Language => {

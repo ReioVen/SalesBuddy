@@ -15,8 +15,8 @@ export const useTranslation = () => {
     };
   }, []);
 
-  const t = (key: string): string => {
-    return getTranslation(key, language);
+  const t = (key: string, variables?: Record<string, any>): string => {
+    return getTranslation(key, language, variables);
   };
 
   return { t, language };
