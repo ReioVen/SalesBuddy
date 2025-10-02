@@ -329,13 +329,12 @@ const ConversationSummaries: React.FC = () => {
                 <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">{t('complete5ConversationsFirst')}</h3>
                 <p className="text-gray-600 dark:text-gray-400 mb-6">
                   {t('need5ConversationsDescription', { 
-                    count: conversationCount, 
-                    plural: conversationCount !== 1 ? 's' : '' 
+                    count: conversationCount
                   })}
                 </p>
                 <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6">
                   <p className="text-blue-800 dark:text-blue-200 text-sm">
-                    <strong>{t('needMoreConversations', { count: 5 - conversationCount, plural: 5 - conversationCount !== 1 ? 's' : '' })}</strong>
+                    <strong>{t('needMoreConversations', { count: 5 - conversationCount })}</strong>
                   </p>
                 </div>
                 <button

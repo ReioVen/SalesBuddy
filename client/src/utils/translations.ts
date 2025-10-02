@@ -788,8 +788,8 @@ export const translations = {
     
     // Conversation Summary Requirements
     complete5ConversationsFirst: 'Lõpeta Esmalt 5 Vestlust',
-    need5ConversationsDescription: 'Sa pead lõpetama vähemalt 5 vestlust, enne kui saad genereerida oma esimese AI-põhise kokkuvõtte. Sul on praegu {count} vestlus{plural}.',
-    needMoreConversations: 'Vaja veel {count} vestlust{plural} esimese kokkuvõtte avamiseks',
+    need5ConversationsDescription: 'Sa pead lõpetama vähemalt 5 vestlust, enne kui saad genereerida oma esimese AI-põhise kokkuvõtte. Sul on praegu {count} vestlust.',
+    needMoreConversations: 'Vaja veel {count} vestlust esimese kokkuvõtte avamiseks',
     startConversations: 'Alusta Vestlusi',
     
     // Empty Conversation State
