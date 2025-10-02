@@ -326,14 +326,14 @@ const ConversationSummaries: React.FC = () => {
             
             {conversationCount < 5 ? (
               <>
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Complete 5 Conversations First</h3>
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">{t('complete5ConversationsFirst')}</h3>
                 <p className="text-gray-600 dark:text-gray-400 mb-6">
-                  You need to complete at least 5 conversations before you can generate your first AI-powered summary. 
+                  {t('need5ConversationsDescription')} 
                   You currently have {conversationCount} conversation{conversationCount !== 1 ? 's' : ''}.
                 </p>
                 <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6">
                   <p className="text-blue-800 dark:text-blue-200 text-sm">
-                    <strong>Need {5 - conversationCount} more conversation{5 - conversationCount !== 1 ? 's' : ''}</strong> to unlock your first summary
+                    <strong>{t('needMoreConversations', { count: 5 - conversationCount, plural: 5 - conversationCount !== 1 ? 's' : '' })}</strong>
                   </p>
                 </div>
                 <button
@@ -341,7 +341,7 @@ const ConversationSummaries: React.FC = () => {
                   className="flex items-center gap-2 px-6 py-3 bg-blue-600 dark:bg-blue-700 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors mx-auto"
                 >
                   <MessageSquare className="w-5 h-5" />
-                  Start Conversations
+                  {t('startConversations')}
                 </button>
               </>
             ) : (

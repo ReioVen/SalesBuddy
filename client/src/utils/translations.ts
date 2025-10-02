@@ -132,6 +132,16 @@ export const translations = {
     totalScore: 'Total Score',
     aiFeedback: 'AI Feedback',
     fullConversation: 'Full Conversation',
+    
+    // Conversation Summary Requirements
+    complete5ConversationsFirst: 'Complete 5 Conversations First',
+    need5ConversationsDescription: 'You need to complete at least 5 conversations before you can generate your first AI-powered summary.',
+    needMoreConversations: 'Need {count} more conversation{plural} to unlock your first summary',
+    startConversations: 'Start Conversations',
+    
+    // Empty Conversation State
+    noConversationsYet: 'No conversations yet',
+    startFirstConversationDescription: 'Start your first conversation to practice your sales skills with AI!',
     duration: 'Duration',
     messages: 'Messages',
     scenario: 'Scenario',
@@ -775,6 +785,16 @@ export const translations = {
     totalScore: 'Kogutulemus',
     aiFeedback: 'AI Tagasiside',
     fullConversation: 'Täielik Vestlus',
+    
+    // Conversation Summary Requirements
+    complete5ConversationsFirst: 'Lõpeta Esmalt 5 Vestlust',
+    need5ConversationsDescription: 'Sa pead lõpetama vähemalt 5 vestlust, enne kui saad genereerida oma esimese AI-põhise kokkuvõtte.',
+    needMoreConversations: 'Vaja veel {count} vestlust{plural} esimese kokkuvõtte avamiseks',
+    startConversations: 'Alusta Vestlusi',
+    
+    // Empty Conversation State
+    noConversationsYet: 'Vestlusi pole veel',
+    startFirstConversationDescription: 'Alusta oma esimest vestlust, et harjutada müügi oskusi AI-ga!',
     duration: 'Kestus',
     messages: 'Sõnumid',
     scenario: 'Stsenaarium',
@@ -1376,6 +1396,16 @@ export const translations = {
     totalScore: 'Puntuación Total',
     aiFeedback: 'Comentarios de IA',
     fullConversation: 'Conversación Completa',
+    
+    // Conversation Summary Requirements
+    complete5ConversationsFirst: 'Completa 5 Conversaciones Primero',
+    need5ConversationsDescription: 'Necesitas completar al menos 5 conversaciones antes de poder generar tu primer resumen impulsado por IA.',
+    needMoreConversations: 'Necesitas {count} conversación{plural} más para desbloquear tu primer resumen',
+    startConversations: 'Iniciar Conversaciones',
+    
+    // Empty Conversation State
+    noConversationsYet: 'Aún no hay conversaciones',
+    startFirstConversationDescription: '¡Inicia tu primera conversación para practicar tus habilidades de ventas con IA!',
     duration: 'Duración',
     messages: 'Mensajes',
     scenario: 'Escenario',
@@ -1929,6 +1959,16 @@ export const translations = {
     totalScore: 'Общий Балл',
     aiFeedback: 'Обратная Связь ИИ',
     fullConversation: 'Полный Разговор',
+    
+    // Conversation Summary Requirements
+    complete5ConversationsFirst: 'Сначала Завершите 5 Разговоров',
+    need5ConversationsDescription: 'Вам нужно завершить как минимум 5 разговоров, прежде чем вы сможете сгенерировать свое первое резюме на основе ИИ.',
+    needMoreConversations: 'Нужно еще {count} разговор{plural} для разблокировки первого резюме',
+    startConversations: 'Начать Разговоры',
+    
+    // Empty Conversation State
+    noConversationsYet: 'Разговоров пока нет',
+    startFirstConversationDescription: 'Начните свой первый разговор, чтобы практиковать навыки продаж с ИИ!',
     duration: 'Продолжительность',
     messages: 'Сообщения',
     scenario: 'Сценарий',

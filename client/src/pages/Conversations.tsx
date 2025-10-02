@@ -1647,8 +1647,8 @@ const Conversations: React.FC = () => {
         ) : conversationHistory.length === 0 ? (
           <div className="rounded-xl border border-gray-200 dark:border-dark-700 bg-white dark:bg-dark-800 p-8 text-center text-gray-600 dark:text-gray-300">
             <MessageSquare className="w-12 h-12 text-gray-400 dark:text-gray-500 mx-auto mb-4" />
-            <h3 className="text-lg font-medium mb-2 text-gray-900 dark:text-white">No conversations yet</h3>
-            <p className="mb-4">Start your first conversation to practice your sales skills with AI!</p>
+            <h3 className="text-lg font-medium mb-2 text-gray-900 dark:text-white">{t('noConversationsYet')}</h3>
+            <p className="mb-4">{t('startFirstConversationDescription')}</p>
             <button
               onClick={() => setShowNewChatForm(true)}
               className="btn-primary"
