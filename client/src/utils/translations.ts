@@ -793,7 +793,7 @@ export const translations = {
     startConversations: 'Alusta Vestlusi',
     
     // Empty Conversation State
-    noConversationsYet: 'Vestlusi pole veel',
+    noConversationsYet: 'Vestlusi pole veel alustatud',
     startFirstConversationDescription: 'Alusta oma esimest vestlust, et harjutada müügi oskusi AI-ga!',
     duration: 'Kestus',
     messages: 'Sõnumid',
