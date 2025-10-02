@@ -875,7 +875,7 @@ export const translations = {
     // Leaderboard
     leaderboard: 'Edetabel',
     activeUsers: 'Aktiivsed Kasutajad',
-    noConversationsYet: 'Vestlusi pole veel lõpetatud',
+    noConversationsYet: 'Vestlusi pole veel alustatud',
     completeConversationsToSeeRankings: 'Lõpeta vestlusi, et näha edetabelit',
     refresh: 'Värskenda',
     lastUpdated: 'Viimati uuendatud',
