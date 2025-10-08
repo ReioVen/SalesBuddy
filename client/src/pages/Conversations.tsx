@@ -11,6 +11,7 @@ import VoiceCommands from '../components/VoiceCommands.tsx';
 import AITips from '../components/AITips.tsx';
 import { useUniversalTextToSpeech } from '../hooks/useUniversalTextToSpeech.ts';
 import { universalTtsService } from '../services/universalTtsService.ts';
+import { enhancedTtsService } from '../services/enhancedTtsService.ts';
 
 const API_BASE_URL = 'https://salesbuddy-production.up.railway.app';
 
@@ -1044,9 +1045,14 @@ const Conversations: React.FC = () => {
                               setClientCustomization(prev => ({ ...prev, selectedVoice: randomBrowserVoice }));
                               console.log(`🎲 Random browser voice selected for ${selectedLangCode}:`, randomBrowserVoice.name);
                             } else {
-                              // No browser voices available for this language
+                              // No browser voices available - will use cloud TTS for supported languages
+                              const cloudTtsLanguages = ['et', 'lv', 'lt', 'fi', 'no', 'da', 'is', 'ga'];
+                              if (cloudTtsLanguages.includes(selectedLangCode)) {
+                                console.log(`☁️ Cloud TTS will be used for ${selectedLangCode} (no downloads needed)`);
+                              } else {
+                                console.log(`🔊 Default voice will be used for ${selectedLangCode}`);
+                              }
                               setClientCustomization(prev => ({ ...prev, selectedVoice: null }));
-                              console.log(`⚠️ No browser voices found for ${selectedLangCode}. Using default voice.`);
                             }
                           }}
                           className="flex-1 px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
@@ -1084,23 +1090,43 @@ const Conversations: React.FC = () => {
                         </select>
                         <button
                           type="button"
-                          onClick={() => {
+                          onClick={async () => {
                             const testText = "Hello, this is a test of the selected voice.";
                             const currentVolume = clientCustomization.ttsVolume || ttsVolume;
                             
-                            if (clientCustomization.selectedVoice) {
-                              // Test the specific selected voice
-                              testVoice(testText, { 
-                                voice: clientCustomization.selectedVoice, 
+                            // Get the current voice language or use interface language
+                            const voiceLang = clientCustomization.selectedVoice?.lang?.split('-')[0] || language;
+                            const testLanguage = clientCustomization.selectedVoice?.lang || `${language}-${language.toUpperCase()}`;
+                            
+                            console.log(`🎤 Testing voice for language: ${testLanguage}`);
+                            
+                            // Use enhanced TTS service for realistic, cloud-based speech
+                            try {
+                              await enhancedTtsService.speak(testText, {
+                                language: testLanguage,
+                                voice: clientCustomization.selectedVoice?.name,
+                                rate: 0.92,
+                                pitch: 0.98,
                                 volume: currentVolume,
-                                language: clientCustomization.selectedVoice.lang
+                                addPauses: true,
+                                speakingStyle: 'professional'
                               });
-                            } else {
-                              // Test with random voice for current language
-                              testVoice(testText, { 
-                                volume: currentVolume,
-                                language: language + '-' + language.toUpperCase()
-                              });
+                              console.log(`✅ Voice test completed for ${testLanguage}`);
+                            } catch (error) {
+                              console.error('Voice test error:', error);
+                              // Fallback to old test voice if enhanced fails
+                              if (clientCustomization.selectedVoice) {
+                                testVoice(testText, { 
+                                  voice: clientCustomization.selectedVoice, 
+                                  volume: currentVolume,
+                                  language: clientCustomization.selectedVoice.lang
+                                });
+                              } else {
+                                testVoice(testText, { 
+                                  volume: currentVolume,
+                                  language: testLanguage
+                                });
+                              }
                             }
                           }}
                           className="px-3 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
@@ -1149,16 +1175,34 @@ const Conversations: React.FC = () => {
                             </div>
                           );
                         } else {
-                          return (
-                            <div className="mt-3 p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
-                              <p className="text-xs font-medium text-yellow-700 dark:text-yellow-300 mb-2">
-                                No browser voices available for {voiceLang?.toUpperCase()}
-                              </p>
-                              <p className="text-xs text-yellow-600 dark:text-yellow-400">
-                                The system will use the default voice for this language. Consider installing language packs for better voice support.
-                              </p>
-                            </div>
-                          );
+                          // Check if this language is supported by cloud TTS
+                          const cloudTtsLanguages = ['et', 'lv', 'lt', 'fi', 'no', 'da', 'is', 'ga'];
+                          const usesCloudTts = cloudTtsLanguages.includes(voiceLang || '');
+                          
+                          if (usesCloudTts) {
+                            return (
+                              <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                                <p className="text-xs font-medium text-blue-700 dark:text-blue-300 mb-2 flex items-center gap-1">
+                                  <span>☁️</span>
+                                  <span>Cloud Voice Enabled for {voiceLang?.toUpperCase()}</span>
+                                </p>
+                                <p className="text-xs text-blue-600 dark:text-blue-400">
+                                  ✅ This language uses cloud-based text-to-speech. No downloads required! The voice will work instantly for all users.
+                                </p>
+                              </div>
+                            );
+                          } else {
+                            return (
+                              <div className="mt-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                                <p className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                  Default voice will be used for {voiceLang?.toUpperCase()}
+                                </p>
+                                <p className="text-xs text-gray-600 dark:text-gray-400">
+                                  The system will use your browser's default voice for this language.
+                                </p>
+                              </div>
+                            );
+                          }
                         }
                       })()}
                     </div>
