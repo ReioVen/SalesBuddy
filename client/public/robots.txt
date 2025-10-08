@@ -1,0 +1,23 @@
+# Allow all search engines to crawl SalesBuddy by Revotech
+# AI Sales Training Platform - Get Better at Sales
+
+User-agent: *
+Allow: /
+
+# Sitemap location
+Sitemap: https://salesbuddy.pro/sitemap.xml
+
+# Crawl-delay (optional, can be removed if not needed)
+Crawl-delay: 10
+
+# Disallow admin and private areas
+Disallow: /admin
+Disallow: /api/
+Disallow: /private/
+
+# Allow important pages for sales training SEO
+Allow: /register
+Allow: /login
+Allow: /pricing
+Allow: /features
+Allow: /about
