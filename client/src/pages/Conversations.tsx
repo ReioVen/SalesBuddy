@@ -183,6 +183,9 @@ const Conversations: React.FC = () => {
     selectedVoice: null
   });
 
+  // Track selected language for voice (separate from browser voice object)
+  const [selectedVoiceLanguage, setSelectedVoiceLanguage] = useState<string>('random');
+
   // Initialize ttsVolume from clientCustomization when it changes
   useEffect(() => {
     if (clientCustomization.ttsVolume !== undefined) {
@@ -1014,17 +1017,12 @@ const Conversations: React.FC = () => {
                     <div className="space-y-3">
                       <div className="flex gap-2">
                         <select
-                          value={(() => {
-                            if (!clientCustomization.selectedVoice) {
-                              return 'random';
-                            }
-                            
-                            // Extract language from the selected voice
-                            const voiceLang = clientCustomization.selectedVoice.lang?.split('-')[0];
-                            return voiceLang || 'random';
-                          })()}
+                          value={selectedVoiceLanguage}
                           onChange={(e) => {
                             const selectedLangCode = e.target.value;
+                            
+                            // Update the selected language state
+                            setSelectedVoiceLanguage(selectedLangCode);
                             
                             // Handle default selection
                             if (selectedLangCode === 'random') {
@@ -1094,9 +1092,16 @@ const Conversations: React.FC = () => {
                             const testText = "Hello, this is a test of the selected voice.";
                             const currentVolume = clientCustomization.ttsVolume || ttsVolume;
                             
-                            // Get the current voice language or use interface language
-                            const voiceLang = clientCustomization.selectedVoice?.lang?.split('-')[0] || language;
-                            const testLanguage = clientCustomization.selectedVoice?.lang || `${language}-${language.toUpperCase()}`;
+                            // Get the test language based on selected language or browser voice
+                            let testLanguage: string;
+                            
+                            if (selectedVoiceLanguage === 'random') {
+                              // Use interface language
+                              testLanguage = `${language}-${language.toUpperCase()}`;
+                            } else {
+                              // Use selected language
+                              testLanguage = `${selectedVoiceLanguage}-${selectedVoiceLanguage.toUpperCase()}`;
+                            }
                             
                             console.log(`🎤 Testing voice for language: ${testLanguage}`);
                             
@@ -1139,8 +1144,8 @@ const Conversations: React.FC = () => {
                       </p>
                       
                       {/* Show available browser voices for selected language */}
-                      {clientCustomization.selectedVoice && (() => {
-                        const voiceLang = clientCustomization.selectedVoice.lang?.split('-')[0];
+                      {selectedVoiceLanguage !== 'random' && (() => {
+                        const voiceLang = selectedVoiceLanguage;
                         const browserVoicesForLang = voices.filter(voice => 
                           voice.lang.startsWith(voiceLang + '-') || voice.lang === voiceLang
                         );

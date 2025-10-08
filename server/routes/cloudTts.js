@@ -1,8 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const { authenticateToken } = require('../middleware/auth');
+const axios = require('axios');
 
-// Free TTS service using ResponsiveVoice (no API key needed) or fallback to edge-tts
+// Microsoft Azure Text-to-Speech service for high-quality Estonian voices
 // This provides Estonian and other language voices without requiring client installation
 
 /**
@@ -17,94 +18,98 @@ router.post('/speak', authenticateToken, async (req, res) => {
       return res.status(400).json({ error: 'Text is required' });
     }
 
-    // For now, we'll use a fallback approach:
-    // 1. Try to use browser's built-in voices on the client side
-    // 2. For Estonian specifically, we can use Google Translate's TTS API (free, no auth needed)
-    // 3. Or integrate with a proper TTS service
-    
     // Extract language code (e.g., 'et' from 'et-EE')
     const langCode = language ? language.split('-')[0] : 'en';
     
-    // Supported languages for cloud TTS (free via Google Translate)
-    const supportedLanguages = ['et', 'en', 'ru', 'es', 'de', 'fr', 'it', 'pt', 'nl', 'pl', 'fi', 'sv', 'no', 'da', 'lv', 'lt'];
+    // Microsoft Azure TTS configuration
+    const AZURE_SPEECH_KEY = process.env.AZURE_SPEECH_KEY;
+    const AZURE_SPEECH_REGION = process.env.AZURE_SPEECH_REGION || 'westeurope';
     
-    if (supportedLanguages.includes(langCode)) {
-      // Use Google Translate TTS (free, no API key needed)
-      const encodedText = encodeURIComponent(text);
-      const ttsUrl = `https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=${langCode}&q=${encodedText}`;
-      
-      // Fetch the audio from Google Translate using native fetch or https module
-      try {
-        // Try using global fetch (Node 18+)
-        if (typeof fetch !== 'undefined') {
-          const response = await fetch(ttsUrl, {
-            headers: {
-              'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-            }
-          });
-          
-          if (response.ok) {
-            const audioBuffer = Buffer.from(await response.arrayBuffer());
-            
-            res.set({
-              'Content-Type': 'audio/mpeg',
-              'Content-Length': audioBuffer.length,
-              'Cache-Control': 'public, max-age=3600'
-            });
-            
-            return res.send(audioBuffer);
-          }
-        } else {
-          // Fallback to https module for older Node versions
-          const https = require('https');
-          const url = require('url');
-          
-          const parsedUrl = url.parse(ttsUrl);
-          
-          return new Promise((resolve, reject) => {
-            https.get({
-              hostname: parsedUrl.hostname,
-              path: parsedUrl.path,
-              headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-              }
-            }, (response) => {
-              if (response.statusCode === 200) {
-                const chunks = [];
-                
-                response.on('data', (chunk) => {
-                  chunks.push(chunk);
-                });
-                
-                response.on('end', () => {
-                  const audioBuffer = Buffer.concat(chunks);
-                  
-                  res.set({
-                    'Content-Type': 'audio/mpeg',
-                    'Content-Length': audioBuffer.length,
-                    'Cache-Control': 'public, max-age=3600'
-                  });
-                  
-                  res.send(audioBuffer);
-                  resolve();
-                });
-              } else {
-                reject(new Error(`HTTP ${response.statusCode}`));
-              }
-            }).on('error', reject);
-          });
-        }
-      } catch (error) {
-        console.error('Google Translate TTS error:', error);
-      }
+    // Voice mapping for Microsoft Azure Neural voices
+    const voiceMap = {
+      'et': 'et-EE-AnuNeural',      // Estonian female neural voice (high quality)
+      'et-male': 'et-EE-KertNeural', // Estonian male neural voice
+      'en': 'en-US-JennyNeural',     // English US female
+      'ru': 'ru-RU-SvetlanaNeural',  // Russian female
+      'es': 'es-ES-ElviraNeural',    // Spanish female
+      'de': 'de-DE-KatjaNeural',     // German female
+      'fr': 'fr-FR-DeniseNeural',    // French female
+      'it': 'it-IT-ElsaNeural',      // Italian female
+      'pt': 'pt-PT-RaquelNeural',    // Portuguese female
+      'nl': 'nl-NL-ColetteNeural',   // Dutch female
+      'pl': 'pl-PL-ZofiaNeural',     // Polish female
+      'fi': 'fi-FI-NooraNeural',     // Finnish female
+      'sv': 'sv-SE-SofieNeural',     // Swedish female
+      'no': 'nb-NO-PernilleNeural',  // Norwegian female
+      'da': 'da-DK-ChristelNeural',  // Danish female
+      'lv': 'lv-LV-EveritaNeural',   // Latvian female
+      'lt': 'lt-LT-OnaNeural'        // Lithuanian female
+    };
+    
+    const selectedVoice = voiceMap[langCode] || voiceMap['en'];
+    
+    // Check if Azure credentials are configured
+    if (!AZURE_SPEECH_KEY) {
+      console.warn('⚠️ Azure Speech Key not configured. Using Google Translate fallback.');
+      return await useGoogleTranslateFallback(langCode, text, res);
     }
     
-    // For other languages or if Estonian fails, return success and let client use browser TTS
-    res.json({
-      success: true,
-      message: 'Using browser TTS fallback',
-      useBrowserTts: true
-    });
+    try {
+      // Create SSML for Microsoft Azure TTS with prosody control
+      const ssml = `
+        <speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xml:lang="${language || 'et-EE'}">
+          <voice name="${selectedVoice}">
+            <prosody rate="${Math.round(rate * 100)}%" pitch="${pitch > 1 ? '+' : ''}${Math.round((pitch - 1) * 50)}%">
+              ${text}
+            </prosody>
+          </voice>
+        </speak>
+      `.trim();
+      
+      // Get access token
+      const tokenResponse = await axios.post(
+        `https://${AZURE_SPEECH_REGION}.api.cognitive.microsoft.com/sts/v1.0/issueToken`,
+        null,
+        {
+          headers: {
+            'Ocp-Apim-Subscription-Key': AZURE_SPEECH_KEY
+          }
+        }
+      );
+      
+      const accessToken = tokenResponse.data;
+      
+      // Request speech synthesis
+      const ttsResponse = await axios.post(
+        `https://${AZURE_SPEECH_REGION}.tts.speech.microsoft.com/cognitiveservices/v1`,
+        ssml,
+        {
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'application/ssml+xml',
+            'X-Microsoft-OutputFormat': 'audio-24khz-48kbitrate-mono-mp3',
+            'User-Agent': 'SalesBuddy'
+          },
+          responseType: 'arraybuffer'
+        }
+      );
+      
+      const audioBuffer = Buffer.from(ttsResponse.data);
+      
+      res.set({
+        'Content-Type': 'audio/mpeg',
+        'Content-Length': audioBuffer.length,
+        'Cache-Control': 'public, max-age=3600'
+      });
+      
+      console.log(`✅ Microsoft Azure TTS: Generated speech for ${langCode} using ${selectedVoice}`);
+      return res.send(audioBuffer);
+      
+    } catch (azureError) {
+      console.error('❌ Microsoft Azure TTS error:', azureError.message);
+      console.log('Falling back to Google Translate TTS...');
+      return await useGoogleTranslateFallback(langCode, text, res);
+    }
 
   } catch (error) {
     console.error('Cloud TTS error:', error);
@@ -115,58 +120,150 @@ router.post('/speak', authenticateToken, async (req, res) => {
   }
 });
 
+// Fallback function for Google Translate TTS (free, no API key)
+async function useGoogleTranslateFallback(langCode, text, res) {
+  const supportedLanguages = ['et', 'en', 'ru', 'es', 'de', 'fr', 'it', 'pt', 'nl', 'pl', 'fi', 'sv', 'no', 'da', 'lv', 'lt'];
+  
+  if (!supportedLanguages.includes(langCode)) {
+    return res.json({
+      success: true,
+      message: 'Language not supported, using browser TTS',
+      useBrowserTts: true
+    });
+  }
+  
+  try {
+    const encodedText = encodeURIComponent(text);
+    const ttsUrl = `https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=${langCode}&q=${encodedText}`;
+    
+    // Try using global fetch (Node 18+)
+    if (typeof fetch !== 'undefined') {
+      const response = await fetch(ttsUrl, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+        }
+      });
+      
+      if (response.ok) {
+        const audioBuffer = Buffer.from(await response.arrayBuffer());
+        
+        res.set({
+          'Content-Type': 'audio/mpeg',
+          'Content-Length': audioBuffer.length,
+          'Cache-Control': 'public, max-age=3600'
+        });
+        
+        console.log(`✅ Google Translate TTS: Generated speech for ${langCode}`);
+        return res.send(audioBuffer);
+      }
+    } else {
+      // Fallback to https module for older Node versions
+      const https = require('https');
+      const url = require('url');
+      
+      const parsedUrl = url.parse(ttsUrl);
+      
+      return new Promise((resolve, reject) => {
+        https.get({
+          hostname: parsedUrl.hostname,
+          path: parsedUrl.path,
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+          }
+        }, (response) => {
+          if (response.statusCode === 200) {
+            const chunks = [];
+            
+            response.on('data', (chunk) => {
+              chunks.push(chunk);
+            });
+            
+            response.on('end', () => {
+              const audioBuffer = Buffer.concat(chunks);
+              
+              res.set({
+                'Content-Type': 'audio/mpeg',
+                'Content-Length': audioBuffer.length,
+                'Cache-Control': 'public, max-age=3600'
+              });
+              
+              console.log(`✅ Google Translate TTS: Generated speech for ${langCode}`);
+              res.send(audioBuffer);
+              resolve();
+            });
+          } else {
+            reject(new Error(`HTTP ${response.statusCode}`));
+          }
+        }).on('error', reject);
+      });
+    }
+  } catch (error) {
+    console.error('Google Translate TTS fallback error:', error);
+    return res.json({
+      success: true,
+      message: 'Using browser TTS fallback',
+      useBrowserTts: true
+    });
+  }
+}
+
 /**
  * Get available cloud voices
  * GET /api/cloud-tts/voices
  */
 router.get('/voices', authenticateToken, (req, res) => {
   const cloudVoices = [
-    // Estonian voices (via Google Translate TTS)
+    // Estonian voices (Microsoft Azure Neural)
     {
       language: 'et-EE',
-      name: 'Google Estonian',
+      name: 'Anu (Estonian Female)',
+      voiceId: 'et-EE-AnuNeural',
       gender: 'female',
-      provider: 'google-translate',
-      quality: 'standard',
+      provider: 'microsoft-azure',
+      quality: 'neural',
+      isCloud: true,
+      requiresDownload: false
+    },
+    {
+      language: 'et-EE',
+      name: 'Kert (Estonian Male)',
+      voiceId: 'et-EE-KertNeural',
+      gender: 'male',
+      provider: 'microsoft-azure',
+      quality: 'neural',
       isCloud: true,
       requiresDownload: false
     },
     // English voices
     {
       language: 'en-US',
-      name: 'Google English US',
+      name: 'Jenny (English US Female)',
+      voiceId: 'en-US-JennyNeural',
       gender: 'female',
-      provider: 'google-translate',
-      quality: 'standard',
-      isCloud: true,
-      requiresDownload: false
-    },
-    {
-      language: 'en-GB',
-      name: 'Google English UK',
-      gender: 'female',
-      provider: 'google-translate',
-      quality: 'standard',
+      provider: 'microsoft-azure',
+      quality: 'neural',
       isCloud: true,
       requiresDownload: false
     },
     // Russian voices
     {
       language: 'ru-RU',
-      name: 'Google Russian',
+      name: 'Svetlana (Russian Female)',
+      voiceId: 'ru-RU-SvetlanaNeural',
       gender: 'female',
-      provider: 'google-translate',
-      quality: 'standard',
+      provider: 'microsoft-azure',
+      quality: 'neural',
       isCloud: true,
       requiresDownload: false
     },
     // Spanish voices
     {
       language: 'es-ES',
-      name: 'Google Spanish',
+      name: 'Elvira (Spanish Female)',
+      voiceId: 'es-ES-ElviraNeural',
       gender: 'female',
-      provider: 'google-translate',
-      quality: 'standard',
+      provider: 'microsoft-azure',
+      quality: 'neural',
       isCloud: true,
       requiresDownload: false
     }
@@ -174,7 +271,8 @@ router.get('/voices', authenticateToken, (req, res) => {
 
   res.json({
     success: true,
-    voices: cloudVoices
+    voices: cloudVoices,
+    provider: process.env.AZURE_SPEECH_KEY ? 'microsoft-azure' : 'google-translate-fallback'
   });
 });
 
