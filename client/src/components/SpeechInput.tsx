@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Mic, MicOff, Send, X, Volume2, VolumeX, Headphones } from 'lucide-react';
 import { useSpeechToText } from '../hooks/useSpeechToText.ts';
 import { useTextToSpeech } from '../hooks/useTextToSpeech.ts';
+import { enhancedTtsService } from '../services/enhancedTtsService.ts';
 
 interface SpeechInputProps {
   onSendMessage: (message: string) => void;
@@ -51,12 +52,27 @@ const SpeechInput: React.FC<SpeechInputProps> = ({
   const { isSpeaking, isSupported: ttsSupported, speak, stop: stopTTS } = useTextToSpeech();
   const lastAIResponseRef = useRef<string>('');
 
-  // Function to speak AI responses
-  const speakAIResponse = useCallback((response: string) => {
+  // Function to speak AI responses with enhanced, natural-sounding voice
+  const speakAIResponse = useCallback(async (response: string) => {
     if (ttsSupported && response && response.trim()) {
       lastAIResponseRef.current = response;
-      // Use selectedVoice if available, otherwise use default
-      speak(response, { language, rate: 0.9, voice: selectedVoice || undefined, volume: ttsVolume }); // Slightly slower for better comprehension
+      
+      try {
+        // Use enhanced TTS service for more realistic speech
+        await enhancedTtsService.speak(response, {
+          language,
+          voice: selectedVoice?.name,
+          rate: 0.92, // Optimal rate for natural, professional speech
+          pitch: 0.98, // Slightly lower pitch sounds more natural
+          volume: ttsVolume,
+          addPauses: true, // Add natural pauses at punctuation
+          speakingStyle: 'professional' // Use professional speaking style
+        });
+      } catch (error) {
+        console.error('Enhanced TTS error, falling back to standard TTS:', error);
+        // Fallback to standard TTS if enhanced fails
+        speak(response, { language, rate: 0.92, voice: selectedVoice || undefined, volume: ttsVolume });
+      }
     }
   }, [ttsSupported, speak, language, selectedVoice, ttsVolume]);
 

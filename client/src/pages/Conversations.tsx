@@ -1008,89 +1008,51 @@ const Conversations: React.FC = () => {
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       <MessageSquare className="w-4 h-4 inline mr-2" />
-                      Voice Selection <span className="text-gray-400">({t('optional')})</span>
+                      {t('voiceSelection')} <span className="text-gray-400">({t('optional')})</span>
                     </label>
                     <div className="space-y-3">
                       <div className="flex gap-2">
                         <select
                           value={(() => {
                             if (!clientCustomization.selectedVoice) {
-                              return '🎲 Random Voice (Auto-select)';
+                              return 'random';
                             }
                             
                             // Extract language from the selected voice
                             const voiceLang = clientCustomization.selectedVoice.lang?.split('-')[0];
-                            const supportedLanguages = [
-                              { code: 'et', name: 'Estonian', flag: '🇪🇪' },
-                              { code: 'en', name: 'English', flag: '🇺🇸' },
-                              { code: 'ru', name: 'Russian', flag: '🇷🇺' },
-                              { code: 'es', name: 'Spanish', flag: '🇪🇸' },
-                              { code: 'de', name: 'German', flag: '🇩🇪' },
-                              { code: 'fr', name: 'French', flag: '🇫🇷' },
-                              { code: 'it', name: 'Italian', flag: '🇮🇹' },
-                              { code: 'pt', name: 'Portuguese', flag: '🇵🇹' },
-                              { code: 'nl', name: 'Dutch', flag: '🇳🇱' },
-                              { code: 'pl', name: 'Polish', flag: '🇵🇱' }
-                            ];
-                            
-                            const selectedLang = supportedLanguages.find(lang => lang.code === voiceLang);
-                            return selectedLang ? `${selectedLang.flag} ${selectedLang.name}` : '🎲 Random Voice (Auto-select)';
+                            return voiceLang || 'random';
                           })()}
                           onChange={(e) => {
-                            const selectedLanguageName = e.target.value;
+                            const selectedLangCode = e.target.value;
                             
                             // Handle default selection
-                            if (selectedLanguageName === '🎲 Random Voice (Auto-select)') {
+                            if (selectedLangCode === 'random') {
                               setClientCustomization(prev => ({ ...prev, selectedVoice: null }));
                               console.log('🎲 Random voice mode selected');
                               return;
                             }
                             
-                            // Find the language code from the selected name
-                            const supportedLanguages = [
-                              { code: 'et', name: 'Estonian', flag: '🇪🇪' },
-                              { code: 'en', name: 'English', flag: '🇺🇸' },
-                              { code: 'ru', name: 'Russian', flag: '🇷🇺' },
-                              { code: 'es', name: 'Spanish', flag: '🇪🇸' },
-                              { code: 'de', name: 'German', flag: '🇩🇪' },
-                              { code: 'fr', name: 'French', flag: '🇫🇷' },
-                              { code: 'it', name: 'Italian', flag: '🇮🇹' },
-                              { code: 'pt', name: 'Portuguese', flag: '🇵🇹' },
-                              { code: 'nl', name: 'Dutch', flag: '🇳🇱' },
-                              { code: 'pl', name: 'Polish', flag: '🇵🇱' }
-                            ];
-                            
-                            const selectedLang = supportedLanguages.find(lang => 
-                              selectedLanguageName.includes(lang.name)
+                            // Find browser voices for the selected language
+                            const browserVoicesForLang = voices.filter(voice => 
+                              voice.lang.startsWith(selectedLangCode + '-') || voice.lang === selectedLangCode
                             );
                             
-                            if (selectedLang) {
-                              // Find browser voices for the selected language
-                              const browserVoicesForLang = voices.filter(voice => 
-                                voice.lang.startsWith(selectedLang.code + '-') || voice.lang === selectedLang.code
-                              );
-                              
-                              if (browserVoicesForLang.length > 0) {
-                                // Select a random browser voice for the language
-                                const randomIndex = Math.floor(Math.random() * browserVoicesForLang.length);
-                                const randomBrowserVoice = browserVoicesForLang[randomIndex];
-                                setClientCustomization(prev => ({ ...prev, selectedVoice: randomBrowserVoice }));
-                                console.log(`🎲 Random browser voice selected for ${selectedLang.name}:`, randomBrowserVoice.name);
-                              } else {
-                                // No browser voices available for this language
-                                setClientCustomization(prev => ({ ...prev, selectedVoice: null }));
-                                console.log(`⚠️ No browser voices found for ${selectedLang.name}. Using default voice.`);
-                              }
+                            if (browserVoicesForLang.length > 0) {
+                              // Select a random browser voice for the language
+                              const randomIndex = Math.floor(Math.random() * browserVoicesForLang.length);
+                              const randomBrowserVoice = browserVoicesForLang[randomIndex];
+                              setClientCustomization(prev => ({ ...prev, selectedVoice: randomBrowserVoice }));
+                              console.log(`🎲 Random browser voice selected for ${selectedLangCode}:`, randomBrowserVoice.name);
+                            } else {
+                              // No browser voices available for this language
+                              setClientCustomization(prev => ({ ...prev, selectedVoice: null }));
+                              console.log(`⚠️ No browser voices found for ${selectedLangCode}. Using default voice.`);
                             }
                           }}
                           className="flex-1 px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                         >
-                          <option value="🎲 Random Voice (Auto-select)">🎲 Random Voice (Auto-select)</option>
+                          <option value="random">🎲 {t('randomVoice')}</option>
                           {(() => {
-                            // Filter and sort voices based on language
-                            let filteredVoices = [...voices];
-                            let allEstonianVoices: any[] = [];
-                            
                             // Show only language names, not individual voices
                             const supportedLanguages = [
                               { code: 'et', name: 'Estonian', flag: '🇪🇪' },
@@ -1105,40 +1067,19 @@ const Conversations: React.FC = () => {
                               { code: 'pl', name: 'Polish', flag: '🇵🇱' }
                             ];
                             
-                            // Create language options instead of individual voices
-                            const languageOptions = supportedLanguages.map(lang => ({
-                              name: `${lang.flag} ${lang.name}`,
-                              lang: lang.code,
-                              localService: false,
-                              voiceURI: lang.code,
-                              isLanguageOption: true
-                            }));
-                            
-                            filteredVoices = languageOptions;
-                            
                             console.log(`🎯 Showing ${supportedLanguages.length} supported languages`);
                             console.log('🎲 Random voice selection will be automatic for each language');
                             
-                            return [
-                              // Add helpful message
-                              ...(language && !supportedLanguages.find(lang => lang.code === language) ? [
-                                <option key="unsupported" value="" disabled>
-                                  ⚠️ Language not supported - Select a supported language
+                            return supportedLanguages.map((lang) => {
+                              const isCurrentLanguage = lang.code === language;
+                              
+                              return (
+                                <option key={lang.code} value={lang.code}>
+                                  {lang.flag} {lang.name}
+                                  {isCurrentLanguage ? ' 🎯' : ''}
                                 </option>
-                              ] : []),
-                              // Map language options (not individual voices)
-                              ...filteredVoices.map((voice, index) => {
-                                const isCurrentLanguage = voice.lang === language;
-                                
-                                return (
-                                  <option key={index} value={voice.name}>
-                                    {voice.name}
-                                    {isCurrentLanguage ? ' 🎯' : ''}
-                                    {isCurrentLanguage ? ' 🎲' : ''}
-                                  </option>
-                                );
-                              })
-                            ];
+                              );
+                            });
                           })()}
                         </select>
                         <button
@@ -1164,11 +1105,11 @@ const Conversations: React.FC = () => {
                           }}
                           className="px-3 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
                         >
-                          Test Voice
+                          {t('testVoice')}
                         </button>
                       </div>
                       <p className="text-xs text-gray-500 dark:text-gray-400">
-                        Choose a language for text-to-speech. A random voice will be automatically selected from that language. This voice will read both your messages and AI responses.
+                        {t('voiceSelectionDescription')}
                       </p>
                       
                       {/* Show available browser voices for selected language */}
@@ -1227,7 +1168,7 @@ const Conversations: React.FC = () => {
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       <Volume2 className="w-4 h-4 inline mr-2" />
-                      Volume Control <span className="text-gray-400">({t('optional')})</span>
+                      {t('volumeControl')} <span className="text-gray-400">({t('optional')})</span>
                     </label>
                     <div className="space-y-3">
                       <div className="flex items-center gap-3">
@@ -1251,7 +1192,7 @@ const Conversations: React.FC = () => {
                         </span>
                       </div>
                       <p className="text-xs text-gray-500 dark:text-gray-400">
-                        Adjust the volume for text-to-speech in hands-free mode. Default is 70%.
+                        {t('volumeControlDescription')}
                       </p>
                     </div>
                   </div>
