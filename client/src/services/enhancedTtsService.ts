@@ -30,7 +30,8 @@ class EnhancedTtsService {
   private static instance: EnhancedTtsService;
   private isInitialized = false;
   private currentUtterance: SpeechSynthesisUtterance | null = null;
-  private apiEndpoint = '/api/speech/tts'; // Backend endpoint for cloud TTS
+  private apiEndpoint = '/api/cloud-tts/speak'; // Backend endpoint for cloud TTS
+  private currentAudio: HTMLAudioElement | null = null;
 
   // Neural voices configuration for realistic speech
   private neuralVoices: EnhancedVoice[] = [
@@ -239,51 +240,82 @@ class EnhancedTtsService {
   }
 
   /**
-   * Speak using cloud TTS service (Google Cloud, Amazon Polly, etc.)
+   * Speak using cloud TTS service (Google Translate TTS for Estonian and others)
    */
   private async speakWithCloudTTS(text: string, options: EnhancedTtsOptions): Promise<void> {
     try {
       const processedText = this.preprocessText(text, options);
       
+      const token = localStorage.getItem('token');
+      
       const response = await fetch(this.apiEndpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': token ? `Bearer ${token}` : ''
         },
         body: JSON.stringify({
           text: processedText,
           language: options.language,
           voice: options.voice,
-          rate: options.rate || 0.95, // Slightly slower for better comprehension
-          pitch: options.pitch || 1.0,
-          volume: options.volume || 1.0,
-          speakingStyle: options.speakingStyle,
-          ssml: options.ssmlEnabled ? this.textToSSML(text, options) : undefined
+          rate: options.rate || 0.92,
+          pitch: options.pitch || 0.98,
+          volume: options.volume || 0.85,
+          speakingStyle: options.speakingStyle
         })
       });
 
       if (!response.ok) {
-        throw new Error('Cloud TTS request failed');
+        throw new Error(`Cloud TTS request failed: ${response.status}`);
       }
 
-      const audioBlob = await response.blob();
-      const audioUrl = URL.createObjectURL(audioBlob);
-      const audio = new Audio(audioUrl);
+      const contentType = response.headers.get('content-type');
       
-      audio.volume = options.volume || 1.0;
-      
-      return new Promise((resolve, reject) => {
-        audio.onended = () => {
-          URL.revokeObjectURL(audioUrl);
-          resolve();
-        };
-        audio.onerror = (error) => {
-          URL.revokeObjectURL(audioUrl);
-          reject(error);
-        };
-        audio.play().catch(reject);
-      });
+      // Check if we got audio back
+      if (contentType && contentType.includes('audio')) {
+        const audioBlob = await response.blob();
+        const audioUrl = URL.createObjectURL(audioBlob);
+        
+        // Stop any currently playing audio
+        if (this.currentAudio) {
+          this.currentAudio.pause();
+          this.currentAudio = null;
+        }
+        
+        const audio = new Audio(audioUrl);
+        this.currentAudio = audio;
+        
+        audio.volume = options.volume || 0.85;
+        
+        return new Promise((resolve, reject) => {
+          audio.onended = () => {
+            URL.revokeObjectURL(audioUrl);
+            this.currentAudio = null;
+            console.log('✅ Cloud TTS speech completed');
+            resolve();
+          };
+          audio.onerror = (error) => {
+            URL.revokeObjectURL(audioUrl);
+            this.currentAudio = null;
+            console.error('❌ Cloud TTS audio playback error:', error);
+            reject(error);
+          };
+          audio.play().catch((err) => {
+            console.error('❌ Cloud TTS play error:', err);
+            reject(err);
+          });
+          
+          console.log('🎙️ Playing cloud TTS audio for:', options.language);
+        });
+      } else {
+        // Response is JSON, probably indicating to use browser TTS
+        const data = await response.json();
+        if (data.useBrowserTts) {
+          console.log('☁️ Cloud TTS not available, using browser TTS');
+          return this.speakWithBrowserTTS(text, options);
+        }
+        throw new Error('Unexpected response from cloud TTS');
+      }
     } catch (error) {
       console.error('Cloud TTS error:', error);
       console.log('Falling back to browser TTS');
@@ -401,7 +433,7 @@ class EnhancedTtsService {
   }
 
   /**
-   * Main speak method - chooses best TTS method
+   * Main speak method - automatically chooses best TTS method
    */
   async speak(text: string, options: EnhancedTtsOptions = { language: 'en-US' }): Promise<void> {
     if (!text || !text.trim()) {
@@ -411,8 +443,14 @@ class EnhancedTtsService {
 
     console.log(`🎙️ Speaking with enhanced TTS: "${text.substring(0, 50)}${text.length > 50 ? '...' : ''}"`);
 
-    // Use cloud TTS if requested and available, otherwise use enhanced browser TTS
-    if (options.useCloud) {
+    // Languages that typically don't have browser voices - use cloud TTS automatically
+    const languageCode = options.language?.split('-')[0] || 'en';
+    const cloudTtsLanguages = ['et', 'lv', 'lt', 'fi', 'no', 'da', 'is', 'ga']; // Estonian and other less common languages
+    
+    const shouldUseCloudTts = options.useCloud || cloudTtsLanguages.includes(languageCode);
+    
+    if (shouldUseCloudTts) {
+      console.log(`☁️ Using cloud TTS for ${languageCode} (no client downloads needed)`);
       return this.speakWithCloudTTS(text, options);
     } else {
       return this.speakWithBrowserTTS(text, options);
@@ -420,13 +458,21 @@ class EnhancedTtsService {
   }
 
   /**
-   * Stop current speech
+   * Stop current speech (both browser and cloud)
    */
   stop(): void {
+    // Stop cloud audio if playing
+    if (this.currentAudio) {
+      this.currentAudio.pause();
+      this.currentAudio = null;
+      console.log('🛑 Cloud TTS stopped');
+    }
+    
+    // Stop browser TTS if playing
     if ('speechSynthesis' in window && speechSynthesis.speaking) {
       speechSynthesis.cancel();
       this.currentUtterance = null;
-      console.log('🛑 Speech stopped');
+      console.log('🛑 Browser TTS stopped');
     }
   }
 

@@ -23,6 +23,7 @@ const conversationSummaryRoutes = require('./routes/conversationSummaries');
 const translationsRoutes = require('./routes/translations');
 const dynamicTranslationRoutes = require('./routes/dynamicTranslation');
 const speechRoutes = require('./routes/speech');
+const cloudTtsRoutes = require('./routes/cloudTts');
 const leaderboardRoutes = require('./routes/leaderboard');
 const feedbackRoutes = require('./routes/feedback-simple');
 const { authenticateToken } = require('./middleware/auth');
@@ -217,6 +218,7 @@ app.use('/api/conversation-summaries', authenticateToken, conversationSummaryRou
 app.use('/api/translations', translationsRoutes);
 app.use('/api/dynamic-translation', dynamicTranslationRoutes);
 app.use('/api/speech', authenticateToken, speechRoutes);
+app.use('/api/cloud-tts', cloudTtsRoutes);
 app.use('/api/leaderboard', leaderboardRoutes);
 app.use('/api/enterprise', enterpriseRoutes);
 // Feedback routes with error handling
