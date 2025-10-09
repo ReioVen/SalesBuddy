@@ -24,31 +24,48 @@ const SUBSCRIPTION_PLANS = {
   },
   basic: {
     name: 'Basic',
-    price: 59.99,
+    price: 69.99,
     stripePriceId: process.env.STRIPE_BASIC_PRICE_ID,
     features: ['30 AI conversations per month', '10 AI Tips per month', 'Tips and Lessons', 'Basic sales scenarios', 'Email support'],
     limits: { conversations: 30, aiTips: 10 }
   },
   pro: {
     name: 'Pro',
-    price: 89.99,
+    price: 119.99,
     stripePriceId: process.env.STRIPE_PRO_PRICE_ID,
-    features: ['50 AI conversations per month', '25 AI Tips per month', 'Tips and Lessons', 'More Client Customization', 'Personal Summary Feedback', 'Priority support'],
+    features: ['50 AI conversations per month', '25 AI Tips per month', 'Tips and Lessons', 'More Client Customization', 'Personal Summary Feedback', 'Voice conversations and calls', 'Priority support'],
     limits: { conversations: 50, aiTips: 25 }
   },
   unlimited: {
     name: 'Unlimited',
     price: 349,
     stripePriceId: process.env.STRIPE_UNLIMITED_PRICE_ID,
-    features: ['200 AI conversations per month', '50 AI Tips per month', 'Tips and Lessons', 'Summary', 'More Client Customization', 'Personal Summary Feedback', 'Dedicated support'],
+    features: ['200 AI conversations per month', '50 AI Tips per month', 'Tips and Lessons', 'More Client Customization', 'Personal Summary Feedback', 'Voice conversations and calls', 'Dedicated support'],
     limits: { conversations: 200, aiTips: 50 }
   },
   enterprise: {
     name: 'Enterprise',
     price: 'Custom Pricing',
     stripePriceId: null,
-    features: ['50 AI conversations per day', '50 AI Tips per month', 'Tips and Lessons', 'Summary', 'More Client Customization', 'Personal Summary Feedback', 'Team management', 'Dedicated support'],
-    limits: { conversations: 50, aiTips: 50, period: 'daily' },
+    features: [
+      'Customizable AI conversations per day',
+      'Customizable AI Tips limit',
+      'Tips and Lessons',
+      'More Client Customization',
+      'Personal Summary Feedback',
+      'Voice conversations and calls',
+      'Advanced Team Management',
+      'Company Leaderboards',
+      'SSO Integration',
+      'Custom Branding',
+      'Advanced Analytics Dashboard',
+      'API Access',
+      'Dedicated Account Manager',
+      'Priority Phone Support',
+      'Custom Training Programs',
+      'White-label Solutions'
+    ],
+    limits: { conversations: 50, aiTips: 50, period: 'daily' }, // Default limits, customizable per company
     isPaid: true,
     billingType: 'enterprise'
   }

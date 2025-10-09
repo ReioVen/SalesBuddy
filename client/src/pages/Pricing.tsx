@@ -78,7 +78,7 @@ const Pricing: React.FC = () => {
     },
     {
       name: language === 'et' ? 'Põhi' : 'Basic',
-      price: 59.99,
+      price: 69.99,
       period: language === 'et' ? 'kuu' : 'month',
       features: [
         language === 'et' ? '30 AI Vestlust kuus' : '30 AI conversations per month',
@@ -93,7 +93,7 @@ const Pricing: React.FC = () => {
     },
     {
       name: 'Pro',
-      price: 89.99,
+      price: 119.99,
       period: language === 'et' ? 'kuu' : 'month',
       features: [
         language === 'et' ? '50 AI Vestlust kuus' : '50 AI conversations per month',
@@ -131,8 +131,8 @@ const Pricing: React.FC = () => {
       price: null,
       period: language === 'et' ? 'kuu' : 'month',
       features: [
-        language === 'et' ? '50 AI vestlusi päevas' : '50 AI conversations per day',
-        language === 'et' ? '50 AI nõuannet kuus' : '50 AI Tips per month',
+        language === 'et' ? 'Kohandatav arv AI vestlusi päevas' : 'Customizable AI conversations per day',
+        language === 'et' ? 'Kohandatav AI nõuannete limiit' : 'Customizable AI Tips limit',
         language === 'et' ? 'Nõuanded ja õppetunnid' : 'Tips and Lessons',
         language === 'et' ? 'Rohkem kliendi kohandamist' : 'More Client Customization',
         language === 'et' ? 'Isiklik kokkuvõtte tagasiside' : 'Personal Summary Feedback',
@@ -183,7 +183,7 @@ const Pricing: React.FC = () => {
           )}
         </div>
         {plan.name === 'Enterprise' || plan.name === 'Ettevõte' ? (
-          <p className="text-gray-600 dark:text-gray-400">{language === 'et' ? '50 Vestlust päevas' : '50 conversations/day'}</p>
+          <p className="text-gray-600 dark:text-gray-400">{language === 'et' ? 'Kohandatav limiit' : 'Customizable limit'}</p>
         ) : plan.limits.conversations === -1 ? (
           <p className="text-gray-600 dark:text-gray-400">{language === 'et' ? 'Piiramatud vestlused' : 'Unlimited conversations'}</p>
         ) : (
