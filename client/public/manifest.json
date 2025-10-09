@@ -1,7 +1,7 @@
 {
-  "name": "SalesBuddy by Revotech - AI Sales Training",
+  "name": "SalesBuddy - AI Sales Training",
   "short_name": "SalesBuddy",
-  "description": "Master sales skills and get better at sales with SalesBuddy by Revotech. AI-powered sales training platform for practicing sales calls, improving sales techniques, and becoming a top sales professional through interactive roleplay and coaching.",
+  "description": "Master sales skills and get better at sales with SalesBuddy. AI-powered sales training platform for practicing sales calls, improving sales techniques, and becoming a top sales professional through interactive roleplay and coaching.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",

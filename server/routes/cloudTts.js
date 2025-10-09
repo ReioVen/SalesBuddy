@@ -24,8 +24,10 @@ router.post('/speak', authenticateToken, async (req, res) => {
     const langCode = language ? language.split('-')[0] : 'en';
     
     // Microsoft Azure TTS configuration
-    const AZURE_SPEECH_KEY = process.env.AZURE_SPEECH_KEY;
+    // Try KEY_1 first, fallback to KEY_2 if KEY_1 is not available
+    const AZURE_SPEECH_KEY = process.env.AZURE_SPEECH_KEY_1 || process.env.AZURE_SPEECH_KEY_2;
     const AZURE_SPEECH_REGION = process.env.AZURE_SPEECH_REGION || 'westeurope';
+    const AZURE_ENDPOINT = process.env.AZURE_ENDPOINT;
     
     // Voice mapping for Microsoft Azure Neural voices (high-quality, human-like)
     const voiceMap = {
@@ -129,8 +131,13 @@ router.post('/speak', authenticateToken, async (req, res) => {
       `.trim();
       
       // Get access token
+      // Use custom endpoint if provided, otherwise use default regional endpoint
+      const tokenEndpoint = AZURE_ENDPOINT 
+        ? `${AZURE_ENDPOINT}/sts/v1.0/issueToken`
+        : `https://${AZURE_SPEECH_REGION}.api.cognitive.microsoft.com/sts/v1.0/issueToken`;
+      
       const tokenResponse = await axios.post(
-        `https://${AZURE_SPEECH_REGION}.api.cognitive.microsoft.com/sts/v1.0/issueToken`,
+        tokenEndpoint,
         null,
         {
           headers: {
@@ -142,8 +149,13 @@ router.post('/speak', authenticateToken, async (req, res) => {
       const accessToken = tokenResponse.data;
       
       // Request speech synthesis
+      // Use custom endpoint if provided, otherwise use default regional endpoint
+      const ttsEndpoint = AZURE_ENDPOINT
+        ? `${AZURE_ENDPOINT}/tts/cognitiveservices/v1`
+        : `https://${AZURE_SPEECH_REGION}.tts.speech.microsoft.com/cognitiveservices/v1`;
+      
       const ttsResponse = await axios.post(
-        `https://${AZURE_SPEECH_REGION}.tts.speech.microsoft.com/cognitiveservices/v1`,
+        ttsEndpoint,
         ssml,
         {
           headers: {

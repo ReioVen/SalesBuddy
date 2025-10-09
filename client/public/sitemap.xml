@@ -4,7 +4,7 @@
         xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
         http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
 
-  <!-- Homepage - SalesBuddy by Revotech Sales Training -->
+  <!-- Homepage - SalesBuddy AI Sales Training -->
   <url>
     <loc>https://salesbuddy.pro/</loc>
     <lastmod>2025-10-08</lastmod>
@@ -44,7 +44,7 @@
     <priority>0.8</priority>
   </url>
 
-  <!-- About - About SalesBuddy and Revotech -->
+  <!-- About - About SalesBuddy -->
   <url>
     <loc>https://salesbuddy.pro/about</loc>
     <lastmod>2025-10-08</lastmod>

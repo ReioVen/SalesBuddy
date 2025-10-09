@@ -435,7 +435,7 @@ class EnhancedTtsService {
   }
 
   /**
-   * Main speak method - automatically chooses best TTS method
+   * Main speak method - ALWAYS tries Azure TTS first for realistic voices
    */
   async speak(text: string, options: EnhancedTtsOptions = { language: 'en-US' }): Promise<void> {
     if (!text || !text.trim()) {
@@ -445,18 +445,12 @@ class EnhancedTtsService {
 
     console.log(`🎙️ Speaking with enhanced TTS: "${text.substring(0, 50)}${text.length > 50 ? '...' : ''}"`);
 
-    // Languages that typically don't have browser voices - use cloud TTS automatically
-    const languageCode = options.language?.split('-')[0] || 'en';
-    const cloudTtsLanguages = ['et', 'lv', 'lt', 'fi', 'no', 'da', 'is', 'ga']; // Estonian and other less common languages
+    // ALWAYS try Azure TTS first for ALL languages (realistic, human-like voices)
+    // Azure supports 20+ languages with Neural TTS
+    console.log(`☁️ Using Azure TTS for ${options.language || 'default'} (realistic, human-like voice)`);
+    return this.speakWithCloudTTS(text, options);
     
-    const shouldUseCloudTts = options.useCloud || cloudTtsLanguages.includes(languageCode);
-    
-    if (shouldUseCloudTts) {
-      console.log(`☁️ Using cloud TTS for ${languageCode} (no client downloads needed)`);
-      return this.speakWithCloudTTS(text, options);
-    } else {
-      return this.speakWithBrowserTTS(text, options);
-    }
+    // Browser TTS is used automatically as fallback if Azure fails (handled in speakWithCloudTTS)
   }
 
   /**

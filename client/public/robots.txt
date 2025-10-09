@@ -1,4 +1,4 @@
-# Allow all search engines to crawl SalesBuddy by Revotech
+# Allow all search engines to crawl SalesBuddy
 # AI Sales Training Platform - Get Better at Sales
 
 User-agent: *
