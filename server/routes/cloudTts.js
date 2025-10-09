@@ -14,11 +14,17 @@ const axios = require('axios');
  */
 router.post('/speak', authenticateToken, async (req, res) => {
   try {
+    console.log('🎙️ [CLOUD-TTS] Received speech request');
+    console.log('🎙️ [CLOUD-TTS] Request body:', JSON.stringify(req.body).substring(0, 100));
+    
     const { text, language, voice, rate = 0.92, pitch = 0.98, volume = 0.85 } = req.body;
 
     if (!text || !text.trim()) {
+      console.log('⚠️ [CLOUD-TTS] Empty text provided');
       return res.status(400).json({ error: 'Text is required' });
     }
+    
+    console.log(`🎙️ [CLOUD-TTS] Processing TTS for language: ${language}, text length: ${text.length}`);
 
     // Extract language code (e.g., 'et' from 'et-EE')
     const langCode = language ? language.split('-')[0] : 'en';
@@ -112,11 +118,18 @@ router.post('/speak', authenticateToken, async (req, res) => {
     // Select voice with multiple fallbacks for best match
     const selectedVoice = voice || voiceMap[language] || voiceMap[langCode] || voiceMap['en'];
     
+    // Log Azure configuration status
+    console.log(`🔑 [CLOUD-TTS] Azure Keys Status: KEY_1=${process.env.AZURE_SPEECH_KEY_1 ? 'SET' : 'NOT SET'}, KEY_2=${process.env.AZURE_SPEECH_KEY_2 ? 'SET' : 'NOT SET'}`);
+    console.log(`🌍 [CLOUD-TTS] Azure Region: ${AZURE_SPEECH_REGION}`);
+    console.log(`🔗 [CLOUD-TTS] Azure Endpoint: ${AZURE_ENDPOINT || 'Using default'}`);
+    
     // Check if Azure credentials are configured
     if (!AZURE_SPEECH_KEY) {
-      console.warn('⚠️ Azure Speech Key not configured. Using Google Translate fallback.');
+      console.warn('⚠️ [CLOUD-TTS] Azure Speech Key not configured. Using Google Translate fallback.');
       return await useGoogleTranslateFallback(langCode, text, res);
     }
+    
+    console.log(`✅ [CLOUD-TTS] Azure TTS configured. Using voice: ${selectedVoice}`);
     
     try {
       // Create SSML for Microsoft Azure TTS with prosody control
@@ -176,22 +189,29 @@ router.post('/speak', authenticateToken, async (req, res) => {
         'Cache-Control': 'public, max-age=3600'
       });
       
-      console.log(`✅ Microsoft Azure TTS: Generated speech for ${langCode} using ${selectedVoice}`);
+      console.log(`✅ [CLOUD-TTS] Microsoft Azure TTS: Generated speech for ${langCode} using ${selectedVoice}`);
       return res.send(audioBuffer);
       
     } catch (azureError) {
-      console.error('❌ Microsoft Azure TTS error:', azureError.message);
-      console.log('Falling back to Google Translate TTS...');
+      console.error('❌ [CLOUD-TTS] Microsoft Azure TTS error:', azureError.message);
+      console.log('🔄 [CLOUD-TTS] Falling back to Google Translate TTS...');
       return await useGoogleTranslateFallback(langCode, text, res);
     }
 
   } catch (error) {
-    console.error('Cloud TTS error:', error);
+    console.error('❌ [CLOUD-TTS] Cloud TTS error:', error);
+    console.error('❌ [CLOUD-TTS] Error stack:', error.stack);
     res.status(500).json({ 
       error: 'Failed to generate speech',
       useBrowserTts: true 
     });
   }
+});
+
+// Handle OPTIONS request for CORS preflight
+router.options('/speak', (req, res) => {
+  console.log('✅ [CLOUD-TTS] CORS preflight request received');
+  res.sendStatus(200);
 });
 
 // Fallback function for Google Translate TTS (free, no API key)

@@ -30,7 +30,10 @@ class EnhancedTtsService {
   private static instance: EnhancedTtsService;
   private isInitialized = false;
   private currentUtterance: SpeechSynthesisUtterance | null = null;
-  private apiEndpoint = '/api/cloud-tts/speak'; // Backend endpoint for cloud TTS
+  // Use full API URL for production, relative for local dev
+  private apiEndpoint = window.location.hostname === 'localhost' 
+    ? 'http://localhost:5002/api/cloud-tts/speak' 
+    : 'https://salesbuddy-production.up.railway.app/api/cloud-tts/speak';
   private currentAudio: HTMLAudioElement | null = null;
 
   // Neural voices configuration for realistic speech
