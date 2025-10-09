@@ -3,8 +3,10 @@ const router = express.Router();
 const { authenticateToken } = require('../middleware/auth');
 const axios = require('axios');
 
-// Microsoft Azure Text-to-Speech service for high-quality Estonian voices
-// This provides Estonian and other language voices without requiring client installation
+// Microsoft Azure Text-to-Speech service for high-quality, human-like voices
+// Uses Azure Neural TTS for realistic speech in all supported languages
+// Provides Estonian and 20+ other languages without requiring client installation
+// Automatic fallback to Google Translate if Azure is not configured
 
 /**
  * Generate speech using cloud TTS service
@@ -25,28 +27,88 @@ router.post('/speak', authenticateToken, async (req, res) => {
     const AZURE_SPEECH_KEY = process.env.AZURE_SPEECH_KEY;
     const AZURE_SPEECH_REGION = process.env.AZURE_SPEECH_REGION || 'westeurope';
     
-    // Voice mapping for Microsoft Azure Neural voices
+    // Voice mapping for Microsoft Azure Neural voices (high-quality, human-like)
     const voiceMap = {
-      'et': 'et-EE-AnuNeural',      // Estonian female neural voice (high quality)
-      'et-male': 'et-EE-KertNeural', // Estonian male neural voice
-      'en': 'en-US-JennyNeural',     // English US female
-      'ru': 'ru-RU-SvetlanaNeural',  // Russian female
-      'es': 'es-ES-ElviraNeural',    // Spanish female
-      'de': 'de-DE-KatjaNeural',     // German female
-      'fr': 'fr-FR-DeniseNeural',    // French female
-      'it': 'it-IT-ElsaNeural',      // Italian female
-      'pt': 'pt-PT-RaquelNeural',    // Portuguese female
-      'nl': 'nl-NL-ColetteNeural',   // Dutch female
-      'pl': 'pl-PL-ZofiaNeural',     // Polish female
-      'fi': 'fi-FI-NooraNeural',     // Finnish female
-      'sv': 'sv-SE-SofieNeural',     // Swedish female
-      'no': 'nb-NO-PernilleNeural',  // Norwegian female
-      'da': 'da-DK-ChristelNeural',  // Danish female
-      'lv': 'lv-LV-EveritaNeural',   // Latvian female
-      'lt': 'lt-LT-OnaNeural'        // Lithuanian female
+      // Estonian voices - Neural, very natural
+      'et': 'et-EE-AnuNeural',          // Female, warm and professional
+      'et-EE': 'et-EE-AnuNeural',
+      'et-female': 'et-EE-AnuNeural',
+      'et-male': 'et-EE-KertNeural',    // Male, clear and friendly
+      
+      // English voices - Multiple options for natural speech
+      'en': 'en-US-JennyNeural',        // Female US, conversational
+      'en-US': 'en-US-JennyNeural',
+      'en-female': 'en-US-JennyNeural',
+      'en-male': 'en-US-GuyNeural',     // Male US, warm
+      'en-GB': 'en-GB-LibbyNeural',     // Female UK
+      'en-AU': 'en-AU-NatashaNeural',   // Female Australian
+      
+      // Spanish voices
+      'es': 'es-ES-ElviraNeural',       // Female Spain
+      'es-ES': 'es-ES-ElviraNeural',
+      'es-female': 'es-ES-ElviraNeural',
+      'es-male': 'es-ES-AlvaroNeural',  // Male Spain
+      'es-MX': 'es-MX-DaliaNeural',     // Female Mexico
+      
+      // Russian voices
+      'ru': 'ru-RU-SvetlanaNeural',     // Female, professional
+      'ru-RU': 'ru-RU-SvetlanaNeural',
+      'ru-female': 'ru-RU-SvetlanaNeural',
+      'ru-male': 'ru-RU-DmitryNeural',  // Male
+      
+      // German voices
+      'de': 'de-DE-KatjaNeural',        // Female
+      'de-DE': 'de-DE-KatjaNeural',
+      'de-female': 'de-DE-KatjaNeural',
+      'de-male': 'de-DE-ConradNeural',  // Male
+      
+      // French voices
+      'fr': 'fr-FR-DeniseNeural',       // Female
+      'fr-FR': 'fr-FR-DeniseNeural',
+      'fr-female': 'fr-FR-DeniseNeural',
+      'fr-male': 'fr-FR-HenriNeural',   // Male
+      
+      // Italian voices
+      'it': 'it-IT-ElsaNeural',         // Female
+      'it-IT': 'it-IT-ElsaNeural',
+      'it-female': 'it-IT-ElsaNeural',
+      'it-male': 'it-IT-DiegoNeural',   // Male
+      
+      // Portuguese voices
+      'pt': 'pt-PT-RaquelNeural',       // Female Portugal
+      'pt-PT': 'pt-PT-RaquelNeural',
+      'pt-female': 'pt-PT-RaquelNeural',
+      'pt-male': 'pt-PT-DuarteNeural',  // Male
+      
+      // Dutch voices
+      'nl': 'nl-NL-ColetteNeural',      // Female
+      'nl-NL': 'nl-NL-ColetteNeural',
+      'nl-female': 'nl-NL-ColetteNeural',
+      'nl-male': 'nl-NL-MaartenNeural', // Male
+      
+      // Nordic voices
+      'sv': 'sv-SE-SofieNeural',        // Swedish female
+      'sv-SE': 'sv-SE-SofieNeural',
+      'no': 'nb-NO-PernilleNeural',     // Norwegian female
+      'nb-NO': 'nb-NO-PernilleNeural',
+      'da': 'da-DK-ChristelNeural',     // Danish female
+      'da-DK': 'da-DK-ChristelNeural',
+      'fi': 'fi-FI-NooraNeural',        // Finnish female
+      'fi-FI': 'fi-FI-NooraNeural',
+      
+      // Baltic voices
+      'lv': 'lv-LV-EveritaNeural',      // Latvian female
+      'lv-LV': 'lv-LV-EveritaNeural',
+      'lt': 'lt-LT-OnaNeural',          // Lithuanian female
+      'lt-LT': 'lt-LT-OnaNeural',
+      
+      // Polish voice
+      'pl': 'pl-PL-ZofiaNeural',        // Female
+      'pl-PL': 'pl-PL-ZofiaNeural'
     };
     
-    const selectedVoice = voiceMap[langCode] || voiceMap['en'];
+    // Select voice with multiple fallbacks for best match
+    const selectedVoice = voice || voiceMap[language] || voiceMap[langCode] || voiceMap['en'];
     
     // Check if Azure credentials are configured
     if (!AZURE_SPEECH_KEY) {

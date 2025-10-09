@@ -240,13 +240,15 @@ class EnhancedTtsService {
   }
 
   /**
-   * Speak using cloud TTS service (Google Translate TTS for Estonian and others)
+   * Speak using cloud TTS service (Microsoft Azure Neural TTS for realistic voices)
    */
   private async speakWithCloudTTS(text: string, options: EnhancedTtsOptions): Promise<void> {
     try {
       const processedText = this.preprocessText(text, options);
       
       const token = localStorage.getItem('token');
+      
+      console.log('🎙️ Using Azure TTS for realistic speech...');
       
       const response = await fetch(this.apiEndpoint, {
         method: 'POST',
@@ -305,20 +307,20 @@ class EnhancedTtsService {
             reject(err);
           });
           
-          console.log('🎙️ Playing cloud TTS audio for:', options.language);
+          console.log('✅ Playing Azure TTS audio for:', options.language);
         });
       } else {
         // Response is JSON, probably indicating to use browser TTS
         const data = await response.json();
         if (data.useBrowserTts) {
-          console.log('☁️ Cloud TTS not available, using browser TTS');
+          console.log('☁️ Azure TTS not available, using browser TTS fallback');
           return this.speakWithBrowserTTS(text, options);
         }
         throw new Error('Unexpected response from cloud TTS');
       }
     } catch (error) {
-      console.error('Cloud TTS error:', error);
-      console.log('Falling back to browser TTS');
+      console.error('❌ Azure TTS error:', error);
+      console.log('⚠️ Falling back to browser TTS');
       // Fallback to browser TTS
       return this.speakWithBrowserTTS(text, options);
     }
