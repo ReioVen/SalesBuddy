@@ -30,34 +30,44 @@ export const useUniversalTextToSpeech = (): TextToSpeechReturn => {
   const [hasEstonianVoices, setHasEstonianVoices] = useState(false);
   const [estonianVoices, setEstonianVoices] = useState<UniversalTtsVoice[]>([]);
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
+  const initialized = useRef(false);
 
-  // Initialize universal TTS service
+  // Lazy initialize universal TTS service only when needed
+  const initializeTTS = useCallback(() => {
+    if (initialized.current) return Promise.resolve();
+    
+    const supported = 'speechSynthesis' in window;
+    setIsSupported(supported);
+    
+    if (!supported) return Promise.resolve();
+    
+    initialized.current = true;
+    
+    return universalTtsService.initialize().then(() => {
+      const universalVoicesList = universalTtsService.getVoices();
+      setUniversalVoices(universalVoicesList);
+      
+      // Get Estonian voices
+      const estonianVoicesList = universalTtsService.getAvailableEstonianVoices();
+      setEstonianVoices(estonianVoicesList);
+      setHasEstonianVoices(estonianVoicesList.length > 0);
+      
+      // Load browser voices
+      const browserVoices = speechSynthesis.getVoices();
+      if (browserVoices.length > 0) {
+        setVoices(browserVoices);
+      }
+    });
+  }, []);
+
+  // Initialize only on mount, but don't block - initialize in background
   useEffect(() => {
     const supported = 'speechSynthesis' in window;
     setIsSupported(supported);
     
     if (supported) {
-      // Initialize universal TTS service
-      universalTtsService.initialize().then(() => {
-        const universalVoicesList = universalTtsService.getVoices();
-        setUniversalVoices(universalVoicesList);
-        
-        // Get Estonian voices
-        const estonianVoicesList = universalTtsService.getAvailableEstonianVoices();
-        setEstonianVoices(estonianVoicesList);
-        setHasEstonianVoices(estonianVoicesList.length > 0);
-        
-        if (estonianVoicesList.length > 0) {
-          console.log('🇪🇪 Estonian voices available for all users:', estonianVoicesList.length);
-        } else {
-          console.log('⚠️ No Estonian voices available. Using fallback voices.');
-        }
-        
-        // Log supported languages
-        const supportedLangs = universalTtsService.getSupportedLanguages();
-        console.log('🎯 Supported languages:', supportedLangs.join(', '));
-        console.log('🎲 Random voice selection enabled for all languages');
-      });
+      // Initialize in background without blocking
+      setTimeout(() => initializeTTS(), 100);
       
       // Load browser voices
       const loadVoices = () => {
@@ -97,10 +107,13 @@ export const useUniversalTextToSpeech = (): TextToSpeechReturn => {
     utteranceRef.current = null;
   }, []);
 
-  const speak = useCallback((text: string, options: TextToSpeechOptions = {}) => {
+  const speak = useCallback(async (text: string, options: TextToSpeechOptions = {}) => {
     if (!isSupported || !text || !text.trim()) {
       return;
     }
+
+    // Ensure TTS is initialized
+    await initializeTTS();
 
     // Stop any current speech
     stop();
@@ -194,7 +207,7 @@ export const useUniversalTextToSpeech = (): TextToSpeechReturn => {
 
     utteranceRef.current = utterance;
     speechSynthesis.speak(utterance);
-  }, [isSupported, stop, voices]);
+  }, [isSupported, stop, voices, initializeTTS]);
 
   const pause = useCallback(() => {
     if (speechSynthesis.speaking && !speechSynthesis.paused) {

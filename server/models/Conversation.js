@@ -43,6 +43,11 @@ const conversationSchema = new mongoose.Schema({
     enum: ['en', 'et', 'es', 'ru'],
     default: 'en'
   },
+  conversationMode: {
+    type: String,
+    enum: ['chat', 'call'],
+    default: 'chat'
+  },
   clientCustomization: {
     name: String,
     personality: String,

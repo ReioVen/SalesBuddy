@@ -1582,7 +1582,8 @@ Respond in this exact JSON format:
    body('difficulty').optional().isIn(['easy', 'medium', 'hard']),
    body('language').optional().isIn(['en', 'et', 'es', 'ru']),
    body('ttsVolume').optional().isFloat({ min: 0, max: 1 }),
-   body('selectedVoice').optional().isObject()
+   body('selectedVoice').optional().isObject(),
+   body('conversationMode').optional().isIn(['chat', 'call'])
   ], async (req, res) => {
    try {
     
@@ -1787,7 +1788,9 @@ Respond in this exact JSON format:
        // Store client customization in the conversation
        clientCustomization: finalClientCustomization,
        // Store language preference
-       language
+       language,
+       // Store conversation mode (chat or call)
+       conversationMode: req.body.conversationMode || 'chat'
      });
 
      // Validate conversation object
