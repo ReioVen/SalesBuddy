@@ -3,25 +3,35 @@ const User = require('../models/User');
 
 const authenticateToken = async (req, res, next) => {
   try {
-    // console.log('🔐 [AUTH] Authentication attempt:', {
-    //   url: req.url,
-    //   method: req.method,
-    //   hasAuthHeader: !!req.headers['authorization'],
-    //   timestamp: new Date().toISOString()
-    // });
+    // Only log for cloud-tts to avoid spam
+    if (req.path.includes('cloud-tts')) {
+      console.log('🔐 [AUTH] Cloud TTS authentication attempt');
+    }
 
     const authHeader = req.headers['authorization'];
     const bearerToken = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
     const cookieToken = req.cookies && req.cookies['sb_token'];
     const token = bearerToken || cookieToken;
 
-    // console.log('🔐 [AUTH] Token check:', {
-    //   hasBearerToken: !!bearerToken,
-    //   tokenLength: token ? token.length : 0
-    // });
+    if (req.path.includes('cloud-tts')) {
+      console.log('🔐 [AUTH] Token sources:', {
+        authHeaderPresent: !!authHeader,
+        bearerTokenExtracted: !!bearerToken,
+        cookiePresent: !!cookieToken,
+        finalToken: !!token,
+        tokenPreview: token ? token.substring(0, 20) + '...' : 'none',
+        allCookies: Object.keys(req.cookies || {})
+      });
+    }
 
     if (!token) {
-      console.log('❌ [AUTH] No token found');
+      if (req.path.includes('cloud-tts')) {
+        console.log(`❌ [AUTH] No token found for ${req.method} ${req.path}`);
+        console.log('❌ [AUTH] Auth header:', authHeader || 'Missing');
+        console.log('❌ [AUTH] Cookies:', Object.keys(req.cookies || {}));
+      } else {
+        console.log('❌ [AUTH] No token found');
+      }
       return res.status(401).json({ error: 'Access token required' });
     }
 
@@ -34,11 +44,17 @@ const authenticateToken = async (req, res, next) => {
     }
 
     req.user = user;
+    
+    if (req.path.includes('cloud-tts')) {
+      console.log(`✅ [AUTH] Cloud TTS: User ${user.email} authenticated successfully`);
+    }
+    
     next();
   } catch (error) {
     console.log('❌ [AUTH] Authentication error:', {
       name: error.name,
       message: error.message,
+      path: req.path,
       stack: error.stack?.substring(0, 200)
     });
     
@@ -89,4 +105,4 @@ module.exports = {
   authenticateToken,
   requireSubscription,
   requirePlan
-}; 
+};

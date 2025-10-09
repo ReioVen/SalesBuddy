@@ -249,15 +249,17 @@ class EnhancedTtsService {
     try {
       const processedText = this.preprocessText(text, options);
       
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('sb_token'); // Fixed: Use correct token key
       
       console.log('🎙️ Using Azure TTS for realistic speech...');
+      console.log('🔐 Token status:', token ? `Present (${token.substring(0, 20)}...)` : 'Missing');
       
       const response = await fetch(this.apiEndpoint, {
         method: 'POST',
+        credentials: 'include', // Important: Include cookies for authentication
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': token ? `Bearer ${token}` : ''
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
         },
         body: JSON.stringify({
           text: processedText,

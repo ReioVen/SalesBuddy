@@ -15,6 +15,7 @@ const axios = require('axios');
 router.post('/speak', authenticateToken, async (req, res) => {
   try {
     console.log('🎙️ [CLOUD-TTS] Received speech request');
+    console.log('🔐 [CLOUD-TTS] User authenticated:', req.user ? `${req.user.email} (${req.user._id})` : 'No user');
     console.log('🎙️ [CLOUD-TTS] Request body:', JSON.stringify(req.body).substring(0, 100));
     
     const { text, language, voice, rate = 0.92, pitch = 0.98, volume = 0.85 } = req.body;
