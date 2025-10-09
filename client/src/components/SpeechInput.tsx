@@ -80,8 +80,13 @@ const SpeechInput: React.FC<SpeechInputProps> = ({
     
     try {
       // Use enhanced TTS service for more realistic speech (Azure TTS)
+      // Make sure to use the selected voice's language if available, otherwise use the prop language
+      const ttsLanguage = selectedVoice?.lang || language;
+      
+      console.log(`🎤 TTS Request: Language="${ttsLanguage}", Voice="${selectedVoice?.name || 'default'}", Text="${responseText.substring(0, 50)}..."`);
+      
       await enhancedTtsService.speak(responseText, {
-        language,
+        language: ttsLanguage,
         voice: selectedVoice?.name,
         rate: 0.92, // Optimal rate for natural, professional speech
         pitch: 0.98, // Slightly lower pitch sounds more natural
@@ -89,10 +94,14 @@ const SpeechInput: React.FC<SpeechInputProps> = ({
         addPauses: true, // Add natural pauses at punctuation
         speakingStyle: 'professional' // Use professional speaking style
       });
+      
+      console.log(`✅ Successfully spoke AI response`);
     } catch (error) {
       console.error('❌ Enhanced TTS error, falling back to standard TTS:', error);
       // Fallback to standard TTS if enhanced fails
-      speak(responseText, { language, rate: 0.92, voice: selectedVoice || undefined, volume: ttsVolume });
+      const fallbackLanguage = selectedVoice?.lang || language;
+      console.log(`🔄 Using fallback TTS with language: ${fallbackLanguage}`);
+      speak(responseText, { language: fallbackLanguage, rate: 0.92, voice: selectedVoice || undefined, volume: ttsVolume });
     }
   }, [ttsSupported, speak, language, selectedVoice, ttsVolume]);
 

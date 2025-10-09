@@ -1724,9 +1724,21 @@ const Conversations: React.FC = () => {
                   onSendMessage={handleSendMessage}
                   disabled={sendingMessage}
                   placeholder={t('typeMessage')}
-                  language={language === 'en' ? 'en-US' : language === 'et' ? 'et-EE' : language === 'es' ? 'es-ES' : language === 'ru' ? 'ru-RU' : 'en-US'}
+                  language={(() => {
+                    // Use selected voice language if available, otherwise use interface language
+                    const savedVoice = currentConversation?.clientCustomization?.selectedVoice;
+                    if (savedVoice?.lang) {
+                      return savedVoice.lang; // e.g., 'et-EE', 'en-US'
+                    }
+                    // If selectedVoiceLanguage is set (not 'random'), use it
+                    if (selectedVoiceLanguage && selectedVoiceLanguage !== 'random') {
+                      return `${selectedVoiceLanguage}-${selectedVoiceLanguage.toUpperCase()}`; // e.g., 'et-ET', 'en-EN'
+                    }
+                    // Default to interface language
+                    return language === 'en' ? 'en-US' : language === 'et' ? 'et-EE' : language === 'es' ? 'es-ES' : language === 'ru' ? 'ru-RU' : 'en-US';
+                  })()}
                   handsFreeMode={handsFreeMode}
-                  autoSendDelay={2000}
+                  autoSendDelay={1000}
                   onAIResponse={(callback) => {
                     speakAIResponseRef.current = callback;
                   }}
@@ -1819,9 +1831,21 @@ const Conversations: React.FC = () => {
                   onSendMessage={handleSendMessage}
                   disabled={sendingMessage}
                   placeholder=""
-                  language={language === 'en' ? 'en-US' : language === 'et' ? 'et-EE' : language === 'es' ? 'es-ES' : language === 'ru' ? 'ru-RU' : 'en-US'}
+                  language={(() => {
+                    // Use selected voice language if available, otherwise use interface language
+                    const savedVoice = currentConversation?.clientCustomization?.selectedVoice;
+                    if (savedVoice?.lang) {
+                      return savedVoice.lang; // e.g., 'et-EE', 'en-US'
+                    }
+                    // If selectedVoiceLanguage is set (not 'random'), use it
+                    if (selectedVoiceLanguage && selectedVoiceLanguage !== 'random') {
+                      return `${selectedVoiceLanguage}-${selectedVoiceLanguage.toUpperCase()}`; // e.g., 'et-ET', 'en-EN'
+                    }
+                    // Default to interface language
+                    return language === 'en' ? 'en-US' : language === 'et' ? 'et-EE' : language === 'es' ? 'es-ES' : language === 'ru' ? 'ru-RU' : 'en-US';
+                  })()}
                   handsFreeMode={true}
-                  autoSendDelay={2000}
+                  autoSendDelay={1000}
                   onAIResponse={(callback) => {
                     speakAIResponseRef.current = callback;
                   }}
