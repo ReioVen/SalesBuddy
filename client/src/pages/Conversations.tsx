@@ -927,7 +927,7 @@ const Conversations: React.FC = () => {
                       ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
                       : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
                   }`}>
-                    {conversationMode === 'call' ? '📞' : '💬'} {conversationMode === 'call' ? t('startCall') : t('startChat')}
+                    {conversationMode === 'call' ? '📞 ' + t('voiceCall') : '💬 ' + t('textChat')}
                   </span>
                 </div>
                 <button
@@ -949,13 +949,10 @@ const Conversations: React.FC = () => {
                       </svg>
                       <div>
                         <h3 className="font-semibold text-green-900 dark:text-green-300 mb-1">
-                          {language === 'et' ? 'Kõnerežiim Aktiivne' : 'Call Mode Active'}
+                          {t('callModeActive')}
                         </h3>
                         <p className="text-sm text-green-700 dark:text-green-400">
-                          {language === 'et' 
-                            ? 'Häälsisend ja vabakäe režiim lülitatakse automaatselt sisse. Saad AI kliendiga loomulikult rääkida nagu päris telefonikõne.' 
-                            : 'Voice input and hands-free mode will be automatically enabled. You can speak naturally with the AI client just like a real phone call.'
-                          }
+                          {t('callModeDescription')}
                         </p>
                       </div>
                     </div>

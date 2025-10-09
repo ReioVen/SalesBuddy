@@ -54,32 +54,42 @@ const SpeechInput: React.FC<SpeechInputProps> = ({
 
   // Function to speak AI responses with enhanced, natural-sounding voice
   const speakAIResponse = useCallback(async (response: string) => {
-    if (ttsSupported && response && response.trim()) {
-      // Prevent duplicate speaking of the same response
-      if (lastAIResponseRef.current === response) {
-        console.log('⚠️ Skipping duplicate AI response:', response.substring(0, 50));
-        return;
-      }
-      
-      lastAIResponseRef.current = response;
-      console.log('🎙️ Speaking AI response with language:', language, 'voice:', selectedVoice?.name || 'default');
-      
-      try {
-        // Use enhanced TTS service for more realistic speech (Azure TTS)
-        await enhancedTtsService.speak(response, {
-          language,
-          voice: selectedVoice?.name,
-          rate: 0.92, // Optimal rate for natural, professional speech
-          pitch: 0.98, // Slightly lower pitch sounds more natural
-          volume: ttsVolume,
-          addPauses: true, // Add natural pauses at punctuation
-          speakingStyle: 'professional' // Use professional speaking style
-        });
-      } catch (error) {
-        console.error('❌ Enhanced TTS error, falling back to standard TTS:', error);
-        // Fallback to standard TTS if enhanced fails
-        speak(response, { language, rate: 0.92, voice: selectedVoice || undefined, volume: ttsVolume });
-      }
+    // Critical: Validate response is a string and not empty
+    if (!response || typeof response !== 'string' || !ttsSupported) {
+      console.warn('⚠️ Invalid response for TTS:', typeof response);
+      return;
+    }
+    
+    const responseText = response.trim();
+    if (!responseText) {
+      console.warn('⚠️ Empty response text for TTS');
+      return;
+    }
+    
+    // Prevent duplicate speaking of the same response
+    if (lastAIResponseRef.current === responseText) {
+      console.log('⚠️ Skipping duplicate AI response:', responseText.substring(0, 50));
+      return;
+    }
+    
+    lastAIResponseRef.current = responseText;
+    console.log('🎙️ Speaking AI response with language:', language, 'voice:', selectedVoice?.name || 'default');
+    
+    try {
+      // Use enhanced TTS service for more realistic speech (Azure TTS)
+      await enhancedTtsService.speak(responseText, {
+        language,
+        voice: selectedVoice?.name,
+        rate: 0.92, // Optimal rate for natural, professional speech
+        pitch: 0.98, // Slightly lower pitch sounds more natural
+        volume: ttsVolume,
+        addPauses: true, // Add natural pauses at punctuation
+        speakingStyle: 'professional' // Use professional speaking style
+      });
+    } catch (error) {
+      console.error('❌ Enhanced TTS error, falling back to standard TTS:', error);
+      // Fallback to standard TTS if enhanced fails
+      speak(responseText, { language, rate: 0.92, voice: selectedVoice || undefined, volume: ttsVolume });
     }
   }, [ttsSupported, speak, language, selectedVoice, ttsVolume]);
 
@@ -117,8 +127,10 @@ const SpeechInput: React.FC<SpeechInputProps> = ({
   });
 
   const handleSendMessage = useCallback(() => {
-    if (textInput && textInput.trim()) {
-      const messageToSend = textInput.trim();
+    // Ensure textInput is a string before processing
+    const inputText = typeof textInput === 'string' ? textInput : '';
+    if (inputText && inputText.trim()) {
+      const messageToSend = inputText.trim();
       
       // Stop speech recognition first if active
       if (isListening || isStarting) {
