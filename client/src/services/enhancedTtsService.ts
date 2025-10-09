@@ -251,8 +251,10 @@ class EnhancedTtsService {
       
       const token = localStorage.getItem('sb_token'); // Fixed: Use correct token key
       
-      console.log('🎙️ Using Azure TTS for realistic speech...');
-      console.log('🔐 Token status:', token ? `Present (${token.substring(0, 20)}...)` : 'Missing');
+      console.log('☁️ [ENHANCED-TTS] speakWithCloudTTS called for:', options.language);
+      console.log('📝 [ENHANCED-TTS] Text:', processedText.substring(0, 100) + '...');
+      console.log('🔐 [ENHANCED-TTS] Token status:', token ? `Present (${token.substring(0, 20)}...)` : 'Missing');
+      console.log('🌐 [ENHANCED-TTS] API Endpoint:', this.apiEndpoint);
       
       const response = await fetch(this.apiEndpoint, {
         method: 'POST',

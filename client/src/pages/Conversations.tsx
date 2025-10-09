@@ -501,10 +501,31 @@ const Conversations: React.FC = () => {
         const lastMessage = currentConversation?.messages[currentConversation.messages.length - 1];
         if (!lastMessage || lastMessage.content !== aiResponse) {
           console.log('🎙️ Speaking AI response in', currentConversation?.conversationMode || 'chat', 'mode');
-          speakAIResponseRef.current(aiResponse);
+          console.log('🎤 AI Response type:', typeof aiResponse, 'Length:', aiResponse?.length);
+          console.log('🎤 AI Response content:', aiResponse?.substring(0, 100));
+          console.log('🎤 Callback exists:', !!speakAIResponseRef.current);
+          
+          if (speakAIResponseRef.current) {
+            try {
+              speakAIResponseRef.current(aiResponse);
+              console.log('✅ TTS callback executed');
+            } catch (error) {
+              console.error('❌ TTS callback error:', error);
+            }
+          } else {
+            console.error('❌ TTS callback is null!');
+          }
         } else {
           console.log('⚠️ Skipping duplicate AI response');
         }
+      } else {
+        console.log('⚠️ Not speaking AI response. Conditions:', {
+          handsFreeMode,
+          callMode: currentConversation?.conversationMode === 'call',
+          hasCallback: !!speakAIResponseRef.current,
+          hasResponse: !!aiResponse,
+          responseNotEmpty: !!aiResponse?.trim()
+        });
       }
 
       // No need to refresh conversation history after each message

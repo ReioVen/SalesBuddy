@@ -54,8 +54,11 @@ const SpeechInput: React.FC<SpeechInputProps> = ({
 
   // Function to speak AI responses with enhanced, natural-sounding voice
   const speakAIResponse = useCallback(async (response: string) => {
+    console.log('🔊 [SPEECH-INPUT] speakAIResponse called with:', typeof response, response?.substring(0, 50));
+    
     // Critical: Validate response is a string and not empty
-    if (!response || typeof response !== 'string' || !ttsSupported) {
+    if (!response || typeof response !== 'string') {
+      console.error('❌ [SPEECH-INPUT] Invalid response type:', typeof response);
       if (typeof response === 'object') {
         console.error('❌ CRITICAL: TTS called with object instead of string:', response);
         console.error('❌ This should never happen - callback misuse detected');
@@ -63,20 +66,25 @@ const SpeechInput: React.FC<SpeechInputProps> = ({
       return;
     }
     
+    if (!ttsSupported) {
+      console.error('❌ [SPEECH-INPUT] TTS not supported in this browser');
+      return;
+    }
+    
     const responseText = response.trim();
     if (!responseText) {
-      console.warn('⚠️ Empty response text for TTS');
+      console.warn('⚠️ [SPEECH-INPUT] Empty response text for TTS');
       return;
     }
     
     // Prevent duplicate speaking of the same response
     if (lastAIResponseRef.current === responseText) {
-      console.log('⚠️ Skipping duplicate AI response:', responseText.substring(0, 50));
+      console.log('⚠️ [SPEECH-INPUT] Skipping duplicate AI response:', responseText.substring(0, 50));
       return;
     }
     
     lastAIResponseRef.current = responseText;
-    console.log('🎙️ Speaking AI response with language:', language, 'voice:', selectedVoice?.name || 'default');
+    console.log('🎙️ [SPEECH-INPUT] Speaking AI response with language:', language, 'voice:', selectedVoice?.name || 'default');
     
     try {
       // Use enhanced TTS service for more realistic speech (Azure TTS)
@@ -292,9 +300,15 @@ const SpeechInput: React.FC<SpeechInputProps> = ({
     if (onAIResponse && speakAIResponse && !hasSetCallback.current) {
       hasSetCallback.current = true;
       onAIResponse(speakAIResponse);
-      console.log('✅ TTS callback registered (one time only)');
+      console.log('✅ [SPEECH-INPUT] TTS callback registered', {
+        handsFreeMode,
+        language,
+        hasSelectedVoice: !!selectedVoice,
+        voiceLang: selectedVoice?.lang,
+        voiceName: selectedVoice?.name
+      });
     }
-  }, [onAIResponse, speakAIResponse]);
+  }, [onAIResponse, speakAIResponse, handsFreeMode, language, selectedVoice]);
 
   // In hands-free mode, restart speech recognition when AI finishes speaking
   useEffect(() => {
