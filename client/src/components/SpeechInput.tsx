@@ -55,10 +55,17 @@ const SpeechInput: React.FC<SpeechInputProps> = ({
   // Function to speak AI responses with enhanced, natural-sounding voice
   const speakAIResponse = useCallback(async (response: string) => {
     if (ttsSupported && response && response.trim()) {
+      // Prevent duplicate speaking of the same response
+      if (lastAIResponseRef.current === response) {
+        console.log('⚠️ Skipping duplicate AI response:', response.substring(0, 50));
+        return;
+      }
+      
       lastAIResponseRef.current = response;
+      console.log('🎙️ Speaking AI response with language:', language, 'voice:', selectedVoice?.name || 'default');
       
       try {
-        // Use enhanced TTS service for more realistic speech
+        // Use enhanced TTS service for more realistic speech (Azure TTS)
         await enhancedTtsService.speak(response, {
           language,
           voice: selectedVoice?.name,
@@ -69,7 +76,7 @@ const SpeechInput: React.FC<SpeechInputProps> = ({
           speakingStyle: 'professional' // Use professional speaking style
         });
       } catch (error) {
-        console.error('Enhanced TTS error, falling back to standard TTS:', error);
+        console.error('❌ Enhanced TTS error, falling back to standard TTS:', error);
         // Fallback to standard TTS if enhanced fails
         speak(response, { language, rate: 0.92, voice: selectedVoice || undefined, volume: ttsVolume });
       }
@@ -278,8 +285,15 @@ const SpeechInput: React.FC<SpeechInputProps> = ({
       // Clear the explicitly stopped flag when hands-free mode is enabled
       setUserExplicitlyStopped(false);
       
+      // Start listening immediately for call mode
       if (!isListening && !isStarting && !isSpeaking) {
-        startListening();
+        console.log('🎙️ Hands-free mode: Starting microphone immediately...');
+        // Use a very short timeout to ensure component is mounted
+        setTimeout(() => {
+          if (!isListening && !isStarting) {
+            startListening();
+          }
+        }, 50); // Very short delay, just enough for component to be ready
       }
     }
     // Note: We don't stop speech recognition when hands-free mode is disabled

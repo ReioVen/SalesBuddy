@@ -368,7 +368,7 @@ const Conversations: React.FC = () => {
         withCredentials: true
       });
 
-      toast.success(conversationMode === 'call' ? 'Call started!' : t('conversationStarted'));
+      toast.success(conversationMode === 'call' ? (language === 'et' ? 'Kõne algas!' : 'Call started!') : t('conversationStarted'));
       setShowNewChatForm(false);
       
       // Set the current conversation and open chat window
@@ -380,6 +380,13 @@ const Conversations: React.FC = () => {
         clientCustomization: response.data.conversation.clientCustomization,
         messages: response.data.conversation.messages || []
       });
+      
+      // For call mode, pre-initialize speech recognition
+      if (conversationMode === 'call') {
+        console.log('📞 Call mode: Microphone will auto-start');
+        // The SpeechInput component will handle starting the microphone automatically
+        // via its handsFreeMode effect
+      }
       
       setClientCustomization({
         name: '',
@@ -484,9 +491,21 @@ const Conversations: React.FC = () => {
         }]
       } : null);
 
-      // Speak AI response if hands-free mode is enabled
-      if (handsFreeMode && speakAIResponseRef.current && aiResponse) {
-        speakAIResponseRef.current(aiResponse);
+      // Speak AI response if hands-free mode or call mode is enabled
+      const shouldSpeakResponse = (handsFreeMode || currentConversation?.conversationMode === 'call') 
+        && speakAIResponseRef.current 
+        && aiResponse 
+        && aiResponse.trim();
+      
+      if (shouldSpeakResponse) {
+        // Prevent speaking the same message multiple times
+        const lastMessage = currentConversation?.messages[currentConversation.messages.length - 1];
+        if (!lastMessage || lastMessage.content !== aiResponse) {
+          console.log('🎙️ Speaking AI response in', currentConversation?.conversationMode || 'chat', 'mode');
+          speakAIResponseRef.current(aiResponse);
+        } else {
+          console.log('⚠️ Skipping duplicate AI response');
+        }
       }
 
       // No need to refresh conversation history after each message
@@ -831,7 +850,7 @@ const Conversations: React.FC = () => {
             className="bg-blue-600 text-white hover:bg-blue-700 flex items-center gap-2 px-6 py-3 rounded-lg transition-colors"
           >
             <MessageSquare className="w-5 h-5" />
-            Start Chat
+            {t('startChat')}
           </button>
           <button
             onClick={() => {
@@ -843,7 +862,7 @@ const Conversations: React.FC = () => {
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
             </svg>
-            Start Call
+            {t('startCall')}
           </button>
         </div>
       </div>
@@ -901,14 +920,14 @@ const Conversations: React.FC = () => {
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-3">
                   <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                    {conversationMode === 'call' ? 'Start New Call' : t('startNewConversation')}
+                    {conversationMode === 'call' ? t('startNewCall') : t('startNewConversation')}
                   </h2>
                   <span className={`px-3 py-1 rounded-full text-sm font-medium ${
                     conversationMode === 'call' 
                       ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
                       : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
                   }`}>
-                    {conversationMode === 'call' ? '📞 Voice Call' : '💬 Text Chat'}
+                    {conversationMode === 'call' ? '📞' : '💬'} {conversationMode === 'call' ? t('startCall') : t('startChat')}
                   </span>
                 </div>
                 <button
@@ -929,9 +948,14 @@ const Conversations: React.FC = () => {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
                       <div>
-                        <h3 className="font-semibold text-green-900 dark:text-green-300 mb-1">Call Mode Active</h3>
+                        <h3 className="font-semibold text-green-900 dark:text-green-300 mb-1">
+                          {language === 'et' ? 'Kõnerežiim Aktiivne' : 'Call Mode Active'}
+                        </h3>
                         <p className="text-sm text-green-700 dark:text-green-400">
-                          Voice input and hands-free mode will be automatically enabled. You can speak naturally with the AI client just like a real phone call.
+                          {language === 'et' 
+                            ? 'Häälsisend ja vabakäe režiim lülitatakse automaatselt sisse. Saad AI kliendiga loomulikult rääkida nagu päris telefonikõne.' 
+                            : 'Voice input and hands-free mode will be automatically enabled. You can speak naturally with the AI client just like a real phone call.'
+                          }
                         </p>
                       </div>
                     </div>
@@ -1340,7 +1364,7 @@ const Conversations: React.FC = () => {
                     {loading 
                       ? t('starting') 
                       : conversationMode === 'call' 
-                        ? '📞 Start Call' 
+                        ? `📞 ${t('startCall')}` 
                         : t('startChat')
                     }
                   </button>
@@ -1351,74 +1375,107 @@ const Conversations: React.FC = () => {
         </div>
       )}
 
-      {/* Chat Window */}
+      {/* Chat/Call Window */}
       {currentConversation && (
         <div className="fixed top-0 left-0 right-0 bottom-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999] p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-xl max-w-4xl w-full h-[80vh] flex flex-col relative z-[10000]">
-            {/* Chat Header */}
-            <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
-              <div className="flex items-center gap-3">
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                  currentConversation.conversationMode === 'call' 
-                    ? 'bg-green-100 dark:bg-green-900/30' 
-                    : 'bg-blue-100 dark:bg-blue-900/30'
-                }`}>
-                  {currentConversation.conversationMode === 'call' ? (
-                    <svg className="w-5 h-5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                    </svg>
-                  ) : (
-                    <User className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                  )}
+          <div className={`rounded-xl w-full flex flex-col relative z-[10000] ${
+            currentConversation.conversationMode === 'call'
+              ? 'bg-gradient-to-br from-green-600 to-green-800 max-w-lg h-auto' // Call mode: compact, gradient
+              : 'bg-white dark:bg-gray-800 max-w-4xl h-[80vh]' // Chat mode: full size
+          }`}>
+            {/* Header - Different for Call vs Chat */}
+            {currentConversation.conversationMode === 'call' ? (
+              /* Call Mode Header - Minimal, voice-focused */
+              <div className="p-8 text-center text-white">
+                <div className="w-24 h-24 bg-white bg-opacity-20 rounded-full mx-auto mb-4 flex items-center justify-center backdrop-blur-sm">
+                  <User className="w-12 h-12 text-white" />
                 </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h3 className="font-semibold text-gray-900 dark:text-white">
-                      {currentConversation.conversationMode === 'call' ? '📞 Call with' : t('chatWith')} {currentConversation.clientCustomization.name || t('client')}
-                    </h3>
-                    {currentConversation.conversationMode === 'call' && (
-                      <span className="px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 rounded-full">
-                        LIVE
-                      </span>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getDifficultyColor(currentConversation.clientCustomization.difficulty)}`}>
-                      {getDifficultyIcon(currentConversation.clientCustomization.difficulty)} {t(currentConversation.clientCustomization.difficulty)}
-                    </span>
-                    {currentConversation.clientCustomization.industry && (
-                      <span>• {currentConversation.clientCustomization.industry}</span>
-                    )}
-                    {currentConversation.clientCustomization.role && (
-                      <span>• {currentConversation.clientCustomization.role}</span>
-                    )}
+                <h2 className="text-2xl font-bold mb-2">
+                  {currentConversation.clientCustomization.name || t('client')}
+                </h2>
+                <div className="flex items-center justify-center gap-2 mb-3">
+                  <span className="px-3 py-1 bg-white bg-opacity-20 rounded-full text-sm backdrop-blur-sm">
+                    {currentConversation.clientCustomization.industry || t('client')}
+                  </span>
+                  <span className="px-3 py-1 bg-white bg-opacity-20 rounded-full text-sm backdrop-blur-sm">
+                    {getDifficultyIcon(currentConversation.clientCustomization.difficulty)} {t(currentConversation.clientCustomization.difficulty)}
+                  </span>
+                </div>
+                <div className="flex items-center justify-center gap-2 text-sm">
+                  <div className="flex items-center gap-1 animate-pulse">
+                    <div className="w-2 h-2 bg-green-300 rounded-full"></div>
+                    <span className="text-green-100">{language === 'et' ? 'KÕNE KÄIMAS' : 'CALL IN PROGRESS'}</span>
                   </div>
                 </div>
-              </div>
-              <div className="flex items-center gap-2">
                 <button
                   onClick={handleEndConversation}
                   disabled={endingConversation}
-                  className="btn-secondary px-4 py-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                  className="mt-6 bg-red-600 hover:bg-red-700 text-white px-8 py-3 rounded-full disabled:opacity-50 flex items-center gap-2 mx-auto"
                 >
                   {endingConversation ? (
                     <>
-                      <div className="w-4 h-4 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin"></div>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                       {t('ending')}
                     </>
                   ) : (
-                    t('endConversation')
+                    <>
+                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M6.62 10.79a15.053 15.053 0 006.59 6.59l2.2-2.2a1 1 0 011.11-.27 11.36 11.36 0 005.22 1.26 1 1 0 011 1v3.37a1 1 0 01-1 1A16.93 16.93 0 013 4.03a1 1 0 011-1h3.5a1 1 0 011 1 11.36 11.36 0 001.26 5.22 1 1 0 01-.27 1.11l-2.2 2.2z" />
+                      </svg>
+                      {t('endConversation')}
+                    </>
                   )}
                 </button>
-                <button
-                  onClick={handleCloseChatWindow}
-                  disabled={endingConversation}
-                  className="text-gray-400 hover:text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <X className="w-6 h-6" />
-                </button>
               </div>
-            </div>
+            ) : (
+              /* Chat Mode Header - Traditional */
+              <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
+                    <User className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900 dark:text-white">
+                      {t('chatWith')} {currentConversation.clientCustomization.name || t('client')}
+                    </h3>
+                    <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${getDifficultyColor(currentConversation.clientCustomization.difficulty)}`}>
+                        {getDifficultyIcon(currentConversation.clientCustomization.difficulty)} {t(currentConversation.clientCustomization.difficulty)}
+                      </span>
+                      {currentConversation.clientCustomization.industry && (
+                        <span>• {currentConversation.clientCustomization.industry}</span>
+                      )}
+                      {currentConversation.clientCustomization.role && (
+                        <span>• {currentConversation.clientCustomization.role}</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={handleEndConversation}
+                    disabled={endingConversation}
+                    className="btn-secondary px-4 py-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                  >
+                    {endingConversation ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin"></div>
+                        {t('ending')}
+                      </>
+                    ) : (
+                      t('endConversation')
+                    )}
+                  </button>
+                  <button
+                    onClick={handleCloseChatWindow}
+                    disabled={endingConversation}
+                    className="text-gray-400 hover:text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <X className="w-6 h-6" />
+                  </button>
+                </div>
+              </div>
+            )}
 
             {/* Enhanced Client Profile Section - Only for Lead Calls */}
             {currentConversation.scenario === 'lead_call' ? (
@@ -1582,46 +1639,85 @@ const Conversations: React.FC = () => {
             ) : null}
 
             {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
-              {currentConversation.messages.length === 0 ? (
-                <div className="text-center text-gray-500 dark:text-gray-400 py-8">
-                  <MessageSquare className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
-                  <p>{t('startConversationIntro')}</p>
-                </div>
-              ) : (
-                currentConversation.messages.map((message, index) => (
-                  <div
-                    key={index}
-                    className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                  >
+            {/* Messages - Different for Call vs Chat */}
+            {currentConversation.conversationMode === 'call' ? (
+              /* Call Mode - Minimal voice-focused display */
+              <div className="flex-1 p-8 flex flex-col items-center justify-center text-white">
+                {sendingMessage ? (
+                  <div className="text-center">
+                    <div className="w-16 h-16 bg-white bg-opacity-20 rounded-full mx-auto mb-4 flex items-center justify-center backdrop-blur-sm animate-pulse">
+                      <div className="w-8 h-8 border-3 border-white border-t-transparent rounded-full animate-spin"></div>
+                    </div>
+                    <p className="text-lg font-medium">{language === 'et' ? 'AI mõtleb...' : 'AI is thinking...'}</p>
+                  </div>
+                ) : (
+                  <div className="text-center w-full max-w-md">
+                    <div className="bg-white bg-opacity-10 rounded-2xl p-6 backdrop-blur-sm">
+                      <div className="text-6xl mb-4">🎙️</div>
+                      <p className="text-lg font-medium mb-2">
+                        {language === 'et' ? 'Räägi vabalt' : 'Speak freely'}
+                      </p>
+                      <p className="text-sm text-green-100 opacity-90">
+                        {language === 'et' 
+                          ? 'AI kuulab sind ja vastab automaatselt' 
+                          : 'AI is listening and will respond automatically'
+                        }
+                      </p>
+                      {currentConversation.messages.length > 0 && (
+                        <div className="mt-4 pt-4 border-t border-white border-opacity-20">
+                          <p className="text-xs text-green-100">
+                            {currentConversation.messages.filter(m => m.role === 'user').length} {language === 'et' ? 'sõnumit vahetatud' : 'messages exchanged'}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              /* Chat Mode - Traditional message list */
+              <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                {currentConversation.messages.length === 0 ? (
+                  <div className="text-center text-gray-500 dark:text-gray-400 py-8">
+                    <MessageSquare className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
+                    <p>{t('startConversationIntro')}</p>
+                  </div>
+                ) : (
+                  currentConversation.messages.map((message, index) => (
                     <div
-                      className={`max-w-[70%] p-3 rounded-lg ${
-                        message.role === 'user'
-                          ? 'bg-blue-600 text-white'
-                          : 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white'
-                      }`}
+                      key={index}
+                      className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
                     >
-                      <p className="whitespace-pre-wrap">{message.content}</p>
+                      <div
+                        className={`max-w-[70%] p-3 rounded-lg ${
+                          message.role === 'user'
+                            ? 'bg-blue-600 text-white'
+                            : 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white'
+                        }`}
+                      >
+                        <p className="whitespace-pre-wrap">{message.content}</p>
+                      </div>
+                    </div>
+                  ))
+                )}
+                {sendingMessage && (
+                  <div className="flex justify-start">
+                    <div className="bg-gray-100 dark:bg-gray-700 p-3 rounded-lg">
+                      <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
+                        <div className="animate-spin w-4 h-4 border-2 border-gray-300 dark:border-gray-600 border-t-gray-600 dark:border-t-gray-400 rounded-full"></div>
+                        {t('loading')}...
+                      </div>
                     </div>
                   </div>
-                ))
-              )}
-              {sendingMessage && (
-                <div className="flex justify-start">
-                  <div className="bg-gray-100 dark:bg-gray-700 p-3 rounded-lg">
-                    <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
-                      <div className="animate-spin w-4 h-4 border-2 border-gray-300 dark:border-gray-600 border-t-gray-600 dark:border-t-gray-400 rounded-full"></div>
-                      {t('loading')}...
-                    </div>
-                  </div>
-                </div>
-              )}
-              <div ref={messagesEndRef} />
-            </div>
+                )}
+                <div ref={messagesEndRef} />
+              </div>
+            )}
 
-            {/* Message Input */}
-            <div className="p-4 border-t border-gray-200 dark:border-gray-700">
-              {speechEnabled && currentConversation ? (
+            {/* Message Input - Only show for chat mode, call mode is voice-only */}
+            {currentConversation.conversationMode !== 'call' && (
+              <div className="p-4 border-t border-gray-200 dark:border-gray-700">
+                {speechEnabled && currentConversation ? (
                 <SpeechInput
                   onSendMessage={handleSendMessage}
                   disabled={sendingMessage}
@@ -1665,41 +1761,47 @@ const Conversations: React.FC = () => {
                 </div>
               )}
               
-              {/* Speech Controls */}
-              <div className="flex items-center justify-between mt-3">
-                <div className="flex items-center gap-4">
-                  <label className="flex items-center gap-2 text-sm text-gray-600">
-                    <input
-                      type="checkbox"
-                      checked={speechEnabled}
-                      onChange={(e) => setSpeechEnabled(e.target.checked)}
-                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                    />
-                    {t('enableVoiceInput')}
-                  </label>
-                  <label className="flex items-center gap-2 text-sm text-gray-600">
-                    <input
-                      type="checkbox"
-                      checked={voiceCommandsEnabled}
-                      onChange={(e) => setVoiceCommandsEnabled(e.target.checked)}
-                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                    />
-                    {t('voiceCommands')}
-                  </label>
-                  {speechEnabled && (
-                    <label className="flex items-center gap-2 text-sm text-gray-600">
+              {/* Speech Controls - Only show for chat mode, call mode has it built-in */}
+              {currentConversation?.conversationMode !== 'call' && (
+                <div className="flex items-center justify-between mt-3">
+                  <div className="flex items-center gap-4">
+                    <label className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
                       <input
                         type="checkbox"
-                        checked={handsFreeMode}
-                        onChange={(e) => setHandsFreeMode(e.target.checked)}
-                        className="rounded border-gray-300 text-green-600 focus:ring-green-500"
+                        checked={speechEnabled}
+                        onChange={(e) => setSpeechEnabled(e.target.checked)}
+                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                       />
-                      Hands-Free Mode
+                      {t('enableVoiceInput')}
                     </label>
-                  )}
+                    <label className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                      <input
+                        type="checkbox"
+                        checked={voiceCommandsEnabled}
+                        onChange={(e) => setVoiceCommandsEnabled(e.target.checked)}
+                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                      />
+                      {t('voiceCommands')}
+                    </label>
+                  </div>
                 </div>
+              )}
+              
+              {/* Call Mode Indicator - Show in call mode */}
+              {currentConversation?.conversationMode === 'call' && (
+                <div className="mt-3 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <svg className="w-4 h-4 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                    </svg>
+                    <span className="text-sm font-medium text-green-800 dark:text-green-200">
+                      {language === 'et' ? '📞 Kõnerežiim Aktiivne - Vabakäe režiim sisse lülitatud' : '📞 Call Mode Active - Hands-free enabled'}
+                    </span>
+                  </div>
+                </div>
+              )}
                 
-                {voiceCommandsEnabled && speechEnabled && currentConversation && currentConversation.messages.filter(msg => msg.role === 'user').length >= 2 && (
+                {voiceCommandsEnabled && speechEnabled && currentConversation && currentConversation.messages.filter(msg => msg.role === 'user').length >= 2 && currentConversation.conversationMode !== 'call' && (
                   <VoiceCommands
                     isListening={false} // This will be managed by SpeechInput
                     onCommand={handleVoiceCommand}
@@ -1707,7 +1809,30 @@ const Conversations: React.FC = () => {
                   />
                 )}
               </div>
-            </div>
+            )}
+            
+            {/* Call Mode - Hidden Voice Input (works in background) */}
+            {currentConversation.conversationMode === 'call' && (
+              <div className="hidden">
+                <SpeechInput
+                  onSendMessage={handleSendMessage}
+                  disabled={sendingMessage}
+                  placeholder=""
+                  language={language === 'en' ? 'en-US' : language === 'et' ? 'et-EE' : language === 'es' ? 'es-ES' : language === 'ru' ? 'ru-RU' : 'en-US'}
+                  handsFreeMode={true}
+                  autoSendDelay={3000}
+                  onAIResponse={(callback) => {
+                    setSpeakAIResponse(callback);
+                    speakAIResponseRef.current = callback;
+                  }}
+                  selectedVoice={(() => {
+                    const savedVoice = currentConversation?.clientCustomization?.selectedVoice;
+                    return reconstructVoice(savedVoice);
+                  })()}
+                  ttsVolume={currentConversation?.clientCustomization?.ttsVolume || ttsVolume}
+                />
+              </div>
+            )}
           </div>
         </div>
       )}

@@ -77,7 +77,10 @@ export const translations = {
     
     // Conversations
     newChat: 'New Chat',
+    startChat: 'Start Chat',
+    startCall: 'Start Call',
     startNewConversation: 'Start New Conversation',
+    startNewCall: 'Start New Call',
     customizeClient: 'Customize Client',
     clientName: 'Client Name',
     clientPersonality: 'Client Personality',
@@ -736,7 +739,10 @@ export const translations = {
     
     // Conversations
     newChat: 'Uus Vestlus',
+    startChat: 'Alusta Vestlust',
+    startCall: 'Alusta Kõnet',
     startNewConversation: 'Alusta Uut Vestlust',
+    startNewCall: 'Alusta Uut Kõnet',
     customizeClient: 'Kohanda Klienti',
     clientName: 'Kliendi Nimi',
     clientPersonality: 'Kliendi Iseloom',
