@@ -1644,19 +1644,25 @@ const Conversations: React.FC = () => {
                     <div className="w-16 h-16 bg-white bg-opacity-20 rounded-full mx-auto mb-4 flex items-center justify-center backdrop-blur-sm animate-pulse">
                       <div className="w-8 h-8 border-3 border-white border-t-transparent rounded-full animate-spin"></div>
                     </div>
-                    <p className="text-lg font-medium">{language === 'et' ? 'AI mõtleb...' : 'AI is thinking...'}</p>
+                    <p className="text-lg font-medium">
+                      {language === 'et' ? 'Klient mõtleb...' : language === 'es' ? 'Cliente pensando...' : language === 'ru' ? 'Клиент думает...' : 'Client is thinking...'}
+                    </p>
                   </div>
                 ) : (
                   <div className="text-center w-full max-w-md">
                     <div className="bg-white bg-opacity-10 rounded-2xl p-6 backdrop-blur-sm">
                       <div className="text-6xl mb-4">🎙️</div>
                       <p className="text-lg font-medium mb-2">
-                        {language === 'et' ? 'Räägi vabalt' : 'Speak freely'}
+                        {language === 'et' ? 'Räägi vabalt' : language === 'es' ? 'Habla libremente' : language === 'ru' ? 'Говорите свободно' : 'Speak freely'}
                       </p>
                       <p className="text-sm text-green-100 opacity-90">
                         {language === 'et' 
-                          ? 'AI kuulab sind ja vastab automaatselt' 
-                          : 'AI is listening and will respond automatically'
+                          ? 'Klient kuulab sind ja vastab' 
+                          : language === 'es'
+                          ? 'Cliente te escucha y responderá'
+                          : language === 'ru'
+                          ? 'Клиент слушает вас и ответит'
+                          : 'Client is listening and will respond'
                         }
                       </p>
                       {currentConversation.messages.length > 0 && (
@@ -1720,7 +1726,7 @@ const Conversations: React.FC = () => {
                   placeholder={t('typeMessage')}
                   language={language === 'en' ? 'en-US' : language === 'et' ? 'et-EE' : language === 'es' ? 'es-ES' : language === 'ru' ? 'ru-RU' : 'en-US'}
                   handsFreeMode={handsFreeMode}
-                  autoSendDelay={3000}
+                  autoSendDelay={2000}
                   onAIResponse={(callback) => {
                     speakAIResponseRef.current = callback;
                   }}
@@ -1815,7 +1821,7 @@ const Conversations: React.FC = () => {
                   placeholder=""
                   language={language === 'en' ? 'en-US' : language === 'et' ? 'et-EE' : language === 'es' ? 'es-ES' : language === 'ru' ? 'ru-RU' : 'en-US'}
                   handsFreeMode={true}
-                  autoSendDelay={3000}
+                  autoSendDelay={2000}
                   onAIResponse={(callback) => {
                     speakAIResponseRef.current = callback;
                   }}
