@@ -56,7 +56,10 @@ const SpeechInput: React.FC<SpeechInputProps> = ({
   const speakAIResponse = useCallback(async (response: string) => {
     // Critical: Validate response is a string and not empty
     if (!response || typeof response !== 'string' || !ttsSupported) {
-      console.warn('⚠️ Invalid response for TTS:', typeof response);
+      if (typeof response === 'object') {
+        console.error('❌ CRITICAL: TTS called with object instead of string:', response);
+        console.error('❌ This should never happen - callback misuse detected');
+      }
       return;
     }
     
@@ -274,10 +277,13 @@ const SpeechInput: React.FC<SpeechInputProps> = ({
     }
   }, [transcript, textInput, isManualTyping, resetTranscript, stopListening, handleSendMessage, stopTTS, speakAIResponse]);
 
-  // Expose speakAIResponse function to parent component
+  // Expose speakAIResponse function to parent component (only once!)
+  const hasSetCallback = useRef(false);
   useEffect(() => {
-    if (onAIResponse && speakAIResponse) {
+    if (onAIResponse && speakAIResponse && !hasSetCallback.current) {
+      hasSetCallback.current = true;
       onAIResponse(speakAIResponse);
+      console.log('✅ TTS callback registered (one time only)');
     }
   }, [onAIResponse, speakAIResponse]);
 

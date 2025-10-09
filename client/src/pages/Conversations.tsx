@@ -128,8 +128,7 @@ const Conversations: React.FC = () => {
   const [speechEnabled, setSpeechEnabled] = useState(true);
   const [voiceCommandsEnabled, setVoiceCommandsEnabled] = useState(true);
   const [handsFreeMode, setHandsFreeMode] = useState(false);
-  const [speakAIResponse, setSpeakAIResponse] = useState<((response: string) => void) | null>(null);
-  const speakAIResponseRef = useRef<((response: string) => void) | null>(null);
+  const speakAIResponseRef = useRef<((response: string) => void) | null>(null); // Use ref only, not state
   const [ttsVolume, setTtsVolume] = useState(0.7); // Default volume at 70%
   const [conversationMode, setConversationMode] = useState<'chat' | 'call'>('chat'); // NEW: Track conversation mode
   
@@ -1723,7 +1722,6 @@ const Conversations: React.FC = () => {
                   handsFreeMode={handsFreeMode}
                   autoSendDelay={3000}
                   onAIResponse={(callback) => {
-                    setSpeakAIResponse(callback);
                     speakAIResponseRef.current = callback;
                   }}
                   selectedVoice={(() => {
@@ -1819,7 +1817,6 @@ const Conversations: React.FC = () => {
                   handsFreeMode={true}
                   autoSendDelay={3000}
                   onAIResponse={(callback) => {
-                    setSpeakAIResponse(callback);
                     speakAIResponseRef.current = callback;
                   }}
                   selectedVoice={(() => {
