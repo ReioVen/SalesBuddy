@@ -361,15 +361,38 @@ const SpeechInput: React.FC<SpeechInputProps> = ({
     // Wait for BOTH browser TTS and Azure TTS to finish before restarting microphone
     const anyTtsSpeaking = isSpeaking || isEnhancedTtsSpeaking;
     
+    console.log('🔄 [SPEECH-INPUT] Restart effect check:', {
+      handsFreeMode,
+      isSpeaking,
+      isEnhancedTtsSpeaking,
+      anyTtsSpeaking,
+      isListening,
+      isStarting,
+      userExplicitlyStopped,
+      shouldRestart: handsFreeMode && !anyTtsSpeaking && !isListening && !isStarting && !userExplicitlyStopped
+    });
+    
     if (handsFreeMode && !anyTtsSpeaking && !isListening && !isStarting && !userExplicitlyStopped) {
-      console.log('🎤 [SPEECH-INPUT] TTS finished, restarting microphone...');
+      console.log('🎤 [SPEECH-INPUT] TTS finished, restarting microphone in 500ms...');
       // Small delay to ensure TTS has fully finished
-      setTimeout(() => {
-        if (!isListening && !isStarting && !isEnhancedTtsSpeaking) {
-          console.log('🎤 [SPEECH-INPUT] Starting listening after TTS...');
+      const timer = setTimeout(() => {
+        console.log('🎤 [SPEECH-INPUT] Restart timeout triggered, checking conditions...');
+        console.log('🎤 [SPEECH-INPUT] Conditions:', {
+          isListening,
+          isStarting,
+          isEnhancedTtsSpeaking,
+          isSpeaking
+        });
+        
+        if (!isListening && !isStarting && !isEnhancedTtsSpeaking && !isSpeaking) {
+          console.log('✅ [SPEECH-INPUT] All conditions met, starting listening...');
           startListening();
+        } else {
+          console.warn('⚠️ [SPEECH-INPUT] Cannot restart - conditions not met');
         }
       }, 500);
+      
+      return () => clearTimeout(timer);
     }
   }, [handsFreeMode, isSpeaking, isEnhancedTtsSpeaking, isListening, isStarting, userExplicitlyStopped, startListening]);
 
