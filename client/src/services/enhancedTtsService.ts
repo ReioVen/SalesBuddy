@@ -269,7 +269,7 @@ class EnhancedTtsService {
           text: processedText,
           language: options.language,
           voice: options.voice,
-          rate: options.rate || 0.92,
+          rate: options.rate || 1.3,
           pitch: options.pitch || 0.98,
           volume: options.volume || 0.85,
           speakingStyle: options.speakingStyle
@@ -393,9 +393,8 @@ class EnhancedTtsService {
       // Optimal settings for natural-sounding speech
       utterance.lang = options.language;
       
-      // Rate: Slightly slower than default for better comprehension
-      // Studies show 0.9-0.95 sounds more natural and professional
-      utterance.rate = options.rate || 0.92;
+      // Rate: Faster for efficiency
+      utterance.rate = options.rate || 1.3;
       
       // Pitch: Slightly lower sounds more authoritative and natural
       // 0.95-1.0 is optimal for most voices
@@ -581,7 +580,7 @@ class EnhancedTtsService {
     return this.speak(text, {
       language: voice.language,
       voice: voice.name,
-      rate: 0.92,
+      rate: 1.3,
       pitch: 0.98,
       volume: 0.85,
       addPauses: true,

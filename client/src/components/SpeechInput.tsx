@@ -51,6 +51,7 @@ const SpeechInput: React.FC<SpeechInputProps> = ({
   // Text-to-speech functionality
   const { isSpeaking, isSupported: ttsSupported, speak, stop: stopTTS } = useTextToSpeech();
   const lastAIResponseRef = useRef<string>('');
+  const [isEnhancedTtsSpeaking, setIsEnhancedTtsSpeaking] = useState(false);
 
   // Function to speak AI responses with enhanced, natural-sounding voice
   const speakAIResponse = useCallback(async (response: string) => {
@@ -104,21 +105,30 @@ const SpeechInput: React.FC<SpeechInputProps> = ({
       console.log('🚀 [SPEECH-INPUT] Calling enhancedTtsService.speak() [Azure Cloud TTS]...');
       console.log('☁️ [SPEECH-INPUT] Note: Cloud TTS does NOT require browser TTS support!');
       
+      setIsEnhancedTtsSpeaking(true);
+      console.log('🔊 [SPEECH-INPUT] Set isEnhancedTtsSpeaking = true');
+      
       await enhancedTtsService.speak(responseText, {
         language: ttsLanguage,
         voice: selectedVoice?.name,
-        rate: 0.92, // Optimal rate for natural, professional speech
+        rate: 1.3, // Faster speech rate for efficiency
         pitch: 0.98, // Slightly lower pitch sounds more natural
         volume: ttsVolume,
         addPauses: true, // Add natural pauses at punctuation
         speakingStyle: 'professional' // Use professional speaking style
       });
       
-      console.log(`✅ [SPEECH-INPUT] Successfully spoke AI response!`);
+      setIsEnhancedTtsSpeaking(false);
+      console.log('✅ [SPEECH-INPUT] Successfully spoke AI response!');
+      console.log('🔇 [SPEECH-INPUT] Set isEnhancedTtsSpeaking = false');
     } catch (error) {
       console.error('❌ [SPEECH-INPUT] Enhanced TTS (Azure) failed:', error);
       console.error('❌ [SPEECH-INPUT] Error details:', error instanceof Error ? error.message : String(error));
       console.log('🔄 [SPEECH-INPUT] Attempting fallback to browser TTS...');
+      
+      // Reset the speaking state
+      setIsEnhancedTtsSpeaking(false);
+      console.log('🔇 [SPEECH-INPUT] Set isEnhancedTtsSpeaking = false (error)');
       
       // Only now check if browser TTS is supported for fallback
       if (!ttsSupported) {
@@ -132,7 +142,7 @@ const SpeechInput: React.FC<SpeechInputProps> = ({
       console.log(`🔄 [SPEECH-INPUT] Fallback language: ${fallbackLanguage}`);
       
       try {
-        speak(responseText, { language: fallbackLanguage, rate: 0.92, voice: selectedVoice || undefined, volume: ttsVolume });
+        speak(responseText, { language: fallbackLanguage, rate: 1.3, voice: selectedVoice || undefined, volume: ttsVolume });
         console.log('✅ [SPEECH-INPUT] Browser TTS fallback successful');
       } catch (fallbackError) {
         console.error('❌ [SPEECH-INPUT] Browser TTS also failed:', fallbackError);
@@ -348,13 +358,20 @@ const SpeechInput: React.FC<SpeechInputProps> = ({
 
   // In hands-free mode, restart speech recognition when AI finishes speaking
   useEffect(() => {
-    if (handsFreeMode && !isSpeaking && !isListening && !isStarting && !userExplicitlyStopped) {
+    // Wait for BOTH browser TTS and Azure TTS to finish before restarting microphone
+    const anyTtsSpeaking = isSpeaking || isEnhancedTtsSpeaking;
+    
+    if (handsFreeMode && !anyTtsSpeaking && !isListening && !isStarting && !userExplicitlyStopped) {
+      console.log('🎤 [SPEECH-INPUT] TTS finished, restarting microphone...');
       // Small delay to ensure TTS has fully finished
       setTimeout(() => {
-        startListening();
+        if (!isListening && !isStarting && !isEnhancedTtsSpeaking) {
+          console.log('🎤 [SPEECH-INPUT] Starting listening after TTS...');
+          startListening();
+        }
       }, 500);
     }
-  }, [handsFreeMode, isSpeaking, isListening, isStarting, userExplicitlyStopped, startListening]);
+  }, [handsFreeMode, isSpeaking, isEnhancedTtsSpeaking, isListening, isStarting, userExplicitlyStopped, startListening]);
 
   // Start speech recognition when hands-free mode is enabled (but don't stop when disabled)
   useEffect(() => {
@@ -362,12 +379,13 @@ const SpeechInput: React.FC<SpeechInputProps> = ({
       // Clear the explicitly stopped flag when hands-free mode is enabled
       setUserExplicitlyStopped(false);
       
-      // Start listening immediately for call mode
-      if (!isListening && !isStarting && !isSpeaking) {
+      // Start listening immediately for call mode (but not if TTS is speaking)
+      const anyTtsSpeaking = isSpeaking || isEnhancedTtsSpeaking;
+      if (!isListening && !isStarting && !anyTtsSpeaking) {
         console.log('🎙️ Hands-free mode: Starting microphone immediately...');
         // Use a very short timeout to ensure component is mounted
         setTimeout(() => {
-          if (!isListening && !isStarting) {
+          if (!isListening && !isStarting && !isEnhancedTtsSpeaking) {
             startListening();
           }
         }, 50); // Very short delay, just enough for component to be ready
@@ -375,7 +393,7 @@ const SpeechInput: React.FC<SpeechInputProps> = ({
     }
     // Note: We don't stop speech recognition when hands-free mode is disabled
     // because the user might have manually started it for normal speech-to-text
-  }, [handsFreeMode, isListening, isStarting, isSpeaking, startListening]);
+  }, [handsFreeMode, isListening, isStarting, isSpeaking, isEnhancedTtsSpeaking, startListening]);
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {

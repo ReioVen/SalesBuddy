@@ -1210,7 +1210,7 @@ const Conversations: React.FC = () => {
                               await enhancedTtsService.speak(testText, {
                                 language: testLanguage,
                                 voice: clientCustomization.selectedVoice?.name,
-                                rate: 0.92,
+                                rate: 1.3,
                                 pitch: 0.98,
                                 volume: currentVolume,
                                 addPauses: true,
