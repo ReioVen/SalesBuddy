@@ -2077,10 +2077,30 @@ router.post('/message', authenticateToken, [
     try {
       console.log('🔍 [AI MESSAGE] Calling OpenAI API...');
       // Prepare messages array with conversation history for current session
-      // The AI client will remember the current conversation but not previous conversations
+      // IMPORTANT: Send conversation history as separate messages so AI has proper context
       const messages = [
         { role: "system", content: prompt }
       ];
+      
+      // Add conversation history (last 6 messages) to provide context
+      // This allows the AI to remember what was discussed in the current conversation
+      if (conversationHistory && conversationHistory.length > 0) {
+        console.log(`📜 [AI MESSAGE] Adding ${conversationHistory.length} previous messages for context`);
+        conversationHistory.forEach(msg => {
+          messages.push({
+            role: msg.role,
+            content: msg.content
+          });
+        });
+      }
+      
+      // Add the current user message
+      messages.push({
+        role: "user",
+        content: message
+      });
+      
+      console.log(`📨 [AI MESSAGE] Sending ${messages.length} messages to OpenAI (1 system + ${conversationHistory.length} history + 1 current)`);
       
       // Get AI response with optimized token usage
       const completion = await openai.chat.completions.create({

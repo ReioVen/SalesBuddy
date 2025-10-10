@@ -1659,43 +1659,41 @@ const Conversations: React.FC = () => {
             {/* Messages - Different for Call vs Chat */}
             {currentConversation.conversationMode === 'call' ? (
               /* Call Mode - Minimal voice-focused display */
-              <div className="flex-1 p-8 flex flex-col items-center justify-center text-white">
-                {sendingMessage ? (
-                  <div className="text-center">
-                    <div className="w-16 h-16 bg-white bg-opacity-20 rounded-full mx-auto mb-4 flex items-center justify-center backdrop-blur-sm animate-pulse">
-                      <div className="w-8 h-8 border-3 border-white border-t-transparent rounded-full animate-spin"></div>
-                    </div>
-                    <p className="text-lg font-medium">
-                      {language === 'et' ? 'Klient mõtleb...' : language === 'es' ? 'Cliente pensando...' : language === 'ru' ? 'Клиент думает...' : 'Client is thinking...'}
+              <div className="flex-1 p-8 flex flex-col items-center justify-center text-white min-h-[300px]">
+                <div className="text-center w-full max-w-md">
+                  <div className="bg-white bg-opacity-10 rounded-2xl p-6 backdrop-blur-sm">
+                    <div className="text-6xl mb-4">🎙️</div>
+                    <p className="text-lg font-medium mb-2">
+                      {language === 'et' ? 'Räägi vabalt' : language === 'es' ? 'Habla libremente' : language === 'ru' ? 'Говорите свободно' : 'Speak freely'}
                     </p>
+                    <p className="text-sm text-green-100 opacity-90">
+                      {language === 'et' 
+                        ? 'Klient kuulab sind ja vastab' 
+                        : language === 'es'
+                        ? 'Cliente te escucha y responderá'
+                        : language === 'ru'
+                        ? 'Клиент слушает вас и ответит'
+                        : 'Client is listening and will respond'
+                      }
+                    </p>
+                    {currentConversation.messages.length > 0 && (
+                      <div className="mt-4 pt-4 border-t border-white border-opacity-20">
+                        <p className="text-xs text-green-100">
+                          {currentConversation.messages.filter(m => m.role === 'user').length} {language === 'et' ? 'sõnumit vahetatud' : 'messages exchanged'}
+                        </p>
+                      </div>
+                    )}
+                    {/* Show thinking indicator inline without changing layout */}
+                    {sendingMessage && (
+                      <div className="mt-4 inline-flex items-center gap-2 bg-white bg-opacity-15 px-3 py-2 rounded-full animate-pulse">
+                        <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        <span className="text-xs">
+                          {language === 'et' ? 'Mõtleb...' : language === 'es' ? 'Pensando...' : language === 'ru' ? 'Думает...' : 'Thinking...'}
+                        </span>
+                      </div>
+                    )}
                   </div>
-                ) : (
-                  <div className="text-center w-full max-w-md">
-                    <div className="bg-white bg-opacity-10 rounded-2xl p-6 backdrop-blur-sm">
-                      <div className="text-6xl mb-4">🎙️</div>
-                      <p className="text-lg font-medium mb-2">
-                        {language === 'et' ? 'Räägi vabalt' : language === 'es' ? 'Habla libremente' : language === 'ru' ? 'Говорите свободно' : 'Speak freely'}
-                      </p>
-                      <p className="text-sm text-green-100 opacity-90">
-                        {language === 'et' 
-                          ? 'Klient kuulab sind ja vastab' 
-                          : language === 'es'
-                          ? 'Cliente te escucha y responderá'
-                          : language === 'ru'
-                          ? 'Клиент слушает вас и ответит'
-                          : 'Client is listening and will respond'
-                        }
-                      </p>
-                      {currentConversation.messages.length > 0 && (
-                        <div className="mt-4 pt-4 border-t border-white border-opacity-20">
-                          <p className="text-xs text-green-100">
-                            {currentConversation.messages.filter(m => m.role === 'user').length} {language === 'et' ? 'sõnumit vahetatud' : 'messages exchanged'}
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
+                </div>
               </div>
             ) : (
               /* Chat Mode - Traditional message list */

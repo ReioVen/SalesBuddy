@@ -2,6 +2,7 @@ const express = require('express');
 const multer = require('multer');
 const { authenticateToken } = require('../middleware/auth');
 const { body, validationResult } = require('express-validator');
+const axios = require('axios');
 const router = express.Router();
 
 // Configure multer for audio file uploads
@@ -12,8 +13,8 @@ const upload = multer({
     fileSize: 10 * 1024 * 1024, // 10MB limit
   },
   fileFilter: (req, file, cb) => {
-    // Accept audio files
-    if (file.mimetype.startsWith('audio/')) {
+    // Accept audio files (webm, wav, mp3, ogg, etc.)
+    if (file.mimetype.startsWith('audio/') || file.mimetype === 'video/webm') {
       cb(null, true);
     } else {
       cb(new Error('Only audio files are allowed'), false);
@@ -21,29 +22,93 @@ const upload = multer({
   }
 });
 
-// Speech-to-text using Google Cloud Speech-to-Text
+// Speech-to-text using Microsoft Azure Speech Services
 const speechToText = async (audioBuffer, language = 'en-US') => {
   try {
-    // In a real implementation, you would use Google Cloud Speech-to-Text API
-    // For now, we'll return a mock response
-    console.log('Processing audio for speech-to-text:', {
+    console.log('🎤 [AZURE-STT] Processing audio for speech-to-text:', {
       bufferSize: audioBuffer.length,
       language: language
     });
 
-    // Mock transcription result
-    return {
-      transcript: 'This is a mock transcription result. In production, this would be processed by Google Cloud Speech-to-Text API.',
-      confidence: 0.95,
-      alternatives: [
-        'This is a mock transcription result.',
-        'This is a mock transcription result!',
-        'This is a mock transcription result?'
-      ]
-    };
+    // Microsoft Azure Speech Service configuration
+    const AZURE_SPEECH_KEY = process.env.AZURE_SPEECH_KEY_1 || process.env.AZURE_SPEECH_KEY_2;
+    const AZURE_SPEECH_REGION = process.env.AZURE_SPEECH_REGION || 'westeurope';
+    const AZURE_ENDPOINT = process.env.AZURE_ENDPOINT;
+
+    if (!AZURE_SPEECH_KEY) {
+      console.log('⚠️ [AZURE-STT] Azure Speech Key not configured, using mock response');
+      return {
+        transcript: 'Azure Speech-to-Text not configured. Please add AZURE_SPEECH_KEY to environment variables.',
+        confidence: 0.5,
+        alternatives: [],
+        source: 'mock'
+      };
+    }
+
+    try {
+      // Get access token for Azure Speech Service
+      const tokenEndpoint = AZURE_ENDPOINT 
+        ? `${AZURE_ENDPOINT}/sts/v1.0/issueToken`
+        : `https://${AZURE_SPEECH_REGION}.api.cognitive.microsoft.com/sts/v1.0/issueToken`;
+      
+      console.log('🔐 [AZURE-STT] Getting access token...');
+      const tokenResponse = await axios.post(
+        tokenEndpoint,
+        null,
+        {
+          headers: {
+            'Ocp-Apim-Subscription-Key': AZURE_SPEECH_KEY
+          }
+        }
+      );
+      
+      const accessToken = tokenResponse.data;
+      console.log('✅ [AZURE-STT] Access token obtained');
+
+      // Speech-to-text endpoint
+      const sttEndpoint = AZURE_ENDPOINT
+        ? `${AZURE_ENDPOINT}/speechtotext/v3.0/transcriptions`
+        : `https://${AZURE_SPEECH_REGION}.stt.speech.microsoft.com/speech/recognition/conversation/cognitiveservices/v1`;
+
+      console.log('📡 [AZURE-STT] Sending audio to Azure STT...');
+      const sttResponse = await axios.post(
+        sttEndpoint,
+        audioBuffer,
+        {
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'audio/wav; codecs=audio/pcm; samplerate=16000',
+            'Accept': 'application/json'
+          },
+          params: {
+            'language': language,
+            'format': 'detailed'
+          },
+          timeout: 30000 // 30 second timeout
+        }
+      );
+
+      console.log('✅ [AZURE-STT] Transcription received from Azure');
+      
+      const result = sttResponse.data;
+      return {
+        transcript: result.DisplayText || result.RecognitionStatus === 'Success' ? result.NBest?.[0]?.Display : '',
+        confidence: result.NBest?.[0]?.Confidence || 0.9,
+        alternatives: result.NBest?.slice(1, 4).map(alt => alt.Display) || [],
+        source: 'azure',
+        recognitionStatus: result.RecognitionStatus
+      };
+
+    } catch (azureError) {
+      console.error('❌ [AZURE-STT] Azure Speech-to-Text error:', azureError.message);
+      console.log('🔄 [AZURE-STT] Azure STT failed, returning error info');
+      
+      throw new Error(`Azure STT failed: ${azureError.message}`);
+    }
+
   } catch (error) {
-    console.error('Speech-to-text error:', error);
-    throw new Error('Failed to process speech-to-text');
+    console.error('❌ [AZURE-STT] Speech-to-text error:', error);
+    throw error;
   }
 };
 
