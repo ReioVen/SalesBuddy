@@ -251,10 +251,12 @@ class EnhancedTtsService {
       
       const token = localStorage.getItem('sb_token'); // Fixed: Use correct token key
       
-      console.log('☁️ [ENHANCED-TTS] speakWithCloudTTS called for:', options.language);
+      console.log('🎙️ [ENHANCED-TTS] ========== CLOUD TTS REQUEST ==========');
+      console.log('☁️ [ENHANCED-TTS] Language:', options.language);
       console.log('📝 [ENHANCED-TTS] Text:', processedText.substring(0, 100) + '...');
-      console.log('🔐 [ENHANCED-TTS] Token status:', token ? `Present (${token.substring(0, 20)}...)` : 'Missing');
-      console.log('🌐 [ENHANCED-TTS] API Endpoint:', this.apiEndpoint);
+      console.log('🎤 [ENHANCED-TTS] Voice:', options.voice || 'default');
+      console.log('🔐 [ENHANCED-TTS] Token:', token ? '✅ Present' : '❌ Missing');
+      console.log('🌐 [ENHANCED-TTS] Endpoint:', this.apiEndpoint);
       
       const response = await fetch(this.apiEndpoint, {
         method: 'POST',
@@ -274,19 +276,27 @@ class EnhancedTtsService {
         })
       });
 
+      console.log('📡 [ENHANCED-TTS] Response status:', response.status);
+      console.log('📄 [ENHANCED-TTS] Content-Type:', response.headers.get('content-type'));
+
       if (!response.ok) {
-        throw new Error(`Cloud TTS request failed: ${response.status}`);
+        const errorText = await response.text();
+        console.error('❌ [ENHANCED-TTS] Server error:', errorText);
+        throw new Error(`Cloud TTS request failed: ${response.status} - ${errorText}`);
       }
 
       const contentType = response.headers.get('content-type');
       
       // Check if we got audio back
       if (contentType && contentType.includes('audio')) {
+        console.log('🎵 [ENHANCED-TTS] Audio received, creating Audio element...');
         const audioBlob = await response.blob();
+        console.log('📦 [ENHANCED-TTS] Audio blob size:', audioBlob.size, 'bytes');
         const audioUrl = URL.createObjectURL(audioBlob);
         
         // Stop any currently playing audio
         if (this.currentAudio) {
+          console.log('⏹️ [ENHANCED-TTS] Stopping previous audio...');
           this.currentAudio.pause();
           this.currentAudio = null;
         }
@@ -295,39 +305,71 @@ class EnhancedTtsService {
         this.currentAudio = audio;
         
         audio.volume = options.volume || 0.85;
+        console.log('🔊 [ENHANCED-TTS] Volume set to:', audio.volume);
         
         return new Promise((resolve, reject) => {
+          audio.onloadedmetadata = () => {
+            console.log('📊 [ENHANCED-TTS] Audio loaded - Duration:', audio.duration, 'seconds');
+          };
+          
+          audio.oncanplay = () => {
+            console.log('✅ [ENHANCED-TTS] Audio ready to play');
+          };
+          
+          audio.onplay = () => {
+            console.log('▶️ [ENHANCED-TTS] Audio playback started');
+          };
+          
           audio.onended = () => {
+            console.log('✅ [ENHANCED-TTS] Audio playback completed');
             URL.revokeObjectURL(audioUrl);
             this.currentAudio = null;
-            console.log('✅ Cloud TTS speech completed');
             resolve();
           };
+          
           audio.onerror = (error) => {
+            console.error('❌ [ENHANCED-TTS] Audio element error:', error);
+            console.error('❌ [ENHANCED-TTS] Audio error code:', audio.error?.code);
+            console.error('❌ [ENHANCED-TTS] Audio error message:', audio.error?.message);
             URL.revokeObjectURL(audioUrl);
             this.currentAudio = null;
-            console.error('❌ Cloud TTS audio playback error:', error);
-            reject(error);
+            reject(new Error(`Audio playback error: ${audio.error?.message}`));
           };
-          audio.play().catch((err) => {
-            console.error('❌ Cloud TTS play error:', err);
+          
+          // Try to play - handle autoplay policy
+          console.log('🎬 [ENHANCED-TTS] Attempting to play audio...');
+          audio.play().then(() => {
+            console.log('✅ [ENHANCED-TTS] Audio play() successful');
+          }).catch((err) => {
+            console.error('❌ [ENHANCED-TTS] Audio play() failed:', err);
+            console.error('❌ [ENHANCED-TTS] This is likely due to browser autoplay policy');
+            console.error('❌ [ENHANCED-TTS] User interaction required before audio can play');
+            
+            // If autoplay is blocked, try to inform the user
+            if (err.name === 'NotAllowedError') {
+              console.error('🚫 [ENHANCED-TTS] AUTOPLAY BLOCKED - Browser requires user interaction');
+              // For now, we'll reject but we could show a UI button to enable audio
+            }
+            
+            URL.revokeObjectURL(audioUrl);
+            this.currentAudio = null;
             reject(err);
           });
-          
-          console.log('✅ Playing Azure TTS audio for:', options.language);
         });
       } else {
         // Response is JSON, probably indicating to use browser TTS
         const data = await response.json();
+        console.log('📄 [ENHANCED-TTS] JSON response:', data);
         if (data.useBrowserTts) {
-          console.log('☁️ Azure TTS not available, using browser TTS fallback');
+          console.log('☁️ [ENHANCED-TTS] Azure TTS not available, using browser TTS fallback');
           return this.speakWithBrowserTTS(text, options);
         }
         throw new Error('Unexpected response from cloud TTS');
       }
     } catch (error) {
-      console.error('❌ Azure TTS error:', error);
-      console.log('⚠️ Falling back to browser TTS');
+      console.error('❌ [ENHANCED-TTS] Cloud TTS error:', error);
+      console.error('❌ [ENHANCED-TTS] Error details:', error instanceof Error ? error.message : String(error));
+      console.log('🔄 [ENHANCED-TTS] Falling back to browser TTS...');
       // Fallback to browser TTS
       return this.speakWithBrowserTTS(text, options);
     }

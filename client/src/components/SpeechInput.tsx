@@ -54,7 +54,14 @@ const SpeechInput: React.FC<SpeechInputProps> = ({
 
   // Function to speak AI responses with enhanced, natural-sounding voice
   const speakAIResponse = useCallback(async (response: string) => {
-    console.log('🔊 [SPEECH-INPUT] speakAIResponse called with:', typeof response, response?.substring(0, 50));
+    console.log('🎙️ [SPEECH-INPUT] ========== AI RESPONSE SPEAKING ==========');
+    console.log('🔊 [SPEECH-INPUT] speakAIResponse called!');
+    console.log('📝 [SPEECH-INPUT] Response type:', typeof response);
+    console.log('📝 [SPEECH-INPUT] Response preview:', response?.substring(0, 100));
+    console.log('🎤 [SPEECH-INPUT] TTS supported:', ttsSupported);
+    console.log('🌍 [SPEECH-INPUT] Language:', language);
+    console.log('🗣️ [SPEECH-INPUT] Selected voice:', selectedVoice?.name || 'none');
+    console.log('🔊 [SPEECH-INPUT] Volume:', ttsVolume);
     
     // Critical: Validate response is a string and not empty
     if (!response || typeof response !== 'string') {
@@ -84,14 +91,21 @@ const SpeechInput: React.FC<SpeechInputProps> = ({
     }
     
     lastAIResponseRef.current = responseText;
-    console.log('🎙️ [SPEECH-INPUT] Speaking AI response with language:', language, 'voice:', selectedVoice?.name || 'default');
+    console.log('✅ [SPEECH-INPUT] All validations passed, proceeding with TTS...');
     
     try {
       // Use enhanced TTS service for more realistic speech (Azure TTS)
       // Make sure to use the selected voice's language if available, otherwise use the prop language
       const ttsLanguage = selectedVoice?.lang || language;
       
-      console.log(`🎤 TTS Request: Language="${ttsLanguage}", Voice="${selectedVoice?.name || 'default'}", Text="${responseText.substring(0, 50)}..."`);
+      console.log(`🎤 [SPEECH-INPUT] TTS Config:`, {
+        language: ttsLanguage,
+        voice: selectedVoice?.name || 'default',
+        textLength: responseText.length,
+        volume: ttsVolume
+      });
+      
+      console.log('🚀 [SPEECH-INPUT] Calling enhancedTtsService.speak()...');
       
       await enhancedTtsService.speak(responseText, {
         language: ttsLanguage,
@@ -103,13 +117,22 @@ const SpeechInput: React.FC<SpeechInputProps> = ({
         speakingStyle: 'professional' // Use professional speaking style
       });
       
-      console.log(`✅ Successfully spoke AI response`);
+      console.log(`✅ [SPEECH-INPUT] Successfully spoke AI response!`);
     } catch (error) {
-      console.error('❌ Enhanced TTS error, falling back to standard TTS:', error);
+      console.error('❌ [SPEECH-INPUT] Enhanced TTS error:', error);
+      console.error('❌ [SPEECH-INPUT] Error details:', error instanceof Error ? error.message : String(error));
+      console.log('🔄 [SPEECH-INPUT] Attempting fallback to browser TTS...');
+      
       // Fallback to standard TTS if enhanced fails
       const fallbackLanguage = selectedVoice?.lang || language;
-      console.log(`🔄 Using fallback TTS with language: ${fallbackLanguage}`);
-      speak(responseText, { language: fallbackLanguage, rate: 0.92, voice: selectedVoice || undefined, volume: ttsVolume });
+      console.log(`🔄 [SPEECH-INPUT] Fallback language: ${fallbackLanguage}`);
+      
+      try {
+        speak(responseText, { language: fallbackLanguage, rate: 0.92, voice: selectedVoice || undefined, volume: ttsVolume });
+        console.log('✅ [SPEECH-INPUT] Browser TTS fallback successful');
+      } catch (fallbackError) {
+        console.error('❌ [SPEECH-INPUT] Browser TTS also failed:', fallbackError);
+      }
     }
   }, [ttsSupported, speak, language, selectedVoice, ttsVolume]);
 
@@ -297,16 +320,25 @@ const SpeechInput: React.FC<SpeechInputProps> = ({
   // Expose speakAIResponse function to parent component (only once!)
   const hasSetCallback = useRef(false);
   useEffect(() => {
+    console.log('🔧 [SPEECH-INPUT] Callback registration effect triggered');
+    console.log('🔧 [SPEECH-INPUT] onAIResponse exists:', !!onAIResponse);
+    console.log('🔧 [SPEECH-INPUT] speakAIResponse exists:', !!speakAIResponse);
+    console.log('🔧 [SPEECH-INPUT] hasSetCallback:', hasSetCallback.current);
+    
     if (onAIResponse && speakAIResponse && !hasSetCallback.current) {
       hasSetCallback.current = true;
       onAIResponse(speakAIResponse);
-      console.log('✅ [SPEECH-INPUT] TTS callback registered', {
+      console.log('✅ [SPEECH-INPUT] ========== TTS CALLBACK REGISTERED ==========');
+      console.log('✅ [SPEECH-INPUT] Configuration:', {
         handsFreeMode,
         language,
         hasSelectedVoice: !!selectedVoice,
         voiceLang: selectedVoice?.lang,
         voiceName: selectedVoice?.name
       });
+      console.log('✅ [SPEECH-INPUT] Parent component can now trigger AI voice responses');
+    } else if (!onAIResponse) {
+      console.warn('⚠️ [SPEECH-INPUT] onAIResponse callback not provided by parent');
     }
   }, [onAIResponse, speakAIResponse, handsFreeMode, language, selectedVoice]);
 
