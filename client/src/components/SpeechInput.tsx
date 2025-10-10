@@ -58,7 +58,7 @@ const SpeechInput: React.FC<SpeechInputProps> = ({
     console.log('🔊 [SPEECH-INPUT] speakAIResponse called!');
     console.log('📝 [SPEECH-INPUT] Response type:', typeof response);
     console.log('📝 [SPEECH-INPUT] Response preview:', response?.substring(0, 100));
-    console.log('🎤 [SPEECH-INPUT] TTS supported:', ttsSupported);
+    console.log('🎤 [SPEECH-INPUT] Browser TTS supported:', ttsSupported);
     console.log('🌍 [SPEECH-INPUT] Language:', language);
     console.log('🗣️ [SPEECH-INPUT] Selected voice:', selectedVoice?.name || 'none');
     console.log('🔊 [SPEECH-INPUT] Volume:', ttsVolume);
@@ -70,11 +70,6 @@ const SpeechInput: React.FC<SpeechInputProps> = ({
         console.error('❌ CRITICAL: TTS called with object instead of string:', response);
         console.error('❌ This should never happen - callback misuse detected');
       }
-      return;
-    }
-    
-    if (!ttsSupported) {
-      console.error('❌ [SPEECH-INPUT] TTS not supported in this browser');
       return;
     }
     
@@ -94,8 +89,9 @@ const SpeechInput: React.FC<SpeechInputProps> = ({
     console.log('✅ [SPEECH-INPUT] All validations passed, proceeding with TTS...');
     
     try {
-      // Use enhanced TTS service for more realistic speech (Azure TTS)
-      // Make sure to use the selected voice's language if available, otherwise use the prop language
+      // IMPORTANT: Always try Enhanced TTS (Azure) first!
+      // Azure TTS doesn't need browser TTS support - it plays audio files directly
+      // Only the fallback requires browser TTS support
       const ttsLanguage = selectedVoice?.lang || language;
       
       console.log(`🎤 [SPEECH-INPUT] TTS Config:`, {
@@ -105,7 +101,8 @@ const SpeechInput: React.FC<SpeechInputProps> = ({
         volume: ttsVolume
       });
       
-      console.log('🚀 [SPEECH-INPUT] Calling enhancedTtsService.speak()...');
+      console.log('🚀 [SPEECH-INPUT] Calling enhancedTtsService.speak() [Azure Cloud TTS]...');
+      console.log('☁️ [SPEECH-INPUT] Note: Cloud TTS does NOT require browser TTS support!');
       
       await enhancedTtsService.speak(responseText, {
         language: ttsLanguage,
@@ -119,11 +116,18 @@ const SpeechInput: React.FC<SpeechInputProps> = ({
       
       console.log(`✅ [SPEECH-INPUT] Successfully spoke AI response!`);
     } catch (error) {
-      console.error('❌ [SPEECH-INPUT] Enhanced TTS error:', error);
+      console.error('❌ [SPEECH-INPUT] Enhanced TTS (Azure) failed:', error);
       console.error('❌ [SPEECH-INPUT] Error details:', error instanceof Error ? error.message : String(error));
       console.log('🔄 [SPEECH-INPUT] Attempting fallback to browser TTS...');
       
-      // Fallback to standard TTS if enhanced fails
+      // Only now check if browser TTS is supported for fallback
+      if (!ttsSupported) {
+        console.error('❌ [SPEECH-INPUT] Browser TTS also not supported - cannot play audio');
+        console.error('💡 [SPEECH-INPUT] Try using Chrome or Edge for better TTS support');
+        return;
+      }
+      
+      // Fallback to standard browser TTS if enhanced fails
       const fallbackLanguage = selectedVoice?.lang || language;
       console.log(`🔄 [SPEECH-INPUT] Fallback language: ${fallbackLanguage}`);
       
