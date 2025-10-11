@@ -402,16 +402,17 @@ const SpeechInput: React.FC<SpeechInputProps> = ({
       // Clear the explicitly stopped flag when hands-free mode is enabled
       setUserExplicitlyStopped(false);
       
-      // Start listening immediately for call mode (but not if TTS is speaking)
+      // Start listening after a 1.5 second delay for call mode to avoid interrupting the user
       const anyTtsSpeaking = isSpeaking || isEnhancedTtsSpeaking;
       if (!isListening && !isStarting && !anyTtsSpeaking) {
-        console.log('🎙️ Hands-free mode: Starting microphone immediately...');
-        // Use a very short timeout to ensure component is mounted
+        console.log('🎙️ Hands-free mode: Starting microphone in 1.5 seconds...');
+        // Wait 1.5 seconds before starting to give user time to prepare
         setTimeout(() => {
           if (!isListening && !isStarting && !isEnhancedTtsSpeaking) {
             startListening();
+            console.log('✅ Microphone started after 1.5 second delay');
           }
-        }, 50); // Very short delay, just enough for component to be ready
+        }, 1500); // 1.5 second delay to avoid interrupting the user when call starts
       }
     }
     // Note: We don't stop speech recognition when hands-free mode is disabled
