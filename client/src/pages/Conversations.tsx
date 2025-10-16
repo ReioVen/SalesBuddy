@@ -1757,7 +1757,7 @@ const Conversations: React.FC = () => {
                     return language === 'en' ? 'en-US' : language === 'et' ? 'et-EE' : language === 'es' ? 'es-ES' : language === 'ru' ? 'ru-RU' : 'en-US';
                   })()}
                   handsFreeMode={handsFreeMode}
-                  autoSendDelay={1000}
+                  autoSendDelay={1800}
                   onAIResponse={(callback) => {
                     speakAIResponseRef.current = callback;
                   }}
@@ -1864,7 +1864,7 @@ const Conversations: React.FC = () => {
                     return language === 'en' ? 'en-US' : language === 'et' ? 'et-EE' : language === 'es' ? 'es-ES' : language === 'ru' ? 'ru-RU' : 'en-US';
                   })()}
                   handsFreeMode={true}
-                  autoSendDelay={1000}
+                  autoSendDelay={1800}
                   onAIResponse={(callback) => {
                     speakAIResponseRef.current = callback;
                   }}

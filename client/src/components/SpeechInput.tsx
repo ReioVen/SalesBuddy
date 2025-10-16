@@ -24,7 +24,7 @@ const SpeechInput: React.FC<SpeechInputProps> = ({
   language = 'en-US',
   className = '',
   handsFreeMode = false,
-  autoSendDelay = 3000, // 3 seconds default
+  autoSendDelay = 1800, // 1.8 seconds default
   onAIResponse,
   selectedVoice = null,
   ttsVolume = 0.7
