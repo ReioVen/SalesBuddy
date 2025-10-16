@@ -1460,7 +1460,7 @@ const Conversations: React.FC = () => {
                         {getDifficultyIcon(currentConversation.clientCustomization.difficulty)} {t(currentConversation.clientCustomization.difficulty)}
                       </span>
                       {currentConversation.clientCustomization.industry && (
-                        <span>• {currentConversation.clientCustomization.industry}</span>
+                        <span>• {t(currentConversation.clientCustomization.industry) || currentConversation.clientCustomization.industry}</span>
                       )}
                       {currentConversation.clientCustomization.role && (
                         <span>• {currentConversation.clientCustomization.role}</span>
@@ -1501,7 +1501,7 @@ const Conversations: React.FC = () => {
               <div className="flex flex-wrap gap-3 text-sm mb-3">
                 {currentConversation.clientCustomization.familySize && (
                   <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full">
-                    👨‍👩‍👧‍👦 {currentConversation.clientCustomization.familySize} family members
+                    👨‍👩‍👧‍👦 {currentConversation.clientCustomization.familySize} {t('familyMembers')}
                   </span>
                 )}
                 {currentConversation.clientCustomization.incomeRange && (
@@ -1511,7 +1511,7 @@ const Conversations: React.FC = () => {
                 )}
                 {currentConversation.clientCustomization.priceSensitivity && (
                   <span className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full">
-                    💸 {getPriceSensitivityTranslation(currentConversation.clientCustomization.priceSensitivity)} price sensitivity
+                    💸 {getPriceSensitivityTranslation(currentConversation.clientCustomization.priceSensitivity)} {t('priceSensitivity')}
                   </span>
                 )}
                 {currentConversation.clientCustomization.difficultyPhase && (

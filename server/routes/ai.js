@@ -1625,18 +1625,50 @@ Respond in this exact JSON format:
       language = 'en'
     } = req.body;
 
-    // Create conversation title
+    // Create conversation title based on language
     let title;
     if (clientName) {
-      title = `Practice with ${clientName}`;
+      if (language === 'et') {
+        title = `Harjutus koos ${clientName}`;
+      } else if (language === 'es') {
+        title = `Práctica con ${clientName}`;
+      } else if (language === 'ru') {
+        title = `Практика с ${clientName}`;
+      } else {
+        title = `Practice with ${clientName}`;
+      }
     } else {
       // Handle special scenarios
       if (scenario === 'cold_call') {
-        title = 'Cold Call Practice - Uninterested Prospects';
+        if (language === 'et') {
+          title = 'Külma kõne harjutus - huvitamata potentsiaalsed kliendid';
+        } else if (language === 'es') {
+          title = 'Práctica de Llamada Fría - Prospectos Desinteresados';
+        } else if (language === 'ru') {
+          title = 'Практика холодных звонков - незаинтересованные клиенты';
+        } else {
+          title = 'Cold Call Practice - Uninterested Prospects';
+        }
       } else if (scenario === 'lead_call') {
-        title = 'Lead Call Practice - Skeptical Prospects';
+        if (language === 'et') {
+          title = 'Juhtkõne harjutus - skeptilised potentsiaalsed kliendid';
+        } else if (language === 'es') {
+          title = 'Práctica de Llamada de Liderazgo - Prospectos Escépticos';
+        } else if (language === 'ru') {
+          title = 'Практика лид-звонков - скептически настроенные клиенты';
+        } else {
+          title = 'Lead Call Practice - Skeptical Prospects';
+        }
       } else {
-        title = `Sales Practice - ${scenario.replace('_', ' ').toUpperCase()}`;
+        if (language === 'et') {
+          title = `Müügi harjutus - ${scenario.replace('_', ' ').toUpperCase()}`;
+        } else if (language === 'es') {
+          title = `Práctica de Ventas - ${scenario.replace('_', ' ').toUpperCase()}`;
+        } else if (language === 'ru') {
+          title = `Практика продаж - ${scenario.replace('_', ' ').toUpperCase()}`;
+        } else {
+          title = `Sales Practice - ${scenario.replace('_', ' ').toUpperCase()}`;
+        }
       }
     }
     

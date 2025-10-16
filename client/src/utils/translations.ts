@@ -199,6 +199,18 @@ export const translations = {
     comedy: 'Comedy',
     action: 'Action',
     romance: 'Romance',
+    
+    // Industries
+    technology: 'Technology',
+    healthcare: 'Healthcare',
+    finance: 'Finance',
+    education: 'Education',
+    retail: 'Retail',
+    manufacturing: 'Manufacturing',
+    construction: 'Construction',
+    real_estate: 'Real Estate',
+    hospitality: 'Hospitality',
+    transportation: 'Transportation',
 
     // AI Tips
     aiTips: 'AI Tips',
@@ -865,6 +877,18 @@ export const translations = {
     comedy: 'Komeedia',
     action: 'Märul',
     romance: 'Romantika',
+    
+    // Industries
+    technology: 'Tehnoloogia',
+    healthcare: 'Tervishoid',
+    finance: 'Finants',
+    education: 'Haridus',
+    retail: 'Jaemüük',
+    manufacturing: 'Tootmine',
+    construction: 'Ehitus',
+    real_estate: 'Kinnisvara',
+    hospitality: 'Majutus',
+    transportation: 'Transport',
 
     // Company Management
     companyManagement: 'Ettevõtte Haldamine',
@@ -1489,6 +1513,18 @@ export const translations = {
     comedy: 'Comedia',
     action: 'Acción',
     romance: 'Romance',
+    
+    // Industries
+    technology: 'Tecnología',
+    healthcare: 'Salud',
+    finance: 'Finanzas',
+    education: 'Educación',
+    retail: 'Venta al Por Menor',
+    manufacturing: 'Manufactura',
+    construction: 'Construcción',
+    real_estate: 'Bienes Raíces',
+    hospitality: 'Hospitalidad',
+    transportation: 'Transporte',
 
     // Company Management
     companyManagement: 'Gestión de Empresa',
@@ -2065,6 +2101,18 @@ export const translations = {
     comedy: 'Комедия',
     action: 'Боевик',
     romance: 'Романтика',
+    
+    // Industries
+    technology: 'Технологии',
+    healthcare: 'Здравоохранение',
+    finance: 'Финансы',
+    education: 'Образование',
+    retail: 'Розничная торговля',
+    manufacturing: 'Производство',
+    construction: 'Строительство',
+    real_estate: 'Недвижимость',
+    hospitality: 'Гостеприимство',
+    transportation: 'Транспорт',
 
     // Company Management
     companyManagement: 'Управление Компанией',
