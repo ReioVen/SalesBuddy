@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useAuth } from './contexts/AuthContext.tsx';
+import { Analytics } from '@vercel/analytics/react';
+import { SpeedInsights } from '@vercel/speed-insights/react';
 // import { testAPI } from './utils/apiTest';
 import Home from './pages/Home.tsx';
 import Pricing from './pages/Pricing.tsx';
@@ -178,6 +180,12 @@ const App: React.FC = () => {
         
         {/* Beta Feedback System */}
         <BetaFeedback />
+        
+        {/* Vercel Analytics */}
+        <Analytics />
+        
+        {/* Vercel Speed Insights */}
+        <SpeedInsights />
       </div>
     </ThemeProvider>
   );

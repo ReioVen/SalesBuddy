@@ -11,10 +11,18 @@
     "install-all": "npm install && cd server && npm install && cd ../client && npm install",
     "start": "cd server && npm start"
   },
-  "keywords": ["sales", "ai", "training", "chatbot"],
+  "keywords": [
+    "sales",
+    "ai",
+    "training",
+    "chatbot"
+  ],
   "author": "SalesBuddy Team",
   "license": "MIT",
   "devDependencies": {
     "concurrently": "^8.2.2"
+  },
+  "dependencies": {
+    "@vercel/analytics": "^1.5.0"
   }
-} 
+}
