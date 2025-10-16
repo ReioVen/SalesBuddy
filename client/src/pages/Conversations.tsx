@@ -1492,7 +1492,7 @@ const Conversations: React.FC = () => {
                         <span>• {t(currentConversation.clientCustomization.industry) || currentConversation.clientCustomization.industry}</span>
                       )}
                       {currentConversation.clientCustomization.role && (
-                        <span>• {currentConversation.clientCustomization.role}</span>
+                        <span>• {t(currentConversation.clientCustomization.role) || currentConversation.clientCustomization.role}</span>
                       )}
                     </div>
                   </div>

@@ -61,7 +61,9 @@ class SalesBuddyAdmin:
         self.create_users_tab()
         self.create_companies_tab()
         self.create_conversations_tab()
-        self.create_translations_tab()
+        self.create_voice_settings_tab()
+        self.create_ai_ratings_tab()
+        self.create_subscription_tracking_tab()
         self.create_analytics_tab()
         self.create_settings_tab()
         
@@ -86,6 +88,9 @@ class SalesBuddyAdmin:
         self.create_stat_card(stats_frame, "Today's Conversations", "0", 1, 0)
         self.create_stat_card(stats_frame, "Active Subscriptions", "0", 1, 1)
         self.create_stat_card(stats_frame, "Revenue (MTD)", "$0", 1, 2)
+        self.create_stat_card(stats_frame, "Monthly Calls Used", "0/0", 2, 0)
+        self.create_stat_card(stats_frame, "Calls This Week", "0", 2, 1)
+        self.create_stat_card(stats_frame, "Avg. Call Duration", "0m", 2, 2)
         
         # Refresh button
         refresh_btn = tk.Button(dashboard_frame, text="Refresh Dashboard", 
@@ -113,8 +118,9 @@ class SalesBuddyAdmin:
         value_label.pack(pady=(0, 10))
         
         # Store reference for updating
-        stat_name = title.lower().replace(' ', '_').replace("'", '').replace('(', '').replace(')', '')
-        setattr(self, f"stat_{stat_name}", value_label)
+        stat_name = title.lower().replace(' ', '_').replace("'", '').replace('(', '').replace(')', '').replace(':', '').replace('-', '_').replace('.', '')
+        attr_name = f"stat_{stat_name}"
+        setattr(self, attr_name, value_label)
         
     def create_users_tab(self):
         """Create users management tab"""
@@ -245,11 +251,11 @@ class SalesBuddyAdmin:
         username_frame = tk.Frame(conversations_frame)
         username_frame.pack(fill='x', padx=10, pady=5)
         
-        tk.Label(username_frame, text="Search by username:").pack(side='left')
+        tk.Label(username_frame, text="Search by User ID/Name:").pack(side='left')
         self.conversation_username_var = tk.StringVar()
         username_entry = tk.Entry(username_frame, textvariable=self.conversation_username_var, width=25)
         username_entry.pack(side='left', padx=5)
-        username_entry.bind('<KeyRelease>', lambda e: self.methods.filter_conversations_by_username())
+        # Remove auto-search on keystroke
         
         tk.Button(username_frame, text="Search by User", command=self.methods.filter_conversations_by_username, 
                  bg='#FF9800', fg='white').pack(side='left', padx=5)
@@ -286,77 +292,220 @@ class SalesBuddyAdmin:
         # Bind double-click event
         self.conversations_tree.bind('<Double-1>', self.methods.view_conversation)
         
-    def create_translations_tab(self):
-        """Create translations management tab"""
-        translations_frame = ttk.Frame(self.notebook)
-        self.notebook.add(translations_frame, text="Translations")
+    def create_voice_settings_tab(self):
+        """Create AI voice settings management tab"""
+        voice_frame = ttk.Frame(self.notebook)
+        self.notebook.add(voice_frame, text="Voice Settings")
         
         # Title
-        title_label = tk.Label(translations_frame, text="Terms of Service & FAQ Translations", 
+        title_label = tk.Label(voice_frame, text="AI Voice & TTS Configuration", 
                               font=('Arial', 16, 'bold'))
         title_label.pack(pady=20)
         
-        # Language selection frame
-        lang_frame = tk.Frame(translations_frame)
+        # Voice speed settings frame
+        speed_frame = tk.LabelFrame(voice_frame, text="Voice Speed Settings", font=('Arial', 12, 'bold'))
+        speed_frame.pack(fill='x', padx=20, pady=10)
+        
+        # Browser TTS settings
+        browser_frame = tk.Frame(speed_frame)
+        browser_frame.pack(fill='x', padx=10, pady=10)
+        
+        tk.Label(browser_frame, text="Browser TTS Speed (Rate):", font=('Arial', 10, 'bold')).pack(anchor='w')
+        self.browser_tts_rate_var = tk.StringVar(value="1.6")
+        tk.Entry(browser_frame, textvariable=self.browser_tts_rate_var, width=10).pack(anchor='w', pady=5)
+        tk.Label(browser_frame, text="Current: 1.6 (60% faster than default)", fg='gray').pack(anchor='w')
+        
+        # Azure TTS settings
+        azure_frame = tk.Frame(speed_frame)
+        azure_frame.pack(fill='x', padx=10, pady=10)
+        
+        tk.Label(azure_frame, text="Azure TTS Speed (Rate):", font=('Arial', 10, 'bold')).pack(anchor='w')
+        self.azure_tts_rate_var = tk.StringVar(value="1.2")
+        tk.Entry(azure_frame, textvariable=self.azure_tts_rate_var, width=10).pack(anchor='w', pady=5)
+        tk.Label(azure_frame, text="Current: 1.2 (20% faster than default)", fg='gray').pack(anchor='w')
+        
+        # Response delay settings
+        delay_frame = tk.LabelFrame(voice_frame, text="AI Response Timing", font=('Arial', 12, 'bold'))
+        delay_frame.pack(fill='x', padx=20, pady=10)
+        
+        tk.Label(delay_frame, text="Auto-send delay after user stops speaking (milliseconds):", font=('Arial', 10, 'bold')).pack(anchor='w', padx=10, pady=5)
+        self.response_delay_var = tk.StringVar(value="1800")
+        tk.Entry(delay_frame, textvariable=self.response_delay_var, width=10).pack(anchor='w', padx=10, pady=5)
+        tk.Label(delay_frame, text="Current: 1800ms (1.8 seconds)", fg='gray').pack(anchor='w', padx=10)
+        
+        # Voice quality settings
+        quality_frame = tk.LabelFrame(voice_frame, text="Voice Quality Settings", font=('Arial', 12, 'bold'))
+        quality_frame.pack(fill='x', padx=20, pady=10)
+        
+        tk.Label(quality_frame, text="Default Pitch:", font=('Arial', 10, 'bold')).pack(anchor='w', padx=10, pady=5)
+        self.voice_pitch_var = tk.StringVar(value="0.98")
+        tk.Entry(quality_frame, textvariable=self.voice_pitch_var, width=10).pack(anchor='w', padx=10, pady=5)
+        
+        tk.Label(quality_frame, text="Default Volume:", font=('Arial', 10, 'bold')).pack(anchor='w', padx=10, pady=5)
+        self.voice_volume_var = tk.StringVar(value="0.85")
+        tk.Entry(quality_frame, textvariable=self.voice_volume_var, width=10).pack(anchor='w', padx=10, pady=5)
+        
+        # Language-specific voice settings
+        lang_frame = tk.LabelFrame(voice_frame, text="Language-Specific Voice Settings", font=('Arial', 12, 'bold'))
         lang_frame.pack(fill='x', padx=20, pady=10)
         
-        tk.Label(lang_frame, text="Select Language:", font=('Arial', 12, 'bold')).pack(side='left')
-        self.translation_language_var = tk.StringVar(value='en')
-        lang_combo = tk.ttk.Combobox(lang_frame, textvariable=self.translation_language_var,
+        # Language selection
+        tk.Label(lang_frame, text="Select Language:", font=('Arial', 10, 'bold')).pack(anchor='w', padx=10, pady=5)
+        self.voice_language_var = tk.StringVar(value='et')
+        lang_combo = tk.ttk.Combobox(lang_frame, textvariable=self.voice_language_var,
                                    values=['en', 'et', 'es', 'ru'], width=10)
-        lang_combo.pack(side='left', padx=10)
-        lang_combo.bind('<<ComboboxSelected>>', self.methods.load_translations)
+        lang_combo.pack(anchor='w', padx=10, pady=5)
         
-        # Category selection frame
-        category_frame = tk.Frame(translations_frame)
-        category_frame.pack(fill='x', padx=20, pady=5)
+        # Voice actions frame
+        actions_frame = tk.Frame(voice_frame)
+        actions_frame.pack(fill='x', padx=20, pady=20)
         
-        tk.Label(category_frame, text="Category:", font=('Arial', 12, 'bold')).pack(side='left')
-        self.translation_category_var = tk.StringVar(value='terms_of_service')
-        category_combo = tk.ttk.Combobox(category_frame, textvariable=self.translation_category_var,
-                                       values=['terms_of_service', 'faq'], width=15)
-        category_combo.pack(side='left', padx=10)
-        category_combo.bind('<<ComboboxSelected>>', self.methods.load_translations)
+        tk.Button(actions_frame, text="Apply Voice Settings", command=self.methods.apply_voice_settings, 
+                 bg='#4CAF50', fg='white').pack(side='left', padx=5)
+        tk.Button(actions_frame, text="Test Voice", command=self.methods.test_voice_settings, 
+                 bg='#2196F3', fg='white').pack(side='left', padx=5)
+        tk.Button(actions_frame, text="Reset to Defaults", command=self.methods.reset_voice_settings, 
+                 bg='#FF9800', fg='white').pack(side='left', padx=5)
+        tk.Button(actions_frame, text="Export Settings", command=self.methods.export_voice_settings, 
+                 bg='#607D8B', fg='white').pack(side='left', padx=5)
         
-        # Load button
-        load_btn = tk.Button(category_frame, text="Load Translations", 
-                           command=self.methods.load_translations, bg='#4CAF50', fg='white')
-        load_btn.pack(side='left', padx=10)
+    def create_ai_ratings_tab(self):
+        """Create conversation summaries tab"""
+        summaries_frame = ttk.Frame(self.notebook)
+        self.notebook.add(summaries_frame, text="Conversation Summaries")
         
-        # Translations treeview
-        columns = ('Key', 'Text Preview', 'Last Modified', 'Status')
-        self.translations_tree = ttk.Treeview(translations_frame, columns=columns, show='headings', height=15)
+        # Title
+        title_label = tk.Label(summaries_frame, text="All Conversation Summaries", 
+                              font=('Arial', 16, 'bold'))
+        title_label.pack(pady=20)
+        
+        # Filter frame
+        filter_frame = tk.Frame(summaries_frame)
+        filter_frame.pack(fill='x', padx=20, pady=10)
+        
+        tk.Label(filter_frame, text="Search by Name/ID:", font=('Arial', 12, 'bold')).pack(side='left')
+        self.summary_search_var = tk.StringVar()
+        search_entry = tk.Entry(filter_frame, textvariable=self.summary_search_var, width=25)
+        search_entry.pack(side='left', padx=5)
+        
+        tk.Button(filter_frame, text="Search", command=self.methods.search_summaries, 
+                 bg='#4CAF50', fg='white').pack(side='left', padx=5)
+        tk.Button(filter_frame, text="Clear", command=self.methods.clear_summary_filters, 
+                 bg='#607D8B', fg='white').pack(side='left', padx=5)
+        tk.Button(filter_frame, text="Refresh", command=self.methods.load_all_summaries, 
+                 bg='#2196F3', fg='white').pack(side='left', padx=5)
+        
+        # Summaries treeview
+        columns = ('User ID', 'Name', 'Summary #', 'AI Analysis Preview', 'Total Duration', 'Conv Count', 'Last Activity', 'Overall Rating')
+        self.summaries_tree = ttk.Treeview(summaries_frame, columns=columns, show='headings', height=15)
         
         for col in columns:
-            self.translations_tree.heading(col, text=col)
-            if col == 'Text Preview':
-                self.translations_tree.column(col, width=400)
+            self.summaries_tree.heading(col, text=col)
+            if col == 'AI Analysis Preview':
+                self.summaries_tree.column(col, width=300)
+            elif col == 'Summary #':
+                self.summaries_tree.column(col, width=100)
             else:
-                self.translations_tree.column(col, width=150)
+                self.summaries_tree.column(col, width=120)
         
-        # Scrollbar for translations tree
-        translations_scrollbar = ttk.Scrollbar(translations_frame, orient='vertical', command=self.translations_tree.yview)
-        self.translations_tree.configure(yscrollcommand=translations_scrollbar.set)
+        # Scrollbar for summaries tree
+        summaries_scrollbar = ttk.Scrollbar(summaries_frame, orient='vertical', command=self.summaries_tree.yview)
+        self.summaries_tree.configure(yscrollcommand=summaries_scrollbar.set)
         
-        # Pack translations tree and scrollbar
-        self.translations_tree.pack(side='left', fill='both', expand=True, padx=(20, 0), pady=10)
-        translations_scrollbar.pack(side='right', fill='y', pady=10)
+        # Pack summaries tree and scrollbar
+        self.summaries_tree.pack(side='left', fill='both', expand=True, padx=(20, 0), pady=10)
+        summaries_scrollbar.pack(side='right', fill='y', pady=10)
         
-        # Translation actions frame
-        actions_frame = tk.Frame(translations_frame)
+        # Summary actions frame
+        actions_frame = tk.Frame(summaries_frame)
         actions_frame.pack(fill='x', padx=20, pady=10)
         
-        tk.Button(actions_frame, text="Edit Translation", command=self.methods.edit_translation, 
+        tk.Button(actions_frame, text="View AI Summary", command=self.methods.view_full_summary, 
+                 bg='#2196F3', fg='white').pack(side='left', padx=5)
+        tk.Button(actions_frame, text="View All Conversations", command=self.methods.view_conversation_from_summary, 
                  bg='#FF9800', fg='white').pack(side='left', padx=5)
-        tk.Button(actions_frame, text="Seed Database", command=self.methods.seed_translations, 
-                 bg='#9C27B0', fg='white').pack(side='left', padx=5)
-        tk.Button(actions_frame, text="Export Translations", command=self.methods.export_translations, 
+        tk.Button(actions_frame, text="Export Summaries", command=self.methods.export_summaries, 
                  bg='#607D8B', fg='white').pack(side='left', padx=5)
-        tk.Button(actions_frame, text="Refresh", command=self.methods.load_translations, 
-                 bg='#4CAF50', fg='white').pack(side='left', padx=5)
+        tk.Button(actions_frame, text="Generate Report", command=self.methods.generate_summary_report, 
+                 bg='#9C27B0', fg='white').pack(side='left', padx=5)
         
         # Bind double-click event
-        self.translations_tree.bind('<Double-1>', self.methods.edit_translation)
+        self.summaries_tree.bind('<Double-1>', self.methods.view_full_summary)
+        
+    def create_subscription_tracking_tab(self):
+        """Create subscription and usage tracking tab"""
+        subscription_frame = ttk.Frame(self.notebook)
+        self.notebook.add(subscription_frame, text="Subscription Tracking")
+        
+        # Title
+        title_label = tk.Label(subscription_frame, text="Subscription & Usage Tracking", 
+                              font=('Arial', 16, 'bold'))
+        title_label.pack(pady=20)
+        
+        # Filter frame
+        filter_frame = tk.Frame(subscription_frame)
+        filter_frame.pack(fill='x', padx=20, pady=10)
+        
+        tk.Label(filter_frame, text="Filter by Plan:", font=('Arial', 12, 'bold')).pack(side='left')
+        self.subscription_plan_var = tk.StringVar(value="all")
+        plan_combo = tk.ttk.Combobox(filter_frame, textvariable=self.subscription_plan_var,
+                                   values=['all', 'basic', 'pro', 'enterprise'], width=10)
+        plan_combo.pack(side='left', padx=10)
+        plan_combo.bind('<<ComboboxSelected>>', self.methods.filter_subscriptions)
+        
+        tk.Label(filter_frame, text="Month:", font=('Arial', 12, 'bold')).pack(side='left', padx=(20, 5))
+        self.subscription_month_var = tk.StringVar(value=datetime.now().strftime('%Y-%m'))
+        month_entry = tk.Entry(filter_frame, textvariable=self.subscription_month_var, width=10)
+        month_entry.pack(side='left', padx=5)
+        
+        tk.Button(filter_frame, text="Apply Filter", command=self.methods.filter_subscriptions, 
+                 bg='#4CAF50', fg='white').pack(side='left', padx=10)
+        tk.Button(filter_frame, text="Refresh", command=self.methods.load_subscription_tracking, 
+                 bg='#2196F3', fg='white').pack(side='left', padx=5)
+        
+        # Usage summary frame
+        summary_frame = tk.LabelFrame(subscription_frame, text="Usage Summary", font=('Arial', 12, 'bold'))
+        summary_frame.pack(fill='x', padx=20, pady=10)
+        
+        self.usage_summary_text = scrolledtext.ScrolledText(summary_frame, height=8)
+        self.usage_summary_text.pack(fill='both', expand=True, padx=10, pady=10)
+        
+        # Subscription treeview
+        columns = ('User/Company', 'Plan', 'Monthly Limit', 'Used This Month', 'Remaining', 'Usage %', 'Status', 'Last Activity')
+        self.subscription_tree = ttk.Treeview(subscription_frame, columns=columns, show='headings', height=12)
+        
+        for col in columns:
+            self.subscription_tree.heading(col, text=col)
+            if col == 'User/Company':
+                self.subscription_tree.column(col, width=150)
+            elif col == 'Usage %':
+                self.subscription_tree.column(col, width=80)
+            else:
+                self.subscription_tree.column(col, width=120)
+        
+        # Scrollbar for subscription tree
+        subscription_scrollbar = ttk.Scrollbar(subscription_frame, orient='vertical', command=self.subscription_tree.yview)
+        self.subscription_tree.configure(yscrollcommand=subscription_scrollbar.set)
+        
+        # Pack subscription tree and scrollbar
+        self.subscription_tree.pack(side='left', fill='both', expand=True, padx=(20, 0), pady=10)
+        subscription_scrollbar.pack(side='right', fill='y', pady=10)
+        
+        # Subscription actions frame
+        actions_frame = tk.Frame(subscription_frame)
+        actions_frame.pack(fill='x', padx=20, pady=10)
+        
+        tk.Button(actions_frame, text="View Usage Details", command=self.methods.view_usage_details, 
+                 bg='#2196F3', fg='white').pack(side='left', padx=5)
+        tk.Button(actions_frame, text="Reset Monthly Usage", command=self.methods.reset_monthly_usage, 
+                 bg='#FF9800', fg='white').pack(side='left', padx=5)
+        tk.Button(actions_frame, text="Export Usage Report", command=self.methods.export_usage_report, 
+                 bg='#607D8B', fg='white').pack(side='left', padx=5)
+        tk.Button(actions_frame, text="Update Limits", command=self.methods.update_subscription_limits, 
+                 bg='#9C27B0', fg='white').pack(side='left', padx=5)
+        
+        # Bind double-click event
+        self.subscription_tree.bind('<Double-1>', self.methods.view_usage_details)
         
     def create_analytics_tab(self):
         """Create analytics tab"""

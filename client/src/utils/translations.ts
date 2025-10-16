@@ -224,6 +224,14 @@ export const translations = {
     closing: 'Closing',
     price_discussion: 'Price Discussion',
     timeline_pressure: 'Timeline Pressure',
+    
+    // Client Roles
+    decision_maker: 'Decision Maker',
+    influencer: 'Influencer',
+    end_user: 'End User',
+    budget_holder: 'Budget Holder',
+    technical_evaluator: 'Technical Evaluator',
+    procurement_specialist: 'Procurement Specialist',
 
     // AI Tips
     aiTips: 'AI Tips',
@@ -915,6 +923,14 @@ export const translations = {
     closing: 'Sulgemine',
     price_discussion: 'Hinnakõnelused',
     timeline_pressure: 'Ajakava Surve',
+    
+    // Client Roles
+    decision_maker: 'Otsustaja',
+    influencer: 'Mõjutaja',
+    end_user: 'Lõppkasutaja',
+    budget_holder: 'Eelarve Haldur',
+    technical_evaluator: 'Tehniline Hindaja',
+    procurement_specialist: 'Hankespetsialist',
 
     // Company Management
     companyManagement: 'Ettevõtte Haldamine',
@@ -1564,6 +1580,14 @@ export const translations = {
     closing: 'Cierre',
     price_discussion: 'Discusión de Precios',
     timeline_pressure: 'Presión de Tiempo',
+    
+    // Client Roles
+    decision_maker: 'Tomador de Decisiones',
+    influencer: 'Influenciador',
+    end_user: 'Usuario Final',
+    budget_holder: 'Responsable del Presupuesto',
+    technical_evaluator: 'Evaluador Técnico',
+    procurement_specialist: 'Especialista en Compras',
 
     // Company Management
     companyManagement: 'Gestión de Empresa',
@@ -2165,6 +2189,14 @@ export const translations = {
     closing: 'Закрытие',
     price_discussion: 'Обсуждение Цен',
     timeline_pressure: 'Временное Давление',
+    
+    // Client Roles
+    decision_maker: 'Принимающий Решения',
+    influencer: 'Влиятельный Лицо',
+    end_user: 'Конечный Пользователь',
+    budget_holder: 'Держатель Бюджета',
+    technical_evaluator: 'Технический Оценщик',
+    procurement_specialist: 'Специалист по Закупкам',
 
     // Company Management
     companyManagement: 'Управление Компанией',

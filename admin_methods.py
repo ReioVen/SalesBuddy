@@ -3,7 +3,7 @@ Additional methods for SalesBuddy Admin Panel
 """
 
 import tkinter as tk
-from tkinter import messagebox, simpledialog
+from tkinter import messagebox, simpledialog, scrolledtext
 from datetime import datetime, timedelta
 import json
 import re
@@ -42,6 +42,47 @@ class AdminMethods:
             # Monthly revenue (placeholder - would need Stripe integration)
             revenue_mtd = 0  # This would need to be calculated from actual payment data
             
+            # Get monthly usage statistics
+            current_month_start = datetime.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+            next_month_start = (current_month_start.replace(day=1) + timedelta(days=32)).replace(day=1)
+            
+            # Count conversations this month
+            monthly_conversations = self.admin.conversations_collection.count_documents({
+                'createdAt': {
+                    '$gte': current_month_start,
+                    '$lt': next_month_start
+                }
+            })
+            
+            # Get total monthly limits
+            users_with_subscriptions = list(self.admin.users_collection.find({
+                'subscription': {'$exists': True},
+                'subscription.plan': {'$ne': None}
+            }))
+            
+            total_monthly_limit = 0
+            for user in users_with_subscriptions:
+                plan = user.get('subscription', {}).get('plan', 'basic')
+                plan_limits = {'free': 3, 'basic': 10, 'pro': 50, 'enterprise': 200}
+                total_monthly_limit += plan_limits.get(plan, 10)
+            
+            # Get this week's conversations
+            week_start = datetime.now() - timedelta(days=7)
+            week_conversations = self.admin.conversations_collection.count_documents({
+                'createdAt': {'$gte': week_start}
+            })
+            
+            # Get average call duration
+            conversations_with_duration = list(self.admin.conversations_collection.find({
+                'duration': {'$exists': True, '$gt': 0}
+            }, {'duration': 1}))
+            
+            avg_duration_minutes = 0
+            if conversations_with_duration:
+                total_duration = sum(conv.get('duration', 0) for conv in conversations_with_duration)
+                avg_duration_seconds = total_duration / len(conversations_with_duration)
+                avg_duration_minutes = round(avg_duration_seconds / 60, 1)
+            
             # Update stat cards
             self.admin.stat_total_users.config(text=str(total_users))
             self.admin.stat_active_companies.config(text=str(active_companies))
@@ -49,6 +90,11 @@ class AdminMethods:
             self.admin.stat_todays_conversations.config(text=str(today_conversations))
             self.admin.stat_active_subscriptions.config(text=str(active_subscriptions))
             self.admin.stat_revenue_mtd.config(text=f"${revenue_mtd}")
+            
+            # Update new monthly usage cards
+            self.admin.stat_monthly_calls_used.config(text=f"{monthly_conversations}/{total_monthly_limit}")
+            self.admin.stat_calls_this_week.config(text=str(week_conversations))
+            self.admin.stat_avg_call_duration.config(text=f"{avg_duration_minutes}m")
             
             # Update recent activity
             self.update_recent_activity()
@@ -146,18 +192,17 @@ class AdminMethods:
             search_term = InputValidator.validate_and_sanitize_input(
                 raw_search_term, 'search', is_required=False
             ).lower()
-        
-        for item in self.admin.users_tree.get_children():
-            values = self.admin.users_tree.item(item)['values']
-            # Search in name and email
-            if (search_term in values[1].lower() or 
-                search_term in values[2].lower() or 
-                search_term in values[3].lower() or
-                search_term in values[4].lower()):
-                self.admin.users_tree.reattach(item, '', 'end')
-            else:
-                self.admin.users_tree.detach(item)
-                    
+            
+            for item in self.admin.users_tree.get_children():
+                values = self.admin.users_tree.item(item)['values']
+                # Search in name and email
+                if (search_term in values[1].lower() or 
+                    search_term in values[2].lower() or 
+                    search_term in values[3].lower() or
+                    search_term in values[4].lower()):
+                    self.admin.users_tree.reattach(item, '', 'end')
+                else:
+                    self.admin.users_tree.detach(item)
         except SecurityError as e:
             SecurityAuditLogger.log_security_violation(
                 None, "search_users", "search_term", "input_validation", str(e)
@@ -167,7 +212,7 @@ class AdminMethods:
             SecurityAuditLogger.log_security_violation(
                 None, "search_users", "error", "unexpected_error", str(e)
             )
-            messagebox.showerror("Error", "An error occurred during search")
+            messagebox.showerror("Error", f"An error occurred during search: {str(e)}")
     
     def filter_users(self, filter_type):
         """Filter users by type"""
@@ -707,16 +752,15 @@ Updated: {user.get('updatedAt', 'Unknown')}
             search_term = InputValidator.validate_and_sanitize_input(
                 raw_search_term, 'search', is_required=False
             ).lower()
-        
-        for item in self.admin.companies_tree.get_children():
-            values = self.admin.companies_tree.item(item)['values']
-            # Search in name and industry
-            if (search_term in values[1].lower() or 
-                search_term in values[2].lower()):
-                self.admin.companies_tree.reattach(item, '', 'end')
-            else:
-                self.admin.companies_tree.detach(item)
-                    
+            
+            for item in self.admin.companies_tree.get_children():
+                values = self.admin.companies_tree.item(item)['values']
+                # Search in name and industry
+                if (search_term in values[1].lower() or 
+                    search_term in values[2].lower()):
+                    self.admin.companies_tree.reattach(item, '', 'end')
+                else:
+                    self.admin.companies_tree.detach(item)
         except SecurityError as e:
             SecurityAuditLogger.log_security_violation(
                 None, "search_companies", "search_term", "input_validation", str(e)
@@ -726,7 +770,7 @@ Updated: {user.get('updatedAt', 'Unknown')}
             SecurityAuditLogger.log_security_violation(
                 None, "search_companies", "error", "unexpected_error", str(e)
             )
-            messagebox.showerror("Error", "An error occurred during search")
+            messagebox.showerror("Error", f"Failed to search companies: {str(e)}")
     
     def view_company_details(self, event=None):
         """View detailed company information"""
@@ -1316,7 +1360,7 @@ Updated: {company.get('updatedAt', 'Unknown')}
     
     @secure_input_wrapper
     def filter_conversations_by_username(self):
-        """Filter conversations by username"""
+        """Filter conversations by user ID"""
         if not self.admin.connected:
             return
         
@@ -1325,45 +1369,53 @@ Updated: {company.get('updatedAt', 'Unknown')}
             for item in self.admin.conversations_tree.get_children():
                 self.admin.conversations_tree.delete(item)
             
-            # Validate and sanitize username input
-            raw_username = self.admin.conversation_username_var.get()
-            username = InputValidator.validate_and_sanitize_input(
-                raw_username, 'search', is_required=False
-            ).strip()
+            # Get search term
+            search_term = self.admin.conversation_username_var.get().strip()
             
-            if not username:
+            if not search_term:
                 self.load_conversations()  # Load all if empty
                 return
             
-            # Use secure database query builder for user search
-            user_filter = SecureDatabaseQueries.build_secure_filter(
-                'firstName', username, '$regex'
-            )
-            user_filter.update(SecureDatabaseQueries.build_secure_filter(
-                'lastName', username, '$regex'
-            ))
-            user_filter.update(SecureDatabaseQueries.build_secure_filter(
-                'email', username, '$regex'
-            ))
+            conversations = []
+            users = []  # Initialize users list
             
-            # Search for users matching the username
-            users = list(self.admin.users_collection.find({
+            # Try to search by user ID first (ObjectId)
+            try:
+                # Convert search term to ObjectId if it's a valid ObjectId string
+                user_object_id = ObjectId(search_term)
+                conversations = list(self.admin.conversations_collection.find({
+                    'userId': user_object_id
+                }).sort('createdAt', -1).limit(30))
+            except:
+                # If ObjectId conversion fails, try as string
+                conversations = list(self.admin.conversations_collection.find({
+                    'userId': search_term
+                }).sort('createdAt', -1).limit(30))
+            
+            # Also search by user name/email (combine with user ID search)
+            name_users = list(self.admin.users_collection.find({
                 '$or': [
-                    {'firstName': {'$regex': username, '$options': 'i'}},
-                    {'lastName': {'$regex': username, '$options': 'i'}},
-                    {'email': {'$regex': username, '$options': 'i'}}
+                    {'firstName': {'$regex': search_term, '$options': 'i'}},
+                    {'lastName': {'$regex': search_term, '$options': 'i'}},
+                    {'email': {'$regex': search_term, '$options': 'i'}}
                 ]
             }))
             
-            if not users:
-                messagebox.showinfo("No Results", f"No users found matching '{username}'")
-                return
+            # Add conversations from name/email search
+            if name_users:
+                user_ids = [user['_id'] for user in name_users]
+                name_conversations = list(self.admin.conversations_collection.find({
+                    'userId': {'$in': user_ids}
+                }).sort('createdAt', -1).limit(30))
+                
+                # Combine conversations and remove duplicates
+                existing_ids = {conv['_id'] for conv in conversations}
+                for conv in name_conversations:
+                    if conv['_id'] not in existing_ids:
+                        conversations.append(conv)
             
-            # Get conversations for these users (limit to 30 for performance)
-            user_ids = [user['_id'] for user in users]
-            conversations = list(self.admin.conversations_collection.find({
-                'userId': {'$in': user_ids}
-            }).sort('createdAt', -1).limit(30))
+            # Combine users for display
+            users = name_users
             
             for conv in conversations:
                 # Get user information
@@ -1907,3 +1959,1855 @@ Updated: {conversation.get('updatedAt', 'Unknown')}
                 None, "export_translations", "error", "unexpected_error", str(e)
             )
             messagebox.showerror("Error", f"Failed to export translations: {str(e)}")
+    
+    # Voice Settings Methods
+    def apply_voice_settings(self):
+        """Apply voice settings to the application"""
+        try:
+            if not self.admin.connected:
+                messagebox.showerror("Error", "Not connected to database")
+                return
+            
+            # Get current settings
+            browser_rate = float(self.admin.browser_tts_rate_var.get())
+            azure_rate = float(self.admin.azure_tts_rate_var.get())
+            response_delay = int(self.admin.response_delay_var.get())
+            pitch = float(self.admin.voice_pitch_var.get())
+            volume = float(self.admin.voice_volume_var.get())
+            language = self.admin.voice_language_var.get()
+            
+            # Validate settings
+            if browser_rate < 0.5 or browser_rate > 3.0:
+                messagebox.showerror("Error", "Browser TTS rate must be between 0.5 and 3.0")
+                return
+            
+            if azure_rate < 0.5 or azure_rate > 3.0:
+                messagebox.showerror("Error", "Azure TTS rate must be between 0.5 and 3.0")
+                return
+            
+            if response_delay < 500 or response_delay > 5000:
+                messagebox.showerror("Error", "Response delay must be between 500 and 5000 milliseconds")
+                return
+            
+            if pitch < 0.5 or pitch > 2.0:
+                messagebox.showerror("Error", "Pitch must be between 0.5 and 2.0")
+                return
+            
+            if volume < 0.0 or volume > 1.0:
+                messagebox.showerror("Error", "Volume must be between 0.0 and 1.0")
+                return
+            
+            # Save settings to database
+            voice_settings = {
+                'language': language,
+                'browser_tts_rate': browser_rate,
+                'azure_tts_rate': azure_rate,
+                'response_delay': response_delay,
+                'pitch': pitch,
+                'volume': volume,
+                'updated_at': datetime.now(),
+                'updated_by': 'admin_panel'
+            }
+            
+            # Upsert voice settings
+            self.admin.db.voice_settings.update_one(
+                {'language': language},
+                {'$set': voice_settings},
+                upsert=True
+            )
+            
+            messagebox.showinfo("Success", f"Voice settings applied for {language}")
+            
+        except ValueError as e:
+            messagebox.showerror("Error", "Invalid numeric values. Please check your input.")
+        except Exception as e:
+            SecurityAuditLogger.log_security_violation(
+                None, "apply_voice_settings", "error", "unexpected_error", str(e)
+            )
+            messagebox.showerror("Error", f"Failed to apply voice settings: {str(e)}")
+    
+    def test_voice_settings(self):
+        """Test current voice settings"""
+        try:
+            language = self.admin.voice_language_var.get()
+            test_text = f"Hello, this is a test of the voice settings for {language} language."
+            
+            # This would integrate with the actual TTS system
+            messagebox.showinfo("Voice Test", f"Testing voice for {language}:\n{test_text}")
+            
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to test voice: {str(e)}")
+    
+    def reset_voice_settings(self):
+        """Reset voice settings to defaults"""
+        try:
+            self.admin.browser_tts_rate_var.set("1.6")
+            self.admin.azure_tts_rate_var.set("1.2")
+            self.admin.response_delay_var.set("1800")
+            self.admin.voice_pitch_var.set("0.98")
+            self.admin.voice_volume_var.set("0.85")
+            
+            messagebox.showinfo("Success", "Voice settings reset to defaults")
+            
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to reset settings: {str(e)}")
+    
+    def export_voice_settings(self):
+        """Export voice settings to JSON file"""
+        try:
+            language = self.admin.voice_language_var.get()
+            
+            settings = {
+                'language': language,
+                'browser_tts_rate': self.admin.browser_tts_rate_var.get(),
+                'azure_tts_rate': self.admin.azure_tts_rate_var.get(),
+                'response_delay': self.admin.response_delay_var.get(),
+                'pitch': self.admin.voice_pitch_var.get(),
+                'volume': self.admin.voice_volume_var.get(),
+                'exported_at': datetime.now().isoformat()
+            }
+            
+            filename = f"voice_settings_{language}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+            with open(filename, 'w', encoding='utf-8') as f:
+                json.dump(settings, f, indent=2, ensure_ascii=False)
+            
+            messagebox.showinfo("Success", f"Voice settings exported to {filename}")
+            
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to export voice settings: {str(e)}")
+    
+    # AI Ratings Methods
+    def load_ratings(self):
+        """Load AI conversation ratings"""
+        try:
+            if not self.admin.connected:
+                messagebox.showerror("Error", "Not connected to database")
+                return
+            
+            # Clear existing items
+            for item in self.admin.ratings_tree.get_children():
+                self.admin.ratings_tree.delete(item)
+            
+            # Get conversations with AI ratings
+            conversations = list(self.admin.conversations_collection.find({
+                'aiRatings': {'$exists': True, '$ne': None}
+            }).sort('createdAt', -1).limit(100))
+            
+            for conv in conversations:
+                ratings = conv.get('aiRatings', {})
+                user_info = conv.get('userId', {})
+                
+                # Get user name
+                user_name = "Unknown"
+                if isinstance(user_info, dict):
+                    user_name = f"{user_info.get('firstName', '')} {user_info.get('lastName', '')}".strip()
+                elif isinstance(user_info, str):
+                    # If userId is just an ObjectId string, try to get user details
+                    try:
+                        user = self.admin.users_collection.find_one({'_id': ObjectId(user_info)})
+                        if user:
+                            user_name = f"{user.get('firstName', '')} {user.get('lastName', '')}".strip()
+                    except:
+                        pass
+                
+                # Calculate total score
+                total_score = sum([
+                    ratings.get('introduction', 0),
+                    ratings.get('mapping', 0),
+                    ratings.get('productPresentation', 0),
+                    ratings.get('objectionHandling', 0),
+                    ratings.get('close', 0)
+                ])
+                
+                # Insert into tree
+                self.admin.ratings_tree.insert('', 'end', values=(
+                    str(conv['_id'])[:8] + '...',
+                    user_name,
+                    f"{total_score}/50",
+                    ratings.get('introduction', 0),
+                    ratings.get('mapping', 0),
+                    ratings.get('productPresentation', 0),
+                    ratings.get('objectionHandling', 0),
+                    ratings.get('close', 0),
+                    conv.get('createdAt', '').strftime('%Y-%m-%d') if conv.get('createdAt') else ''
+                ))
+            
+            messagebox.showinfo("Success", f"Loaded {len(conversations)} conversations with ratings")
+            
+        except Exception as e:
+            SecurityAuditLogger.log_security_violation(
+                None, "load_ratings", "error", "unexpected_error", str(e)
+            )
+            messagebox.showerror("Error", f"Failed to load ratings: {str(e)}")
+    
+    def filter_ratings(self):
+        """Filter ratings by score range"""
+        try:
+            min_rating = int(self.admin.min_rating_var.get())
+            max_rating = int(self.admin.max_rating_var.get())
+            
+            for item in self.admin.ratings_tree.get_children():
+                values = self.admin.ratings_tree.item(item)['values']
+                total_score = int(values[2].split('/')[0])  # Extract score from "XX/50"
+                
+                if min_rating <= total_score <= max_rating:
+                    self.admin.ratings_tree.reattach(item, '', 'end')
+                else:
+                    self.admin.ratings_tree.detach(item)
+                    
+        except ValueError:
+            messagebox.showerror("Error", "Please enter valid numeric values for rating range")
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to filter ratings: {str(e)}")
+    
+    def view_rating_details(self):
+        """View detailed rating analysis"""
+        try:
+            selected_item = self.admin.ratings_tree.selection()
+            if not selected_item:
+                messagebox.showwarning("Warning", "Please select a conversation to view details")
+                return
+            
+            values = self.admin.ratings_tree.item(selected_item[0])['values']
+            conversation_id = values[0]
+            
+            # Find the full conversation ID
+            conv_id = None
+            for item in self.admin.ratings_tree.get_children():
+                item_values = self.admin.ratings_tree.item(item)['values']
+                if item_values[0] == conversation_id:
+                    # Find the actual conversation
+                    conversations = list(self.admin.conversations_collection.find({
+                        'aiRatings': {'$exists': True, '$ne': None}
+                    }))
+                    
+                    for conv in conversations:
+                        if str(conv['_id']).startswith(conversation_id.replace('...', '')):
+                            conv_id = conv['_id']
+                            break
+                    break
+            
+            if not conv_id:
+                messagebox.showerror("Error", "Could not find conversation details")
+                return
+            
+            conversation = self.admin.conversations_collection.find_one({'_id': conv_id})
+            if not conversation:
+                messagebox.showerror("Error", "Conversation not found")
+                return
+            
+            # Create details window
+            details_window = tk.Toplevel(self.admin.root)
+            details_window.title(f"Rating Details - {conversation_id}")
+            details_window.geometry("800x600")
+            
+            # Display conversation details
+            details_text = scrolledtext.ScrolledText(details_window)
+            details_text.pack(fill='both', expand=True, padx=10, pady=10)
+            
+            # Format details
+            ratings = conversation.get('aiRatings', {})
+            feedback = conversation.get('aiRatingFeedback', '')
+            
+            details_content = f"""
+Conversation ID: {conversation_id}
+User: {values[1]}
+Date: {values[8]}
+
+RATING BREAKDOWN:
+- Opening: {ratings.get('introduction', 0)}/10
+- Discovery: {ratings.get('mapping', 0)}/10
+- Presentation: {ratings.get('productPresentation', 0)}/10
+- Objection Handling: {ratings.get('objectionHandling', 0)}/10
+- Closing: {ratings.get('close', 0)}/10
+Total Score: {values[2]}
+
+AI FEEDBACK:
+{feedback}
+
+CONVERSATION SUMMARY:
+Title: {conversation.get('title', 'N/A')}
+Scenario: {conversation.get('scenario', 'N/A')}
+Duration: {conversation.get('duration', 0)} seconds
+Messages: {len(conversation.get('messages', []))}
+"""
+            
+            details_text.insert('1.0', details_content)
+            details_text.config(state='disabled')
+            
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to view rating details: {str(e)}")
+    
+    def export_ratings(self):
+        """Export ratings data to CSV"""
+        try:
+            if not self.admin.connected:
+                messagebox.showerror("Error", "Not connected to database")
+                return
+            
+            # Get all conversations with ratings
+            conversations = list(self.admin.conversations_collection.find({
+                'aiRatings': {'$exists': True, '$ne': None}
+            }))
+            
+            if not conversations:
+                messagebox.showinfo("Info", "No ratings data found to export")
+                return
+            
+            # Create CSV content
+            csv_content = "Conversation ID,User,Total Score,Opening,Discovery,Presentation,Objections,Closing,Date,Feedback\n"
+            
+            for conv in conversations:
+                ratings = conv.get('aiRatings', {})
+                feedback = conv.get('aiRatingFeedback', '').replace('"', '""').replace('\n', ' ')
+                
+                # Get user name
+                user_info = conv.get('userId', {})
+                user_name = "Unknown"
+                if isinstance(user_info, dict):
+                    user_name = f"{user_info.get('firstName', '')} {user_info.get('lastName', '')}".strip()
+                
+                total_score = sum([
+                    ratings.get('introduction', 0),
+                    ratings.get('mapping', 0),
+                    ratings.get('productPresentation', 0),
+                    ratings.get('objectionHandling', 0),
+                    ratings.get('close', 0)
+                ])
+                
+                csv_content += f'"{str(conv["_id"])}","{user_name}",{total_score},{ratings.get("introduction", 0)},{ratings.get("mapping", 0)},{ratings.get("productPresentation", 0)},{ratings.get("objectionHandling", 0)},{ratings.get("close", 0)},"{conv.get("createdAt", "").strftime("%Y-%m-%d") if conv.get("createdAt") else ""}","{feedback}"\n'
+            
+            # Save to file
+            filename = f"ai_ratings_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
+            with open(filename, 'w', encoding='utf-8') as f:
+                f.write(csv_content)
+            
+            messagebox.showinfo("Success", f"Ratings exported to {filename}")
+            
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to export ratings: {str(e)}")
+    
+    def generate_rating_report(self):
+        """Generate a comprehensive rating report"""
+        try:
+            if not self.admin.connected:
+                messagebox.showerror("Error", "Not connected to database")
+                return
+            
+            # Get all ratings data
+            conversations = list(self.admin.conversations_collection.find({
+                'aiRatings': {'$exists': True, '$ne': None}
+            }))
+            
+            if not conversations:
+                messagebox.showinfo("Info", "No ratings data found to generate report")
+                return
+            
+            # Calculate statistics
+            total_conversations = len(conversations)
+            scores = []
+            stage_scores = {
+                'introduction': [],
+                'mapping': [],
+                'productPresentation': [],
+                'objectionHandling': [],
+                'close': []
+            }
+            
+            for conv in conversations:
+                ratings = conv.get('aiRatings', {})
+                total_score = sum([
+                    ratings.get('introduction', 0),
+                    ratings.get('mapping', 0),
+                    ratings.get('productPresentation', 0),
+                    ratings.get('objectionHandling', 0),
+                    ratings.get('close', 0)
+                ])
+                scores.append(total_score)
+                
+                for stage in stage_scores:
+                    stage_scores[stage].append(ratings.get(stage, 0))
+            
+            # Calculate averages
+            avg_total = sum(scores) / len(scores) if scores else 0
+            avg_stages = {}
+            for stage, stage_list in stage_scores.items():
+                avg_stages[stage] = sum(stage_list) / len(stage_list) if stage_list else 0
+            
+            # Create report
+            report_window = tk.Toplevel(self.admin.root)
+            report_window.title("AI Rating Report")
+            report_window.geometry("800x600")
+            
+            report_text = scrolledtext.ScrolledText(report_window)
+            report_text.pack(fill='both', expand=True, padx=10, pady=10)
+            
+            report_content = f"""
+AI CONVERSATION RATING REPORT
+Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+
+SUMMARY STATISTICS:
+- Total Conversations Analyzed: {total_conversations}
+- Average Total Score: {avg_total:.2f}/50
+- Score Range: {min(scores)} - {max(scores)}
+
+STAGE-BY-STAGE AVERAGES:
+- Opening: {avg_stages['introduction']:.2f}/10
+- Discovery: {avg_stages['mapping']:.2f}/10
+- Presentation: {avg_stages['productPresentation']:.2f}/10
+- Objection Handling: {avg_stages['objectionHandling']:.2f}/10
+- Closing: {avg_stages['close']:.2f}/10
+
+PERFORMANCE DISTRIBUTION:
+- Excellent (40-50): {len([s for s in scores if s >= 40])} conversations
+- Good (30-39): {len([s for s in scores if 30 <= s < 40])} conversations
+- Average (20-29): {len([s for s in scores if 20 <= s < 30])} conversations
+- Needs Improvement (10-19): {len([s for s in scores if 10 <= s < 20])} conversations
+- Poor (0-9): {len([s for s in scores if s < 10])} conversations
+
+RECOMMENDATIONS:
+- Focus on improving: {min(avg_stages, key=avg_stages.get).replace('introduction', 'Opening').replace('mapping', 'Discovery').replace('productPresentation', 'Presentation').replace('objectionHandling', 'Objection Handling').replace('close', 'Closing')}
+- Strongest area: {max(avg_stages, key=avg_stages.get).replace('introduction', 'Opening').replace('mapping', 'Discovery').replace('productPresentation', 'Presentation').replace('objectionHandling', 'Objection Handling').replace('close', 'Closing')}
+"""
+            
+            report_text.insert('1.0', report_content)
+            report_text.config(state='disabled')
+            
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to generate rating report: {str(e)}")
+    
+    # Database Tools Methods
+    def create_database_backup(self):
+        """Create a database backup"""
+        try:
+            if not self.admin.connected:
+                messagebox.showerror("Error", "Not connected to database")
+                return
+            
+            # Create backup directory if it doesn't exist
+            backup_dir = "database_backups"
+            if not os.path.exists(backup_dir):
+                os.makedirs(backup_dir)
+            
+            # Generate backup filename
+            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+            backup_filename = f"{backup_dir}/salesbuddy_backup_{timestamp}.json"
+            
+            # Get all collections
+            collections = ['users', 'companies', 'conversations', 'conversationsummaries', 'translations', 'translationkeys']
+            backup_data = {
+                'backup_info': {
+                    'created_at': datetime.now().isoformat(),
+                    'database_name': self.admin.db.name,
+                    'collections': collections
+                },
+                'data': {}
+            }
+            
+            # Backup each collection
+            for collection_name in collections:
+                collection = getattr(self.admin, f"{collection_name}_collection", None)
+                if collection:
+                    docs = list(collection.find())
+                    backup_data['data'][collection_name] = docs
+            
+            # Save backup
+            with open(backup_filename, 'w', encoding='utf-8') as f:
+                json.dump(backup_data, f, indent=2, ensure_ascii=False, default=str)
+            
+            messagebox.showinfo("Success", f"Database backup created: {backup_filename}")
+            
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to create backup: {str(e)}")
+    
+    def restore_database_backup(self):
+        """Restore database from backup"""
+        try:
+            if not self.admin.connected:
+                messagebox.showerror("Error", "Not connected to database")
+                return
+            
+            # Ask for confirmation
+            if not messagebox.askyesno("Confirm Restore", "This will overwrite existing data. Are you sure?"):
+                return
+            
+            # Open file dialog to select backup file
+            from tkinter import filedialog
+            backup_file = filedialog.askopenfilename(
+                title="Select backup file to restore",
+                filetypes=[("JSON files", "*.json"), ("All files", "*.*")]
+            )
+            
+            if not backup_file:
+                return
+            
+            # Load backup data
+            with open(backup_file, 'r', encoding='utf-8') as f:
+                backup_data = json.load(f)
+            
+            # Restore each collection
+            collections_data = backup_data.get('data', {})
+            for collection_name, docs in collections_data.items():
+                collection = getattr(self.admin, f"{collection_name}_collection", None)
+                if collection:
+                    # Clear existing data
+                    collection.delete_many({})
+                    # Insert backup data
+                    if docs:
+                        collection.insert_many(docs)
+            
+            messagebox.showinfo("Success", f"Database restored from {backup_file}")
+            
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to restore backup: {str(e)}")
+    
+    def list_database_backups(self):
+        """List available database backups"""
+        try:
+            backup_dir = "database_backups"
+            if not os.path.exists(backup_dir):
+                messagebox.showinfo("Info", "No backup directory found")
+                return
+            
+            backup_files = [f for f in os.listdir(backup_dir) if f.endswith('.json')]
+            
+            if not backup_files:
+                messagebox.showinfo("Info", "No backup files found")
+                return
+            
+            # Create window to display backups
+            backup_window = tk.Toplevel(self.admin.root)
+            backup_window.title("Available Backups")
+            backup_window.geometry("600x400")
+            
+            backup_text = scrolledtext.ScrolledText(backup_window)
+            backup_text.pack(fill='both', expand=True, padx=10, pady=10)
+            
+            content = "Available Database Backups:\n\n"
+            for backup_file in sorted(backup_files, reverse=True):
+                file_path = os.path.join(backup_dir, backup_file)
+                file_size = os.path.getsize(file_path)
+                file_time = os.path.getmtime(file_path)
+                file_date = datetime.fromtimestamp(file_time).strftime('%Y-%m-%d %H:%M:%S')
+                
+                content += f"File: {backup_file}\n"
+                content += f"Date: {file_date}\n"
+                content += f"Size: {file_size:,} bytes\n"
+                content += f"Path: {file_path}\n"
+                content += "-" * 50 + "\n"
+            
+            backup_text.insert('1.0', content)
+            backup_text.config(state='disabled')
+            
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to list backups: {str(e)}")
+    
+    def cleanup_old_conversations(self):
+        """Clean up old conversations"""
+        try:
+            if not self.admin.connected:
+                messagebox.showerror("Error", "Not connected to database")
+                return
+            
+            # Ask for confirmation
+            result = messagebox.askyesnocancel(
+                "Cleanup Old Conversations",
+                "Delete conversations older than 90 days?\n\nYes: Delete conversations older than 90 days\nNo: Delete conversations older than 180 days\nCancel: Abort operation"
+            )
+            
+            if result is None:  # Cancel
+                return
+            
+            days_threshold = 90 if result else 180
+            cutoff_date = datetime.now() - timedelta(days=days_threshold)
+            
+            # Delete old conversations
+            result = self.admin.conversations_collection.delete_many({
+                'createdAt': {'$lt': cutoff_date}
+            })
+            
+            messagebox.showinfo("Success", f"Deleted {result.deleted_count} conversations older than {days_threshold} days")
+            
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to cleanup conversations: {str(e)}")
+    
+    def cleanup_inactive_users(self):
+        """Clean up inactive users"""
+        try:
+            if not self.admin.connected:
+                messagebox.showerror("Error", "Not connected to database")
+                return
+            
+            # Ask for confirmation
+            if not messagebox.askyesno("Confirm Cleanup", "Delete users who haven't logged in for 365 days?\nThis action cannot be undone."):
+                return
+            
+            cutoff_date = datetime.now() - timedelta(days=365)
+            
+            # Find inactive users (users without lastLogin or with very old lastLogin)
+            inactive_users = self.admin.users_collection.find({
+                '$or': [
+                    {'lastLogin': {'$lt': cutoff_date}},
+                    {'lastLogin': {'$exists': False}}
+                ],
+                'role': {'$in': ['individual', 'company_user']}  # Don't delete admins
+            })
+            
+            inactive_count = len(list(inactive_users))
+            
+            if inactive_count == 0:
+                messagebox.showinfo("Info", "No inactive users found")
+                return
+            
+            # Delete inactive users
+            result = self.admin.users_collection.delete_many({
+                '$or': [
+                    {'lastLogin': {'$lt': cutoff_date}},
+                    {'lastLogin': {'$exists': False}}
+                ],
+                'role': {'$in': ['individual', 'company_user']}
+            })
+            
+            messagebox.showinfo("Success", f"Deleted {result.deleted_count} inactive users")
+            
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to cleanup users: {str(e)}")
+    
+    def optimize_database(self):
+        """Optimize database performance"""
+        try:
+            if not self.admin.connected:
+                messagebox.showerror("Error", "Not connected to database")
+                return
+            
+            # Create indexes for better performance
+            collections_to_index = {
+                'users': [('email', 1), ('createdAt', -1), ('lastLogin', -1)],
+                'conversations': [('userId', 1), ('createdAt', -1), ('aiRatings', 1)],
+                'companies': [('name', 1), ('createdAt', -1)],
+                'translations': [('language', 1), ('category', 1), ('key', 1)]
+            }
+            
+            optimized_count = 0
+            for collection_name, indexes in collections_to_index.items():
+                collection = getattr(self.admin, f"{collection_name}_collection", None)
+                if collection:
+                    for index_fields in indexes:
+                        try:
+                            collection.create_index(list(index_fields) if isinstance(index_fields, tuple) else [index_fields])
+                            optimized_count += 1
+                        except:
+                            pass  # Index might already exist
+            
+            messagebox.showinfo("Success", f"Database optimization completed. Created {optimized_count} indexes.")
+            
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to optimize database: {str(e)}")
+    
+    def migrate_translations(self):
+        """Migrate translations to new format"""
+        try:
+            if not self.admin.connected:
+                messagebox.showerror("Error", "Not connected to database")
+                return
+            
+            # This would migrate translations from old format to new format
+            messagebox.showinfo("Info", "Translation migration feature coming soon")
+            
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to migrate translations: {str(e)}")
+    
+    def update_database_schema(self):
+        """Update database schema"""
+        try:
+            if not self.admin.connected:
+                messagebox.showerror("Error", "Not connected to database")
+                return
+            
+            # This would update database schema to latest version
+            messagebox.showinfo("Info", "Schema update feature coming soon")
+            
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to update schema: {str(e)}")
+    
+    def refresh_database_stats(self):
+        """Refresh database statistics"""
+        try:
+            if not self.admin.connected:
+                messagebox.showerror("Error", "Not connected to database")
+                return
+            
+            # Clear existing stats
+            self.admin.db_stats_text.delete('1.0', tk.END)
+            
+            # Get collection statistics
+            collections = ['users', 'companies', 'conversations', 'conversationsummaries', 'translations', 'translationkeys']
+            stats_content = "DATABASE STATISTICS\n"
+            stats_content += "=" * 50 + "\n\n"
+            
+            total_documents = 0
+            total_size = 0
+            
+            for collection_name in collections:
+                collection = getattr(self.admin, f"{collection_name}_collection", None)
+                if collection:
+                    count = collection.count_documents({})
+                    total_documents += count
+                    
+                    # Get collection size (approximate)
+                    try:
+                        stats = self.admin.db.command("collStats", collection_name)
+                        size = stats.get('size', 0)
+                        total_size += size
+                        size_mb = size / (1024 * 1024)
+                        stats_content += f"{collection_name.upper()}:\n"
+                        stats_content += f"  Documents: {count:,}\n"
+                        stats_content += f"  Size: {size_mb:.2f} MB\n\n"
+                    except:
+                        stats_content += f"{collection_name.upper()}:\n"
+                        stats_content += f"  Documents: {count:,}\n"
+                        stats_content += f"  Size: Unable to calculate\n\n"
+            
+            stats_content += "=" * 50 + "\n"
+            stats_content += f"TOTAL DOCUMENTS: {total_documents:,}\n"
+            stats_content += f"TOTAL SIZE: {total_size / (1024 * 1024):.2f} MB\n"
+            stats_content += f"LAST UPDATED: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n"
+            
+            self.admin.db_stats_text.insert('1.0', stats_content)
+            
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to refresh database stats: {str(e)}")
+    
+    # Subscription Tracking Methods
+    def load_subscription_tracking(self):
+        """Load subscription and usage tracking data"""
+        try:
+            if not self.admin.connected:
+                messagebox.showerror("Error", "Not connected to database")
+                return
+            
+            # Clear existing items
+            for item in self.admin.subscription_tree.get_children():
+                self.admin.subscription_tree.delete(item)
+            
+            # Get current month
+            current_month = self.admin.subscription_month_var.get()
+            try:
+                month_start = datetime.strptime(current_month, '%Y-%m')
+                month_end = (month_start.replace(day=1) + timedelta(days=32)).replace(day=1)
+            except ValueError:
+                messagebox.showerror("Error", "Invalid month format. Use YYYY-MM")
+                return
+            
+            # Get all users with subscription plans
+            users = list(self.admin.users_collection.find({
+                'subscription': {'$exists': True},
+                'subscription.plan': {'$ne': None}
+            }))
+            
+            total_users = len(users)
+            total_used = 0
+            total_limit = 0
+            
+            for user in users:
+                subscription = user.get('subscription', {})
+                plan = subscription.get('plan', 'basic')
+                
+                # Define plan limits
+                plan_limits = {
+                    'basic': 10,
+                    'pro': 50,
+                    'enterprise': 200,
+                    'free': 3
+                }
+                
+                monthly_limit = plan_limits.get(plan, 10)
+                
+                # Count conversations this month
+                conversations_this_month = self.admin.conversations_collection.count_documents({
+                    'userId': str(user['_id']),
+                    'createdAt': {
+                        '$gte': month_start,
+                        '$lt': month_end
+                    }
+                })
+                
+                remaining = max(0, monthly_limit - conversations_this_month)
+                usage_percent = (conversations_this_month / monthly_limit * 100) if monthly_limit > 0 else 0
+                
+                # Determine status
+                if conversations_this_month >= monthly_limit:
+                    status = "Limit Reached"
+                elif usage_percent >= 80:
+                    status = "Near Limit"
+                else:
+                    status = "Active"
+                
+                # Get last activity
+                last_conversation = self.admin.conversations_collection.find_one(
+                    {'userId': str(user['_id'])},
+                    sort=[('createdAt', -1)]
+                )
+                last_activity = "Never"
+                if last_conversation and last_conversation.get('createdAt'):
+                    last_activity = last_conversation['createdAt'].strftime('%Y-%m-%d')
+                
+                # Get user/company name
+                display_name = f"{user.get('firstName', '')} {user.get('lastName', '')}".strip()
+                if not display_name:
+                    display_name = user.get('email', 'Unknown User')
+                
+                # Insert into tree
+                self.admin.subscription_tree.insert('', 'end', values=(
+                    display_name,
+                    plan.title(),
+                    monthly_limit,
+                    conversations_this_month,
+                    remaining,
+                    f"{usage_percent:.1f}%",
+                    status,
+                    last_activity
+                ))
+                
+                total_used += conversations_this_month
+                total_limit += monthly_limit
+            
+            # Update usage summary
+            self.update_usage_summary(total_users, total_used, total_limit, current_month)
+            
+            messagebox.showinfo("Success", f"Loaded usage data for {total_users} users")
+            
+        except Exception as e:
+            SecurityAuditLogger.log_security_violation(
+                None, "load_subscription_tracking", "error", "unexpected_error", str(e)
+            )
+            messagebox.showerror("Error", f"Failed to load subscription tracking: {str(e)}")
+    
+    def update_usage_summary(self, total_users, total_used, total_limit, month):
+        """Update the usage summary text"""
+        try:
+            self.admin.usage_summary_text.delete('1.0', tk.END)
+            
+            usage_percent = (total_used / total_limit * 100) if total_limit > 0 else 0
+            
+            summary_content = f"""
+MONTHLY USAGE SUMMARY - {month}
+{'=' * 50}
+
+TOTAL USERS: {total_users:,}
+TOTAL CONVERSATIONS USED: {total_used:,}
+TOTAL MONTHLY LIMIT: {total_limit:,}
+OVERALL USAGE: {usage_percent:.1f}%
+
+PLAN BREAKDOWN:
+"""
+            
+            # Get breakdown by plan
+            plans = ['free', 'basic', 'pro', 'enterprise']
+            for plan in plans:
+                plan_users = list(self.admin.users_collection.find({
+                    'subscription.plan': plan
+                }))
+                
+                plan_limit = {'free': 3, 'basic': 10, 'pro': 50, 'enterprise': 200}.get(plan, 10)
+                plan_users_count = len(plan_users)
+                
+                if plan_users_count > 0:
+                    plan_used = 0
+                    for user in plan_users:
+                        user_conv_count = self.admin.conversations_collection.count_documents({
+                            'userId': str(user['_id']),
+                            'createdAt': {
+                                '$gte': datetime.strptime(month, '%Y-%m'),
+                                '$lt': (datetime.strptime(month, '%Y-%m').replace(day=1) + timedelta(days=32)).replace(day=1)
+                            }
+                        })
+                        plan_used += user_conv_count
+                    
+                    plan_usage_percent = (plan_used / (plan_users_count * plan_limit) * 100) if plan_users_count > 0 else 0
+                    
+                    summary_content += f"- {plan.title()}: {plan_users_count} users, {plan_used}/{plan_users_count * plan_limit} used ({plan_usage_percent:.1f}%)\n"
+            
+            summary_content += f"\nLast Updated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+            
+            self.admin.usage_summary_text.insert('1.0', summary_content)
+            
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to update usage summary: {str(e)}")
+    
+    def filter_subscriptions(self, event=None):
+        """Filter subscriptions by plan"""
+        try:
+            plan_filter = self.admin.subscription_plan_var.get()
+            
+            for item in self.admin.subscription_tree.get_children():
+                values = self.admin.subscription_tree.item(item)['values']
+                plan = values[1].lower()
+                
+                if plan_filter == 'all' or plan == plan_filter:
+                    self.admin.subscription_tree.reattach(item, '', 'end')
+                else:
+                    self.admin.subscription_tree.detach(item)
+                    
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to filter subscriptions: {str(e)}")
+    
+    def view_usage_details(self):
+        """View detailed usage information for a user"""
+        try:
+            selected_item = self.admin.subscription_tree.selection()
+            if not selected_item:
+                messagebox.showwarning("Warning", "Please select a user to view details")
+                return
+            
+            values = self.admin.subscription_tree.item(selected_item[0])['values']
+            user_name = values[0]
+            plan = values[1].lower()
+            
+            # Find the user
+            user = self.admin.users_collection.find_one({
+                '$or': [
+                    {'email': user_name},
+                    {'firstName': {'$regex': user_name.split()[0], '$options': 'i'}},
+                    {'lastName': {'$regex': user_name.split()[-1], '$options': 'i'}}
+                ]
+            })
+            
+            if not user:
+                messagebox.showerror("Error", "User not found")
+                return
+            
+            # Get current month
+            current_month = self.admin.subscription_month_var.get()
+            try:
+                month_start = datetime.strptime(current_month, '%Y-%m')
+                month_end = (month_start.replace(day=1) + timedelta(days=32)).replace(day=1)
+            except ValueError:
+                messagebox.showerror("Error", "Invalid month format")
+                return
+            
+            # Get user's conversations this month
+            conversations = list(self.admin.conversations_collection.find({
+                'userId': str(user['_id']),
+                'createdAt': {
+                    '$gte': month_start,
+                    '$lt': month_end
+                }
+            }).sort('createdAt', -1))
+            
+            # Create details window
+            details_window = tk.Toplevel(self.admin.root)
+            details_window.title(f"Usage Details - {user_name}")
+            details_window.geometry("800x600")
+            
+            details_text = scrolledtext.ScrolledText(details_window)
+            details_text.pack(fill='both', expand=True, padx=10, pady=10)
+            
+            # Format details
+            subscription = user.get('subscription', {})
+            plan_limits = {'free': 3, 'basic': 10, 'pro': 50, 'enterprise': 200}
+            monthly_limit = plan_limits.get(plan, 10)
+            
+            details_content = f"""
+USER USAGE DETAILS - {current_month}
+{'=' * 50}
+
+USER INFORMATION:
+Name: {user.get('firstName', '')} {user.get('lastName', '')}
+Email: {user.get('email', 'N/A')}
+Plan: {plan.title()}
+Monthly Limit: {monthly_limit} conversations
+
+USAGE THIS MONTH:
+Total Conversations: {len(conversations)}
+Remaining: {max(0, monthly_limit - len(conversations))}
+Usage Percentage: {(len(conversations) / monthly_limit * 100):.1f}%
+
+CONVERSATION DETAILS:
+"""
+            
+            for i, conv in enumerate(conversations[:20], 1):  # Show last 20 conversations
+                duration = conv.get('duration', 0)
+                duration_min = duration // 60 if duration else 0
+                duration_sec = duration % 60 if duration else 0
+                
+                details_content += f"{i}. {conv.get('title', 'Untitled')}\n"
+                details_content += f"   Date: {conv.get('createdAt', '').strftime('%Y-%m-%d %H:%M') if conv.get('createdAt') else 'N/A'}\n"
+                details_content += f"   Duration: {duration_min}m {duration_sec}s\n"
+                details_content += f"   Messages: {len(conv.get('messages', []))}\n"
+                details_content += f"   Rating: {sum(conv.get('aiRatings', {}).values()) if conv.get('aiRatings') else 'N/A'}/50\n\n"
+            
+            if len(conversations) > 20:
+                details_content += f"... and {len(conversations) - 20} more conversations\n"
+            
+            details_content += f"\nLast Updated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+            
+            details_text.insert('1.0', details_content)
+            details_text.config(state='disabled')
+            
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to view usage details: {str(e)}")
+    
+    def reset_monthly_usage(self):
+        """Reset monthly usage for selected user or all users"""
+        try:
+            if not self.admin.connected:
+                messagebox.showerror("Error", "Not connected to database")
+                return
+            
+            # Ask for confirmation
+            result = messagebox.askyesnocancel(
+                "Reset Monthly Usage",
+                "Reset monthly usage for:\n\nYes: Selected user only\nNo: All users\nCancel: Abort operation"
+            )
+            
+            if result is None:  # Cancel
+                return
+            
+            if result:  # Selected user only
+                selected_item = self.admin.subscription_tree.selection()
+                if not selected_item:
+                    messagebox.showwarning("Warning", "Please select a user to reset")
+                    return
+                
+                values = self.admin.subscription_tree.item(selected_item[0])['values']
+                user_name = values[0]
+                
+                # Find and reset user
+                user = self.admin.users_collection.find_one({
+                    '$or': [
+                        {'email': user_name},
+                        {'firstName': {'$regex': user_name.split()[0], '$options': 'i'}},
+                        {'lastName': {'$regex': user_name.split()[-1], '$options': 'i'}}
+                    ]
+                })
+                
+                if user:
+                    # Update user's monthly usage reset timestamp
+                    self.admin.users_collection.update_one(
+                        {'_id': user['_id']},
+                        {'$set': {'lastUsageReset': datetime.now()}}
+                    )
+                    messagebox.showinfo("Success", f"Monthly usage reset for {user_name}")
+                else:
+                    messagebox.showerror("Error", "User not found")
+            
+            else:  # All users
+                if not messagebox.askyesno("Confirm Reset All", "Reset monthly usage for ALL users?\nThis action cannot be undone."):
+                    return
+                
+                # Update all users with reset timestamp
+                result = self.admin.users_collection.update_many(
+                    {'subscription': {'$exists': True}},
+                    {'$set': {'lastUsageReset': datetime.now()}}
+                )
+                
+                messagebox.showinfo("Success", f"Monthly usage reset for {result.modified_count} users")
+            
+            # Refresh the view
+            self.load_subscription_tracking()
+            
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to reset monthly usage: {str(e)}")
+    
+    def export_usage_report(self):
+        """Export usage report to CSV"""
+        try:
+            if not self.admin.connected:
+                messagebox.showerror("Error", "Not connected to database")
+                return
+            
+            current_month = self.admin.subscription_month_var.get()
+            
+            # Get all subscription data
+            users = list(self.admin.users_collection.find({
+                'subscription': {'$exists': True},
+                'subscription.plan': {'$ne': None}
+            }))
+            
+            if not users:
+                messagebox.showinfo("Info", "No subscription data found to export")
+                return
+            
+            # Create CSV content
+            csv_content = "User,Email,Plan,Monthly Limit,Used This Month,Remaining,Usage %,Status,Last Activity\n"
+            
+            month_start = datetime.strptime(current_month, '%Y-%m')
+            month_end = (month_start.replace(day=1) + timedelta(days=32)).replace(day=1)
+            
+            plan_limits = {'free': 3, 'basic': 10, 'pro': 50, 'enterprise': 200}
+            
+            for user in users:
+                subscription = user.get('subscription', {})
+                plan = subscription.get('plan', 'basic')
+                monthly_limit = plan_limits.get(plan, 10)
+                
+                # Count conversations this month
+                conversations_this_month = self.admin.conversations_collection.count_documents({
+                    'userId': str(user['_id']),
+                    'createdAt': {
+                        '$gte': month_start,
+                        '$lt': month_end
+                    }
+                })
+                
+                remaining = max(0, monthly_limit - conversations_this_month)
+                usage_percent = (conversations_this_month / monthly_limit * 100) if monthly_limit > 0 else 0
+                
+                # Determine status
+                if conversations_this_month >= monthly_limit:
+                    status = "Limit Reached"
+                elif usage_percent >= 80:
+                    status = "Near Limit"
+                else:
+                    status = "Active"
+                
+                # Get last activity
+                last_conversation = self.admin.conversations_collection.find_one(
+                    {'userId': str(user['_id'])},
+                    sort=[('createdAt', -1)]
+                )
+                last_activity = "Never"
+                if last_conversation and last_conversation.get('createdAt'):
+                    last_activity = last_conversation['createdAt'].strftime('%Y-%m-%d')
+                
+                user_name = f"{user.get('firstName', '')} {user.get('lastName', '')}".strip()
+                email = user.get('email', '')
+                
+                csv_content += f'"{user_name}","{email}","{plan.title()}",{monthly_limit},{conversations_this_month},{remaining},{usage_percent:.1f}%,"{status}","{last_activity}"\n'
+            
+            # Save to file
+            filename = f"usage_report_{current_month}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
+            with open(filename, 'w', encoding='utf-8') as f:
+                f.write(csv_content)
+            
+            messagebox.showinfo("Success", f"Usage report exported to {filename}")
+            
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to export usage report: {str(e)}")
+    
+    def update_subscription_limits(self):
+        """Update subscription limits for users"""
+        try:
+            if not self.admin.connected:
+                messagebox.showerror("Error", "Not connected to database")
+                return
+            
+            # Create a simple dialog for updating limits
+            limit_window = tk.Toplevel(self.admin.root)
+            limit_window.title("Update Subscription Limits")
+            limit_window.geometry("400x300")
+            limit_window.grab_set()
+            
+            tk.Label(limit_window, text="Update Subscription Limits", font=('Arial', 14, 'bold')).pack(pady=10)
+            
+            # Plan selection
+            tk.Label(limit_window, text="Select Plan:").pack(anchor='w', padx=10)
+            plan_var = tk.StringVar(value='basic')
+            plan_combo = tk.ttk.Combobox(limit_window, textvariable=plan_var,
+                                       values=['free', 'basic', 'pro', 'enterprise'])
+            plan_combo.pack(anchor='w', padx=10, pady=5)
+            
+            # New limit
+            tk.Label(limit_window, text="New Monthly Limit:").pack(anchor='w', padx=10)
+            limit_var = tk.StringVar(value='10')
+            limit_entry = tk.Entry(limit_window, textvariable=limit_var, width=10)
+            limit_entry.pack(anchor='w', padx=10, pady=5)
+            
+            def apply_limit_change():
+                try:
+                    plan = plan_var.get()
+                    new_limit = int(limit_var.get())
+                    
+                    if new_limit < 0:
+                        messagebox.showerror("Error", "Limit must be a positive number")
+                        return
+                    
+                    # Update all users with this plan
+                    result = self.admin.users_collection.update_many(
+                        {'subscription.plan': plan},
+                        {'$set': {'subscription.monthlyLimit': new_limit}}
+                    )
+                    
+                    messagebox.showinfo("Success", f"Updated limit for {result.modified_count} users on {plan} plan")
+                    limit_window.destroy()
+                    self.load_subscription_tracking()
+                    
+                except ValueError:
+                    messagebox.showerror("Error", "Please enter a valid number for the limit")
+                except Exception as e:
+                    messagebox.showerror("Error", f"Failed to update limits: {str(e)}")
+            
+            # Buttons
+            button_frame = tk.Frame(limit_window)
+            button_frame.pack(pady=20)
+            
+            tk.Button(button_frame, text="Apply Changes", command=apply_limit_change, 
+                     bg='#4CAF50', fg='white').pack(side='left', padx=10)
+            tk.Button(button_frame, text="Cancel", command=limit_window.destroy, 
+                     bg='#607D8B', fg='white').pack(side='left', padx=10)
+            
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to update subscription limits: {str(e)}")
+    
+    # Conversation Summaries Methods
+    def load_all_summaries(self):
+        """Load all user summaries from conversationsummaries collection"""
+        try:
+            if not self.admin.connected:
+                messagebox.showerror("Error", "Not connected to database")
+                return
+            
+            # Clear existing items
+            for item in self.admin.summaries_tree.get_children():
+                self.admin.summaries_tree.delete(item)
+            
+            # Get latest 20 conversation summaries from conversationsummaries collection
+            conversation_summaries = list(self.admin.conversation_summaries_collection.find().sort('createdAt', -1).limit(20))
+            
+            # Group summaries by user to get the latest summary for each user
+            user_summaries = {}
+            for summary in conversation_summaries:
+                user_id = summary.get('userId')
+                if user_id:
+                    # Keep the latest summary for each user
+                    if user_id not in user_summaries or summary.get('createdAt') > user_summaries[user_id].get('createdAt'):
+                        user_summaries[user_id] = summary
+            
+            for user_id, summary in user_summaries.items():
+                # Get user information
+                user = self.admin.users_collection.find_one({'_id': ObjectId(user_id)})
+                user_name = "Unknown"
+                if user:
+                    user_name = f"{user.get('firstName', '')} {user.get('lastName', '')}".strip()
+                    if not user_name:
+                        user_name = user.get('email', 'Unknown')
+                
+                # Get conversation count from summary
+                conversation_count = summary.get('conversationCount', 0)
+                summary_number = summary.get('summaryNumber', 'N/A')
+                
+                # Get overall rating from summary
+                overall_rating = summary.get('overallRating', 'N/A')
+                rating_str = f"{overall_rating}/10" if overall_rating != 'N/A' else 'N/A'
+                
+                # Get AI analysis from summary
+                ai_analysis = summary.get('aiAnalysis', {})
+                summary_text = ""
+                if isinstance(ai_analysis, dict):
+                    # Try to get a summary from the AI analysis
+                    summary_text = ai_analysis.get('summary', '') or ai_analysis.get('overview', '') or str(ai_analysis)
+                elif isinstance(ai_analysis, str):
+                    summary_text = ai_analysis
+                
+                # Create summary preview (first 100 characters)
+                summary_preview = summary_text[:100] + '...' if len(summary_text) > 100 else summary_text
+                if not summary_preview:
+                    summary_preview = f"Summary #{summary_number} - {conversation_count} conversations"
+                
+                # Get strengths and improvements count
+                strengths = summary.get('strengths', [])
+                improvements = summary.get('improvements', [])
+                
+                # Get total conversation time for this user
+                conversations = list(self.admin.conversations_collection.find({
+                    'userId': user_id
+                }, {'duration': 1}))
+                total_duration = sum(conv.get('duration', 0) for conv in conversations)
+                duration_str = f"{total_duration//60}m {total_duration%60}s" if total_duration else "0m 0s"
+                
+                # Get last activity date
+                last_date = summary.get('createdAt', '').strftime('%Y-%m-%d') if summary.get('createdAt') else 'N/A'
+                
+                # Insert into tree
+                self.admin.summaries_tree.insert('', 'end', values=(
+                    str(user_id)[:8] + '...',
+                    user_name,
+                    f"Summary #{summary_number}",
+                    summary_preview,
+                    duration_str,
+                    conversation_count,
+                    last_date,
+                    rating_str
+                ))
+            
+            messagebox.showinfo("Success", f"Loaded {len(user_summaries)} user summaries")
+            
+        except Exception as e:
+            SecurityAuditLogger.log_security_violation(
+                None, "load_all_summaries", "error", "unexpected_error", str(e)
+            )
+            messagebox.showerror("Error", f"Failed to load user summaries: {str(e)}")
+    
+    def search_summaries(self, event=None):
+        """Search conversation summaries by user ID"""
+        try:
+            search_term = self.admin.summary_search_var.get().strip()
+            
+            if not search_term:
+                # Show all items if search is empty
+                for item in self.admin.summaries_tree.get_children():
+                    self.admin.summaries_tree.reattach(item, '', 'end')
+                return
+            
+            # Clear existing items first
+            for item in self.admin.summaries_tree.get_children():
+                self.admin.summaries_tree.delete(item)
+            
+            # Search in database by user ID
+            try:
+                # Try to find summaries by exact user ID match first (as ObjectId)
+                summaries = []
+                try:
+                    # Convert search term to ObjectId if it's a valid ObjectId string
+                    user_object_id = ObjectId(search_term)
+                    summaries = list(self.admin.conversation_summaries_collection.find({
+                        'userId': user_object_id
+                    }).sort('createdAt', -1).limit(20))
+                except:
+                    # If conversion fails, try as string
+                    summaries = list(self.admin.conversation_summaries_collection.find({
+                        'userId': search_term
+                    }).sort('createdAt', -1).limit(20))
+                
+                # If no exact match, try partial user ID match (convert to ObjectId)
+                if not summaries:
+                    try:
+                        # Try to find summaries where userId starts with the search term
+                        user_object_id = ObjectId(search_term)
+                        summaries = list(self.admin.conversation_summaries_collection.find({
+                            'userId': {'$gte': user_object_id, '$lt': ObjectId(search_term + 'z')}
+                        }).sort('createdAt', -1).limit(20))
+                    except:
+                        # If ObjectId conversion fails, try regex on string representation
+                        summaries = list(self.admin.conversation_summaries_collection.find({
+                            'userId': {'$regex': search_term, '$options': 'i'}
+                        }).sort('createdAt', -1).limit(20))
+                
+                # If no results, try to find by user name
+                if not summaries:
+                    # Get users that match the search term
+                    users = list(self.admin.users_collection.find({
+                        '$or': [
+                            {'firstName': {'$regex': search_term, '$options': 'i'}},
+                            {'lastName': {'$regex': search_term, '$options': 'i'}},
+                            {'email': {'$regex': search_term, '$options': 'i'}}
+                        ]
+                    }))
+                    
+                    # Get summaries for matching users
+                    if users:
+                        user_ids = [str(user['_id']) for user in users]
+                        summaries = list(self.admin.conversation_summaries_collection.find({
+                            'userId': {'$in': user_ids}
+                        }).sort('createdAt', -1).limit(20))
+                
+                # Display the search results
+                for summary in summaries:
+                    user_id = summary.get('userId')
+                    
+                    # Get user information
+                    user = self.admin.users_collection.find_one({'_id': ObjectId(user_id)})
+                    user_name = "Unknown"
+                    if user:
+                        user_name = f"{user.get('firstName', '')} {user.get('lastName', '')}".strip()
+                        if not user_name:
+                            user_name = user.get('email', 'Unknown')
+                    
+                    # Get summary data
+                    conversation_count = summary.get('conversationCount', 0)
+                    summary_number = summary.get('summaryNumber', 'N/A')
+                    overall_rating = summary.get('overallRating', 'N/A')
+                    rating_str = f"{overall_rating}/10" if overall_rating != 'N/A' else 'N/A'
+                    
+                    # Get AI analysis
+                    ai_analysis = summary.get('aiAnalysis', {})
+                    summary_text = ""
+                    if isinstance(ai_analysis, dict):
+                        summary_text = ai_analysis.get('summary', '') or ai_analysis.get('overview', '') or str(ai_analysis)
+                    elif isinstance(ai_analysis, str):
+                        summary_text = ai_analysis
+                    
+                    summary_preview = summary_text[:100] + '...' if len(summary_text) > 100 else summary_text
+                    if not summary_preview:
+                        summary_preview = f"Summary #{summary_number} - {conversation_count} conversations"
+                    
+                    # Get total conversation time
+                    conversations = list(self.admin.conversations_collection.find({
+                        'userId': user_id
+                    }, {'duration': 1}))
+                    total_duration = sum(conv.get('duration', 0) for conv in conversations)
+                    duration_str = f"{total_duration//60}m {total_duration%60}s" if total_duration else "0m 0s"
+                    
+                    # Get last activity date
+                    last_date = summary.get('createdAt', '').strftime('%Y-%m-%d') if summary.get('createdAt') else 'N/A'
+                    
+                    # Insert into tree
+                    self.admin.summaries_tree.insert('', 'end', values=(
+                        str(user_id)[:8] + '...',
+                        user_name,
+                        f"Summary #{summary_number}",
+                        summary_preview,
+                        duration_str,
+                        conversation_count,
+                        last_date,
+                        rating_str
+                    ))
+                
+                if summaries:
+                    messagebox.showinfo("Search Results", f"Found {len(summaries)} summaries matching '{search_term}'")
+                else:
+                    # Debug: show what's actually in the database
+                    all_summaries = list(self.admin.conversation_summaries_collection.find().limit(5))
+                    debug_info = f"Search term: '{search_term}'\n"
+                    debug_info += f"Sample userIds in database:\n"
+                    for s in all_summaries:
+                        debug_info += f"  - {s.get('userId')} (type: {type(s.get('userId'))})\n"
+                    
+                    messagebox.showwarning("No Results", f"No summaries found for '{search_term}'\n\n{debug_info}")
+                
+            except Exception as e:
+                messagebox.showerror("Error", f"Search failed: {str(e)}")
+                    
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to search summaries: {str(e)}")
+    
+    def clear_summary_filters(self):
+        """Clear all summary filters and reload latest 20"""
+        try:
+            self.admin.summary_search_var.set("")
+            # Reload the latest 20 summaries
+            self.load_all_summaries()
+                
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to clear filters: {str(e)}")
+    
+    def view_full_summary(self, event=None):
+        """View full user AI summary from conversationsummaries collection"""
+        try:
+            selected_item = self.admin.summaries_tree.selection()
+            if not selected_item:
+                messagebox.showwarning("Warning", "Please select a user to view AI summary")
+                return
+            
+            values = self.admin.summaries_tree.item(selected_item[0])['values']
+            user_id_partial = values[0]
+            user_name = values[1]
+            summary_number = values[2].replace('Summary #', '')
+            
+            # Find the user by partial ID
+            user = None
+            try:
+                # Try to find user by partial ID
+                users = list(self.admin.users_collection.find())
+                for u in users:
+                    if str(u['_id']).startswith(user_id_partial.replace('...', '')):
+                        user = u
+                        break
+            except Exception as e:
+                print(f"Error finding user: {e}")
+                pass
+            
+            if not user:
+                messagebox.showerror("Error", "User not found")
+                return
+            
+            user_id = str(user['_id'])
+            
+            # Get the specific summary that was selected (by summary number)
+            latest_summary = None
+            try:
+                # Try to find the specific summary by userId and summaryNumber
+                latest_summary = self.admin.conversation_summaries_collection.find_one({
+                    'userId': user_id,
+                    'summaryNumber': int(summary_number)
+                })
+                
+                # If not found by summaryNumber, get the latest one
+                if not latest_summary:
+                    latest_summary = self.admin.conversation_summaries_collection.find_one(
+                        {'userId': user_id},
+                        sort=[('createdAt', -1)]
+                    )
+                
+                # If still not found, try with ObjectId
+                if not latest_summary:
+                    try:
+                        latest_summary = self.admin.conversation_summaries_collection.find_one({
+                            'userId': ObjectId(user_id)
+                        }, sort=[('createdAt', -1)])
+                    except:
+                        pass
+                        
+            except Exception as e:
+                print(f"Error finding summary: {e}")
+            
+            if not latest_summary:
+                # Show all available summaries for debugging
+                all_summaries = list(self.admin.conversation_summaries_collection.find().sort('createdAt', -1))
+                print(f"Debug: Looking for user_id: {user_id}, summary_number: {summary_number}")
+                print(f"Debug: Available summaries:")
+                for s in all_summaries[:5]:  # Show first 5
+                    print(f"  - UserId: {s.get('userId')} (type: {type(s.get('userId'))}), Summary #{s.get('summaryNumber')}")
+                
+                messagebox.showerror("Error", f"No conversation summary found for this user.\nUser ID: {user_id}\nSummary Number: {summary_number}\nFound {len(all_summaries)} total summaries in database.")
+                return
+            
+            # Get all summaries for this user to show progression
+            all_summaries = list(self.admin.conversation_summaries_collection.find({
+                'userId': user_id
+            }).sort('createdAt', -1))
+            
+            # Create summary window
+            summary_window = tk.Toplevel(self.admin.root)
+            summary_window.title(f"User AI Summary - {user_name}")
+            summary_window.geometry("1000x700")
+            
+            summary_text = scrolledtext.ScrolledText(summary_window)
+            summary_text.pack(fill='both', expand=True, padx=10, pady=10)
+            
+            # Format full AI summary
+            summary_content = f"""
+USER AI SUMMARY DETAILS
+{'=' * 60}
+
+User ID: {user_id}
+Name: {user_name}
+Email: {user.get('email', 'N/A')}
+Registration Date: {user.get('createdAt', '').strftime('%Y-%m-%d') if user.get('createdAt') else 'N/A'}
+
+LATEST SUMMARY (#{latest_summary.get('summaryNumber', 'N/A')})
+{'-' * 40}
+Created: {latest_summary.get('createdAt', '').strftime('%Y-%m-%d %H:%M') if latest_summary.get('createdAt') else 'N/A'}
+Conversation Count: {latest_summary.get('conversationCount', 0)}
+Overall Rating: {latest_summary.get('overallRating', 'N/A')}/10
+
+STRENGTHS:
+"""
+            
+            # Add strengths
+            strengths = latest_summary.get('strengths', [])
+            if strengths:
+                for i, strength in enumerate(strengths, 1):
+                    summary_content += f"{i}. {strength}\n"
+            else:
+                summary_content += "No strengths identified\n"
+            
+            summary_content += "\nIMPROVEMENTS:\n"
+            # Add improvements
+            improvements = latest_summary.get('improvements', [])
+            if improvements:
+                for i, improvement in enumerate(improvements, 1):
+                    summary_content += f"{i}. {improvement}\n"
+            else:
+                summary_content += "No improvements identified\n"
+            
+            # Add AI Analysis
+            ai_analysis = latest_summary.get('aiAnalysis', {})
+            if ai_analysis:
+                summary_content += f"\nAI ANALYSIS:\n{'-' * 20}\n"
+                if isinstance(ai_analysis, dict):
+                    for key, value in ai_analysis.items():
+                        summary_content += f"{key}: {value}\n"
+                else:
+                    summary_content += f"{ai_analysis}\n"
+            
+            # Add stage ratings
+            stage_ratings = latest_summary.get('stageRatings', {})
+            if stage_ratings:
+                summary_content += f"\nSTAGE RATINGS:\n{'-' * 20}\n"
+                for stage, rating in stage_ratings.items():
+                    summary_content += f"{stage}: {rating}\n"
+            
+            # Add date range
+            date_range = latest_summary.get('dateRange', {})
+            if date_range:
+                summary_content += f"\nDATE RANGE:\n{'-' * 20}\n"
+                if isinstance(date_range, dict):
+                    for key, value in date_range.items():
+                        summary_content += f"{key}: {value}\n"
+                else:
+                    summary_content += f"{date_range}\n"
+            
+            # Show summary progression
+            summary_content += f"\nSUMMARY PROGRESSION:\n{'-' * 30}\n"
+            for summary in all_summaries[:10]:  # Show last 10 summaries
+                summary_num = summary.get('summaryNumber', 'N/A')
+                rating = summary.get('overallRating', 'N/A')
+                conv_count = summary.get('conversationCount', 0)
+                created = summary.get('createdAt', '').strftime('%Y-%m-%d') if summary.get('createdAt') else 'N/A'
+                summary_content += f"Summary #{summary_num}: {rating}/10 ({conv_count} convs) - {created}\n"
+            
+            summary_text.insert('1.0', summary_content)
+            summary_text.config(state='disabled')
+            
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to view AI summary: {str(e)}")
+    
+    def view_conversation_from_summary(self, event=None):
+        """View user's conversations from summary selection"""
+        try:
+            selected_item = self.admin.summaries_tree.selection()
+            if not selected_item:
+                messagebox.showwarning("Warning", "Please select a user")
+                return
+            
+            values = self.admin.summaries_tree.item(selected_item[0])['values']
+            user_id_partial = values[0]
+            user_name = values[1]
+            
+            # Find the user by partial ID
+            user = None
+            try:
+                # Try to find user by partial ID
+                users = list(self.admin.users_collection.find())
+                for u in users:
+                    if str(u['_id']).startswith(user_id_partial.replace('...', '')):
+                        user = u
+                        break
+            except Exception as e:
+                print(f"Error finding user: {e}")
+                pass
+            
+            if not user:
+                messagebox.showerror("Error", "User not found")
+                return
+            
+            user_id = str(user['_id'])
+            
+            # Get all user's conversations
+            conversations = list(self.admin.conversations_collection.find({
+                'userId': user_id
+            }).sort('createdAt', -1))
+            
+            if not conversations:
+                messagebox.showinfo("Info", f"No conversations found for {user_name}")
+                return
+            
+            # Create conversations window
+            conv_window = tk.Toplevel(self.admin.root)
+            conv_window.title(f"User Conversations - {user_name}")
+            conv_window.geometry("1000x700")
+            
+            conv_text = scrolledtext.ScrolledText(conv_window)
+            conv_text.pack(fill='both', expand=True, padx=10, pady=10)
+            
+            # Format all conversations
+            conv_content = f"""
+USER CONVERSATIONS
+{'=' * 50}
+
+User: {user_name}
+User ID: {user_id}
+Total Conversations: {len(conversations)}
+
+"""
+            
+            for i, conversation in enumerate(conversations, 1):
+                conv_id = str(conversation['_id'])
+                title = conversation.get('title', 'Untitled')
+                duration = conversation.get('duration', 0)
+                duration_str = f"{duration//60}m {duration%60}s" if duration else "0m 0s"
+                created_at = conversation.get('createdAt', '').strftime('%Y-%m-%d %H:%M') if conversation.get('createdAt') else 'N/A'
+                messages = conversation.get('messages', [])
+                
+                conv_content += f"""
+CONVERSATION {i}
+{'-' * 30}
+ID: {conv_id}
+Title: {title}
+Date: {created_at}
+Duration: {duration_str}
+Messages: {len(messages)}
+
+MESSAGES:
+"""
+                
+                for j, message in enumerate(messages, 1):
+                    role = message.get('role', 'unknown')
+                    content = message.get('content', '')
+                    timestamp = message.get('timestamp', '')
+                    
+                    conv_content += f"\n[{j}] {role.upper()} ({timestamp}):\n"
+                    conv_content += f"{content}\n"
+                    conv_content += "-" * 20 + "\n"
+                
+                conv_content += "\n" + "=" * 50 + "\n"
+            
+            conv_text.insert('1.0', conv_content)
+            conv_text.config(state='disabled')
+            
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to view conversations: {str(e)}")
+    
+    def export_summaries(self):
+        """Export user AI summaries from conversationsummaries collection to CSV"""
+        try:
+            if not self.admin.connected:
+                messagebox.showerror("Error", "Not connected to database")
+                return
+            
+            # Get all conversation summaries
+            conversation_summaries = list(self.admin.conversation_summaries_collection.find().sort('createdAt', -1))
+            
+            if not conversation_summaries:
+                messagebox.showinfo("Info", "No conversation summaries found to export")
+                return
+            
+            # Create CSV content
+            csv_content = "User ID,Name,Email,Summary Number,Conversation Count,Overall Rating,Strengths,Improvements,AI Analysis,Date Range,Stage Ratings,Example Conversations,Created Date\n"
+            
+            for summary in conversation_summaries:
+                user_id = summary.get('userId')
+                
+                # Get user information
+                user = self.admin.users_collection.find_one({'_id': ObjectId(user_id)})
+                user_name = "Unknown"
+                user_email = "N/A"
+                if user:
+                    user_name = f"{user.get('firstName', '')} {user.get('lastName', '')}".strip()
+                    if not user_name:
+                        user_name = user.get('email', 'Unknown')
+                    user_email = user.get('email', 'N/A')
+                
+                # Get summary data
+                summary_number = summary.get('summaryNumber', 'N/A')
+                conversation_count = summary.get('conversationCount', 0)
+                overall_rating = summary.get('overallRating', 'N/A')
+                
+                # Format arrays for CSV
+                strengths = summary.get('strengths', [])
+                strengths_str = '; '.join(strengths) if strengths else 'None'
+                
+                improvements = summary.get('improvements', [])
+                improvements_str = '; '.join(improvements) if improvements else 'None'
+                
+                # Get AI analysis
+                ai_analysis = summary.get('aiAnalysis', {})
+                ai_analysis_str = str(ai_analysis) if ai_analysis else 'None'
+                ai_analysis_str = ai_analysis_str.replace('"', '""').replace('\n', ' ')
+                
+                # Get date range
+                date_range = summary.get('dateRange', {})
+                date_range_str = str(date_range) if date_range else 'None'
+                
+                # Get stage ratings
+                stage_ratings = summary.get('stageRatings', {})
+                stage_ratings_str = str(stage_ratings) if stage_ratings else 'None'
+                
+                # Get example conversations count
+                example_conversations = summary.get('exampleConversations', [])
+                example_conv_count = len(example_conversations) if example_conversations else 0
+                
+                # Get created date
+                created_date = summary.get('createdAt', '').strftime('%Y-%m-%d %H:%M') if summary.get('createdAt') else 'N/A'
+                
+                # Add to CSV (escape quotes and newlines)
+                csv_content += f'"{user_id}","{user_name}","{user_email}","{summary_number}",{conversation_count},"{overall_rating}","{strengths_str}","{improvements_str}","{ai_analysis_str}","{date_range_str}","{stage_ratings_str}",{example_conv_count},"{created_date}"\n'
+            
+            # Save to file
+            filename = f"conversation_summaries_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
+            with open(filename, 'w', encoding='utf-8') as f:
+                f.write(csv_content)
+            
+            messagebox.showinfo("Success", f"Conversation summaries exported to {filename}")
+            
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to export summaries: {str(e)}")
+    
+    def generate_summary_report(self):
+        """Generate a comprehensive summary report"""
+        try:
+            if not self.admin.connected:
+                messagebox.showerror("Error", "Not connected to database")
+                return
+            
+            # Get all conversations with summaries
+            conversations = list(self.admin.conversations_collection.find({
+                'summary': {'$exists': True, '$ne': None}
+            }))
+            
+            if not conversations:
+                messagebox.showinfo("Info", "No summaries found to generate report")
+                return
+            
+            # Calculate statistics
+            total_conversations = len(conversations)
+            total_duration = sum(conv.get('duration', 0) for conv in conversations)
+            total_messages = sum(len(conv.get('messages', [])) for conv in conversations)
+            
+            # Average duration
+            avg_duration = total_duration / total_conversations if total_conversations > 0 else 0
+            avg_duration_min = avg_duration // 60
+            avg_duration_sec = avg_duration % 60
+            
+            # Average messages per conversation
+            avg_messages = total_messages / total_conversations if total_conversations > 0 else 0
+            
+            # Rating distribution
+            ratings_count = {'excellent': 0, 'good': 0, 'average': 0, 'poor': 0}
+            for conv in conversations:
+                ratings = conv.get('aiRatings', {})
+                if ratings:
+                    total_score = sum([
+                        ratings.get('introduction', 0),
+                        ratings.get('mapping', 0),
+                        ratings.get('productPresentation', 0),
+                        ratings.get('objectionHandling', 0),
+                        ratings.get('close', 0)
+                    ])
+                    
+                    if total_score >= 40:
+                        ratings_count['excellent'] += 1
+                    elif total_score >= 30:
+                        ratings_count['good'] += 1
+                    elif total_score >= 20:
+                        ratings_count['average'] += 1
+                    else:
+                        ratings_count['poor'] += 1
+            
+            # Create report
+            report_window = tk.Toplevel(self.admin.root)
+            report_window.title("Conversation Summary Report")
+            report_window.geometry("800x600")
+            
+            report_text = scrolledtext.ScrolledText(report_window)
+            report_text.pack(fill='both', expand=True, padx=10, pady=10)
+            
+            report_content = f"""
+CONVERSATION SUMMARY REPORT
+Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+
+SUMMARY STATISTICS:
+- Total Conversations: {total_conversations:,}
+- Total Duration: {total_duration//3600:.1f} hours
+- Total Messages: {total_messages:,}
+- Average Duration: {avg_duration_min:.0f}m {avg_duration_sec:.0f}s
+- Average Messages per Conversation: {avg_messages:.1f}
+
+RATING DISTRIBUTION:
+- Excellent (40-50): {ratings_count['excellent']} conversations
+- Good (30-39): {ratings_count['good']} conversations
+- Average (20-29): {ratings_count['average']} conversations
+- Poor (0-19): {ratings_count['poor']} conversations
+
+RECENT ACTIVITY:
+"""
+            
+            # Add recent conversations
+            recent_conversations = sorted(conversations, key=lambda x: x.get('createdAt', datetime.min), reverse=True)[:10]
+            for i, conv in enumerate(recent_conversations, 1):
+                title = conv.get('title', 'Untitled')[:50]
+                date = conv.get('createdAt', '').strftime('%Y-%m-%d') if conv.get('createdAt') else 'N/A'
+                duration = conv.get('duration', 0)
+                duration_str = f"{duration//60}m {duration%60}s" if duration else "0m 0s"
+                
+                report_content += f"{i}. {title} - {date} ({duration_str})\n"
+            
+            report_content += f"\nLast Updated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+            
+            report_text.insert('1.0', report_content)
+            report_text.config(state='disabled')
+            
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to generate summary report: {str(e)}")
