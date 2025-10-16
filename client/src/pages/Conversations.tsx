@@ -769,24 +769,11 @@ const Conversations: React.FC = () => {
   };
 
   const getDifficultyPhaseTranslation = (phase: string) => {
-    switch (phase) {
-      case 'easy_flow': return 'Easy Flow';
-      case 'moderate_resistance': return 'Moderate Resistance';
-      case 'challenging_moments': return 'Challenging Moments';
-      case 'difficult_throughout': return 'Difficult Throughout';
-      default: return phase;
-    }
+    return t(phase) || phase;
   };
 
   const getChallengingPhaseTranslation = (phase: string) => {
-    switch (phase) {
-      case 'needs_assessment': return 'Needs Assessment';
-      case 'objection_handling': return 'Objection Handling';
-      case 'closing': return 'Closing';
-      case 'price_discussion': return 'Price Discussion';
-      case 'timeline_pressure': return 'Timeline Pressure';
-      default: return phase;
-    }
+    return t(phase) || phase;
   };
 
   const translateStageName = (stage: string) => {
@@ -798,6 +785,48 @@ const Conversations: React.FC = () => {
       'close': t('closing')
     };
     return stageTranslations[stage as keyof typeof stageTranslations] || stage;
+  };
+
+  const translateConversationTitle = (title: string) => {
+    // Check if title starts with "Practice with" or "Harjutus koos" etc.
+    if (title.startsWith('Practice with ')) {
+      const clientName = title.replace('Practice with ', '');
+      if (language === 'et') {
+        return `Harjutus koos ${clientName}`;
+      } else if (language === 'es') {
+        return `Práctica con ${clientName}`;
+      } else if (language === 'ru') {
+        return `Практика с ${clientName}`;
+      }
+    } else if (title.startsWith('Harjutus koos ')) {
+      const clientName = title.replace('Harjutus koos ', '');
+      if (language === 'en') {
+        return `Practice with ${clientName}`;
+      } else if (language === 'es') {
+        return `Práctica con ${clientName}`;
+      } else if (language === 'ru') {
+        return `Практика с ${clientName}`;
+      }
+    } else if (title.startsWith('Práctica con ')) {
+      const clientName = title.replace('Práctica con ', '');
+      if (language === 'en') {
+        return `Practice with ${clientName}`;
+      } else if (language === 'et') {
+        return `Harjutus koos ${clientName}`;
+      } else if (language === 'ru') {
+        return `Практика с ${clientName}`;
+      }
+    } else if (title.startsWith('Практика с ')) {
+      const clientName = title.replace('Практика с ', '');
+      if (language === 'en') {
+        return `Practice with ${clientName}`;
+      } else if (language === 'et') {
+        return `Harjutus koos ${clientName}`;
+      } else if (language === 'es') {
+        return `Práctica con ${clientName}`;
+      }
+    }
+    return title; // Return original if no pattern matches
   };
 
 
@@ -1910,7 +1939,7 @@ const Conversations: React.FC = () => {
               >
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
-                    <h3 className="font-semibold text-gray-900 dark:text-white mb-2">{conversation.title}</h3>
+                    <h3 className="font-semibold text-gray-900 dark:text-white mb-2">{translateConversationTitle(conversation.title)}</h3>
                     <div className="flex items-center gap-3 text-sm text-gray-500 dark:text-gray-400 mb-3">
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${getDifficultyColor(conversation.clientCustomization?.difficulty || 'medium')}`}>
                         {getDifficultyIcon(conversation.clientCustomization?.difficulty || 'medium')} {t(conversation.clientCustomization?.difficulty || 'medium')}
@@ -1933,7 +1962,7 @@ const Conversations: React.FC = () => {
                       <div className="flex flex-wrap gap-2 mb-3">
                         {conversation.clientCustomization?.familySize && (
                           <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">
-                            👨‍👩‍👧‍👦 {conversation.clientCustomization.familySize}
+                            👨‍👩‍👧‍👦 {conversation.clientCustomization.familySize} {t('familyMembers')}
                           </span>
                         )}
                         {conversation.clientCustomization?.incomeRange && (
@@ -2000,7 +2029,7 @@ const Conversations: React.FC = () => {
                     {conversation.createdAt && (
                       <div>{new Date(conversation.createdAt).toLocaleDateString()}</div>
                     )}
-                    <div className="text-xs">{conversation.messages?.length || 0} messages</div>
+                    <div className="text-xs">{conversation.messages?.length || 0} {t('messages')}</div>
                   </div>
                 </div>
               </div>
@@ -2080,7 +2109,7 @@ const Conversations: React.FC = () => {
                   <div className="space-y-3">
                     <div>
                       <span className="font-medium text-gray-700 dark:text-gray-300">{t('title')}:</span>
-                      <span className="ml-2 text-gray-900 dark:text-white">{selectedConversation.title}</span>
+                      <span className="ml-2 text-gray-900 dark:text-white">{translateConversationTitle(selectedConversation.title)}</span>
                     </div>
                     <div>
                       <span className="font-medium text-gray-700 dark:text-gray-300">{t('scenario')}:</span>

@@ -211,6 +211,19 @@ export const translations = {
     real_estate: 'Real Estate',
     hospitality: 'Hospitality',
     transportation: 'Transportation',
+    
+    // Difficulty Phases
+    easy_flow: 'Easy Flow',
+    moderate_resistance: 'Moderate Resistance',
+    challenging_moments: 'Challenging Moments',
+    difficult_throughout: 'Difficult Throughout',
+    
+    // Challenging Phases
+    needs_assessment: 'Needs Assessment',
+    objection_handling: 'Objection Handling',
+    closing: 'Closing',
+    price_discussion: 'Price Discussion',
+    timeline_pressure: 'Timeline Pressure',
 
     // AI Tips
     aiTips: 'AI Tips',
@@ -889,6 +902,19 @@ export const translations = {
     real_estate: 'Kinnisvara',
     hospitality: 'Majutus',
     transportation: 'Transport',
+    
+    // Difficulty Phases
+    easy_flow: 'Kerge Vool',
+    moderate_resistance: 'Keskmine Vastupanu',
+    challenging_moments: 'Väljakutsed Hetked',
+    difficult_throughout: 'Raske Lõpuni',
+    
+    // Challenging Phases
+    needs_assessment: 'Vajaduste Hindamine',
+    objection_handling: 'Vastuväidete Käsitlemine',
+    closing: 'Sulgemine',
+    price_discussion: 'Hinnakõnelused',
+    timeline_pressure: 'Ajakava Surve',
 
     // Company Management
     companyManagement: 'Ettevõtte Haldamine',
@@ -1525,6 +1551,19 @@ export const translations = {
     real_estate: 'Bienes Raíces',
     hospitality: 'Hospitalidad',
     transportation: 'Transporte',
+    
+    // Difficulty Phases
+    easy_flow: 'Flujo Fácil',
+    moderate_resistance: 'Resistencia Moderada',
+    challenging_moments: 'Momentos Desafiantes',
+    difficult_throughout: 'Difícil Todo el Tiempo',
+    
+    // Challenging Phases
+    needs_assessment: 'Evaluación de Necesidades',
+    objection_handling: 'Manejo de Objeciones',
+    closing: 'Cierre',
+    price_discussion: 'Discusión de Precios',
+    timeline_pressure: 'Presión de Tiempo',
 
     // Company Management
     companyManagement: 'Gestión de Empresa',
@@ -2113,6 +2152,19 @@ export const translations = {
     real_estate: 'Недвижимость',
     hospitality: 'Гостеприимство',
     transportation: 'Транспорт',
+    
+    // Difficulty Phases
+    easy_flow: 'Легкий Поток',
+    moderate_resistance: 'Умеренное Сопротивление',
+    challenging_moments: 'Сложные Моменты',
+    difficult_throughout: 'Сложно На Протяжении',
+    
+    // Challenging Phases
+    needs_assessment: 'Оценка Потребностей',
+    objection_handling: 'Работа с Возражениями',
+    closing: 'Закрытие',
+    price_discussion: 'Обсуждение Цен',
+    timeline_pressure: 'Временное Давление',
 
     // Company Management
     companyManagement: 'Управление Компанией',
