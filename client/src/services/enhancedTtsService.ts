@@ -394,7 +394,7 @@ class EnhancedTtsService {
       utterance.lang = options.language;
       
       // Rate: Faster for efficiency
-      utterance.rate = options.rate || 1.3;
+      utterance.rate = options.rate || 1.6;
       
       // Pitch: Slightly lower sounds more authoritative and natural
       // 0.95-1.0 is optimal for most voices

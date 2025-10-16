@@ -18,7 +18,7 @@ router.post('/speak', authenticateToken, async (req, res) => {
     console.log('🔐 [CLOUD-TTS] User authenticated:', req.user ? `${req.user.email} (${req.user._id})` : 'No user');
     console.log('🎙️ [CLOUD-TTS] Request body:', JSON.stringify(req.body).substring(0, 100));
     
-    const { text, language, voice, rate = 0.92, pitch = 0.98, volume = 0.85 } = req.body;
+    const { text, language, voice, rate = 1.2, pitch = 0.98, volume = 0.85 } = req.body;
 
     if (!text || !text.trim()) {
       console.log('⚠️ [CLOUD-TTS] Empty text provided');
