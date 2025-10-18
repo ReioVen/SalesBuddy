@@ -562,7 +562,7 @@ export const translations = {
 
     // Enterprise Subscription
     enterpriseSubscription: 'Enterprise Subscription',
-    enterpriseSubscriptionDescription: 'Your enterprise subscription is fully managed by your company. All features are included with 50 daily AI conversations.',
+    enterpriseSubscriptionDescription: 'Your enterprise subscription is fully managed by your company. All features are included with 50 monthly AI conversations.',
 
     // FAQ Section
     frequentlyAskedQuestions: 'Frequently Asked Questions',

@@ -65,7 +65,7 @@ const SUBSCRIPTION_PLANS = {
       'Custom Training Programs',
       'White-label Solutions'
     ],
-    limits: { conversations: 50, aiTips: 50, period: 'daily' }, // Default limits, customizable per company
+    limits: { conversations: 50, aiTips: 50, period: 'monthly' }, // Default limits, customizable per company
     isPaid: true,
     billingType: 'enterprise'
   }

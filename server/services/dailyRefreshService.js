@@ -7,42 +7,18 @@ class DailyRefreshService {
   }
 
   /**
-   * Reset daily chat limits for all enterprise users
+   * Reset daily chat limits for all enterprise users (DEPRECATED - enterprise users now use monthly limits)
+   * This function is kept for backward compatibility but no longer resets enterprise users
    */
   async resetEnterpriseDailyLimits() {
     try {
-      console.log('Starting daily reset for enterprise users...');
+      console.log('Enterprise users now use monthly limits - skipping daily reset');
       
-      // Find all enterprise users with companies (they are considered paid)
-      const enterpriseUsers = await User.find({
-        'subscription.plan': 'enterprise',
-        companyId: { $exists: true, $ne: null }
-      });
-
-      console.log(`Found ${enterpriseUsers.length} enterprise users to reset`);
-
-      let resetCount = 0;
-      const now = new Date();
-
-      for (const user of enterpriseUsers) {
-        try {
-          // Reset daily usage
-          await User.findByIdAndUpdate(user._id, {
-            $set: {
-              'usage.aiConversations': 0,
-              'usage.lastDailyResetDate': now
-            }
-          });
-          
-          resetCount++;
-          console.log(`Reset daily limit for user: ${user.email}`);
-        } catch (error) {
-          console.error(`Error resetting user ${user.email}:`, error);
-        }
-      }
-
-      console.log(`Daily reset completed. Reset ${resetCount} enterprise users.`);
-      return { success: true, resetCount, totalUsers: enterpriseUsers.length };
+      // Enterprise users no longer need daily resets since they use monthly limits
+      // The monthly reset is handled by the User model's incrementAIUsage method
+      
+      console.log('Daily reset completed. Enterprise users use monthly limits.');
+      return { success: true, resetCount: 0, totalUsers: 0, message: 'Enterprise users now use monthly limits' };
     } catch (error) {
       console.error('Error in resetEnterpriseDailyLimits:', error);
       return { success: false, error: error.message };
@@ -50,27 +26,18 @@ class DailyRefreshService {
   }
 
   /**
-   * Start the daily refresh cron job
+   * Start the daily refresh cron job (DEPRECATED - enterprise users now use monthly limits)
+   * This service is kept for backward compatibility but no longer performs daily resets
    */
   startDailyRefresh() {
     if (this.isRunning) {
-      console.log('Daily refresh service is already running');
+      console.log('Daily refresh service is stopped but no longer needed - enterprise users use monthly limits');
       return;
     }
 
-    // Schedule to run every day at midnight (00:00)
-    // Cron format: '0 0 * * *' = minute(0) hour(0) day(*) month(*) dayOfWeek(*)
-    this.cronJob = cron.schedule('0 0 * * *', async () => {
-      console.log('Running scheduled daily refresh at midnight...');
-      await this.resetEnterpriseDailyLimits();
-    }, {
-      scheduled: false, // Don't start immediately
-      timezone: 'UTC' // Use UTC timezone
-    });
-
-    this.cronJob.start();
+    console.log('Daily refresh service is no longer needed - enterprise users now use monthly limits');
+    console.log('Monthly resets are handled automatically by the User model');
     this.isRunning = true;
-    console.log('Daily refresh service started - will run every day at 00:00 UTC');
   }
 
   /**

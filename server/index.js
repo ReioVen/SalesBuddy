@@ -426,7 +426,7 @@ const server = app.listen(PORT, () => {
   console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`🗄️ Database: ${mongoose.connection.readyState === 1 ? 'connected' : 'connecting...'}`);
   
-  // Start the daily refresh service for enterprise users
+  // Daily refresh service is no longer needed - enterprise users now use monthly limits
   try {
     dailyRefreshService.startDailyRefresh();
     console.log('📅 Daily refresh service initialized');
