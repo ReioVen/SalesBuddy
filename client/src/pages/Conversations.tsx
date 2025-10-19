@@ -126,63 +126,28 @@ interface Conversation {
 }
 
 const Conversations: React.FC = () => {
-  console.log('🔍 [DEBUG] Conversations component starting initialization...');
-  
-  console.log('🔍 [DEBUG] Initializing hooks...');
   const { t, language } = useTranslation();
-  console.log('🔍 [DEBUG] useTranslation initialized, language:', language);
-  
   const { user, loading: authLoading } = useAuth();
-  console.log('🔍 [DEBUG] useAuth initialized, user:', !!user);
-  
   const navigate = useNavigate();
-  console.log('🔍 [DEBUG] useNavigate initialized');
-  console.log('🔍 [DEBUG] Initializing state variables...');
+  
   const [showNewChatForm, setShowNewChatForm] = useState(false);
-  console.log('🔍 [DEBUG] showNewChatForm state initialized');
-  
   const [loading, setLoading] = useState(false);
-  console.log('🔍 [DEBUG] loading state initialized');
-  
   const [currentConversation, setCurrentConversation] = useState<Conversation | null>(null);
-  console.log('🔍 [DEBUG] currentConversation state initialized');
-  
   const [newMessage, setNewMessage] = useState('');
-  console.log('🔍 [DEBUG] newMessage state initialized');
-  
   const [sendingMessage, setSendingMessage] = useState(false);
-  console.log('🔍 [DEBUG] sendingMessage state initialized');
-  
   const [endingConversation, setEndingConversation] = useState(false);
-  console.log('🔍 [DEBUG] endingConversation state initialized');
-  
   const [speechEnabled, setSpeechEnabled] = useState(true);
-  console.log('🔍 [DEBUG] speechEnabled state initialized');
-  
   const [voiceCommandsEnabled, setVoiceCommandsEnabled] = useState(true);
-  console.log('🔍 [DEBUG] voiceCommandsEnabled state initialized');
-  
   const [handsFreeMode, setHandsFreeMode] = useState(false);
-  console.log('🔍 [DEBUG] handsFreeMode state initialized');
-  
   const speakAIResponseRef = useRef<((response: string) => void) | null>(null);
-  console.log('🔍 [DEBUG] speakAIResponseRef initialized');
-  
   const [ttsVolume, setTtsVolume] = useState(0.7);
-  console.log('🔍 [DEBUG] ttsVolume state initialized');
-  
   const [conversationMode, setConversationMode] = useState<'chat' | 'call'>('chat');
-  console.log('🔍 [DEBUG] conversationMode state initialized');
   
   // Define selectedConversation early to avoid circular dependency
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
-  console.log('🔍 [DEBUG] selectedConversation state initialized (early)');
   
-  console.log('🔍 [DEBUG] Initializing TTS hook...');
   // Enhanced text manipulation for voice selection with error handling
-  console.log('🔍 [DEBUG] Calling useUniversalTextToSpeech...');
   const ttsResult = useUniversalTextToSpeech();
-  console.log('🔍 [DEBUG] useUniversalTextToSpeech result:', !!ttsResult);
   
   // Safe initialization with fallbacks
   const voices = ttsResult?.voices || [];
@@ -190,9 +155,7 @@ const Conversations: React.FC = () => {
   const testVoice = ttsResult?.speak || null;
   const hasEstonianVoices = ttsResult?.hasEstonianVoices || false;
   const estonianVoices = ttsResult?.estonianVoices || [];
-  console.log('🔍 [DEBUG] TTS variables initialized, voices count:', voices.length);
   
-  console.log('🔍 [DEBUG] Initializing readConversation function...');
   // TTS function for reading conversations with faster speed
   const readConversation = useCallback(async (messages: Message[]) => {
     try {
@@ -218,9 +181,7 @@ const Conversations: React.FC = () => {
       console.error('Error reading conversation:', error);
     }
   }, [ttsVolume, language]);
-  console.log('🔍 [DEBUG] readConversation function initialized');
   
-  console.log('🔍 [DEBUG] Initializing handleReadConversation function...');
   // Function to handle reading conversation when button is clicked with error handling
   const handleReadConversation = useCallback(() => {
     try {
@@ -250,9 +211,7 @@ const Conversations: React.FC = () => {
       console.error('Error in handleReadConversation:', error);
     }
   }, [selectedConversation, language, ttsVolume]);
-  console.log('🔍 [DEBUG] handleReadConversation function initialized');
   
-  console.log('🔍 [DEBUG] Initializing reconstructVoice function...');
   // Function to reconstruct SpeechSynthesisVoice from saved data
   const reconstructVoice = useCallback((savedVoice: any) => {
     if (!savedVoice || !voices || !Array.isArray(voices) || voices.length === 0) return null;
@@ -265,32 +224,16 @@ const Conversations: React.FC = () => {
     
     return voice || null;
   }, [voices]);
-  console.log('🔍 [DEBUG] reconstructVoice function initialized');
   
-  console.log('🔍 [DEBUG] Initializing remaining state variables...');
   const [conversationHistory, setConversationHistory] = useState<Conversation[]>([]);
-  console.log('🔍 [DEBUG] conversationHistory state initialized');
-  
   const [loadingHistory, setLoadingHistory] = useState(false);
-  console.log('🔍 [DEBUG] loadingHistory state initialized');
-  
   const [showConversationDetail, setShowConversationDetail] = useState(false);
-  console.log('🔍 [DEBUG] showConversationDetail state initialized');
-  
   const [usageStatus, setUsageStatus] = useState<any>(null);
-  console.log('🔍 [DEBUG] usageStatus state initialized');
-  
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  console.log('🔍 [DEBUG] messagesEndRef initialized');
   
   // Add flags to track if data has been loaded to prevent unnecessary re-fetching
   const [dataLoaded, setDataLoaded] = useState(false);
-  console.log('🔍 [DEBUG] dataLoaded state initialized');
-  
   const [usageStatusLoaded, setUsageStatusLoaded] = useState(false);
-  console.log('🔍 [DEBUG] usageStatusLoaded state initialized');
-  
-  console.log('✅ [DEBUG] All component initialization completed successfully!');
   
   // AI Tips state
   const [showAITips, setShowAITips] = useState(false);
