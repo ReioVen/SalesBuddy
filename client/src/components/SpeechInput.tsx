@@ -55,39 +55,24 @@ const SpeechInput: React.FC<SpeechInputProps> = ({
 
   // Function to speak AI responses with enhanced, natural-sounding voice
   const speakAIResponse = useCallback(async (response: string) => {
-    console.log('🎙️ [SPEECH-INPUT] ========== AI RESPONSE SPEAKING ==========');
-    console.log('🔊 [SPEECH-INPUT] speakAIResponse called!');
-    console.log('📝 [SPEECH-INPUT] Response type:', typeof response);
-    console.log('📝 [SPEECH-INPUT] Response preview:', response?.substring(0, 100));
-    console.log('🎤 [SPEECH-INPUT] Browser TTS supported:', ttsSupported);
-    console.log('🌍 [SPEECH-INPUT] Language:', language);
-    console.log('🗣️ [SPEECH-INPUT] Selected voice:', selectedVoice?.name || 'none');
-    console.log('🔊 [SPEECH-INPUT] Volume:', ttsVolume);
     
     // Critical: Validate response is a string and not empty
     if (!response || typeof response !== 'string') {
       console.error('❌ [SPEECH-INPUT] Invalid response type:', typeof response);
-      if (typeof response === 'object') {
-        console.error('❌ CRITICAL: TTS called with object instead of string:', response);
-        console.error('❌ This should never happen - callback misuse detected');
-      }
       return;
     }
     
     const responseText = response.trim();
     if (!responseText) {
-      console.warn('⚠️ [SPEECH-INPUT] Empty response text for TTS');
       return;
     }
     
     // Prevent duplicate speaking of the same response
     if (lastAIResponseRef.current === responseText) {
-      console.log('⚠️ [SPEECH-INPUT] Skipping duplicate AI response:', responseText.substring(0, 50));
       return;
     }
     
     lastAIResponseRef.current = responseText;
-    console.log('✅ [SPEECH-INPUT] All validations passed, proceeding with TTS...');
     
     try {
       // IMPORTANT: Always try Enhanced TTS (Azure) first!
@@ -95,18 +80,7 @@ const SpeechInput: React.FC<SpeechInputProps> = ({
       // Only the fallback requires browser TTS support
       const ttsLanguage = selectedVoice?.lang || language;
       
-      console.log(`🎤 [SPEECH-INPUT] TTS Config:`, {
-        language: ttsLanguage,
-        voice: selectedVoice?.name || 'default',
-        textLength: responseText.length,
-        volume: ttsVolume
-      });
-      
-      console.log('🚀 [SPEECH-INPUT] Calling enhancedTtsService.speak() [Azure Cloud TTS]...');
-      console.log('☁️ [SPEECH-INPUT] Note: Cloud TTS does NOT require browser TTS support!');
-      
       setIsEnhancedTtsSpeaking(true);
-      console.log('🔊 [SPEECH-INPUT] Set isEnhancedTtsSpeaking = true');
       
       await enhancedTtsService.speak(responseText, {
         language: ttsLanguage,
@@ -119,31 +93,22 @@ const SpeechInput: React.FC<SpeechInputProps> = ({
       });
       
       setIsEnhancedTtsSpeaking(false);
-      console.log('✅ [SPEECH-INPUT] Successfully spoke AI response!');
-      console.log('🔇 [SPEECH-INPUT] Set isEnhancedTtsSpeaking = false');
     } catch (error) {
       console.error('❌ [SPEECH-INPUT] Enhanced TTS (Azure) failed:', error);
-      console.error('❌ [SPEECH-INPUT] Error details:', error instanceof Error ? error.message : String(error));
-      console.log('🔄 [SPEECH-INPUT] Attempting fallback to browser TTS...');
       
       // Reset the speaking state
       setIsEnhancedTtsSpeaking(false);
-      console.log('🔇 [SPEECH-INPUT] Set isEnhancedTtsSpeaking = false (error)');
       
       // Only now check if browser TTS is supported for fallback
       if (!ttsSupported) {
-        console.error('❌ [SPEECH-INPUT] Browser TTS also not supported - cannot play audio');
-        console.error('💡 [SPEECH-INPUT] Try using Chrome or Edge for better TTS support');
         return;
       }
       
       // Fallback to standard browser TTS if enhanced fails
       const fallbackLanguage = selectedVoice?.lang || language;
-      console.log(`🔄 [SPEECH-INPUT] Fallback language: ${fallbackLanguage}`);
       
       try {
         speak(responseText, { language: fallbackLanguage, rate: 1.5, voice: selectedVoice || undefined, volume: ttsVolume });
-        console.log('✅ [SPEECH-INPUT] Browser TTS fallback successful');
       } catch (fallbackError) {
         console.error('❌ [SPEECH-INPUT] Browser TTS also failed:', fallbackError);
       }
@@ -334,23 +299,9 @@ const SpeechInput: React.FC<SpeechInputProps> = ({
   // Expose speakAIResponse function to parent component (only once!)
   const hasSetCallback = useRef(false);
   useEffect(() => {
-    console.log('🔧 [SPEECH-INPUT] Callback registration effect triggered');
-    console.log('🔧 [SPEECH-INPUT] onAIResponse exists:', !!onAIResponse);
-    console.log('🔧 [SPEECH-INPUT] speakAIResponse exists:', !!speakAIResponse);
-    console.log('🔧 [SPEECH-INPUT] hasSetCallback:', hasSetCallback.current);
-    
     if (onAIResponse && speakAIResponse && !hasSetCallback.current) {
       hasSetCallback.current = true;
       onAIResponse(speakAIResponse);
-      console.log('✅ [SPEECH-INPUT] ========== TTS CALLBACK REGISTERED ==========');
-      console.log('✅ [SPEECH-INPUT] Configuration:', {
-        handsFreeMode,
-        language,
-        hasSelectedVoice: !!selectedVoice,
-        voiceLang: selectedVoice?.lang,
-        voiceName: selectedVoice?.name
-      });
-      console.log('✅ [SPEECH-INPUT] Parent component can now trigger AI voice responses');
     } else if (!onAIResponse) {
       console.warn('⚠️ [SPEECH-INPUT] onAIResponse callback not provided by parent');
     }
@@ -361,34 +312,12 @@ const SpeechInput: React.FC<SpeechInputProps> = ({
     // Wait for BOTH browser TTS and Azure TTS to finish before restarting microphone
     const anyTtsSpeaking = isSpeaking || isEnhancedTtsSpeaking;
     
-    console.log('🔄 [SPEECH-INPUT] Restart effect check:', {
-      handsFreeMode,
-      isSpeaking,
-      isEnhancedTtsSpeaking,
-      anyTtsSpeaking,
-      isListening,
-      isStarting,
-      userExplicitlyStopped,
-      shouldRestart: handsFreeMode && !anyTtsSpeaking && !isListening && !isStarting && !userExplicitlyStopped
-    });
     
     if (handsFreeMode && !anyTtsSpeaking && !isListening && !isStarting && !userExplicitlyStopped) {
-      console.log('🎤 [SPEECH-INPUT] TTS finished, restarting microphone in 500ms...');
       // Small delay to ensure TTS has fully finished
       const timer = setTimeout(() => {
-        console.log('🎤 [SPEECH-INPUT] Restart timeout triggered, checking conditions...');
-        console.log('🎤 [SPEECH-INPUT] Conditions:', {
-          isListening,
-          isStarting,
-          isEnhancedTtsSpeaking,
-          isSpeaking
-        });
-        
         if (!isListening && !isStarting && !isEnhancedTtsSpeaking && !isSpeaking) {
-          console.log('✅ [SPEECH-INPUT] All conditions met, starting listening...');
           startListening();
-        } else {
-          console.warn('⚠️ [SPEECH-INPUT] Cannot restart - conditions not met');
         }
       }, 500);
       
@@ -405,12 +334,10 @@ const SpeechInput: React.FC<SpeechInputProps> = ({
       // Start listening after a 1.5 second delay for call mode to avoid interrupting the user
       const anyTtsSpeaking = isSpeaking || isEnhancedTtsSpeaking;
       if (!isListening && !isStarting && !anyTtsSpeaking) {
-        console.log('🎙️ Hands-free mode: Starting microphone in 1.5 seconds...');
         // Wait 1.5 seconds before starting to give user time to prepare
         setTimeout(() => {
           if (!isListening && !isStarting && !isEnhancedTtsSpeaking) {
             startListening();
-            console.log('✅ Microphone started after 1.5 second delay');
           }
         }, 1500); // 1.5 second delay to avoid interrupting the user when call starts
       }

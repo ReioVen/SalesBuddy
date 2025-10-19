@@ -547,32 +547,14 @@ const Conversations: React.FC = () => {
         // Prevent speaking the same message multiple times
         const lastMessage = currentConversation?.messages[currentConversation.messages.length - 1];
         if (!lastMessage || lastMessage.content !== aiResponse) {
-          console.log('🎙️ Speaking AI response in', currentConversation?.conversationMode || 'chat', 'mode');
-          console.log('🎤 AI Response type:', typeof aiResponse, 'Length:', aiResponse?.length);
-          console.log('🎤 AI Response content:', aiResponse?.substring(0, 100));
-          console.log('🎤 Callback exists:', !!speakAIResponseRef.current);
-          
           if (speakAIResponseRef.current) {
             try {
               speakAIResponseRef.current(aiResponse);
-              console.log('✅ TTS callback executed');
             } catch (error) {
               console.error('❌ TTS callback error:', error);
             }
-          } else {
-            console.error('❌ TTS callback is null!');
           }
-        } else {
-          console.log('⚠️ Skipping duplicate AI response');
         }
-      } else {
-        console.log('⚠️ Not speaking AI response. Conditions:', {
-          handsFreeMode,
-          callMode: currentConversation?.conversationMode === 'call',
-          hasCallback: !!speakAIResponseRef.current,
-          hasResponse: !!aiResponse,
-          responseNotEmpty: !!aiResponse?.trim()
-        });
       }
 
       // No need to refresh conversation history after each message
@@ -1752,10 +1734,14 @@ const Conversations: React.FC = () => {
                         : 'Client is listening and will respond'
                       }
                     </p>
-                    {currentConversation.messages.length > 0 && (
+                    {((currentConversation.chatType === 'call' && currentConversation.messageCount > 0) || 
+                      (currentConversation.chatType === 'chat' && currentConversation.messages.length > 0)) && (
                       <div className="mt-4 pt-4 border-t border-white border-opacity-20">
                         <p className="text-xs text-green-100">
-                          {currentConversation.messages.filter(m => m.role === 'user').length} {language === 'et' ? 'sõnumit vahetatud' : 'messages exchanged'}
+                          {currentConversation.chatType === 'call' 
+                            ? currentConversation.messageCount 
+                            : currentConversation.messages.filter(m => m.role === 'user').length
+                          } {language === 'et' ? 'sõnumit vahetatud' : 'messages exchanged'}
                         </p>
                       </div>
                     )}
@@ -2120,7 +2106,12 @@ const Conversations: React.FC = () => {
                     {conversation.createdAt && (
                       <div>{new Date(conversation.createdAt).toLocaleDateString()}</div>
                     )}
-                    <div className="text-xs">{conversation.messages?.length || 0} {t('messages')}</div>
+                    <div className="text-xs">
+                      {conversation.chatType === 'call' 
+                        ? (conversation.messageCount || 0) 
+                        : (conversation.messages?.length || 0)
+                      } {t('messages')}
+                    </div>
                   </div>
                 </div>
               </div>
