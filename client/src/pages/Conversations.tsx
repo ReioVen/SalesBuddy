@@ -174,6 +174,10 @@ const Conversations: React.FC = () => {
   const [conversationMode, setConversationMode] = useState<'chat' | 'call'>('chat');
   console.log('🔍 [DEBUG] conversationMode state initialized');
   
+  // Define selectedConversation early to avoid circular dependency
+  const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
+  console.log('🔍 [DEBUG] selectedConversation state initialized (early)');
+  
   console.log('🔍 [DEBUG] Initializing TTS hook...');
   // Enhanced text manipulation for voice selection with error handling
   console.log('🔍 [DEBUG] Calling useUniversalTextToSpeech...');
@@ -269,9 +273,6 @@ const Conversations: React.FC = () => {
   
   const [loadingHistory, setLoadingHistory] = useState(false);
   console.log('🔍 [DEBUG] loadingHistory state initialized');
-  
-  const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
-  console.log('🔍 [DEBUG] selectedConversation state initialized');
   
   const [showConversationDetail, setShowConversationDetail] = useState(false);
   console.log('🔍 [DEBUG] showConversationDetail state initialized');
