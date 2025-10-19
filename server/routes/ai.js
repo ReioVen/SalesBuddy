@@ -1821,8 +1821,10 @@ Respond in this exact JSON format:
        clientCustomization: finalClientCustomization,
        // Store language preference
        language,
-       // Store conversation mode (chat or call)
-       conversationMode: req.body.conversationMode || 'chat'
+      // Store conversation mode (chat or call)
+      conversationMode: req.body.conversationMode || 'chat',
+      // Store chat type (same as conversation mode for now)
+      chatType: req.body.conversationMode || 'chat'
      });
 
      // Validate conversation object
@@ -2194,8 +2196,25 @@ router.get('/conversations', authenticateToken, async (req, res) => {
     const conversations = await Conversation.getUserHistory(req.user._id, parseInt(limit), skip);
     const total = await Conversation.countDocuments({ userId: req.user._id, isActive: true });
 
+    // Hide messages for call type conversations
+    const processedConversations = conversations.map(conversation => {
+      const conversationData = conversation.toObject();
+      
+      // Only include messages for chat type conversations
+      if (conversationData.chatType === 'chat') {
+        return conversationData;
+      } else {
+        // For call type, hide the actual messages but keep other data
+        return {
+          ...conversationData,
+          messages: [], // Hide the actual messages
+          messageCount: conversationData.messages ? conversationData.messages.length : 0
+        };
+      }
+    });
+
     res.json({
-      conversations,
+      conversations: processedConversations,
       pagination: {
         page: parseInt(page),
         limit: parseInt(limit),
@@ -2251,21 +2270,34 @@ router.get('/conversation/:id', authenticateToken, async (req, res) => {
       return res.status(404).json({ error: 'Conversation not found' });
     }
 
+    // Hide messages for call type conversations, but keep AI feedback
+    let conversationData = {
+      id: conversation._id,
+      title: conversation.title,
+      scenario: conversation.scenario,
+      conversationMode: conversation.conversationMode,
+      chatType: conversation.chatType,
+      totalTokens: conversation.totalTokens,
+      duration: conversation.duration,
+      rating: conversation.rating,
+      feedback: conversation.feedback,
+      aiRatings: conversation.aiRatings,
+      aiRatingFeedback: conversation.aiRatingFeedback,
+      createdAt: conversation.createdAt,
+      updatedAt: conversation.updatedAt
+    };
+
+    // Only include messages for chat type conversations
+    if (conversation.chatType === 'chat') {
+      conversationData.messages = conversation.messages;
+    } else {
+      // For call type, hide the actual messages but show message count for reference
+      conversationData.messageCount = conversation.messages.length;
+      conversationData.messages = []; // Hide the actual messages
+    }
+
     res.json({
-      conversation: {
-        id: conversation._id,
-        title: conversation.title,
-        scenario: conversation.scenario,
-        messages: conversation.messages,
-        totalTokens: conversation.totalTokens,
-        duration: conversation.duration,
-        rating: conversation.rating,
-        feedback: conversation.feedback,
-        aiRatings: conversation.aiRatings,
-        aiRatingFeedback: conversation.aiRatingFeedback,
-        createdAt: conversation.createdAt,
-        updatedAt: conversation.updatedAt
-      }
+      conversation: conversationData
     });
   } catch (error) {
     console.error('Get conversation error:', error);

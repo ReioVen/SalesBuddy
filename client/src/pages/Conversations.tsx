@@ -97,8 +97,10 @@ interface Conversation {
   title: string;
   scenario: string;
   conversationMode?: 'chat' | 'call'; // Track if it's a chat or call
+  chatType?: 'chat' | 'call'; // Track if messages should be hidden
   clientCustomization: ClientCustomization;
   messages: Message[];
+  messageCount?: number;
   totalTokens?: number;
   duration?: number;
   rating?: number;
@@ -2172,27 +2174,53 @@ const Conversations: React.FC = () => {
               {/* Messages Section */}
               <div>
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">{t('fullConversation')}</h3>
-                <div className="space-y-4">
-                  {selectedConversation.messages?.map((message, index) => (
-                    <div
-                      key={index}
-                      className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                    >
+                {selectedConversation.chatType === 'call' ? (
+                  /* Call Type - Hide messages, show only feedback */
+                  <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6 text-center">
+                    <div className="text-6xl mb-4">🎙️</div>
+                    <h4 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                      {language === 'et' ? 'Hääle vestlus' : language === 'es' ? 'Conversación de voz' : language === 'ru' ? 'Голосовой разговор' : 'Voice Call'}
+                    </h4>
+                    <p className="text-gray-600 dark:text-gray-300 mb-4">
+                      {language === 'et' 
+                        ? 'Sõnumite sisu on peidetud privaatsuse huvides' 
+                        : language === 'es'
+                        ? 'El contenido de los mensajes está oculto por privacidad'
+                        : language === 'ru'
+                        ? 'Содержимое сообщений скрыто для конфиденциальности'
+                        : 'Message content is hidden for privacy'
+                      }
+                    </p>
+                    {selectedConversation.messageCount > 0 && (
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        {selectedConversation.messageCount} {language === 'et' ? 'sõnumit vahetatud' : 'messages exchanged'}
+                      </p>
+                    )}
+                  </div>
+                ) : (
+                  /* Chat Type - Show full conversation */
+                  <div className="space-y-4">
+                    {selectedConversation.messages?.map((message, index) => (
                       <div
-                        className={`max-w-[70%] p-3 rounded-lg ${
-                          message.role === 'user'
-                            ? 'bg-blue-600 text-white'
-                            : 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white'
-                        }`}
+                        key={index}
+                        className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
                       >
-                        <p className="whitespace-pre-wrap">{message.content}</p>
-                        <div className="text-xs opacity-70 mt-1">
-                          {message.role === 'user' ? t('you') : t('client')} • {new Date(message.timestamp).toLocaleTimeString()}
+                        <div
+                          className={`max-w-[70%] p-3 rounded-lg ${
+                            message.role === 'user'
+                              ? 'bg-blue-600 text-white'
+                              : 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white'
+                          }`}
+                        >
+                          <p className="whitespace-pre-wrap">{message.content}</p>
+                          <div className="text-xs opacity-70 mt-1">
+                            {message.role === 'user' ? t('you') : t('client')} • {new Date(message.timestamp).toLocaleTimeString()}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           </div>

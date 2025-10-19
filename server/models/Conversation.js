@@ -48,6 +48,11 @@ const conversationSchema = new mongoose.Schema({
     enum: ['chat', 'call'],
     default: 'chat'
   },
+  chatType: {
+    type: String,
+    enum: ['chat', 'call'],
+    default: 'chat'
+  },
   clientCustomization: {
     name: String,
     personality: String,
@@ -274,7 +279,7 @@ conversationSchema.statics.getUserHistory = function(userId, limit = 20, skip = 
     .sort({ updatedAt: -1 })
     .limit(limit)
     .skip(skip)
-    .select('title scenario messages messageCount totalTokens duration rating aiRatings aiRatingFeedback clientCustomization createdAt updatedAt');
+    .select('title scenario conversationMode chatType messages messageCount totalTokens duration rating aiRatings aiRatingFeedback clientCustomization createdAt updatedAt');
 };
 
 module.exports = mongoose.model('Conversation', conversationSchema); 
