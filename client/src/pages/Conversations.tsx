@@ -176,20 +176,17 @@ const Conversations: React.FC = () => {
   
   console.log('🔍 [DEBUG] Initializing TTS hook...');
   // Enhanced text manipulation for voice selection with error handling
-  let voices = [], universalVoices = [], testVoice = null, hasEstonianVoices = false, estonianVoices = [];
-  try {
-    console.log('🔍 [DEBUG] Calling useUniversalTextToSpeech...');
-    const ttsResult = useUniversalTextToSpeech();
-    console.log('🔍 [DEBUG] useUniversalTextToSpeech result:', !!ttsResult);
-    voices = ttsResult?.voices || [];
-    universalVoices = ttsResult?.universalVoices || [];
-    testVoice = ttsResult?.speak || null;
-    hasEstonianVoices = ttsResult?.hasEstonianVoices || false;
-    estonianVoices = ttsResult?.estonianVoices || [];
-    console.log('🔍 [DEBUG] TTS variables initialized, voices count:', voices.length);
-  } catch (error) {
-    console.error('❌ [ERROR] Error initializing TTS:', error);
-  }
+  console.log('🔍 [DEBUG] Calling useUniversalTextToSpeech...');
+  const ttsResult = useUniversalTextToSpeech();
+  console.log('🔍 [DEBUG] useUniversalTextToSpeech result:', !!ttsResult);
+  
+  // Safe initialization with fallbacks
+  const voices = ttsResult?.voices || [];
+  const universalVoices = ttsResult?.universalVoices || [];
+  const testVoice = ttsResult?.speak || null;
+  const hasEstonianVoices = ttsResult?.hasEstonianVoices || false;
+  const estonianVoices = ttsResult?.estonianVoices || [];
+  console.log('🔍 [DEBUG] TTS variables initialized, voices count:', voices.length);
   
   console.log('🔍 [DEBUG] Initializing readConversation function...');
   // TTS function for reading conversations with faster speed
