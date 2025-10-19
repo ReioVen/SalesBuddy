@@ -136,8 +136,8 @@ const Conversations: React.FC = () => {
   const [newMessage, setNewMessage] = useState('');
   const [sendingMessage, setSendingMessage] = useState(false);
   const [endingConversation, setEndingConversation] = useState(false);
-  const [speechEnabled, setSpeechEnabled] = useState(true);
-  const [voiceCommandsEnabled, setVoiceCommandsEnabled] = useState(true);
+  const [speechEnabled, setSpeechEnabled] = useState(false);
+  const [voiceCommandsEnabled, setVoiceCommandsEnabled] = useState(false);
   const [handsFreeMode, setHandsFreeMode] = useState(false);
   const speakAIResponseRef = useRef<((response: string) => void) | null>(null);
   const [ttsVolume, setTtsVolume] = useState(0.7);
@@ -1927,7 +1927,12 @@ const Conversations: React.FC = () => {
                     
                     <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
                       <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-                      <span>Voice controls active</span>
+                      <span>
+                        {language === 'et' ? 'Häälekäsut aktiivsed' : 
+                         language === 'es' ? 'Controles de voz activos' : 
+                         language === 'ru' ? 'Голосовые команды активны' : 
+                         'Voice controls active'}
+                      </span>
                     </div>
                   </div>
                 </div>

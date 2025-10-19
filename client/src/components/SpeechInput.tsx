@@ -111,7 +111,7 @@ const SpeechInput: React.FC<SpeechInputProps> = ({
       await enhancedTtsService.speak(responseText, {
         language: ttsLanguage,
         voice: selectedVoice?.name,
-        rate: 1.6, // Faster speech rate for efficiency
+        rate: 1.8, // Even faster speech rate for efficiency
         pitch: 0.98, // Slightly lower pitch sounds more natural
         volume: ttsVolume,
         addPauses: true, // Add natural pauses at punctuation
@@ -142,7 +142,7 @@ const SpeechInput: React.FC<SpeechInputProps> = ({
       console.log(`🔄 [SPEECH-INPUT] Fallback language: ${fallbackLanguage}`);
       
       try {
-        speak(responseText, { language: fallbackLanguage, rate: 1.3, voice: selectedVoice || undefined, volume: ttsVolume });
+        speak(responseText, { language: fallbackLanguage, rate: 1.5, voice: selectedVoice || undefined, volume: ttsVolume });
         console.log('✅ [SPEECH-INPUT] Browser TTS fallback successful');
       } catch (fallbackError) {
         console.error('❌ [SPEECH-INPUT] Browser TTS also failed:', fallbackError);
