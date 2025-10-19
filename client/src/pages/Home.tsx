@@ -412,15 +412,29 @@ const Home: React.FC = () => {
               
               <div className="text-center p-6 bg-gray-50 dark:bg-dark-700 rounded-lg">
                 <Star className="w-8 h-8 text-yellow-600 dark:text-yellow-400 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Customer Support</h3>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">{t('customerSupport')}</h3>
                 <p className="text-gray-600 dark:text-gray-300 text-sm">
-                  Get help from our dedicated support team whenever you need assistance.
+                  {t('customerSupportDescription')}
                 </p>
               </div>
             </div>
           </div>
         </div>
       </section>
+
+      {/* Footer */}
+      <footer className="bg-gray-900 dark:bg-black text-white py-8">
+        <div className="container mx-auto px-4">
+          <div className="text-center">
+            <p className="text-sm text-gray-300">
+              2025 © RevoTech OÜ – All Rights Reserved.
+            </p>
+            <p className="text-sm text-gray-400 mt-2">
+              RevoTech OÜ | Reg. No: 17332344
+            </p>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };

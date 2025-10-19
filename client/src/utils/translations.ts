@@ -675,6 +675,8 @@ export const translations = {
     contactUs: 'Contact Us',
     contactUsDescription: 'Have questions not answered in our FAQ? We\'re here to help.',
     supportEmail: 'RevoTechSB@gmail.com',
+    customerSupport: 'Customer Support',
+    customerSupportDescription: 'Get help from our dedicated support team whenever you need assistance.',
     
     // Beta Feedback System
     betaFeedback: 'Beta Feedback',
@@ -1322,6 +1324,8 @@ export const translations = {
     contactUs: 'Võtke Ühendust',
     contactUsDescription: 'Kas teil on küsimusi, millele ei vastata meie KKK-s? Oleme siin, et aidata.',
     supportEmail: 'RevoTechSB@gmail.com',
+    customerSupport: 'Klienditugi',
+    customerSupportDescription: 'Saate abi meie pühendunud tugimeeskonna käest, kui vajate abi.',
 
     // Advanced Settings
     advancedSettings: 'Täpsemad Seaded',
@@ -1931,6 +1935,8 @@ export const translations = {
     contactUs: 'Contáctanos',
     contactUsDescription: '¿Tienes preguntas que no se responden en nuestro FAQ? Estamos aquí para ayudar.',
     supportEmail: 'RevoTechSB@gmail.com',
+    customerSupport: 'Soporte al Cliente',
+    customerSupportDescription: 'Obtén ayuda de nuestro equipo de soporte dedicado siempre que necesites asistencia.',
 
     // Advanced Settings
     advancedSettings: 'Configuración Avanzada',
@@ -2540,6 +2546,8 @@ export const translations = {
     contactUs: 'Свяжитесь с Нами',
     contactUsDescription: 'Есть вопросы, на которые не ответили в нашем FAQ? Мы здесь, чтобы помочь.',
     supportEmail: 'RevoTechSB@gmail.com',
+    customerSupport: 'Поддержка Клиентов',
+    customerSupportDescription: 'Получите помощь от нашей преданной команды поддержки, когда вам нужна помощь.',
 
     // Advanced Settings
     advancedSettings: 'Дополнительные Настройки',
