@@ -13,6 +13,14 @@ import { useUniversalTextToSpeech } from '../hooks/useUniversalTextToSpeech.ts';
 import { universalTtsService } from '../services/universalTtsService.ts';
 import { enhancedTtsService } from '../services/enhancedTtsService.ts';
 
+// Safe initialization of TTS service
+let safeEnhancedTtsService = null;
+try {
+  safeEnhancedTtsService = enhancedTtsService;
+} catch (error) {
+  console.error('Error initializing enhanced TTS service:', error);
+}
+
 const API_BASE_URL = 'https://salesbuddy-production.up.railway.app';
 
 interface ClientCustomization {
@@ -118,9 +126,10 @@ interface Conversation {
 }
 
 const Conversations: React.FC = () => {
-  const { t, language } = useTranslation();
-  const { user, loading: authLoading } = useAuth();
-  const navigate = useNavigate();
+  try {
+    const { t, language } = useTranslation();
+    const { user, loading: authLoading } = useAuth();
+    const navigate = useNavigate();
   const [showNewChatForm, setShowNewChatForm] = useState(false);
   const [loading, setLoading] = useState(false);
   const [currentConversation, setCurrentConversation] = useState<Conversation | null>(null);
@@ -134,54 +143,72 @@ const Conversations: React.FC = () => {
   const [ttsVolume, setTtsVolume] = useState(0.7); // Default volume at 70%
   const [conversationMode, setConversationMode] = useState<'chat' | 'call'>('chat'); // NEW: Track conversation mode
   
-  // Enhanced text-to-speech functionality for voice selection
-  const { voices = [], universalVoices = [], speak: testVoice, hasEstonianVoices = false, estonianVoices = [] } = useUniversalTextToSpeech();
+  // Enhanced text manipulation for voice selection with error handling
+  let voices = [], universalVoices = [], testVoice = null, hasEstonianVoices = false, estonianVoices = [];
+  try {
+    const ttsResult = useUniversalTextToSpeech();
+    voices = ttsResult?.voices || [];
+    universalVoices = ttsResult?.universalVoices || [];
+    testVoice = ttsResult?.speak || null;
+    hasEstonianVoices = ttsResult?.hasEstonianVoices || false;
+    estonianVoices = ttsResult?.estonianVoices || [];
+  } catch (error) {
+    console.error('Error initializing TTS:', error);
+  }
   
   // TTS function for reading conversations with faster speed
   const readConversation = useCallback(async (messages: Message[]) => {
-    if (!messages || messages.length === 0) return;
-    
-    // Create conversation text with faster reading
-    const conversationText = messages.map(msg => {
-      const speaker = msg.role === 'user' ? (language === 'et' ? 'Sina' : language === 'es' ? 'Tú' : language === 'ru' ? 'Вы' : 'You') : 
-                     (language === 'et' ? 'Klient' : language === 'es' ? 'Cliente' : language === 'ru' ? 'Клиент' : 'Client');
-      return `${speaker}: ${msg.content}`;
-    }).join('\n\n');
-    
-    // Use enhanced TTS service with faster speed
     try {
-      await enhancedTtsService.speak(conversationText, {
-        volume: ttsVolume,
-        rate: 1.4, // Faster reading speed
-        pitch: 1.0,
-        language: language
-      });
+      if (!messages || messages.length === 0) return;
+      
+      // Create conversation text with faster reading
+      const conversationText = messages.map(msg => {
+        const speaker = msg.role === 'user' ? (language === 'et' ? 'Sina' : language === 'es' ? 'Tú' : language === 'ru' ? 'Вы' : 'You') : 
+                       (language === 'et' ? 'Klient' : language === 'es' ? 'Cliente' : language === 'ru' ? 'Клиент' : 'Client');
+        return `${speaker}: ${msg.content}`;
+      }).join('\n\n');
+      
+      // Use enhanced TTS service with faster speed
+      if (safeEnhancedTtsService && safeEnhancedTtsService.speak) {
+        await safeEnhancedTtsService.speak(conversationText, {
+          volume: ttsVolume,
+          rate: 1.4, // Faster reading speed
+          pitch: 1.0,
+          language: language
+        });
+      }
     } catch (error) {
       console.error('Error reading conversation:', error);
     }
   }, [ttsVolume, language]);
   
-  // Function to handle reading conversation when button is clicked
+  // Function to handle reading conversation when button is clicked with error handling
   const handleReadConversation = useCallback(() => {
-    if (selectedConversation?.chatType === 'chat' && selectedConversation?.messages && language && ttsVolume !== undefined) {
-      const messages = selectedConversation.messages;
-      if (messages && messages.length > 0) {
-        const conversationText = messages.map(msg => {
-          const speaker = msg.role === 'user' ? (language === 'et' ? 'Sina' : language === 'es' ? 'Tú' : language === 'ru' ? 'Вы' : 'You') : 
-                         (language === 'et' ? 'Klient' : language === 'es' ? 'Cliente' : language === 'ru' ? 'Клиент' : 'Client');
-          return `${speaker}: ${msg.content}`;
-        }).join('\n\n');
-        
-        // Use enhanced TTS service with faster speed
-        enhancedTtsService.speak(conversationText, {
-          volume: ttsVolume,
-          rate: 1.4, // Faster reading speed
-          pitch: 1.0,
-          language: language
-        }).catch(error => {
-          console.error('Error reading conversation:', error);
-        });
+    try {
+      if (selectedConversation?.chatType === 'chat' && selectedConversation?.messages && language && ttsVolume !== undefined) {
+        const messages = selectedConversation.messages;
+        if (messages && messages.length > 0) {
+          const conversationText = messages.map(msg => {
+            const speaker = msg.role === 'user' ? (language === 'et' ? 'Sina' : language === 'es' ? 'Tú' : language === 'ru' ? 'Вы' : 'You') : 
+                           (language === 'et' ? 'Klient' : language === 'es' ? 'Cliente' : language === 'ru' ? 'Клиент' : 'Client');
+            return `${speaker}: ${msg.content}`;
+          }).join('\n\n');
+          
+          // Use enhanced TTS service with faster speed
+          if (safeEnhancedTtsService && safeEnhancedTtsService.speak) {
+            safeEnhancedTtsService.speak(conversationText, {
+              volume: ttsVolume,
+              rate: 1.4, // Faster reading speed
+              pitch: 1.0,
+              language: language
+            }).catch(error => {
+              console.error('Error reading conversation:', error);
+            });
+          }
+        }
       }
+    } catch (error) {
+      console.error('Error in handleReadConversation:', error);
     }
   }, [selectedConversation, language, ttsVolume]);
   
@@ -2300,6 +2327,27 @@ const Conversations: React.FC = () => {
       </div>
     </div>
   );
+  } catch (error) {
+    console.error('Error in Conversations component:', error);
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+            Something went wrong
+          </h1>
+          <p className="text-gray-600 dark:text-gray-400">
+            Please refresh the page to try again.
+          </p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="mt-4 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+          >
+            Refresh Page
+          </button>
+        </div>
+      </div>
+    );
+  }
 };
 
 export default Conversations;
