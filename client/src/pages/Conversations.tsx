@@ -133,7 +133,6 @@ const Conversations: React.FC = () => {
   const speakAIResponseRef = useRef<((response: string) => void) | null>(null); // Use ref only, not state
   const [ttsVolume, setTtsVolume] = useState(0.7); // Default volume at 70%
   const [conversationMode, setConversationMode] = useState<'chat' | 'call'>('chat'); // NEW: Track conversation mode
-  const [readConversationEnabled, setReadConversationEnabled] = useState(false); // TTS option for conversation reading
   
   // Enhanced text-to-speech functionality for voice selection
   const { voices = [], universalVoices = [], speak: testVoice, hasEstonianVoices = false, estonianVoices = [] } = useUniversalTextToSpeech();
@@ -162,10 +161,9 @@ const Conversations: React.FC = () => {
     }
   }, [ttsVolume, language]);
   
-  // Effect to read conversation when toggle is enabled
-  useEffect(() => {
-    if (readConversationEnabled && selectedConversation?.chatType === 'chat' && selectedConversation?.messages) {
-      // Inline the conversation reading logic to avoid dependency issues
+  // Function to handle reading conversation when button is clicked
+  const handleReadConversation = useCallback(() => {
+    if (selectedConversation?.chatType === 'chat' && selectedConversation?.messages && language && ttsVolume !== undefined) {
       const messages = selectedConversation.messages;
       if (messages && messages.length > 0) {
         const conversationText = messages.map(msg => {
@@ -185,7 +183,7 @@ const Conversations: React.FC = () => {
         });
       }
     }
-  }, [readConversationEnabled, selectedConversation, ttsVolume, language]);
+  }, [selectedConversation, language, ttsVolume]);
   
   // Function to reconstruct SpeechSynthesisVoice from saved data
   const reconstructVoice = useCallback((savedVoice: any) => {
@@ -2234,34 +2232,26 @@ const Conversations: React.FC = () => {
                         </p>
                       </div>
                       <button
-                        onClick={() => setReadConversationEnabled(!readConversationEnabled)}
-                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
-                          readConversationEnabled ? 'bg-blue-600' : 'bg-gray-200 dark:bg-gray-700'
-                        }`}
+                        onClick={handleReadConversation}
+                        className="bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 hover:bg-blue-700 hover:shadow-lg hover:scale-105"
                       >
-                        <span
-                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 ease-in-out ${
-                            readConversationEnabled ? 'translate-x-6' : 'translate-x-1'
-                          }`}
-                        />
+                        {language === 'et' ? 'Loe' : language === 'es' ? 'Leer' : language === 'ru' ? 'Читать' : 'Read'}
                       </button>
                     </div>
-                    {readConversationEnabled && (
-                      <div className="mt-3 flex items-center justify-between">
-                        <span className="text-sm text-gray-600 dark:text-gray-300">
-                          {language === 'et' ? 'Helitugevus:' : language === 'es' ? 'Volumen:' : language === 'ru' ? 'Громкость:' : 'Volume:'}
-                        </span>
-                        <input
-                          type="range"
-                          min="0"
-                          max="1"
-                          step="0.1"
-                          value={ttsVolume}
-                          onChange={(e) => setTtsVolume(parseFloat(e.target.value))}
-                          className="w-24 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
-                        />
-                      </div>
-                    )}
+                    <div className="mt-3 flex items-center justify-between">
+                      <span className="text-sm text-gray-600 dark:text-gray-300">
+                        {language === 'et' ? 'Helitugevus:' : language === 'es' ? 'Volumen:' : language === 'ru' ? 'Громкость:' : 'Volume:'}
+                      </span>
+                      <input
+                        type="range"
+                        min="0"
+                        max="1"
+                        step="0.1"
+                        value={ttsVolume}
+                        onChange={(e) => setTtsVolume(parseFloat(e.target.value))}
+                        className="w-24 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
+                      />
+                    </div>
                   </div>
                 )}
               </div>
