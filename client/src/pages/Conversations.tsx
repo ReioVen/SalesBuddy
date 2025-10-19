@@ -165,9 +165,27 @@ const Conversations: React.FC = () => {
   // Effect to read conversation when toggle is enabled
   useEffect(() => {
     if (readConversationEnabled && selectedConversation?.chatType === 'chat' && selectedConversation?.messages) {
-      readConversation(selectedConversation.messages);
+      // Inline the conversation reading logic to avoid dependency issues
+      const messages = selectedConversation.messages;
+      if (messages && messages.length > 0) {
+        const conversationText = messages.map(msg => {
+          const speaker = msg.role === 'user' ? (language === 'et' ? 'Sina' : language === 'es' ? 'Tú' : language === 'ru' ? 'Вы' : 'You') : 
+                         (language === 'et' ? 'Klient' : language === 'es' ? 'Cliente' : language === 'ru' ? 'Клиент' : 'Client');
+          return `${speaker}: ${msg.content}`;
+        }).join('\n\n');
+        
+        // Use enhanced TTS service with faster speed
+        enhancedTtsService.speak(conversationText, {
+          volume: ttsVolume,
+          rate: 1.4, // Faster reading speed
+          pitch: 1.0,
+          language: language
+        }).catch(error => {
+          console.error('Error reading conversation:', error);
+        });
+      }
     }
-  }, [readConversationEnabled, selectedConversation, readConversation]);
+  }, [readConversationEnabled, selectedConversation, ttsVolume, language]);
   
   // Function to reconstruct SpeechSynthesisVoice from saved data
   const reconstructVoice = useCallback((savedVoice: any) => {
