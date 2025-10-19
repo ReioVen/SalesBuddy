@@ -126,115 +126,173 @@ interface Conversation {
 }
 
 const Conversations: React.FC = () => {
+  console.log('🔍 [DEBUG] Conversations component starting initialization...');
+  
   try {
-    const { t, language } = useTranslation();
-    const { user, loading: authLoading } = useAuth();
-    const navigate = useNavigate();
+    console.log('🔍 [DEBUG] Initializing hooks...');
+  const { t, language } = useTranslation();
+    console.log('🔍 [DEBUG] useTranslation initialized, language:', language);
+    
+  const { user, loading: authLoading } = useAuth();
+    console.log('🔍 [DEBUG] useAuth initialized, user:', !!user);
+    
+  const navigate = useNavigate();
+    console.log('🔍 [DEBUG] useNavigate initialized');
+    console.log('🔍 [DEBUG] Initializing state variables...');
   const [showNewChatForm, setShowNewChatForm] = useState(false);
+    console.log('🔍 [DEBUG] showNewChatForm state initialized');
+    
   const [loading, setLoading] = useState(false);
+    console.log('🔍 [DEBUG] loading state initialized');
+    
   const [currentConversation, setCurrentConversation] = useState<Conversation | null>(null);
+    console.log('🔍 [DEBUG] currentConversation state initialized');
+    
   const [newMessage, setNewMessage] = useState('');
+    console.log('🔍 [DEBUG] newMessage state initialized');
+    
   const [sendingMessage, setSendingMessage] = useState(false);
+    console.log('🔍 [DEBUG] sendingMessage state initialized');
+    
   const [endingConversation, setEndingConversation] = useState(false);
+    console.log('🔍 [DEBUG] endingConversation state initialized');
+    
   const [speechEnabled, setSpeechEnabled] = useState(true);
+    console.log('🔍 [DEBUG] speechEnabled state initialized');
+    
   const [voiceCommandsEnabled, setVoiceCommandsEnabled] = useState(true);
+    console.log('🔍 [DEBUG] voiceCommandsEnabled state initialized');
+    
   const [handsFreeMode, setHandsFreeMode] = useState(false);
-  const speakAIResponseRef = useRef<((response: string) => void) | null>(null); // Use ref only, not state
-  const [ttsVolume, setTtsVolume] = useState(0.7); // Default volume at 70%
-  const [conversationMode, setConversationMode] = useState<'chat' | 'call'>('chat'); // NEW: Track conversation mode
+    console.log('🔍 [DEBUG] handsFreeMode state initialized');
+    
+    const speakAIResponseRef = useRef<((response: string) => void) | null>(null);
+    console.log('🔍 [DEBUG] speakAIResponseRef initialized');
+    
+    const [ttsVolume, setTtsVolume] = useState(0.7);
+    console.log('🔍 [DEBUG] ttsVolume state initialized');
+    
+    const [conversationMode, setConversationMode] = useState<'chat' | 'call'>('chat');
+    console.log('🔍 [DEBUG] conversationMode state initialized');
   
-  // Enhanced text manipulation for voice selection with error handling
-  let voices = [], universalVoices = [], testVoice = null, hasEstonianVoices = false, estonianVoices = [];
-  try {
-    const ttsResult = useUniversalTextToSpeech();
-    voices = ttsResult?.voices || [];
-    universalVoices = ttsResult?.universalVoices || [];
-    testVoice = ttsResult?.speak || null;
-    hasEstonianVoices = ttsResult?.hasEstonianVoices || false;
-    estonianVoices = ttsResult?.estonianVoices || [];
-  } catch (error) {
-    console.error('Error initializing TTS:', error);
-  }
-  
-  // TTS function for reading conversations with faster speed
-  const readConversation = useCallback(async (messages: Message[]) => {
+    console.log('🔍 [DEBUG] Initializing TTS hook...');
+    // Enhanced text manipulation for voice selection with error handling
+    let voices = [], universalVoices = [], testVoice = null, hasEstonianVoices = false, estonianVoices = [];
     try {
-      if (!messages || messages.length === 0) return;
-      
-      // Create conversation text with faster reading
-      const conversationText = messages.map(msg => {
-        const speaker = msg.role === 'user' ? (language === 'et' ? 'Sina' : language === 'es' ? 'Tú' : language === 'ru' ? 'Вы' : 'You') : 
-                       (language === 'et' ? 'Klient' : language === 'es' ? 'Cliente' : language === 'ru' ? 'Клиент' : 'Client');
-        return `${speaker}: ${msg.content}`;
-      }).join('\n\n');
-      
-      // Use enhanced TTS service with faster speed
-      if (safeEnhancedTtsService && safeEnhancedTtsService.speak) {
-        await safeEnhancedTtsService.speak(conversationText, {
-          volume: ttsVolume,
-          rate: 1.4, // Faster reading speed
-          pitch: 1.0,
-          language: language
-        });
-      }
+      console.log('🔍 [DEBUG] Calling useUniversalTextToSpeech...');
+      const ttsResult = useUniversalTextToSpeech();
+      console.log('🔍 [DEBUG] useUniversalTextToSpeech result:', !!ttsResult);
+      voices = ttsResult?.voices || [];
+      universalVoices = ttsResult?.universalVoices || [];
+      testVoice = ttsResult?.speak || null;
+      hasEstonianVoices = ttsResult?.hasEstonianVoices || false;
+      estonianVoices = ttsResult?.estonianVoices || [];
+      console.log('🔍 [DEBUG] TTS variables initialized, voices count:', voices.length);
     } catch (error) {
-      console.error('Error reading conversation:', error);
+      console.error('❌ [ERROR] Error initializing TTS:', error);
     }
-  }, [ttsVolume, language]);
   
-  // Function to handle reading conversation when button is clicked with error handling
-  const handleReadConversation = useCallback(() => {
-    try {
-      if (selectedConversation?.chatType === 'chat' && selectedConversation?.messages && language && ttsVolume !== undefined) {
-        const messages = selectedConversation.messages;
-        if (messages && messages.length > 0) {
-          const conversationText = messages.map(msg => {
-            const speaker = msg.role === 'user' ? (language === 'et' ? 'Sina' : language === 'es' ? 'Tú' : language === 'ru' ? 'Вы' : 'You') : 
-                           (language === 'et' ? 'Klient' : language === 'es' ? 'Cliente' : language === 'ru' ? 'Клиент' : 'Client');
-            return `${speaker}: ${msg.content}`;
-          }).join('\n\n');
-          
-          // Use enhanced TTS service with faster speed
-          if (safeEnhancedTtsService && safeEnhancedTtsService.speak) {
-            safeEnhancedTtsService.speak(conversationText, {
-              volume: ttsVolume,
-              rate: 1.4, // Faster reading speed
-              pitch: 1.0,
-              language: language
-            }).catch(error => {
-              console.error('Error reading conversation:', error);
-            });
+    console.log('🔍 [DEBUG] Initializing readConversation function...');
+    // TTS function for reading conversations with faster speed
+    const readConversation = useCallback(async (messages: Message[]) => {
+      try {
+        if (!messages || messages.length === 0) return;
+        
+        // Create conversation text with faster reading
+        const conversationText = messages.map(msg => {
+          const speaker = msg.role === 'user' ? (language === 'et' ? 'Sina' : language === 'es' ? 'Tú' : language === 'ru' ? 'Вы' : 'You') : 
+                         (language === 'et' ? 'Klient' : language === 'es' ? 'Cliente' : language === 'ru' ? 'Клиент' : 'Client');
+          return `${speaker}: ${msg.content}`;
+        }).join('\n\n');
+        
+        // Use enhanced TTS service with faster speed
+        if (safeEnhancedTtsService && safeEnhancedTtsService.speak) {
+          await safeEnhancedTtsService.speak(conversationText, {
+            volume: ttsVolume,
+            rate: 1.4, // Faster reading speed
+            pitch: 1.0,
+            language: language
+          });
+        }
+      } catch (error) {
+        console.error('Error reading conversation:', error);
+      }
+    }, [ttsVolume, language]);
+    console.log('🔍 [DEBUG] readConversation function initialized');
+  
+    console.log('🔍 [DEBUG] Initializing handleReadConversation function...');
+    // Function to handle reading conversation when button is clicked with error handling
+    const handleReadConversation = useCallback(() => {
+      try {
+        if (selectedConversation?.chatType === 'chat' && selectedConversation?.messages && language && ttsVolume !== undefined) {
+          const messages = selectedConversation.messages;
+          if (messages && messages.length > 0) {
+            const conversationText = messages.map(msg => {
+              const speaker = msg.role === 'user' ? (language === 'et' ? 'Sina' : language === 'es' ? 'Tú' : language === 'ru' ? 'Вы' : 'You') : 
+                             (language === 'et' ? 'Klient' : language === 'es' ? 'Cliente' : language === 'ru' ? 'Клиент' : 'Client');
+              return `${speaker}: ${msg.content}`;
+            }).join('\n\n');
+            
+            // Use enhanced TTS service with faster speed
+            if (safeEnhancedTtsService && safeEnhancedTtsService.speak) {
+              safeEnhancedTtsService.speak(conversationText, {
+                volume: ttsVolume,
+                rate: 1.4, // Faster reading speed
+                pitch: 1.0,
+                language: language
+              }).catch(error => {
+                console.error('Error reading conversation:', error);
+              });
+            }
           }
         }
+      } catch (error) {
+        console.error('Error in handleReadConversation:', error);
       }
-    } catch (error) {
-      console.error('Error in handleReadConversation:', error);
-    }
-  }, [selectedConversation, language, ttsVolume]);
+    }, [selectedConversation, language, ttsVolume]);
+    console.log('🔍 [DEBUG] handleReadConversation function initialized');
   
+    console.log('🔍 [DEBUG] Initializing reconstructVoice function...');
   // Function to reconstruct SpeechSynthesisVoice from saved data
   const reconstructVoice = useCallback((savedVoice: any) => {
-    if (!savedVoice || !voices || !Array.isArray(voices) || voices.length === 0) return null;
+      if (!savedVoice || !voices || !Array.isArray(voices) || voices.length === 0) return null;
     
     // Find the voice by name and language
     const voice = voices.find(v => 
-      v && v.name === savedVoice.name && 
+        v && v.name === savedVoice.name && 
       v.lang === savedVoice.lang
     );
     
     return voice || null;
   }, [voices]);
+    console.log('🔍 [DEBUG] reconstructVoice function initialized');
   
+    console.log('🔍 [DEBUG] Initializing remaining state variables...');
   const [conversationHistory, setConversationHistory] = useState<Conversation[]>([]);
+    console.log('🔍 [DEBUG] conversationHistory state initialized');
+    
   const [loadingHistory, setLoadingHistory] = useState(false);
+    console.log('🔍 [DEBUG] loadingHistory state initialized');
+    
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
+    console.log('🔍 [DEBUG] selectedConversation state initialized');
+    
   const [showConversationDetail, setShowConversationDetail] = useState(false);
+    console.log('🔍 [DEBUG] showConversationDetail state initialized');
   const [usageStatus, setUsageStatus] = useState<any>(null);
+    console.log('🔍 [DEBUG] usageStatus state initialized');
+    
   const messagesEndRef = useRef<HTMLDivElement>(null);
+    console.log('🔍 [DEBUG] messagesEndRef initialized');
   
   // Add flags to track if data has been loaded to prevent unnecessary re-fetching
   const [dataLoaded, setDataLoaded] = useState(false);
+    console.log('🔍 [DEBUG] dataLoaded state initialized');
+    
   const [usageStatusLoaded, setUsageStatusLoaded] = useState(false);
+    console.log('🔍 [DEBUG] usageStatusLoaded state initialized');
+    
+    console.log('✅ [DEBUG] All component initialization completed successfully!');
   
   // AI Tips state
   const [showAITips, setShowAITips] = useState(false);
@@ -2295,27 +2353,27 @@ const Conversations: React.FC = () => {
                   </div>
                 ) : (
                   /* Chat Type - Show full conversation */
-                  <div className="space-y-4">
-                    {selectedConversation.messages?.map((message, index) => (
+                <div className="space-y-4">
+                  {selectedConversation.messages?.map((message, index) => (
+                    <div
+                      key={index}
+                      className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                    >
                       <div
-                        key={index}
-                        className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                        className={`max-w-[70%] p-3 rounded-lg ${
+                          message.role === 'user'
+                            ? 'bg-blue-600 text-white'
+                            : 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white'
+                        }`}
                       >
-                        <div
-                          className={`max-w-[70%] p-3 rounded-lg ${
-                            message.role === 'user'
-                              ? 'bg-blue-600 text-white'
-                              : 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white'
-                          }`}
-                        >
-                          <p className="whitespace-pre-wrap">{message.content}</p>
-                          <div className="text-xs opacity-70 mt-1">
-                            {message.role === 'user' ? t('you') : t('client')} • {new Date(message.timestamp).toLocaleTimeString()}
-                          </div>
+                        <p className="whitespace-pre-wrap">{message.content}</p>
+                        <div className="text-xs opacity-70 mt-1">
+                          {message.role === 'user' ? t('you') : t('client')} • {new Date(message.timestamp).toLocaleTimeString()}
                         </div>
                       </div>
-                    ))}
-                  </div>
+                    </div>
+                  ))}
+                </div>
                 )}
               </div>
             </div>
