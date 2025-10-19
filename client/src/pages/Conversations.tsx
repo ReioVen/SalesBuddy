@@ -136,7 +136,7 @@ const Conversations: React.FC = () => {
   const [readConversationEnabled, setReadConversationEnabled] = useState(false); // TTS option for conversation reading
   
   // Enhanced text-to-speech functionality for voice selection
-  const { voices, universalVoices, speak: testVoice, hasEstonianVoices, estonianVoices } = useUniversalTextToSpeech();
+  const { voices = [], universalVoices = [], speak: testVoice, hasEstonianVoices = false, estonianVoices = [] } = useUniversalTextToSpeech();
   
   // TTS function for reading conversations with faster speed
   const readConversation = useCallback(async (messages: Message[]) => {
@@ -189,11 +189,11 @@ const Conversations: React.FC = () => {
   
   // Function to reconstruct SpeechSynthesisVoice from saved data
   const reconstructVoice = useCallback((savedVoice: any) => {
-    if (!savedVoice || !voices.length) return null;
+    if (!savedVoice || !voices || !Array.isArray(voices) || voices.length === 0) return null;
     
     // Find the voice by name and language
     const voice = voices.find(v => 
-      v.name === savedVoice.name && 
+      v && v.name === savedVoice.name && 
       v.lang === savedVoice.lang
     );
     
@@ -1844,8 +1844,8 @@ const Conversations: React.FC = () => {
                   }}
                   selectedVoice={(() => {
                     const savedVoice = currentConversation?.clientCustomization?.selectedVoice;
-                    const reconstructedVoice = reconstructVoice(savedVoice);
-                    return reconstructedVoice;
+                    if (!savedVoice || !voices || !Array.isArray(voices) || voices.length === 0) return null;
+                    return reconstructVoice(savedVoice);
                   })()}
                   ttsVolume={(() => {
                     const volume = currentConversation?.clientCustomization?.ttsVolume || 0.7;
@@ -1951,6 +1951,7 @@ const Conversations: React.FC = () => {
                   }}
                   selectedVoice={(() => {
                     const savedVoice = currentConversation?.clientCustomization?.selectedVoice;
+                    if (!savedVoice || !voices || !Array.isArray(voices) || voices.length === 0) return null;
                     return reconstructVoice(savedVoice);
                   })()}
                   ttsVolume={currentConversation?.clientCustomization?.ttsVolume || ttsVolume}
