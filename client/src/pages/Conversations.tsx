@@ -182,35 +182,6 @@ const Conversations: React.FC = () => {
     }
   }, [ttsVolume, language]);
   
-  // Function to handle reading conversation when button is clicked with error handling
-  const handleReadConversation = useCallback(() => {
-    try {
-      if (selectedConversation?.chatType === 'chat' && selectedConversation?.messages && language && ttsVolume !== undefined) {
-        const messages = selectedConversation.messages;
-        if (messages && messages.length > 0) {
-          const conversationText = messages.map(msg => {
-            const speaker = msg.role === 'user' ? (language === 'et' ? 'Sina' : language === 'es' ? 'Tú' : language === 'ru' ? 'Вы' : 'You') : 
-                           (language === 'et' ? 'Klient' : language === 'es' ? 'Cliente' : language === 'ru' ? 'Клиент' : 'Client');
-            return `${speaker}: ${msg.content}`;
-          }).join('\n\n');
-          
-          // Use enhanced TTS service with faster speed
-          if (safeEnhancedTtsService && safeEnhancedTtsService.speak) {
-            safeEnhancedTtsService.speak(conversationText, {
-              volume: ttsVolume,
-              rate: 1.4, // Faster reading speed
-              pitch: 1.0,
-              language: language
-            }).catch(error => {
-              console.error('Error reading conversation:', error);
-            });
-          }
-        }
-      }
-    } catch (error) {
-      console.error('Error in handleReadConversation:', error);
-    }
-  }, [selectedConversation, language, ttsVolume]);
   
   // Function to reconstruct SpeechSynthesisVoice from saved data
   const reconstructVoice = useCallback((savedVoice: any) => {
@@ -1900,26 +1871,64 @@ const Conversations: React.FC = () => {
               
               {/* Speech Controls - Only show for chat mode, call mode has it built-in */}
               {currentConversation?.conversationMode !== 'call' && (
-                <div className="flex items-center justify-between mt-3">
-                  <div className="flex items-center gap-4">
-                    <label className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                      <input
-                        type="checkbox"
-                        checked={speechEnabled}
-                        onChange={(e) => setSpeechEnabled(e.target.checked)}
-                        className="rounded-md border-gray-300 text-blue-600 focus:ring-blue-500 focus:ring-2 transition-all duration-200 hover:border-blue-400"
-                      />
-                      {t('enableVoiceInput')}
-                    </label>
-                    <label className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                      <input
-                        type="checkbox"
-                        checked={voiceCommandsEnabled}
-                        onChange={(e) => setVoiceCommandsEnabled(e.target.checked)}
-                        className="rounded-md border-gray-300 text-blue-600 focus:ring-blue-500 focus:ring-2 transition-all duration-200 hover:border-blue-400"
-                      />
-                      {t('voiceCommands')}
-                    </label>
+                <div className="mt-4 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl border border-blue-200 dark:border-blue-800">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-6">
+                      <label className="flex items-center gap-3 cursor-pointer group">
+                        <div className="relative">
+                          <input
+                            type="checkbox"
+                            checked={speechEnabled}
+                            onChange={(e) => setSpeechEnabled(e.target.checked)}
+                            className="sr-only"
+                          />
+                          <div className={`w-5 h-5 rounded-lg border-2 transition-all duration-300 ${
+                            speechEnabled 
+                              ? 'bg-blue-600 border-blue-600 shadow-lg shadow-blue-200 dark:shadow-blue-800' 
+                              : 'border-gray-300 dark:border-gray-600 group-hover:border-blue-400 dark:group-hover:border-blue-500'
+                          }`}>
+                            {speechEnabled && (
+                              <svg className="w-3 h-3 text-white absolute top-0.5 left-0.5" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                              </svg>
+                            )}
+                          </div>
+                        </div>
+                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-200">
+                          {t('enableVoiceInput')}
+                        </span>
+                      </label>
+                      
+                      <label className="flex items-center gap-3 cursor-pointer group">
+                        <div className="relative">
+                          <input
+                            type="checkbox"
+                            checked={voiceCommandsEnabled}
+                            onChange={(e) => setVoiceCommandsEnabled(e.target.checked)}
+                            className="sr-only"
+                          />
+                          <div className={`w-5 h-5 rounded-lg border-2 transition-all duration-300 ${
+                            voiceCommandsEnabled 
+                              ? 'bg-indigo-600 border-indigo-600 shadow-lg shadow-indigo-200 dark:shadow-indigo-800' 
+                              : 'border-gray-300 dark:border-gray-600 group-hover:border-indigo-400 dark:group-hover:border-indigo-500'
+                          }`}>
+                            {voiceCommandsEnabled && (
+                              <svg className="w-3 h-3 text-white absolute top-0.5 left-0.5" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                              </svg>
+                            )}
+                          </div>
+                        </div>
+                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors duration-200">
+                          {t('voiceCommands')}
+                        </span>
+                      </label>
+                    </div>
+                    
+                    <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                      <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                      <span>Voice controls active</span>
+                    </div>
                   </div>
                 </div>
               )}
@@ -2245,41 +2254,6 @@ const Conversations: React.FC = () => {
                   )}
                 </div>
 
-                {/* TTS Reading Option for Chat Conversations */}
-                {selectedConversation.chatType === 'chat' && selectedConversation.messages && selectedConversation.messages.length > 0 && (
-                  <div className="mt-6 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h4 className="text-sm font-medium text-gray-900 dark:text-white">
-                          {language === 'et' ? 'Loe vestlus ette' : language === 'es' ? 'Leer conversación' : language === 'ru' ? 'Прочитать разговор' : 'Read conversation aloud'}
-                        </h4>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                          {language === 'et' ? 'AI loeb kogu vestluse ette' : language === 'es' ? 'AI lee toda la conversación' : language === 'ru' ? 'ИИ прочитает весь разговор' : 'AI will read the entire conversation'}
-                        </p>
-                      </div>
-                      <button
-                        onClick={handleReadConversation}
-                        className="bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 hover:bg-blue-700 hover:shadow-lg hover:scale-105"
-                      >
-                        {language === 'et' ? 'Loe' : language === 'es' ? 'Leer' : language === 'ru' ? 'Читать' : 'Read'}
-                      </button>
-                    </div>
-                    <div className="mt-3 flex items-center justify-between">
-                      <span className="text-sm text-gray-600 dark:text-gray-300">
-                        {language === 'et' ? 'Helitugevus:' : language === 'es' ? 'Volumen:' : language === 'ru' ? 'Громкость:' : 'Volume:'}
-                      </span>
-                      <input
-                        type="range"
-                        min="0"
-                        max="1"
-                        step="0.1"
-                        value={ttsVolume}
-                        onChange={(e) => setTtsVolume(parseFloat(e.target.value))}
-                        className="w-24 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
-                      />
-                    </div>
-                  </div>
-                )}
               </div>
 
               {/* Messages Section */}
