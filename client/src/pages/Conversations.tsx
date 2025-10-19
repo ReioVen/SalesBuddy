@@ -133,9 +133,41 @@ const Conversations: React.FC = () => {
   const speakAIResponseRef = useRef<((response: string) => void) | null>(null); // Use ref only, not state
   const [ttsVolume, setTtsVolume] = useState(0.7); // Default volume at 70%
   const [conversationMode, setConversationMode] = useState<'chat' | 'call'>('chat'); // NEW: Track conversation mode
+  const [readConversationEnabled, setReadConversationEnabled] = useState(false); // TTS option for conversation reading
   
   // Enhanced text-to-speech functionality for voice selection
   const { voices, universalVoices, speak: testVoice, hasEstonianVoices, estonianVoices } = useUniversalTextToSpeech();
+  
+  // TTS function for reading conversations with faster speed
+  const readConversation = useCallback(async (messages: Message[]) => {
+    if (!messages || messages.length === 0) return;
+    
+    // Create conversation text with faster reading
+    const conversationText = messages.map(msg => {
+      const speaker = msg.role === 'user' ? (language === 'et' ? 'Sina' : language === 'es' ? 'Tú' : language === 'ru' ? 'Вы' : 'You') : 
+                     (language === 'et' ? 'Klient' : language === 'es' ? 'Cliente' : language === 'ru' ? 'Клиент' : 'Client');
+      return `${speaker}: ${msg.content}`;
+    }).join('\n\n');
+    
+    // Use enhanced TTS service with faster speed
+    try {
+      await enhancedTtsService.speak(conversationText, {
+        volume: ttsVolume,
+        rate: 1.4, // Faster reading speed
+        pitch: 1.0,
+        language: language
+      });
+    } catch (error) {
+      console.error('Error reading conversation:', error);
+    }
+  }, [ttsVolume, language]);
+  
+  // Effect to read conversation when toggle is enabled
+  useEffect(() => {
+    if (readConversationEnabled && selectedConversation?.chatType === 'chat' && selectedConversation?.messages) {
+      readConversation(selectedConversation.messages);
+    }
+  }, [readConversationEnabled, selectedConversation, readConversation]);
   
   // Function to reconstruct SpeechSynthesisVoice from saved data
   const reconstructVoice = useCallback((savedVoice: any) => {
@@ -884,10 +916,10 @@ const Conversations: React.FC = () => {
               console.log('AI Tips button clicked, current state:', showAITips);
               setShowAITips(!showAITips);
             }}
-            className={`flex items-center gap-2 px-6 py-3 rounded-lg transition-colors ${
+            className={`flex items-center gap-2 px-6 py-3 rounded-xl transition-all duration-200 ${
               showAITips 
-                ? 'bg-blue-600 text-white' 
-                : 'bg-gray-100 dark:bg-dark-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-dark-600'
+                ? 'bg-blue-600 text-white shadow-lg' 
+                : 'bg-gray-100 dark:bg-dark-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-dark-600 hover:shadow-md'
             }`}
           >
             <Lightbulb className="w-5 h-5" />
@@ -898,7 +930,7 @@ const Conversations: React.FC = () => {
               setConversationMode('chat');
               setShowNewChatForm(true);
             }}
-            className="bg-blue-600 text-white hover:bg-blue-700 flex items-center gap-2 px-6 py-3 rounded-lg transition-colors"
+            className="bg-blue-600 text-white hover:bg-blue-700 flex items-center gap-2 px-6 py-3 rounded-xl transition-all duration-200 hover:shadow-lg hover:scale-105"
           >
             <MessageSquare className="w-5 h-5" />
             {t('startChat')}
@@ -1816,7 +1848,7 @@ const Conversations: React.FC = () => {
                   <button
                     onClick={() => handleSendMessage()}
                     disabled={!newMessage.trim() || sendingMessage}
-                    className="btn-primary px-6 py-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                    className="btn-primary px-6 py-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 rounded-xl transition-all duration-200 hover:shadow-lg hover:scale-105"
                   >
                     <Send className="w-4 h-4" />
                     {t('sendMessage')}
@@ -1833,7 +1865,7 @@ const Conversations: React.FC = () => {
                         type="checkbox"
                         checked={speechEnabled}
                         onChange={(e) => setSpeechEnabled(e.target.checked)}
-                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                        className="rounded-md border-gray-300 text-blue-600 focus:ring-blue-500 focus:ring-2 transition-all duration-200 hover:border-blue-400"
                       />
                       {t('enableVoiceInput')}
                     </label>
@@ -1842,7 +1874,7 @@ const Conversations: React.FC = () => {
                         type="checkbox"
                         checked={voiceCommandsEnabled}
                         onChange={(e) => setVoiceCommandsEnabled(e.target.checked)}
-                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                        className="rounded-md border-gray-300 text-blue-600 focus:ring-blue-500 focus:ring-2 transition-all duration-200 hover:border-blue-400"
                       />
                       {t('voiceCommands')}
                     </label>
@@ -1864,7 +1896,7 @@ const Conversations: React.FC = () => {
                 </div>
               )}
                 
-                {voiceCommandsEnabled && speechEnabled && currentConversation && currentConversation.messages.filter(msg => msg.role === 'user').length >= 2 && currentConversation.conversationMode !== 'call' && (
+                {voiceCommandsEnabled && speechEnabled && currentConversation && currentConversation.messages.filter(msg => msg.role === 'user').length >= 2 && currentConversation.conversationMode !== 'call' && !showConversationDetail && (
                   <VoiceCommands
                     isListening={false} // This will be managed by SpeechInput
                     onCommand={handleVoiceCommand}
@@ -2057,10 +2089,10 @@ const Conversations: React.FC = () => {
                     <button
                       key={page}
                       onClick={() => setCurrentPage(page)}
-                      className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      className={`px-3 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
                         currentPage === page
-                          ? 'bg-blue-600 text-white'
-                          : 'bg-white dark:bg-dark-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-dark-600 hover:bg-gray-50 dark:hover:bg-dark-700'
+                          ? 'bg-blue-600 text-white shadow-lg'
+                          : 'bg-white dark:bg-dark-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-dark-600 hover:bg-gray-50 dark:hover:bg-dark-700 hover:shadow-md hover:scale-105'
                       }`}
                     >
                       {page}
@@ -2169,33 +2201,61 @@ const Conversations: React.FC = () => {
                     </div>
                   )}
                 </div>
+
+                {/* TTS Reading Option for Chat Conversations */}
+                {selectedConversation.chatType === 'chat' && selectedConversation.messages && selectedConversation.messages.length > 0 && (
+                  <div className="mt-6 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="text-sm font-medium text-gray-900 dark:text-white">
+                          {language === 'et' ? 'Loe vestlus ette' : language === 'es' ? 'Leer conversación' : language === 'ru' ? 'Прочитать разговор' : 'Read conversation aloud'}
+                        </h4>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                          {language === 'et' ? 'AI loeb kogu vestluse ette' : language === 'es' ? 'AI lee toda la conversación' : language === 'ru' ? 'ИИ прочитает весь разговор' : 'AI will read the entire conversation'}
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => setReadConversationEnabled(!readConversationEnabled)}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+                          readConversationEnabled ? 'bg-blue-600' : 'bg-gray-200 dark:bg-gray-700'
+                        }`}
+                      >
+                        <span
+                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 ease-in-out ${
+                            readConversationEnabled ? 'translate-x-6' : 'translate-x-1'
+                          }`}
+                        />
+                      </button>
+                    </div>
+                    {readConversationEnabled && (
+                      <div className="mt-3 flex items-center justify-between">
+                        <span className="text-sm text-gray-600 dark:text-gray-300">
+                          {language === 'et' ? 'Helitugevus:' : language === 'es' ? 'Volumen:' : language === 'ru' ? 'Громкость:' : 'Volume:'}
+                        </span>
+                        <input
+                          type="range"
+                          min="0"
+                          max="1"
+                          step="0.1"
+                          value={ttsVolume}
+                          onChange={(e) => setTtsVolume(parseFloat(e.target.value))}
+                          className="w-24 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
+                        />
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* Messages Section */}
               <div>
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">{t('fullConversation')}</h3>
                 {selectedConversation.chatType === 'call' ? (
-                  /* Call Type - Hide messages, show only feedback */
-                  <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6 text-center">
-                    <div className="text-6xl mb-4">🎙️</div>
-                    <h4 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-                      {language === 'et' ? 'Hääle vestlus' : language === 'es' ? 'Conversación de voz' : language === 'ru' ? 'Голосовой разговор' : 'Voice Call'}
-                    </h4>
-                    <p className="text-gray-600 dark:text-gray-300 mb-4">
-                      {language === 'et' 
-                        ? 'Sõnumite sisu on peidetud privaatsuse huvides' 
-                        : language === 'es'
-                        ? 'El contenido de los mensajes está oculto por privacidad'
-                        : language === 'ru'
-                        ? 'Содержимое сообщений скрыто для конфиденциальности'
-                        : 'Message content is hidden for privacy'
-                      }
+                  /* Call Type - Just show message count */
+                  <div className="text-center py-4">
+                    <p className="text-gray-600 dark:text-gray-400">
+                      {selectedConversation.messageCount || 0} {language === 'et' ? 'sõnumit vahetatud' : language === 'es' ? 'mensajes intercambiados' : language === 'ru' ? 'сообщений обменено' : 'messages exchanged'}
                     </p>
-                    {selectedConversation.messageCount > 0 && (
-                      <p className="text-sm text-gray-500 dark:text-gray-400">
-                        {selectedConversation.messageCount} {language === 'et' ? 'sõnumit vahetatud' : 'messages exchanged'}
-                      </p>
-                    )}
                   </div>
                 ) : (
                   /* Chat Type - Show full conversation */
