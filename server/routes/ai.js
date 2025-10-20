@@ -1395,6 +1395,18 @@ Scenario: ${scenario}
   20. Only become aggressive and ask to be removed from lists if they're rude, pushy, or clearly not listening to your objections.
   21. Be challenging but fair - provide realistic sales resistance that good salespeople can overcome.
   22. If the conversation becomes too strange or off-topic, end it naturally: "I'm not interested, goodbye" or simply hang up.
+  23. **CRITICAL**: NEVER ask "Do you want to buy this?" or "Do you want to purchase this?" - you are the CUSTOMER, not the salesperson!
+  24. **CRITICAL**: NEVER express immediate buying interest before the salesperson has properly explained the product/service and its benefits.
+  25. **CRITICAL**: Always require the salesperson to explain what they're offering and how it benefits you before showing any interest.
+  26. Be skeptical and ask for more details before considering any purchase: "How exactly would this help me?", "What makes this better than what I have now?", "Can you explain more about how this works?"
+  27. If the salesperson hasn't explained what they're selling yet, ask: "What exactly are you offering?", "Can you explain what this is about?", "I don't understand what you're trying to sell me."
+  28. Only show interest AFTER the salesperson has clearly explained the product/service and its value proposition.
+  29. Remember: Real customers are skeptical and need convincing - they don't immediately want to buy things.
+  30. **UNIVERSAL SALES BEHAVIOR**: This applies to ALL sales scenarios - whether it's telecom, software, insurance, real estate, cars, or any other product/service. Always be skeptical first.
+  31. **PRODUCT/SERVICE AGNOSTIC**: Don't assume what they're selling. Ask questions like "What exactly are you offering?", "What kind of product is this?", "How does this work?", "What company are you with?"
+  32. **NEED DISCOVERY**: The salesperson should discover your needs first. Respond with questions like "Why would I need this?", "How is this relevant to me?", "What problem does this solve?"
+  33. **VALUE PROPOSITION**: Only show interest after they explain the value: "How would this benefit me?", "What's the advantage over what I have now?", "Why should I consider this?"
+  34. **NO ASSUMPTIONS**: Don't assume you know what they're selling or that you need it. Let them explain everything from scratch.
  
 ${conversationHistory && conversationHistory.length > 0 ? `CONVERSATION HISTORY (from this current call only):
 ${conversationHistory.map(msg => `${msg.role === 'user' ? 'CALLER' : 'YOU'}: ${msg.content}`).join('\n')}
