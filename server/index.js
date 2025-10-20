@@ -258,6 +258,17 @@ try {
   });
   console.log('✅ [ROUTES] Ping route added');
   
+  // Simple status route for testing
+  app.get('/status', (req, res) => {
+    res.json({ 
+      status: 'running', 
+      timestamp: new Date().toISOString(),
+      port: PORT,
+      environment: process.env.NODE_ENV || 'development'
+    });
+  });
+  console.log('✅ [ROUTES] Status route added');
+  
   // List all registered routes for debugging
   console.log('🔍 [ROUTES] Registered feedback routes:');
   if (feedbackRoutes.stack) {
@@ -308,18 +319,18 @@ app.get('/', (req, res) => {
 app.get('/health', (req, res) => {
   console.log('🔍 [HEALTH] Health check requested');
   try {
+    // Simple health check that doesn't depend on database
     const healthStatus = {
       status: 'OK',
       timestamp: new Date().toISOString(),
       uptime: process.uptime(),
-      memory: process.memoryUsage(),
-      database: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected',
       port: PORT,
-      environment: process.env.NODE_ENV || 'development'
+      environment: process.env.NODE_ENV || 'development',
+      server: 'SalesBuddy API'
     };
     
     console.log('✅ [HEALTH] Health check response:', healthStatus);
-    // Return 200 if server is running, even if DB is not connected yet
+    // Always return 200 for basic health check
     res.status(200).json(healthStatus);
   } catch (error) {
     console.error('❌ [HEALTH] Health check error:', error);
@@ -429,10 +440,14 @@ app.use('*', (req, res) => {
   res.status(404).json({ error: 'Route not found' });
 });
 
+console.log('🔍 [SERVER] About to start server on port:', PORT);
+
 const server = app.listen(PORT, () => {
   console.log(`✅ SalesBuddy server running on port ${PORT}`);
   console.log(`🌐 Health check available at: http://localhost:${PORT}/health`);
   console.log(`🌐 API health check available at: http://localhost:${PORT}/api/health`);
+  console.log(`🌐 Ping endpoint available at: http://localhost:${PORT}/ping`);
+  console.log(`🌐 Status endpoint available at: http://localhost:${PORT}/status`);
   console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`🗄️ Database: ${mongoose.connection.readyState === 1 ? 'connected' : 'connecting...'}`);
   console.log(`🔍 [SERVER] Server startup completed successfully`);
@@ -445,6 +460,8 @@ const server = app.listen(PORT, () => {
     console.error('❌ [SERVER] Failed to start daily refresh service:', error);
   }
 });
+
+console.log('🔍 [SERVER] Server listen call completed');
 
 // Handle server startup errors
 server.on('error', (err) => {
