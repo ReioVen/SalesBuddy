@@ -3,21 +3,15 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext.tsx';
 import { Eye, EyeOff } from 'lucide-react';
 import { useTranslation } from '../hooks/useTranslation.ts';
-import { type Language } from '../utils/translations';
 
 const Login: React.FC = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
-  const { t, language } = useTranslation();
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({ email: '', password: '' });
   const [error, setError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
-
-  const handleLanguageChange = (newLanguage: Language) => {
-    localStorage.setItem('sb_language', newLanguage);
-    window.dispatchEvent(new CustomEvent('languageChanged', { detail: newLanguage }));
-  };
 
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -42,19 +36,6 @@ const Login: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-dark-900 flex items-start justify-center pt-56 pb-16 px-4">
       <div className="w-full max-w-md bg-white dark:bg-dark-800 rounded-2xl shadow-2xl ring-1 ring-gray-200 dark:ring-dark-700 border border-gray-100 dark:border-dark-700 p-5">
-        {/* Language Selector */}
-        <div className="mb-4">
-          <select
-            value={language}
-            onChange={(e) => handleLanguageChange(e.target.value as Language)}
-            className="w-full text-sm border border-gray-300 dark:border-dark-600 rounded-md px-3 py-2 bg-white dark:bg-dark-700 text-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="en">🇺🇸 English</option>
-            <option value="et">🇪🇪 Eesti</option>
-            <option value="es">🇪🇸 Español</option>
-            <option value="ru">🇷🇺 Русский</option>
-          </select>
-        </div>
         <h1 className="text-2xl font-bold mb-6 text-center text-gray-900 dark:text-white">{t('welcomeBack')}</h1>
         <form onSubmit={onSubmit} className="space-y-4">
           <input className="input-field" name="email" type="email" placeholder={t('email')} value={form.email} onChange={onChange} required />

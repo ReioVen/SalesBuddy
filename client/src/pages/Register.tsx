@@ -3,18 +3,12 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext.tsx';
 import { Eye, EyeOff } from 'lucide-react';
 import { useTranslation } from '../hooks/useTranslation.ts';
-import { type Language } from '../utils/translations';
 
 const Register: React.FC = () => {
   const { register } = useAuth();
   const navigate = useNavigate();
-  const { t, language } = useTranslation();
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
-
-  const handleLanguageChange = (newLanguage: Language) => {
-    localStorage.setItem('sb_language', newLanguage);
-    window.dispatchEvent(new CustomEvent('languageChanged', { detail: newLanguage }));
-  };
   const [form, setForm] = useState({
     firstName: '',
     lastName: '',
@@ -89,19 +83,6 @@ const Register: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-dark-900 flex items-start justify-center pt-40 pb-16 px-4">
       <div className="w-full max-w-md bg-white dark:bg-dark-800 rounded-2xl shadow-2xl ring-1 ring-gray-200 dark:ring-dark-700 border border-gray-100 dark:border-dark-700 p-5">
-        {/* Language Selector */}
-        <div className="mb-4">
-          <select
-            value={language}
-            onChange={(e) => handleLanguageChange(e.target.value as Language)}
-            className="w-full text-sm border border-gray-300 dark:border-dark-600 rounded-md px-3 py-2 bg-white dark:bg-dark-700 text-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="en">🇺🇸 English</option>
-            <option value="et">🇪🇪 Eesti</option>
-            <option value="es">🇪🇸 Español</option>
-            <option value="ru">🇷🇺 Русский</option>
-          </select>
-        </div>
         <h1 className="text-2xl font-bold mb-6 text-center text-gray-900 dark:text-white">{t('createAccount')}</h1>
         <form onSubmit={onSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-3">
