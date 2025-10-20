@@ -1492,236 +1492,496 @@ const analyzeConversationPhases = (messages) => {
   const clientMessages = messages.filter(msg => msg.role === 'assistant');
   const clientText = clientMessages.map(msg => msg.content).join(' ').toLowerCase();
   
-  // Check if client raised objections - simple, broad detection
-  const hasObjection = clientText.includes('but') || clientText.includes('however') ||
-      clientText.includes('not interested') || clientText.includes('don\'t need') ||
-      clientText.includes('expensive') || clientText.includes('cost') || clientText.includes('price') ||
-      clientText.includes('think about') || clientText.includes('consider') || clientText.includes('evaluate') ||
-      clientText.includes('not sure') || clientText.includes('hesitate') || clientText.includes('concern') ||
-      clientText.includes('worry') || clientText.includes('busy') || clientText.includes('not right now') ||
-      clientText.includes('later') || clientText.includes('timing') || clientText.includes('not ready') ||
-      clientText.includes('happy with') || clientText.includes('satisfied') || clientText.includes('current') ||
-      clientText.includes('existing') || clientText.includes('already have') || clientText.includes('competitor') ||
-      clientText.includes('other company') || clientText.includes('alternative') || clientText.includes('compare') ||
-      clientText.includes('shop around') || clientText.includes('other options') || clientText.includes('budget') ||
-      clientText.includes('money') || clientText.includes('afford') || clientText.includes('decision') ||
-      clientText.includes('discuss') || clientText.includes('family') || clientText.includes('team') ||
-      clientText.includes('boss') || clientText.includes('manager') || clientText.includes('approval') ||
-      clientText.includes('contract') || clientText.includes('terms') || clientText.includes('agreement') ||
-      clientText.includes('complex') || clientText.includes('complicated') || clientText.includes('difficult') ||
-      clientText.includes('trust') || clientText.includes('reputation') || clientText.includes('reliable') ||
-      clientText.includes('implementation') || clientText.includes('setup') || clientText.includes('training') ||
-      clientText.includes('support') || clientText.includes('maintenance') || clientText.includes('security') ||
-      clientText.includes('performance') || clientText.includes('features') || clientText.includes('functionality') ||
-      clientText.includes('warranty') || clientText.includes('guarantee') || clientText.includes('trial') ||
-      clientText.includes('demo') || clientText.includes('test') || clientText.includes('references') ||
-      clientText.includes('reviews') || clientText.includes('roi') || clientText.includes('value') ||
-      clientText.includes('benefit') || clientText.includes('priority') || clientText.includes('important') ||
-      clientText.includes('necessary') || clientText.includes('required') || clientText.includes('optional') ||
-      clientText.includes('too much') || clientText.includes('not enough') || clientText.includes('different') ||
-      clientText.includes('new') || clientText.includes('proven') || clientText.includes('established') ||
-      // Additional comprehensive objection terms
-      clientText.includes('costly') || clientText.includes('pricey') || clientText.includes('overpriced') ||
-      clientText.includes('financial') || clientText.includes('monetary') || clientText.includes('economic') ||
-      clientText.includes('funds') || clientText.includes('capital') || clientText.includes('investment') ||
-      clientText.includes('spending') || clientText.includes('expenditure') || clientText.includes('outlay') ||
-      clientText.includes('hesitant') || clientText.includes('uncertain') || clientText.includes('doubtful') ||
-      clientText.includes('skeptical') || clientText.includes('suspicious') || clientText.includes('wary') ||
-      clientText.includes('cautious') || clientText.includes('careful') || clientText.includes('prudent') ||
-      clientText.includes('worried') || clientText.includes('concerned') || clientText.includes('anxious') ||
-      clientText.includes('nervous') || clientText.includes('uneasy') || clientText.includes('uncomfortable') ||
-      clientText.includes('occupied') || clientText.includes('engaged') || clientText.includes('preoccupied') ||
-      clientText.includes('unavailable') || clientText.includes('inaccessible') || clientText.includes('unreachable') ||
-      clientText.includes('postpone') || clientText.includes('delay') || clientText.includes('defer') ||
-      clientText.includes('wait') || clientText.includes('hold off') || clientText.includes('put off') ||
-      clientText.includes('unprepared') || clientText.includes('not ready') || clientText.includes('ill-prepared') ||
-      clientText.includes('disinterested') || clientText.includes('uninterested') || clientText.includes('apathetic') ||
-      clientText.includes('indifferent') || clientText.includes('neutral') || clientText.includes('unconcerned') ||
-      clientText.includes('unnecessary') || clientText.includes('redundant') || clientText.includes('superfluous') ||
-      clientText.includes('unneeded') || clientText.includes('unwanted') || clientText.includes('unrequired') ||
-      clientText.includes('content') || clientText.includes('satisfied') || clientText.includes('pleased') ||
-      clientText.includes('delighted') || clientText.includes('thrilled') || clientText.includes('ecstatic') ||
-      clientText.includes('fulfilled') || clientText.includes('gratified') || clientText.includes('contented') ||
-      clientText.includes('operational') || clientText.includes('functional') || clientText.includes('working') ||
-      clientText.includes('effective') || clientText.includes('efficient') || clientText.includes('productive') ||
-      clientText.includes('established') || clientText.includes('current') || clientText.includes('existing') ||
-      clientText.includes('present') || clientText.includes('ongoing') || clientText.includes('continuing') ||
-      clientText.includes('rival') || clientText.includes('competition') || clientText.includes('opposition') ||
-      clientText.includes('adversary') || clientText.includes('opponent') || clientText.includes('challenger') ||
-      clientText.includes('substitute') || clientText.includes('replacement') || clientText.includes('alternative') ||
-      clientText.includes('option') || clientText.includes('choice') || clientText.includes('selection') ||
-      clientText.includes('substitute') || clientText.includes('replacement') || clientText.includes('backup') ||
-      clientText.includes('anxiety') || clientText.includes('apprehension') || clientText.includes('fear') ||
-      clientText.includes('worry') || clientText.includes('concern') || clientText.includes('trouble') ||
-      clientText.includes('doubt') || clientText.includes('skepticism') || clientText.includes('suspicion') ||
-      clientText.includes('uncertainty') || clientText.includes('hesitation') || clientText.includes('reluctance') ||
-      clientText.includes('risk') || clientText.includes('danger') || clientText.includes('threat') ||
-      clientText.includes('hazard') || clientText.includes('peril') || clientText.includes('jeopardy') ||
-      clientText.includes('confidence') || clientText.includes('faith') || clientText.includes('belief') ||
-      clientText.includes('reliance') || clientText.includes('dependence') || clientText.includes('trust') ||
-      clientText.includes('reputation') || clientText.includes('standing') || clientText.includes('status') ||
-      clientText.includes('image') || clientText.includes('brand') || clientText.includes('identity') ||
-      clientText.includes('reliable') || clientText.includes('dependable') || clientText.includes('trustworthy') ||
-      clientText.includes('intricate') || clientText.includes('sophisticated') || clientText.includes('advanced') ||
-      clientText.includes('complicated') || clientText.includes('complex') || clientText.includes('elaborate') ||
-      clientText.includes('confusing') || clientText.includes('perplexing') || clientText.includes('puzzling') ||
-      clientText.includes('challenging') || clientText.includes('demanding') || clientText.includes('taxing') ||
-      clientText.includes('strenuous') || clientText.includes('arduous') || clientText.includes('difficult') ||
-      clientText.includes('schedule') || clientText.includes('calendar') || clientText.includes('agenda') ||
-      clientText.includes('timetable') || clientText.includes('program') || clientText.includes('plan') ||
-      clientText.includes('itinerary') || clientText.includes('roster') || clientText.includes('docket') ||
-      clientText.includes('authorization') || clientText.includes('permission') || clientText.includes('consent') ||
-      clientText.includes('sanction') || clientText.includes('endorsement') || clientText.includes('approval') ||
-      clientText.includes('supervisor') || clientText.includes('director') || clientText.includes('executive') ||
-      clientText.includes('manager') || clientText.includes('boss') || clientText.includes('chief') ||
-      clientText.includes('leader') || clientText.includes('head') || clientText.includes('superior') ||
-      clientText.includes('staff') || clientText.includes('personnel') || clientText.includes('employees') ||
-      clientText.includes('workers') || clientText.includes('associates') || clientText.includes('colleagues') ||
-      clientText.includes('coworkers') || clientText.includes('fellows') || clientText.includes('peers') ||
-      clientText.includes('committee') || clientText.includes('board') || clientText.includes('panel') ||
-      clientText.includes('group') || clientText.includes('team') || clientText.includes('crew') ||
-      clientText.includes('choice') || clientText.includes('selection') || clientText.includes('option') ||
-      clientText.includes('preference') || clientText.includes('favorite') || clientText.includes('pick') ||
-      clientText.includes('determination') || clientText.includes('resolution') || clientText.includes('verdict') ||
-      clientText.includes('judgment') || clientText.includes('conclusion') || clientText.includes('outcome') ||
-      clientText.includes('settlement') || clientText.includes('accord') || clientText.includes('pact') ||
-      clientText.includes('treaty') || clientText.includes('agreement') || clientText.includes('contract') ||
-      clientText.includes('terms') || clientText.includes('conditions') || clientText.includes('provisions') ||
-      clientText.includes('clauses') || clientText.includes('stipulations') || clientText.includes('requirements') ||
-      clientText.includes('specifications') || clientText.includes('criteria') || clientText.includes('standards') ||
-      clientText.includes('deployment') || clientText.includes('rollout') || clientText.includes('launch') ||
-      clientText.includes('introduction') || clientText.includes('initiation') || clientText.includes('startup') ||
-      clientText.includes('establishment') || clientText.includes('installation') || clientText.includes('setup') ||
-      clientText.includes('education') || clientText.includes('instruction') || clientText.includes('teaching') ||
-      clientText.includes('coaching') || clientText.includes('mentoring') || clientText.includes('guidance') ||
-      clientText.includes('assistance') || clientText.includes('help') || clientText.includes('aid') ||
-      clientText.includes('support') || clientText.includes('backup') || clientText.includes('reinforcement') ||
-      clientText.includes('maintenance') || clientText.includes('upkeep') || clientText.includes('care') ||
-      clientText.includes('service') || clientText.includes('repair') || clientText.includes('fix') ||
-      clientText.includes('updates') || clientText.includes('upgrades') || clientText.includes('improvements') ||
-      clientText.includes('enhancements') || clientText.includes('modifications') || clientText.includes('changes') ||
-      clientText.includes('compatibility') || clientText.includes('integration') || clientText.includes('connection') ||
-      clientText.includes('interoperability') || clientText.includes('harmonization') || clientText.includes('synchronization') ||
-      clientText.includes('migration') || clientText.includes('transition') || clientText.includes('transfer') ||
-      clientText.includes('conversion') || clientText.includes('transformation') || clientText.includes('changeover') ||
-      clientText.includes('privacy') || clientText.includes('confidentiality') || clientText.includes('secrecy') ||
-      clientText.includes('protection') || clientText.includes('safety') || clientText.includes('security') ||
-      clientText.includes('safeguard') || clientText.includes('defense') || clientText.includes('shield') ||
-      clientText.includes('performance') || clientText.includes('efficiency') || clientText.includes('effectiveness') ||
-      clientText.includes('speed') || clientText.includes('velocity') || clientText.includes('rapidity') ||
-      clientText.includes('swiftness') || clientText.includes('quickness') || clientText.includes('promptness') ||
-      clientText.includes('capabilities') || clientText.includes('functionality') || clientText.includes('features') ||
-      clientText.includes('abilities') || clientText.includes('skills') || clientText.includes('talents') ||
-      clientText.includes('competencies') || clientText.includes('proficiencies') || clientText.includes('expertise') ||
-      clientText.includes('customization') || clientText.includes('personalization') || clientText.includes('individualization') ||
-      clientText.includes('adaptation') || clientText.includes('modification') || clientText.includes('adjustment') ||
-      clientText.includes('flexibility') || clientText.includes('versatility') || clientText.includes('adaptability') ||
-      clientText.includes('scalability') || clientText.includes('expandability') || clientText.includes('growth') ||
-      clientText.includes('expansion') || clientText.includes('development') || clientText.includes('progress') ||
-      clientText.includes('assurance') || clientText.includes('guarantee') || clientText.includes('promise') ||
-      clientText.includes('commitment') || clientText.includes('pledge') || clientText.includes('vow') ||
-      clientText.includes('warranty') || clientText.includes('protection') || clientText.includes('coverage') ||
-      clientText.includes('insurance') || clientText.includes('safeguard') || clientText.includes('security') ||
-      clientText.includes('reimbursement') || clientText.includes('compensation') || clientText.includes('payment') ||
-      clientText.includes('refund') || clientText.includes('return') || clientText.includes('repayment') ||
-      clientText.includes('exchange') || clientText.includes('substitution') || clientText.includes('replacement') ||
-      clientText.includes('demonstration') || clientText.includes('presentation') || clientText.includes('showcase') ||
-      clientText.includes('exhibition') || clientText.includes('display') || clientText.includes('exposition') ||
-      clientText.includes('pilot') || clientText.includes('trial') || clientText.includes('test') ||
-      clientText.includes('experiment') || clientText.includes('sample') || clientText.includes('preview') ||
-      clientText.includes('testimonial') || clientText.includes('reference') || clientText.includes('recommendation') ||
-      clientText.includes('endorsement') || clientText.includes('approval') || clientText.includes('acclaim') ||
-      clientText.includes('review') || clientText.includes('evaluation') || clientText.includes('assessment') ||
-      clientText.includes('rating') || clientText.includes('score') || clientText.includes('grade') ||
-      clientText.includes('critique') || clientText.includes('analysis') || clientText.includes('examination') ||
-      clientText.includes('case study') || clientText.includes('example') || clientText.includes('instance') ||
-      clientText.includes('illustration') || clientText.includes('demonstration') || clientText.includes('proof') ||
-      clientText.includes('evidence') || clientText.includes('confirmation') || clientText.includes('validation') ||
-      clientText.includes('return on investment') || clientText.includes('roi') || clientText.includes('profitability') ||
-      clientText.includes('yield') || clientText.includes('gain') || clientText.includes('benefit') ||
-      clientText.includes('advantage') || clientText.includes('merit') || clientText.includes('worth') ||
-      clientText.includes('value') || clientText.includes('importance') || clientText.includes('significance') ||
-      clientText.includes('benefit') || clientText.includes('advantage') || clientText.includes('profit') ||
-      clientText.includes('gain') || clientText.includes('return') || clientText.includes('reward') ||
-      clientText.includes('importance') || clientText.includes('significance') || clientText.includes('relevance') ||
-      clientText.includes('priority') || clientText.includes('focus') || clientText.includes('emphasis') ||
-      clientText.includes('precedence') || clientText.includes('preference') || clientText.includes('priority') ||
-      clientText.includes('urgent') || clientText.includes('critical') || clientText.includes('essential') ||
-      clientText.includes('vital') || clientText.includes('crucial') || clientText.includes('imperative') ||
-      clientText.includes('required') || clientText.includes('mandatory') || clientText.includes('compulsory') ||
-      clientText.includes('obligatory') || clientText.includes('binding') || clientText.includes('enforced') ||
-      clientText.includes('optional') || clientText.includes('voluntary') || clientText.includes('elective') ||
-      clientText.includes('discretionary') || clientText.includes('non-essential') || clientText.includes('supplementary') ||
-      clientText.includes('luxury') || clientText.includes('premium') || clientText.includes('high-end') ||
-      clientText.includes('extravagant') || clientText.includes('lavish') || clientText.includes('opulent') ||
-      clientText.includes('excessive') || clientText.includes('extreme') || clientText.includes('overwhelming') ||
-      clientText.includes('overabundant') || clientText.includes('superfluous') || clientText.includes('redundant') ||
-      clientText.includes('inadequate') || clientText.includes('insufficient') || clientText.includes('deficient') ||
-      clientText.includes('scarce') || clientText.includes('limited') || clientText.includes('restricted') ||
-      clientText.includes('shortage') || clientText.includes('deficit') || clientText.includes('shortfall') ||
-      clientText.includes('missing') || clientText.includes('absent') || clientText.includes('lacking') ||
-      clientText.includes('unusual') || clientText.includes('uncommon') || clientText.includes('rare') ||
-      clientText.includes('unique') || clientText.includes('distinctive') || clientText.includes('special') ||
-      clientText.includes('different') || clientText.includes('distinct') || clientText.includes('separate') ||
-      clientText.includes('alternative') || clientText.includes('unconventional') || clientText.includes('non-standard') ||
-      clientText.includes('traditional') || clientText.includes('conventional') || clientText.includes('standard') ||
-      clientText.includes('classic') || clientText.includes('typical') || clientText.includes('normal') ||
-      clientText.includes('regular') || clientText.includes('ordinary') || clientText.includes('common') ||
-      clientText.includes('established') || clientText.includes('accepted') || clientText.includes('recognized') ||
-      clientText.includes('approved') || clientText.includes('endorsed') || clientText.includes('validated') ||
-      clientText.includes('untested') || clientText.includes('unproven') || clientText.includes('experimental') ||
-      clientText.includes('trial') || clientText.includes('pilot') || clientText.includes('beta') ||
-      clientText.includes('preliminary') || clientText.includes('initial') || clientText.includes('early') ||
-      clientText.includes('mature') || clientText.includes('seasoned') || clientText.includes('experienced') ||
-      clientText.includes('developed') || clientText.includes('advanced') || clientText.includes('sophisticated') ||
-      clientText.includes('refined') || clientText.includes('polished') || clientText.includes('perfected') ||
-      clientText.includes('vendor') || clientText.includes('supplier') || clientText.includes('provider') ||
-      clientText.includes('distributor') || clientText.includes('dealer') || clientText.includes('retailer') ||
-      clientText.includes('manufacturer') || clientText.includes('producer') || clientText.includes('maker') ||
-      clientText.includes('partner') || clientText.includes('associate') || clientText.includes('collaborator') ||
-      clientText.includes('ally') || clientText.includes('supporter') || clientText.includes('advocate') ||
-      clientText.includes('relationship') || clientText.includes('connection') || clientText.includes('association') ||
-      clientText.includes('partnership') || clientText.includes('alliance') || clientText.includes('coalition') ||
-      clientText.includes('collaboration') || clientText.includes('cooperation') || clientText.includes('teamwork') ||
-      clientText.includes('joint venture') || clientText.includes('merger') || clientText.includes('acquisition'));
+  // Check if client raised objections - comprehensive detection
+  const objectionIndicators = [
+    'but', 'however', 'not interested', 'don\'t need', 'expensive', 'cost', 'price',
+    'think about', 'consider', 'evaluate', 'not sure', 'hesitate', 'concern',
+    'worry', 'busy', 'not right now', 'later', 'timing', 'not ready',
+    'happy with', 'satisfied', 'current', 'existing', 'already have', 'competitor',
+    'other company', 'alternative', 'compare', 'shop around', 'other options', 'budget',
+    'money', 'afford', 'decision', 'discuss', 'family', 'team',
+    'boss', 'manager', 'approval', 'contract', 'terms', 'agreement',
+    'complex', 'complicated', 'difficult', 'trust', 'reputation', 'reliable',
+    'implementation', 'setup', 'training', 'support', 'maintenance', 'security',
+    'performance', 'features', 'functionality', 'warranty', 'guarantee', 'trial',
+    'demo', 'test', 'references', 'reviews', 'roi', 'value', 'benefit', 'priority', 'important'
+  ];
   
-  // Check if salesperson responded to objections - simple, broad detection
-  const hasResponse = salespersonText.includes('understand') || salespersonText.includes('hear you') ||
-      salespersonText.includes('let me') || salespersonText.includes('that\'s a valid') ||
-      salespersonText.includes('i can see') || salespersonText.includes('many people') ||
-      salespersonText.includes('however') || salespersonText.includes('but consider') ||
-      salespersonText.includes('what if') || salespersonText.includes('let me explain') ||
-      salespersonText.includes('totally') || salespersonText.includes('completely') ||
-      salespersonText.includes('i get') || salespersonText.includes('i see') ||
-      salespersonText.includes('that makes sense') || salespersonText.includes('i appreciate') ||
-      salespersonText.includes('good luck') || salespersonText.includes('contact you') ||
-      salespersonText.includes('follow up') || salespersonText.includes('end of') ||
-      salespersonText.includes('you\'re right') || salespersonText.includes('fair enough') ||
-      salespersonText.includes('good point') || salespersonText.includes('let me clarify') ||
-      salespersonText.includes('let me show') || salespersonText.includes('how about') ||
-      salespersonText.includes('consider this') || salespersonText.includes('think about') ||
-      salespersonText.includes('here\'s the thing') || salespersonText.includes('the reality is') ||
-      salespersonText.includes('actually') || salespersonText.includes('on the other hand') ||
-      salespersonText.includes('many customers') || salespersonText.includes('most clients') ||
-      salespersonText.includes('other companies') || salespersonText.includes('we can work') ||
-      salespersonText.includes('we can adjust') || salespersonText.includes('we can customize') ||
-      salespersonText.includes('flexible') || salespersonText.includes('negotiable') ||
-      salespersonText.includes('guarantee') || salespersonText.includes('assure') ||
-      salespersonText.includes('risk-free') || salespersonText.includes('no obligation') ||
-      salespersonText.includes('trial') || salespersonText.includes('demo') ||
-      salespersonText.includes('references') || salespersonText.includes('testimonials') ||
-      salespersonText.includes('proven') || salespersonText.includes('established') ||
-      salespersonText.includes('roi') || salespersonText.includes('return') ||
-      salespersonText.includes('value') || salespersonText.includes('benefit') ||
-      salespersonText.includes('cost-effective') || salespersonText.includes('affordable') ||
-      salespersonText.includes('discount') || salespersonText.includes('deal') ||
-      salespersonText.includes('special') || salespersonText.includes('limited time') ||
-      salespersonText.includes('implementation') || salespersonText.includes('setup') ||
-      salespersonText.includes('support') || salespersonText.includes('maintenance') ||
-      salespersonText.includes('security') || salespersonText.includes('performance') ||
-      salespersonText.includes('features') || salespersonText.includes('capabilities') ||
-      salespersonText.includes('warranty') || salespersonText.includes('priority') ||
-      salespersonText.includes('important') || salespersonText.includes('necessary') ||
+  const hasObjection = objectionIndicators.some(indicator => clientText.includes(indicator));
+  
+  // Check if salesperson responded to objections
+  const responseIndicators = [
+    'understand', 'hear you', 'let me', 'that\'s a valid', 'i can see', 'many people',
+    'however', 'but consider', 'what if', 'let me explain', 'totally', 'completely',
+    'i appreciate', 'i respect', 'i see your point', 'that makes sense', 'i get it',
+    'let me address', 'let me clarify', 'let me help', 'i understand your concern',
+    'that\'s a great question', 'that\'s a valid concern', 'i can help with that'
+  ];
+  
+  const hasResponse = responseIndicators.some(indicator => salespersonText.includes(indicator));
+  
+  if (hasObjection && hasResponse) {
+    phases.objectionHandling = true;
+  }
+  
+  // Check for closing phase indicators
+  const closingIndicators = [
+    'next step', 'next steps', 'move forward', 'proceed', 'get started',
+    'schedule', 'meeting', 'call', 'follow up', 'follow-up',
+    'decision', 'decide', 'choose', 'select', 'commit', 'commitment',
+    'agreement', 'contract', 'sign', 'signature', 'purchase', 'buy',
+    'order', 'proposal', 'quote', 'pricing', 'cost', 'investment',
+    'timeline', 'when', 'how soon', 'deadline', 'urgency', 'urgent',
+    'final', 'conclusion', 'summary', 'recap', 'next meeting'
+  ];
+  
+  if (closingIndicators.some(indicator => salespersonText.includes(indicator))) {
+    phases.close = true;
+  }
+  
+  return phases;
+};
+
+// Create AI rating prompt for conversation analysis
+const createRatingPrompt = (messages) => {
+  const conversationText = messages.map(msg => 
+    `${msg.role === 'user' ? 'SALESPERSON' : 'CLIENT'}: ${msg.content}`
+  ).join('\n');
+
+  // Analyze which phases actually occurred
+  const occurredPhases = analyzeConversationPhases(messages);
+  const totalMessages = messages.length;
+  
+  // Determine if conversation ended too early
+  const endedEarly = totalMessages < 4; // Less than 2 exchanges (4 messages total)
+  const earlyTerminationReason = endedEarly ? 
+    (conversationText.toLowerCase().includes('not interested') ? 'Client declined early' :
+     conversationText.toLowerCase().includes('busy') ? 'Client was too busy' :
+     conversationText.toLowerCase().includes('hang up') ? 'Client hung up' :
+     'Conversation ended abruptly') : null;
+
+  let prompt = `You are an expert sales trainer analyzing a sales conversation. Be extremely thorough and detect EVERY SINGLE POINT that should be awarded in each category. Be fair and constructive in your evaluation.
+
+CONVERSATION:
+${conversationText}
+
+CONVERSATION ANALYSIS:
+- Total messages: ${totalMessages}
+- Conversation ended early: ${endedEarly ? 'YES' : 'NO'}
+${earlyTerminationReason ? `- Early termination reason: ${earlyTerminationReason}` : ''}
+
+PHASES THAT OCCURRED:
+- Introduction: ${occurredPhases.introduction ? 'YES' : 'NO'}
+- Mapping: ${occurredPhases.mapping ? 'YES' : 'NO'}
+- Product Presentation: ${occurredPhases.productPresentation ? 'YES' : 'NO'}
+- Objection Handling: ${occurredPhases.objectionHandling ? 'YES' : 'NO'}
+- Close: ${occurredPhases.close ? 'YES' : 'NO'}
+
+COMPREHENSIVE POINT-BY-POINT EVALUATION CRITERIA:
+
+INTRODUCTION (Opening) - Award points for each element present:
+- 1 point: Basic greeting (hello, hi, good morning/afternoon)
+- 1 point: Salesperson introduces themselves by name
+- 1 point: Mentions company name
+- 1 point: States purpose of call professionally
+- 1 point: Asks permission to continue ("Do you have a moment?")
+- 1 point: Uses client's name if available
+- 1 point: Shows respect for client's time
+- 1 point: Professional tone and energy
+- 1 point: Clear and confident delivery
+- 1 point: Sets positive tone for conversation
+
+MAPPING (Discovery) - Award points for each element present:
+- 1 point: Asks about client's current situation
+- 1 point: Asks about challenges or pain points
+- 1 point: Asks about goals or objectives
+- 1 point: Asks about decision-making process
+- 1 point: Asks about timeline or urgency
+- 1 point: Asks about budget or resources
+- 1 point: Asks about previous experience
+- 1 point: Asks about specific needs or requirements
+- 1 point: Listens actively to responses
+- 1 point: Asks follow-up questions based on responses
+
+PRODUCT PRESENTATION - Award points for each element present:
+- 1 point: Clearly explains what the product/service does
+- 1 point: Highlights key features and benefits
+- 1 point: Connects benefits to client's specific needs
+- 1 point: Uses examples or case studies
+- 1 point: Addresses value proposition clearly
+- 1 point: Explains pricing or cost structure
+- 1 point: Mentions guarantees or warranties
+- 1 point: Compares to competitors (if relevant)
+- 1 point: Uses visual aids or demonstrations (if applicable)
+- 1 point: Checks for understanding
+
+OBJECTION HANDLING - Award points for each element present:
+- 1 point: Acknowledges the objection respectfully
+- 1 point: Asks clarifying questions about the objection
+- 1 point: Provides relevant information to address concern
+- 1 point: Uses examples or proof points
+- 1 point: Offers alternatives or solutions
+- 1 point: Asks if concern is resolved
+- 1 point: Maintains positive attitude throughout
+- 1 point: Doesn't argue or become defensive
+- 1 point: Shows empathy and understanding
+- 1 point: Moves conversation forward after handling
+
+CLOSING - Award points for each element present:
+- 1 point: Summarizes key benefits discussed
+- 1 point: Asks for the sale or next step
+- 1 point: Creates urgency or scarcity (if appropriate)
+- 1 point: Addresses final concerns
+- 1 point: Proposes specific next steps
+- 1 point: Suggests timeline for implementation
+- 1 point: Asks for commitment or decision
+- 1 point: Offers to send information or materials
+- 1 point: Schedules follow-up meeting
+- 1 point: Confirms next steps clearly
+
+SCORING INSTRUCTIONS:
+1. For each phase that occurred, award 1 point for each criterion met (maximum 10 points per phase)
+2. For phases that did NOT occur, give 0 points
+3. Be generous but fair - if a criterion is partially met, award the point
+4. Look for subtle indicators of good sales practices
+5. Consider the context and conversation flow
+6. Award points for professional behavior even in difficult situations
+
+Respond in this exact JSON format:
+{
+  "introduction": ${occurredPhases.introduction ? '[number 0-10 based on criteria above]' : '0'},
+  "mapping": ${occurredPhases.mapping ? '[number 0-10 based on criteria above]' : '0'},
+  "productPresentation": ${occurredPhases.productPresentation ? '[number 0-10 based on criteria above]' : '0'},
+  "objectionHandling": ${occurredPhases.objectionHandling ? '[number 0-10 based on criteria above]' : '0'},
+  "close": ${occurredPhases.close ? '[number 0-10 based on criteria above]' : '0'},
+  "feedback": "[Provide detailed feedback highlighting specific strengths and areas for improvement. Be encouraging while being honest about areas for growth. Use 'you' instead of 'the salesperson' throughout the feedback.]"
+}`;
+
+  return prompt;
+};
+
+// Start new conversation
+router.post('/conversation', authenticateToken, [
+  body('scenario').optional().isIn(['general', 'cold_call', 'objection_handling', 'closing', 'follow_up', 'custom', 'lead_call']),
+  body('industry').optional().trim(),
+  body('product').optional().trim(),
+  body('customerType').optional().trim(),
+  body('clientName').optional().trim().isLength({ max: 100 }),
+  body('clientPersonality').optional().trim().isLength({ max: 200 }),
+  body('clientIndustry').optional().trim().isLength({ max: 100 }),
+  body('clientRole').optional().trim().isLength({ max: 100 }),
+  body('customPrompt').optional().trim().isLength({ max: 1000 }),
+  body('difficulty').optional().isIn(['easy', 'medium', 'hard']),
+  body('language').optional().isIn(['en', 'et', 'es', 'ru']),
+  body('ttsVolume').optional().isFloat({ min: 0, max: 1 }),
+  body('selectedVoice').optional().isObject(),
+  body('conversationMode').optional().isIn(['chat', 'call'])
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    // Check if user can use AI
+    if (!req.user.canUseAI || typeof req.user.canUseAI !== 'function') {
+      console.error('User missing canUseAI method:', req.user);
+      return res.status(500).json({
+        error: 'User model error',
+        message: 'User model is missing required methods. Please contact support.'
+      });
+    }
+    
+    if (!req.user.canUseAI()) {
+      const usageStatus = req.user.getUsageStatus();
+      return res.status(403).json({
+        error: 'Usage limit reached',
+        message: 'You have reached your monthly AI conversation limit. Please upgrade your plan to continue.',
+        usage: req.user.usage,
+        usageStatus
+      });
+    }
+
+    const { 
+      scenario = 'general', 
+      industry, 
+      product, 
+      customerType,
+      clientName,
+      clientPersonality,
+      clientIndustry,
+      clientRole,
+      customPrompt,
+      difficulty = 'medium',
+      language = 'en'
+    } = req.body;
+
+    // Create conversation title based on language
+    let title;
+    if (clientName) {
+      if (language === 'et') {
+        title = `Harjutus koos ${clientName}`;
+      } else if (language === 'es') {
+        title = `Práctica con ${clientName}`;
+      } else if (language === 'ru') {
+        title = `Практика с ${clientName}`;
+      } else {
+        title = `Practice with ${clientName}`;
+      }
+    } else {
+      // Handle special scenarios
+      if (scenario === 'cold_call') {
+        if (language === 'et') {
+          title = 'Külma kõne harjutus - huvitamata potentsiaalsed kliendid';
+        } else if (language === 'es') {
+          title = 'Práctica de Llamada Fría - Prospectos Desinteresados';
+        } else if (language === 'ru') {
+          title = 'Практика холодных звонков - незаинтересованные клиенты';
+        } else {
+          title = 'Cold Call Practice - Uninterested Prospects';
+        }
+      } else if (scenario === 'lead_call') {
+        if (language === 'et') {
+          title = 'Juhtkõne harjutus - skeptilised potentsiaalsed kliendid';
+        } else if (language === 'es') {
+          title = 'Práctica de Llamada de Liderazgo - Prospectos Escépticos';
+        } else if (language === 'ru') {
+          title = 'Практика лид-звонков - скептически настроенные клиенты';
+        } else {
+          title = 'Lead Call Practice - Skeptical Prospects';
+        }
+      } else {
+        if (language === 'et') {
+          title = `Müügi harjutus - ${scenario.replace('_', ' ').toUpperCase()}`;
+        } else if (language === 'es') {
+          title = `Práctica de Ventas - ${scenario.replace('_', ' ').toUpperCase()}`;
+        } else if (language === 'ru') {
+          title = `Практика продаж - ${scenario.replace('_', ' ').toUpperCase()}`;
+        } else {
+          title = `Sales Practice - ${scenario.replace('_', ' ').toUpperCase()}`;
+        }
+      }
+    }
+
+    // Create conversation
+    const conversation = new Conversation({
+      userId: req.user._id,
+      title,
+      scenario,
+      industry,
+      product,
+      customerType,
+      language,
+      conversationMode: req.body.conversationMode || 'chat',
+      clientCustomization: {
+        name: clientName,
+        personality: clientPersonality,
+        industry: clientIndustry,
+        role: clientRole
+      },
+      customPrompt,
+      difficulty,
+      ttsVolume: req.body.ttsVolume,
+      selectedVoice: req.body.selectedVoice
+    });
+
+    await conversation.save();
+
+    res.json({
+      message: 'Conversation started successfully',
+      conversation: {
+        id: conversation._id,
+        title: conversation.title,
+        scenario: conversation.scenario,
+        language: conversation.language,
+        conversationMode: conversation.conversationMode
+      }
+    });
+  } catch (error) {
+    console.error('Start conversation error:', error);
+    res.status(500).json({ error: 'Failed to start conversation' });
+  }
+});
+
+// Add message to conversation
+router.post('/conversation/:id/message', authenticateToken, [
+  body('content').trim().isLength({ min: 1, max: 2000 }),
+  body('role').isIn(['user', 'assistant'])
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const conversation = await Conversation.findOne({
+      _id: req.params.id,
+      userId: req.user._id
+    });
+
+    if (!conversation) {
+      return res.status(404).json({ error: 'Conversation not found' });
+    }
+
+    const { content, role } = req.body;
+
+    // Add message to conversation
+    conversation.messages.push({
+      role,
+      content,
+      timestamp: new Date()
+    });
+
+    await conversation.save();
+
+    res.json({
+      message: 'Message added successfully',
+      conversation: {
+        id: conversation._id,
+        messageCount: conversation.messages.length
+      }
+    });
+  } catch (error) {
+    console.error('Add message error:', error);
+    res.status(500).json({ error: 'Failed to add message' });
+  }
+});
+
+// End conversation
+router.post('/conversation/:id/end', authenticateToken, async (req, res) => {
+  try {
+    const conversation = await Conversation.findOneAndUpdate(
+      {
+        _id: req.params.id,
+        userId: req.user._id
+      },
+      {
+        isActive: false,
+        endedAt: new Date(),
+        duration: Date.now() - new Date(conversation.createdAt).getTime()
+      },
+      { new: true }
+    );
+
+    if (!conversation) {
+      return res.status(404).json({ error: 'Conversation not found' });
+    }
+
+    // Generate AI ratings if OpenAI is available
+    if (openai && conversation.messages.length > 0) {
+      try {
+        const ratingPrompt = createRatingPrompt(conversation.messages);
+        const ratingResponse = await openai.chat.completions.create({
+          model: 'gpt-4',
+          messages: [{ role: 'user', content: ratingPrompt }],
+          temperature: 0.3,
+          max_tokens: 1000
+        });
+
+        const ratings = JSON.parse(ratingResponse.choices[0].message.content);
+        const occurredPhases = analyzeConversationPhases(conversation.messages);
+        
+        // Calculate total score
+        let totalScore = 0;
+        let maxPossibleScore = 0;
+        
+        if (occurredPhases.introduction) {
+          totalScore += ratings.introduction || 0;
+          maxPossibleScore += 10;
+        }
+        if (occurredPhases.mapping) {
+          totalScore += ratings.mapping || 0;
+          maxPossibleScore += 10;
+        }
+        if (occurredPhases.productPresentation) {
+          totalScore += ratings.productPresentation || 0;
+          maxPossibleScore += 10;
+        }
+        if (occurredPhases.objectionHandling) {
+          totalScore += ratings.objectionHandling || 0;
+          maxPossibleScore += 10;
+        }
+        if (occurredPhases.close) {
+          totalScore += ratings.close || 0;
+          maxPossibleScore += 10;
+        }
+        
+        // Update conversation with AI ratings
+        conversation.aiRatings = {
+          introduction: ratings.introduction || 0,
+          mapping: ratings.mapping || 0,
+          productPresentation: ratings.productPresentation || 0,
+          objectionHandling: ratings.objectionHandling || 0,
+          close: ratings.close || 0,
+          totalScore: totalScore,
+          maxPossibleScore: maxPossibleScore,
+          occurredPhases: occurredPhases
+        };
+        conversation.aiRatingFeedback = ratings.feedback;
+        
+        await conversation.save();
+      } catch (openaiError) {
+        console.error('OpenAI rating error:', openaiError);
+        // Continue without ratings if AI fails
+      }
+    }
+
+    res.json({
+      message: 'Conversation ended successfully',
+      conversation: {
+        id: conversation._id,
+        duration: conversation.duration,
+        aiRatings: conversation.aiRatings,
+        aiRatingFeedback: conversation.aiRatingFeedback,
+        messageCount: conversation.messages.length
+      }
+    });
+  } catch (error) {
+    console.error('End conversation error:', error);
+    res.status(500).json({ error: 'Failed to end conversation' });
+  }
+});
+
+// Delete conversation
+router.delete('/conversation/:id', authenticateToken, async (req, res) => {
+  try {
+    const conversation = await Conversation.findOneAndDelete({
+      _id: req.params.id,
+      userId: req.user._id
+    });
+
+    if (!conversation) {
+      return res.status(404).json({ error: 'Conversation not found' });
+    }
+
+    res.json({ message: 'Conversation deleted successfully' });
+  } catch (error) {
+    console.error('Delete conversation error:', error);
+    res.status(500).json({ error: 'Failed to delete conversation' });
+  }
+});
+
+// Get user usage status
+router.get('/usage', authenticateToken, async (req, res) => {
+  try {
+    const limits = req.user.getSubscriptionLimits();
+    const usagePercentage = limits.conversations > 0 
+      ? Math.round((req.user.usage.aiConversations / limits.conversations) * 100)
+      : 0;
+
+    res.json({
+      usage: req.user.usage,
+      limits,
+      usagePercentage,
+      canUseAI: req.user.canUseAI()
+    });
+  } catch (error) {
+    console.error('Get usage error:', error);
+    res.status(500).json({ error: 'Failed to get usage statistics' });
+  }
+});
+
+module.exports = router;
       salespersonText.includes('solution') || salespersonText.includes('improve') ||
       salespersonText.includes('enhance') || salespersonText.includes('increase') ||
       salespersonText.includes('reduce') || salespersonText.includes('save') ||
