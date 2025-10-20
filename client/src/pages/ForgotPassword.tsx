@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTheme } from '../contexts/ThemeContext.tsx';
-import { useTranslation } from '../hooks/useTranslation';
+import { useTranslation } from '../hooks/useTranslation.ts';
 import { type Language } from '../utils/translations';
 
 const API_BASE_URL = 'https://salesbuddy-production.up.railway.app';
