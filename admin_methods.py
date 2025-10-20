@@ -3811,3 +3811,180 @@ RECENT ACTIVITY:
             
         except Exception as e:
             messagebox.showerror("Error", f"Failed to generate summary report: {str(e)}")
+    
+    @secure_input_wrapper
+    def add_new_translation(self):
+        """Add a new translation key and translation"""
+        if not self.admin.connected:
+            messagebox.showerror("Error", "Not connected to database")
+            return
+        
+        try:
+            # Create new translation dialog
+            dialog = tk.Toplevel(self.admin.root)
+            dialog.title("Add New Translation")
+            dialog.geometry("600x500")
+            dialog.transient(self.admin.root)
+            dialog.grab_set()
+            
+            # Center the dialog
+            dialog.update_idletasks()
+            x = (dialog.winfo_screenwidth() // 2) - (600 // 2)
+            y = (dialog.winfo_screenheight() // 2) - (500 // 2)
+            dialog.geometry(f"600x500+{x}+{y}")
+            
+            main_frame = tk.Frame(dialog)
+            main_frame.pack(fill='both', expand=True, padx=20, pady=20)
+            
+            # Translation key info
+            key_frame = tk.LabelFrame(main_frame, text="Translation Key Information", font=('Arial', 12, 'bold'))
+            key_frame.pack(fill='x', pady=(0, 10))
+            
+            tk.Label(key_frame, text="Key Name:").pack(anchor='w', padx=10, pady=5)
+            key_name_var = tk.StringVar()
+            tk.Entry(key_frame, textvariable=key_name_var, width=50).pack(padx=10, pady=5)
+            
+            tk.Label(key_frame, text="Category:").pack(anchor='w', padx=10, pady=5)
+            category_var = tk.StringVar(value='ui')
+            category_combo = tk.ttk.Combobox(key_frame, textvariable=category_var,
+                                          values=['terms', 'faq', 'ui', 'notifications', 'errors'], width=47)
+            category_combo.pack(padx=10, pady=5)
+            
+            # Language and translation
+            lang_frame = tk.LabelFrame(main_frame, text="Translation Details", font=('Arial', 12, 'bold'))
+            lang_frame.pack(fill='x', pady=(0, 10))
+            
+            tk.Label(lang_frame, text="Language:").pack(anchor='w', padx=10, pady=5)
+            language_var = tk.StringVar(value=self.admin.translation_language_var.get())
+            lang_combo = tk.ttk.Combobox(lang_frame, textvariable=language_var,
+                                       values=['en', 'et', 'es', 'ru', 'lv', 'lt', 'fi', 'sv', 'no', 'da', 'de', 'fr', 'it', 'pt', 'pl', 'cs', 'sk', 'hu', 'ro', 'bg', 'hr', 'sl', 'el', 'tr', 'ar', 'he', 'ja', 'ko', 'zh', 'hi', 'th', 'vi', 'id', 'ms', 'tl'], width=47)
+            lang_combo.pack(padx=10, pady=5)
+            
+            tk.Label(lang_frame, text="Translation Text:").pack(anchor='w', padx=10, pady=5)
+            text_frame = tk.Frame(lang_frame)
+            text_frame.pack(fill='both', expand=True, padx=10, pady=5)
+            
+            text_editor = scrolledtext.ScrolledText(text_frame, height=8, width=60)
+            text_editor.pack(fill='both', expand=True)
+            
+            # Buttons
+            button_frame = tk.Frame(main_frame)
+            button_frame.pack(fill='x', pady=10)
+            
+            def save_new_translation():
+                try:
+                    key_name = key_name_var.get().strip()
+                    category = category_var.get().strip()
+                    language = language_var.get().strip()
+                    text = text_editor.get('1.0', tk.END).strip()
+                    
+                    if not key_name or not category or not language or not text:
+                        messagebox.showwarning("Warning", "All fields are required")
+                        return
+                    
+                    # Validate inputs
+                    validated_key = InputValidator.validate_and_sanitize_input(key_name, 'translation_key', is_required=True)
+                    validated_category = InputValidator.validate_and_sanitize_input(category, 'category', is_required=True)
+                    validated_language = InputValidator.validate_and_sanitize_input(language, 'language', is_required=True)
+                    validated_text = InputValidator.validate_and_sanitize_input(text, 'translation_text', is_required=True)
+                    
+                    # Check if key already exists
+                    existing_key = self.admin.translation_keys_collection.find_one({'key': validated_key})
+                    if existing_key:
+                        messagebox.showerror("Error", f"Translation key '{validated_key}' already exists")
+                        return
+                    
+                    # Create translation key
+                    key_doc = {
+                        'key': validated_key,
+                        'category': validated_category,
+                        'isActive': True,
+                        'createdAt': datetime.now(),
+                        'createdBy': 'admin'
+                    }
+                    key_result = self.admin.translation_keys_collection.insert_one(key_doc)
+                    
+                    # Create translation
+                    translation_doc = {
+                        'translationKey': key_result.inserted_id,
+                        'language': validated_language,
+                        'text': validated_text,
+                        'isActive': True,
+                        'createdAt': datetime.now(),
+                        'createdBy': 'admin'
+                    }
+                    self.admin.translations_collection.insert_one(translation_doc)
+                    
+                    messagebox.showinfo("Success", "New translation created successfully!")
+                    dialog.destroy()
+                    self.load_translations()  # Refresh the list
+                    
+                except SecurityError as e:
+                    SecurityAuditLogger.log_security_violation(
+                        None, "add_new_translation", "input", "input_validation", str(e)
+                    )
+                    messagebox.showerror("Security Error", "Invalid input detected")
+                except Exception as e:
+                    SecurityAuditLogger.log_security_violation(
+                        None, "add_new_translation", "error", "unexpected_error", str(e)
+                    )
+                    messagebox.showerror("Error", f"Failed to create translation: {str(e)}")
+            
+            tk.Button(button_frame, text="Save Translation", command=save_new_translation, 
+                     bg='#4CAF50', fg='white').pack(side='left', padx=5)
+            tk.Button(button_frame, text="Cancel", command=dialog.destroy, 
+                     bg='#607D8B', fg='white').pack(side='left', padx=5)
+            
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to open add translation dialog: {str(e)}")
+    
+    @secure_input_wrapper
+    def delete_translation(self):
+        """Delete a translation"""
+        if not self.admin.connected:
+            messagebox.showerror("Error", "Not connected to database")
+            return
+        
+        try:
+            selected_item = self.admin.translations_tree.selection()
+            if not selected_item:
+                messagebox.showwarning("Warning", "Please select a translation to delete")
+                return
+            
+            item = selected_item[0]
+            values = self.admin.translations_tree.item(item)['values']
+            tags = self.admin.translations_tree.item(item)['tags']
+            
+            if len(tags) < 2:
+                messagebox.showerror("Error", "Invalid translation selection")
+                return
+            
+            key_id, translation_id = tags[0], tags[1]
+            
+            if not translation_id:
+                messagebox.showwarning("Warning", "No translation found to delete")
+                return
+            
+            # Confirm deletion
+            key_name = values[0] if values else "Unknown"
+            language = self.admin.translation_language_var.get()
+            
+            result = messagebox.askyesno("Confirm Delete", 
+                f"Are you sure you want to delete the translation for '{key_name}' in {language.upper()}?\n\n"
+                "This action cannot be undone.")
+            
+            if result:
+                # Delete the translation
+                delete_result = self.admin.translations_collection.delete_one({'_id': ObjectId(translation_id)})
+                
+                if delete_result.deleted_count > 0:
+                    messagebox.showinfo("Success", "Translation deleted successfully!")
+                    self.load_translations()  # Refresh the list
+                else:
+                    messagebox.showerror("Error", "Failed to delete translation")
+            
+        except Exception as e:
+            SecurityAuditLogger.log_security_violation(
+                None, "delete_translation", "error", "unexpected_error", str(e)
+            )
+            messagebox.showerror("Error", f"Failed to delete translation: {str(e)}")

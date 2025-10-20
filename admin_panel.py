@@ -64,6 +64,7 @@ class SalesBuddyAdmin:
         self.create_voice_settings_tab()
         self.create_ai_ratings_tab()
         self.create_subscription_tracking_tab()
+        self.create_translations_tab()
         self.create_analytics_tab()
         self.create_settings_tab()
         
@@ -353,7 +354,7 @@ class SalesBuddyAdmin:
         tk.Label(lang_frame, text="Select Language:", font=('Arial', 10, 'bold')).pack(anchor='w', padx=10, pady=5)
         self.voice_language_var = tk.StringVar(value='et')
         lang_combo = tk.ttk.Combobox(lang_frame, textvariable=self.voice_language_var,
-                                   values=['en', 'et', 'es', 'ru'], width=10)
+                                   values=['en', 'et', 'es', 'ru', 'lv', 'lt', 'fi', 'sv', 'no', 'da', 'de', 'fr', 'it', 'pt', 'pl', 'cs', 'sk', 'hu', 'ro', 'bg', 'hr', 'sl', 'el', 'tr', 'ar', 'he', 'ja', 'ko', 'zh', 'hi', 'th', 'vi', 'id', 'ms', 'tl'], width=10)
         lang_combo.pack(anchor='w', padx=10, pady=5)
         
         # Voice actions frame
@@ -506,6 +507,81 @@ class SalesBuddyAdmin:
         
         # Bind double-click event
         self.subscription_tree.bind('<Double-1>', self.methods.view_usage_details)
+        
+    def create_translations_tab(self):
+        """Create translation management tab"""
+        translations_frame = ttk.Frame(self.notebook)
+        self.notebook.add(translations_frame, text="Translations")
+        
+        # Title
+        title_label = tk.Label(translations_frame, text="Translation Management", 
+                              font=('Arial', 16, 'bold'))
+        title_label.pack(pady=20)
+        
+        # Filter frame
+        filter_frame = tk.Frame(translations_frame)
+        filter_frame.pack(fill='x', padx=20, pady=10)
+        
+        # Language selection
+        tk.Label(filter_frame, text="Language:", font=('Arial', 12, 'bold')).pack(side='left')
+        self.translation_language_var = tk.StringVar(value='en')
+        lang_combo = tk.ttk.Combobox(filter_frame, textvariable=self.translation_language_var,
+                                   values=['en', 'et', 'es', 'ru', 'lv', 'lt', 'fi', 'sv', 'no', 'da', 'de', 'fr', 'it', 'pt', 'pl', 'cs', 'sk', 'hu', 'ro', 'bg', 'hr', 'sl', 'el', 'tr', 'ar', 'he', 'ja', 'ko', 'zh', 'hi', 'th', 'vi', 'id', 'ms', 'tl'], width=10)
+        lang_combo.pack(side='left', padx=10)
+        lang_combo.bind('<<ComboboxSelected>>', self.methods.load_translations)
+        
+        # Category selection
+        tk.Label(filter_frame, text="Category:", font=('Arial', 12, 'bold')).pack(side='left', padx=(20, 5))
+        self.translation_category_var = tk.StringVar(value='terms')
+        category_combo = tk.ttk.Combobox(filter_frame, textvariable=self.translation_category_var,
+                                       values=['terms', 'faq', 'ui', 'notifications', 'errors'], width=15)
+        category_combo.pack(side='left', padx=5)
+        category_combo.bind('<<ComboboxSelected>>', self.methods.load_translations)
+        
+        # Action buttons
+        tk.Button(filter_frame, text="Load Translations", command=self.methods.load_translations, 
+                 bg='#4CAF50', fg='white').pack(side='left', padx=10)
+        tk.Button(filter_frame, text="Seed Database", command=self.methods.seed_translations, 
+                 bg='#FF9800', fg='white').pack(side='left', padx=5)
+        tk.Button(filter_frame, text="Export", command=self.methods.export_translations, 
+                 bg='#607D8B', fg='white').pack(side='left', padx=5)
+        
+        # Translations treeview
+        columns = ('Key', 'Text Preview', 'Last Modified', 'Status')
+        self.translations_tree = ttk.Treeview(translations_frame, columns=columns, show='headings', height=15)
+        
+        for col in columns:
+            self.translations_tree.heading(col, text=col)
+            if col == 'Text Preview':
+                self.translations_tree.column(col, width=300)
+            elif col == 'Key':
+                self.translations_tree.column(col, width=150)
+            else:
+                self.translations_tree.column(col, width=120)
+        
+        # Scrollbar for translations tree
+        translations_scrollbar = ttk.Scrollbar(translations_frame, orient='vertical', command=self.translations_tree.yview)
+        self.translations_tree.configure(yscrollcommand=translations_scrollbar.set)
+        
+        # Pack translations tree and scrollbar
+        self.translations_tree.pack(side='left', fill='both', expand=True, padx=(20, 0), pady=10)
+        translations_scrollbar.pack(side='right', fill='y', pady=10)
+        
+        # Translation actions frame
+        actions_frame = tk.Frame(translations_frame)
+        actions_frame.pack(fill='x', padx=20, pady=10)
+        
+        tk.Button(actions_frame, text="Edit Translation", command=self.methods.edit_translation, 
+                 bg='#2196F3', fg='white').pack(side='left', padx=5)
+        tk.Button(actions_frame, text="Add New Translation", command=self.methods.add_new_translation, 
+                 bg='#4CAF50', fg='white').pack(side='left', padx=5)
+        tk.Button(actions_frame, text="Delete Translation", command=self.methods.delete_translation, 
+                 bg='#F44336', fg='white').pack(side='left', padx=5)
+        tk.Button(actions_frame, text="Refresh", command=self.methods.load_translations, 
+                 bg='#607D8B', fg='white').pack(side='left', padx=5)
+        
+        # Bind double-click event
+        self.translations_tree.bind('<Double-1>', self.methods.edit_translation)
         
     def create_analytics_tab(self):
         """Create analytics tab"""

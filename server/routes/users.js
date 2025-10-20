@@ -64,7 +64,7 @@ router.put('/settings', authenticateToken, [
   body('industry').optional().trim(),
   body('salesRole').optional().trim(),
   body('experienceLevel').optional().isIn(['beginner', 'intermediate', 'advanced']),
-  body('language').optional().isIn(['en', 'et', 'es', 'ru'])
+  body('language').optional().isIn(['en', 'et', 'es', 'ru', 'lv', 'lt', 'fi', 'sv', 'no', 'da', 'de', 'fr', 'it', 'pt', 'pl', 'cs', 'sk', 'hu', 'ro', 'bg', 'hr', 'sl', 'el', 'tr', 'ar', 'he', 'ja', 'ko', 'zh', 'hi', 'th', 'vi', 'id', 'ms', 'tl'])
 ], async (req, res) => {
   try {
     const errors = validationResult(req);
