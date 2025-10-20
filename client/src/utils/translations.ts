@@ -463,6 +463,21 @@ export const translations = {
     emailSupport: 'Email support',
     summariesLocked: 'Summaries locked (upgrade to unlock)',
     getStartedFree: 'Get Started Free',
+    
+    // FAQ Section
+    chooseYourPlan: 'Choose Your Plan',
+    startWithFreeTier: 'Start with our free tier and upgrade as you grow. All plans include our core AI training features.',
+    frequentlyAskedQuestions: 'Frequently Asked Questions',
+    canChangePlanAnytime: 'Can I change my plan anytime?',
+    canChangePlanAnswer: 'Yes, you can upgrade or downgrade your plan at any time. Changes take effect immediately.',
+    whatHappensExceedLimit: 'What happens if I exceed my limit?',
+    exceedLimitAnswer: 'You\'ll be notified when you\'re close to your limit. Upgrade your plan to continue training.',
+    isThereFreeTrial: 'Is there a free trial?',
+    freeTrialAnswer: 'Yes! Start with our free tier that includes 3 conversations per month. Summaries are locked until you upgrade.',
+    doYouOfferRefunds: 'Do you offer refunds?',
+    refundsAnswer: 'We offer a 14-day money-back guarantee for all paid plans.',
+    enterpriseAndUnlimited: 'Enterprise & Unlimited',
+    lookingToRollOut: 'Looking to roll out SalesBuddy across your company? Explore Enterprise for team features, SSO, and priority support. Prefer no limits? Choose Unlimited.',
 
     // Admin Dashboard
     adminDashboard: 'Admin Dashboard',
@@ -1819,6 +1834,21 @@ export const translations = {
     summariesLocked: 'Resúmenes bloqueados (actualiza para desbloquear)',
     getStartedFree: 'Comenzar Gratis',
     lookingToRollOut: '¿Buscas implementar SalesBuddy en tu empresa? Explora Enterprise para funciones de equipo, SSO y soporte prioritario. ¿Prefieres sin límites? Elige Unlimited.',
+    
+    // FAQ Section
+    chooseYourPlan: 'Elige Tu Plan',
+    startWithFreeTier: 'Comienza con nuestro nivel gratuito y actualiza a medida que creces. Todos los planes incluyen nuestras funciones principales de entrenamiento con IA.',
+    frequentlyAskedQuestions: 'Preguntas Frecuentes',
+    canChangePlanAnytime: '¿Puedo cambiar mi plan en cualquier momento?',
+    canChangePlanAnswer: 'Sí, puedes actualizar o degradar tu plan en cualquier momento. Los cambios toman efecto inmediatamente.',
+    whatHappensExceedLimit: '¿Qué pasa si excedo mi límite?',
+    exceedLimitAnswer: 'Serás notificado cuando estés cerca de tu límite. Actualiza tu plan para continuar entrenando.',
+    isThereFreeTrial: '¿Hay una prueba gratuita?',
+    freeTrialAnswer: '¡Sí! Comienza con nuestro nivel gratuito que incluye 3 conversaciones por mes. Los resúmenes están bloqueados hasta que actualices.',
+    doYouOfferRefunds: '¿Ofrecen reembolsos?',
+    refundsAnswer: 'Ofrecemos una garantía de devolución de dinero de 14 días para todos los planes pagos.',
+    enterpriseAndUnlimited: 'Empresa e Ilimitado',
+    lookingToRollOut: '¿Buscas implementar SalesBuddy en tu empresa? Explora Enterprise para funciones de equipo, SSO y soporte prioritario. ¿Prefieres sin límites? Elige Unlimited.',
 
     // Admin Dashboard
     adminDashboard: 'Panel de Administración',
@@ -2490,6 +2520,21 @@ export const translations = {
     emailSupport: 'Поддержка по электронной почте',
     summariesLocked: 'Резюме заблокированы (обновите для разблокировки)',
     getStartedFree: 'Начать Бесплатно',
+    
+    // FAQ Section
+    chooseYourPlan: 'Выберите Ваш План',
+    startWithFreeTier: 'Начните с нашего бесплатного уровня и обновляйтесь по мере роста. Все планы включают наши основные функции обучения с ИИ.',
+    frequentlyAskedQuestions: 'Часто Задаваемые Вопросы',
+    canChangePlanAnytime: 'Могу ли я изменить свой план в любое время?',
+    canChangePlanAnswer: 'Да, вы можете обновить или понизить свой план в любое время. Изменения вступают в силу немедленно.',
+    whatHappensExceedLimit: 'Что происходит, если я превышу свой лимит?',
+    exceedLimitAnswer: 'Вы будете уведомлены, когда приблизитесь к своему лимиту. Обновите свой план, чтобы продолжить обучение.',
+    isThereFreeTrial: 'Есть ли бесплатная пробная версия?',
+    freeTrialAnswer: 'Да! Начните с нашего бесплатного уровня, который включает 3 разговора в месяц. Резюме заблокированы до обновления.',
+    doYouOfferRefunds: 'Предлагаете ли вы возврат средств?',
+    refundsAnswer: 'Мы предлагаем 14-дневную гарантию возврата денег для всех платных планов.',
+    enterpriseAndUnlimited: 'Предприятие и Безлимитный',
+    lookingToRollOut: 'Хотите внедрить SalesBuddy в вашей компании? Изучите Enterprise для функций команды, SSO и приоритетной поддержки. Предпочитаете без ограничений? Выберите Unlimited.',
 
     // Admin Dashboard
     adminDashboard: 'Админ Панель',

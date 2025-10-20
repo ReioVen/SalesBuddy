@@ -63,92 +63,92 @@ const Pricing: React.FC = () => {
   // Updated free plan to 3 conversations per month
   const plans: PricingPlan[] = [
     {
-      name: language === 'et' ? 'Tasuta' : 'Free',
+      name: t('freePlan'),
       price: 0,
-      period: language === 'et' ? 'kuu' : 'month',
+      period: t('month'),
       features: [
-        language === 'et' ? '3 AI Vestlust kuus' : '3 AI conversations per month',
-        language === 'et' ? 'Põhimüügi stsenaariumid' : 'Basic sales scenarios',
-        language === 'et' ? 'E-posti tugi' : 'Email support',
-        language === 'et' ? 'Kokkuvõtted lukustatud (uuenda avamiseks)' : 'Summaries locked (upgrade to unlock)'
+        t('freeConversations'),
+        t('basicFeatures'),
+        t('emailSupport'),
+        t('summariesLocked')
       ],
-      buttonText: language === 'et' ? 'Alusta tasuta' : 'Get Started Free',
+      buttonText: t('getStartedFree'),
       buttonAction: 'subscribe',
       limits: { conversations: 3, aiTips: 0 }
     },
     {
-      name: language === 'et' ? 'Põhi' : 'Basic',
+      name: t('basicPlan'),
       price: 69.99,
-      period: language === 'et' ? 'kuu' : 'month',
+      period: t('month'),
       features: [
-        language === 'et' ? '30 AI Vestlust kuus' : '30 AI conversations per month',
-        language === 'et' ? '10 AI nõuannet kuus' : '10 AI Tips per month',
-        language === 'et' ? 'Nõuanded ja õppetunnid' : 'Tips and Lessons',
-        language === 'et' ? 'Põhimüügi stsenaariumid' : 'Basic sales scenarios',
-        language === 'et' ? 'E-posti tugi' : 'Email support'
+        t('basicConversations'),
+        t('basicAiTips'),
+        t('tipsAndLessons'),
+        t('basicFeatures'),
+        t('emailSupport')
       ],
-      buttonText: language === 'et' ? 'Vali plaan' : 'Get Plan',
+      buttonText: t('getPlan'),
       buttonAction: 'subscribe',
       limits: { conversations: 30, aiTips: 10 }
     },
     {
-      name: 'Pro',
+      name: t('proPlan'),
       price: 119.99,
-      period: language === 'et' ? 'kuu' : 'month',
+      period: t('month'),
       features: [
-        language === 'et' ? '50 AI Vestlust kuus' : '50 AI conversations per month',
-        language === 'et' ? '25 AI nõuannet kuus' : '25 AI Tips per month',
-        language === 'et' ? 'Nõuanded ja õppetunnid' : 'Tips and Lessons',
-        language === 'et' ? 'Rohkem kliendi kohandamist' : 'More Client Customization',
-        language === 'et' ? 'Isiklik kokkuvõtte tagasiside' : 'Personal Summary Feedback',
-        language === 'et' ? 'Häälega vestlused ja kõned' : 'Voice conversations and calls',
-        language === 'et' ? 'Prioriteetne tugi' : 'Priority support'
+        t('proConversations'),
+        t('proAiTips'),
+        t('tipsAndLessons'),
+        t('moreClientCustomization'),
+        t('personalSummaryFeedback'),
+        t('voiceConversationsAndCalls'),
+        t('prioritySupport')
       ],
       popular: true,
-      buttonText: language === 'et' ? 'Vali plaan' : 'Get Plan',
+      buttonText: t('getPlan'),
       buttonAction: 'subscribe',
       limits: { conversations: 50, aiTips: 25 }
     },
     {
-      name: language === 'et' ? 'Piiramatu' : 'Unlimited',
+      name: t('unlimitedPlan'),
       price: 349,
-      period: language === 'et' ? 'kuu' : 'month',
+      period: t('month'),
       features: [
-        language === 'et' ? '200 AI Vestlust kuus' : '200 AI conversations per month',
-        language === 'et' ? '50 AI nõuannet kuus' : '50 AI Tips per month',
-        language === 'et' ? 'Nõuanded ja õppetunnid' : 'Tips and Lessons',
-        language === 'et' ? 'Rohkem kliendi kohandamist' : 'More Client Customization',
-        language === 'et' ? 'Isiklik kokkuvõtte tagasiside' : 'Personal Summary Feedback',
-        language === 'et' ? 'Häälega vestlused ja kõned' : 'Voice conversations and calls',
-        language === 'et' ? 'Pühendatud tugi' : 'Dedicated support'
+        t('unlimitedConversations'),
+        t('unlimitedAiTips'),
+        t('tipsAndLessons'),
+        t('moreClientCustomization'),
+        t('personalSummaryFeedback'),
+        t('voiceConversationsAndCalls'),
+        t('dedicatedSupport')
       ],
-      buttonText: language === 'et' ? 'Vali plaan' : 'Get Plan',
+      buttonText: t('getPlan'),
       buttonAction: 'subscribe',
       limits: { conversations: 200, aiTips: 50 }
     },
     {
-      name: language === 'et' ? 'Ettevõte' : 'Enterprise',
+      name: t('enterprisePlan'),
       price: null,
-      period: language === 'et' ? 'kuu' : 'month',
+      period: t('month'),
       features: [
-        language === 'et' ? 'Kohandatav arv AI vestlusi päevas' : 'Customizable AI conversations per day',
-        language === 'et' ? 'Kohandatav AI nõuannete limiit' : 'Customizable AI Tips limit',
-        language === 'et' ? 'Nõuanded ja õppetunnid' : 'Tips and Lessons',
-        language === 'et' ? 'Rohkem kliendi kohandamist' : 'More Client Customization',
-        language === 'et' ? 'Isiklik kokkuvõtte tagasiside' : 'Personal Summary Feedback',
-        language === 'et' ? 'Häälega vestlused ja kõned' : 'Voice conversations and calls',
-        language === 'et' ? 'Täpsem meeskonna juhtimine' : 'Advanced Team Management',
-        language === 'et' ? 'Ettevõtte edetabelid' : 'Company Leaderboards',
-        language === 'et' ? 'SSO integratsioon' : 'SSO Integration',
-        language === 'et' ? 'Kohandatud bränding' : 'Custom Branding',
-        language === 'et' ? 'Täpsem analüütika armatuurlaud' : 'Advanced Analytics Dashboard',
-        language === 'et' ? 'API juurdepääs' : 'API Access',
-        language === 'et' ? 'Pühendatud konto haldur' : 'Dedicated Account Manager',
-        language === 'et' ? 'Prioriteetne telefonitugi' : 'Priority Phone Support',
-        language === 'et' ? 'Kohandatud koolitusprogrammid' : 'Custom Training Programs',
-        language === 'et' ? 'Valge märgistusega lahendused' : 'White-label Solutions'
+        t('enterpriseConversations'),
+        t('enterpriseAiTips'),
+        t('tipsAndLessons'),
+        t('moreClientCustomization'),
+        t('personalSummaryFeedback'),
+        t('voiceConversationsAndCalls'),
+        t('advancedTeamManagement'),
+        t('companyLeaderboards'),
+        t('ssoIntegration'),
+        t('customBranding'),
+        t('advancedAnalyticsDashboard'),
+        t('apiAccess'),
+        t('dedicatedAccountManager'),
+        t('priorityPhoneSupport'),
+        t('customTrainingPrograms'),
+        t('whiteLabelSolutions')
       ],
-      buttonText: language === 'et' ? 'Võta ühendust müügiga' : 'Contact Sales',
+      buttonText: t('contactSales'),
       buttonAction: 'contact',
       limits: { conversations: 50, aiTips: 50 }
     }
@@ -165,7 +165,7 @@ const Pricing: React.FC = () => {
         <div className="absolute -top-5 left-1/2 -translate-x-1/2 z-10">
            <span className="inline-flex items-center gap-1 bg-blue-600 text-white px-3 py-1 rounded-full text-xs md:text-sm font-semibold shadow whitespace-nowrap ring-1 ring-white/50">
              <Star className="w-4 h-4" />
-             {language === 'et' ? 'Kõige populaarsem' : 'Most Popular'}
+             {t('mostPopular')}
            </span>
         </div>
       )}
@@ -174,7 +174,7 @@ const Pricing: React.FC = () => {
         <h3 className="text-xl font-bold mb-1 text-gray-900 dark:text-white">{plan.name}</h3>
         <div className="mb-3">
         {plan.price === null ? (
-          <span className="text-2xl font-bold text-gray-900 dark:text-white">{language === 'et' ? 'Kohandatud' : 'Custom'}</span>
+          <span className="text-2xl font-bold text-gray-900 dark:text-white">{t('custom')}</span>
         ) : (
             <>
               <span className="text-3xl font-bold text-gray-900 dark:text-white">${plan.price}</span>
@@ -182,12 +182,12 @@ const Pricing: React.FC = () => {
             </>
           )}
         </div>
-        {plan.name === 'Enterprise' || plan.name === 'Ettevõte' ? (
-          <p className="text-gray-600 dark:text-gray-400">{language === 'et' ? 'Kohandatav limiit' : 'Customizable limit'}</p>
+        {plan.name === t('enterprisePlan') ? (
+          <p className="text-gray-600 dark:text-gray-400">{t('customizableLimit')}</p>
         ) : plan.limits.conversations === -1 ? (
-          <p className="text-gray-600 dark:text-gray-400">{language === 'et' ? 'Piiramatud vestlused' : 'Unlimited conversations'}</p>
+          <p className="text-gray-600 dark:text-gray-400">{t('unlimitedConversations')}</p>
         ) : (
-          <p className="text-gray-600 dark:text-gray-400">{language === 'et' ? `${plan.limits.conversations} Vestlust kuus` : `${plan.limits.conversations} conversations/month`}</p>
+          <p className="text-gray-600 dark:text-gray-400">{`${plan.limits.conversations} ${t('conversationsPerMonth')}`}</p>
         )}
       </div>
 
@@ -304,38 +304,35 @@ const Pricing: React.FC = () => {
         {/* Header */}
          <div className="text-center mb-16">
            <h1 className="text-4xl md:text-5xl font-bold mb-4 text-gray-900 dark:text-white">
-             {language === 'et' ? 'Vali oma plaan' : 'Choose Your Plan'}
+             {t('chooseYourPlan')}
            </h1>
            <p className="text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-             {language === 'et' ? 'Alusta meie tasuta tasemega ja uuenda kasvades. Kõik plaanid sisaldavad meie põhilisi AI koolitusfunktsioone.' : 'Start with our free tier and upgrade as you grow. All plans include our core AI training features.'}
+             {t('startWithFreeTier')}
            </p>
          </div>
 
         {/* Row 1: Free, Basic, Pro */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto items-stretch">
-          {(language === 'et' ? ['Tasuta', 'Põhi', 'Pro'] : ['Free', 'Basic', 'Pro']).map(name => {
-            const plan = plans.find(p => p.name === name)!;
-            return renderPlanCard(plan);
-          })}
+          {plans.slice(0, 3).map(plan => renderPlanCard(plan))}
         </div>
 
         {/* Row 2: Enterprise and Unlimited aligned, no scroll within cards */}
         <div className="max-w-6xl mx-auto mt-10">
           <div className="text-center mb-4">
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-              {language === 'et' ? 'Ettevõte ja Piiramatu' : 'Enterprise & Unlimited'}
+              {t('enterpriseAndUnlimited')}
             </h2>
             <p className="text-gray-600 dark:text-gray-400 mt-1">
-              {language === 'et' ? 'Soovid levitada SalesBuddy oma ettevõttes? Uuri Ettevõte plaan meeskonna funktsioonide, SSO ja prioriteetse toe jaoks. Eelistad piiranguid? Vali Piiramatu.' : 'Looking to roll out SalesBuddy across your company? Explore Enterprise for team features, SSO, and priority support. Prefer no limits? Choose Unlimited.'}
+              {t('lookingToRollOut')}
             </p>
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
             {(() => {
-              const enterprise = plans.find(p => p.name === (language === 'et' ? 'Ettevõte' : 'Enterprise'))!;
+              const enterprise = plans.find(p => p.name === t('enterprisePlan'))!;
               return renderPlanCard(enterprise, { noScroll: true });
             })()}
             {(() => {
-              const unlimited = plans.find(p => p.name === (language === 'et' ? 'Piiramatu' : 'Unlimited'))!;
+              const unlimited = plans.find(p => p.name === t('unlimitedPlan'))!;
               return renderPlanCard(unlimited, { noScroll: true });
             })()}
           </div>
@@ -344,39 +341,39 @@ const Pricing: React.FC = () => {
         {/* FAQ Section */}
         <div className="mt-20 max-w-4xl mx-auto">
           <h2 className="text-3xl font-bold text-center mb-12 text-gray-900 dark:text-white">
-            {language === 'et' ? 'Korduma kippuvad küsimused' : 'Frequently Asked Questions'}
+            {t('frequentlyAskedQuestions')}
           </h2>
           <div className="grid md:grid-cols-2 gap-8">
             <div>
               <h3 className="text-lg font-semibold mb-2 text-gray-900 dark:text-white">
-                {language === 'et' ? 'Kas saan plaanil muuta igal ajal?' : 'Can I change my plan anytime?'}
+                {t('canChangePlanAnytime')}
               </h3>
               <p className="text-gray-600 dark:text-gray-400">
-                {language === 'et' ? 'Jah, saad oma plaani igal ajal üles või alla muuta. Muudatused jõustuvad kohe.' : 'Yes, you can upgrade or downgrade your plan at any time. Changes take effect immediately.'}
+                {t('canChangePlanAnswer')}
               </p>
             </div>
             <div>
               <h3 className="text-lg font-semibold mb-2 text-gray-900 dark:text-white">
-                {language === 'et' ? 'Mis juhtub, kui ületan oma limiidi?' : 'What happens if I exceed my limit?'}
+                {t('whatHappensExceedLimit')}
               </h3>
               <p className="text-gray-600 dark:text-gray-400">
-                {language === 'et' ? 'Saad teate, kui oled limiidile lähedal. Uuenda oma plaani, et jätkata treeningut.' : 'You\'ll be notified when you\'re close to your limit. Upgrade your plan to continue training.'}
+                {t('exceedLimitAnswer')}
               </p>
             </div>
             <div>
               <h3 className="text-lg font-semibold mb-2 text-gray-900 dark:text-white">
-                {language === 'et' ? 'Kas teil on tasuta prooviversioon?' : 'Is there a free trial?'}
+                {t('isThereFreeTrial')}
               </h3>
               <p className="text-gray-600 dark:text-gray-400">
-                {language === 'et' ? 'Jah! Alusta meie tasuta tasemega, mis sisaldab 3 vestlust kuus. Kokkuvõtted on lukustatud, kuni uuendad.' : 'Yes! Start with our free tier that includes 3 conversations per month. Summaries are locked until you upgrade.'}
+                {t('freeTrialAnswer')}
               </p>
             </div>
             <div>
               <h3 className="text-lg font-semibold mb-2 text-gray-900 dark:text-white">
-                {language === 'et' ? 'Kas pakute tagasimakseid?' : 'Do you offer refunds?'}
+                {t('doYouOfferRefunds')}
               </h3>
                <p className="text-gray-600 dark:text-gray-400">
-                 {language === 'et' ? 'Pakume 14-päevast raha tagasi garantiid kõigi tasuliste plaanide jaoks.' : 'We offer a 14-day money-back guarantee for all paid plans.'}
+                 {t('refundsAnswer')}
                </p>
             </div>
           </div>
