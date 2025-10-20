@@ -2,11 +2,19 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext.tsx';
 import { Eye, EyeOff } from 'lucide-react';
+import { useTranslation } from '../hooks/useTranslation';
+import { type Language } from '../utils/translations';
 
 const Register: React.FC = () => {
   const { register } = useAuth();
   const navigate = useNavigate();
+  const { t, language } = useTranslation();
   const [loading, setLoading] = useState(false);
+
+  const handleLanguageChange = (newLanguage: Language) => {
+    localStorage.setItem('sb_language', newLanguage);
+    window.dispatchEvent(new CustomEvent('languageChanged', { detail: newLanguage }));
+  };
   const [form, setForm] = useState({
     firstName: '',
     lastName: '',
@@ -33,7 +41,7 @@ const Register: React.FC = () => {
   // Check password match in real-time
   const checkPasswordMatch = () => {
     if (form.confirmPassword && form.password !== form.confirmPassword) {
-      setPasswordMatchError('Passwords do not match');
+      setPasswordMatchError(t('passwordsDoNotMatch'));
     } else {
       setPasswordMatchError(null);
     }
@@ -48,7 +56,7 @@ const Register: React.FC = () => {
       setPasswordMatchError(null);
       
       if (form.password !== form.confirmPassword) {
-        setPasswordMatchError('Passwords do not match');
+        setPasswordMatchError(t('passwordsDoNotMatch'));
         setLoading(false);
         return;
       }
@@ -81,20 +89,33 @@ const Register: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-dark-900 flex items-start justify-center pt-40 pb-16 px-4">
       <div className="w-full max-w-md bg-white dark:bg-dark-800 rounded-2xl shadow-2xl ring-1 ring-gray-200 dark:ring-dark-700 border border-gray-100 dark:border-dark-700 p-5">
-        <h1 className="text-2xl font-bold mb-6 text-center text-gray-900 dark:text-white">Create your account</h1>
+        {/* Language Selector */}
+        <div className="mb-4">
+          <select
+            value={language}
+            onChange={(e) => handleLanguageChange(e.target.value as Language)}
+            className="w-full text-sm border border-gray-300 dark:border-dark-600 rounded-md px-3 py-2 bg-white dark:bg-dark-700 text-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="en">🇺🇸 English</option>
+            <option value="et">🇪🇪 Eesti</option>
+            <option value="es">🇪🇸 Español</option>
+            <option value="ru">🇷🇺 Русский</option>
+          </select>
+        </div>
+        <h1 className="text-2xl font-bold mb-6 text-center text-gray-900 dark:text-white">{t('createAccount')}</h1>
         <form onSubmit={onSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <input className={`input-field ${fieldErrors.firstName ? 'ring-2 ring-red-500' : ''}`} name="firstName" placeholder="First name" value={form.firstName} onChange={onChange} required />
+              <input className={`input-field ${fieldErrors.firstName ? 'ring-2 ring-red-500' : ''}`} name="firstName" placeholder={t('firstName')} value={form.firstName} onChange={onChange} required />
               {fieldErrors.firstName && <p className="text-xs text-red-600 mt-1">{fieldErrors.firstName}</p>}
             </div>
             <div>
-              <input className={`input-field ${fieldErrors.lastName ? 'ring-2 ring-red-500' : ''}`} name="lastName" placeholder="Last name" value={form.lastName} onChange={onChange} required />
+              <input className={`input-field ${fieldErrors.lastName ? 'ring-2 ring-red-500' : ''}`} name="lastName" placeholder={t('lastName')} value={form.lastName} onChange={onChange} required />
               {fieldErrors.lastName && <p className="text-xs text-red-600 mt-1">{fieldErrors.lastName}</p>}
             </div>
           </div>
           <div>
-            <input className={`input-field ${fieldErrors.email ? 'ring-2 ring-red-500' : ''}`} name="email" type="email" placeholder="Email" value={form.email} onChange={onChange} required />
+            <input className={`input-field ${fieldErrors.email ? 'ring-2 ring-red-500' : ''}`} name="email" type="email" placeholder={t('email')} value={form.email} onChange={onChange} required />
             {fieldErrors.email && <p className="text-xs text-red-600 mt-1">{fieldErrors.email}</p>}
           </div>
           <div>
@@ -103,7 +124,7 @@ const Register: React.FC = () => {
                 className={`input-field pr-10 ${fieldErrors.password ? 'ring-2 ring-red-500' : ''}`} 
                 name="password" 
                 type={showPassword ? "text" : "password"} 
-                placeholder="Password" 
+                placeholder={t('password')} 
                 value={form.password} 
                 onChange={onChange} 
                 required 
@@ -128,7 +149,7 @@ const Register: React.FC = () => {
                 className={`input-field pr-10 ${passwordMatchError ? 'ring-2 ring-red-500' : ''}`} 
                 name="confirmPassword" 
                 type={showConfirmPassword ? "text" : "password"} 
-                placeholder="Confirm password" 
+                placeholder={t('confirmPassword')} 
                 value={form.confirmPassword} 
                 onChange={onChange}
                 onBlur={checkPasswordMatch}
@@ -149,11 +170,11 @@ const Register: React.FC = () => {
             {passwordMatchError && <p className="text-xs text-red-600 mt-1">{passwordMatchError}</p>}
           </div>
           {error && <p className="text-sm text-red-600">{error}</p>}
-          <input className="input-field" name="company" placeholder="Company (optional)" value={form.company} onChange={onChange} />
-          <button type="submit" disabled={loading} className="btn-primary w-full">{loading ? 'Creating...' : 'Create account'}</button>
+          <input className="input-field" name="company" placeholder={t('company')} value={form.company} onChange={onChange} />
+          <button type="submit" disabled={loading} className="btn-primary w-full">{loading ? t('creating') : t('createAccount')}</button>
         </form>
         <p className="text-center text-sm text-gray-600 mt-4">
-          Already have an account? <Link to="/login" className="text-blue-600 hover:underline">Log in</Link>
+          {t('alreadyHaveAccount')} <Link to="/login" className="text-blue-600 hover:underline">{t('logIn')}</Link>
         </p>
       </div>
     </div>
