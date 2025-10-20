@@ -1407,6 +1407,11 @@ Scenario: ${scenario}
   32. **NEED DISCOVERY**: The salesperson should discover your needs first. Respond with questions like "Why would I need this?", "How is this relevant to me?", "What problem does this solve?"
   33. **VALUE PROPOSITION**: Only show interest after they explain the value: "How would this benefit me?", "What's the advantage over what I have now?", "Why should I consider this?"
   34. **NO ASSUMPTIONS**: Don't assume you know what they're selling or that you need it. Let them explain everything from scratch.
+  35. **NATURAL CONVERSATION**: Use casual, everyday language. Avoid formal business speak. Say things like "Oh, really?" instead of "That's quite intriguing." Be conversational and relaxed.
+  36. **REALISTIC OBJECTIONS**: Provide common objections that real customers have: "That sounds expensive", "I'm happy with what I have", "I need to think about it", "Let me check with my spouse", "I'm not sure I need all that", "Can you do better on the price?"
+  37. **NATURAL HESITATION**: Show realistic hesitation: "Hmm, I don't know...", "That's a lot to consider", "I'm not sure about that", "Maybe, but...", "I'd have to think about it"
+  38. **CASUAL LANGUAGE**: Use contractions (don't, can't, won't), casual phrases ("sounds good", "not sure", "maybe", "I guess"), and natural speech patterns.
+  39. **REALISTIC BUYING BEHAVIOR**: Real customers don't immediately agree to things. Show doubt, ask for more information, compare with current provider, mention budget concerns.
  
 ${conversationHistory && conversationHistory.length > 0 ? `CONVERSATION HISTORY (from this current call only):
 ${conversationHistory.map(msg => `${msg.role === 'user' ? 'CALLER' : 'YOU'}: ${msg.content}`).join('\n')}
@@ -1435,11 +1440,16 @@ const analyzeConversationPhases = (messages) => {
     close: false
   };
 
-  // Check for introduction phase indicators (more comprehensive)
-  if (conversationText.includes('hello') || conversationText.includes('hi') || 
-      conversationText.includes('this is') || conversationText.includes('calling from') ||
-      conversationText.includes('my name is') || conversationText.includes('i\'m') ||
-      conversationText.includes('oh, hi') || conversationText.includes('oh, hello')) {
+  // Check for introduction phase indicators (comprehensive detection)
+  const introIndicators = [
+    'hello', 'hi', 'hey', 'good morning', 'good afternoon', 'good evening',
+    'this is', 'calling from', 'my name is', 'i\'m', 'i am',
+    'oh, hi', 'oh, hello', 'speaking with', 'talking to',
+    'introduce', 'introduction', 'calling about', 'reaching out',
+    'contacting', 'getting in touch', 'following up', 'checking in'
+  ];
+  
+  if (introIndicators.some(indicator => conversationText.includes(indicator))) {
     phases.introduction = true;
   }
 
@@ -1448,27 +1458,108 @@ const analyzeConversationPhases = (messages) => {
   const salespersonMessages = messages.filter(msg => msg.role === 'user');
   const salespersonText = salespersonMessages.map(msg => msg.content).join(' ').toLowerCase();
   
-  if (salespersonText.includes('what do you') || salespersonText.includes('how can i help') ||
-      salespersonText.includes('tell me about') || salespersonText.includes('what are your') ||
-      salespersonText.includes('do you have') || salespersonText.includes('what challenges') ||
-      salespersonText.includes('what problems') || salespersonText.includes('what issues') ||
-      salespersonText.includes('what can i help') || salespersonText.includes('what do you need') ||
-      salespersonText.includes('what would you like') || salespersonText.includes('what are you looking') ||
-      salespersonText.includes('what kind of') || salespersonText.includes('how long have') ||
-      salespersonText.includes('what\'s your current') || salespersonText.includes('what are your goals')) {
+  // Comprehensive detection for discovery/mapping phase
+  const mappingIndicators = [
+    'what', 'how', 'when', 'where', 'why', 'who', 'which', 'tell me about',
+    'can you tell me', 'i\'d like to know', 'i\'m curious about',
+    'help me understand', 'what\'s your', 'how do you', 'what do you',
+    'current', 'situation', 'challenges', 'problems', 'issues', 'concerns',
+    'goals', 'objectives', 'needs', 'requirements', 'budget', 'timeline',
+    'decision', 'process', 'experience', 'background', 'history'
+  ];
+  
+  if (mappingIndicators.some(indicator => salespersonText.includes(indicator))) {
     phases.mapping = true;
   }
 
-  // Check for product presentation phase indicators (must be salesperson presenting)
-  if (salespersonText.includes('our service') || salespersonText.includes('our product') ||
-      salespersonText.includes('we offer') || salespersonText.includes('we provide') ||
-      salespersonText.includes('this solution') || salespersonText.includes('this service') ||
-      salespersonText.includes('benefits') || salespersonText.includes('features') ||
-      salespersonText.includes('value') || salespersonText.includes('help you') ||
-      salespersonText.includes('what we do') || salespersonText.includes('what this is about') ||
-      salespersonText.includes('our company') || salespersonText.includes('we specialize') ||
-      salespersonText.includes('our team') || salespersonText.includes('we can help') ||
-      salespersonText.includes('this will help') || salespersonText.includes('our approach')) {
+  // Check for product presentation phase indicators (comprehensive detection)
+  const presentationIndicators = [
+    'our', 'we', 'this', 'product', 'service', 'solution', 'offer', 'provide', 'have',
+    'features', 'benefits', 'value', 'help', 'improve', 'enhance', 'increase', 'reduce', 'save',
+    'price', 'cost', 'discount', 'deal', 'special', 'package', 'plan', 'option',
+    'platform', 'system', 'tool', 'software', 'technology', 'innovation',
+    'company', 'business', 'team', 'customers', 'clients', 'users',
+    'capabilities', 'functionality', 'advantages', 'strengths', 'proven',
+    'results', 'outcomes', 'success', 'roi', 'return on investment',
+    'guarantee', 'warranty', 'support', 'training', 'implementation'
+  ];
+  
+  if (presentationIndicators.some(indicator => salespersonText.includes(indicator))) {
+    phases.productPresentation = true;
+  } salespersonText.includes('clients') || salespersonText.includes('results') ||
+      salespersonText.includes('success') || salespersonText.includes('growth') || salespersonText.includes('roi') ||
+      salespersonText.includes('guarantee') || salespersonText.includes('support') || salespersonText.includes('training') ||
+      // Additional comprehensive presentation terms
+      salespersonText.includes('capabilities') || salespersonText.includes('functionality') || salespersonText.includes('advantages') ||
+      salespersonText.includes('pros') || salespersonText.includes('strengths') || salespersonText.includes('assets') ||
+      salespersonText.includes('resources') || salespersonText.includes('tools') || salespersonText.includes('equipment') ||
+      salespersonText.includes('technology') || salespersonText.includes('innovation') || salespersonText.includes('cutting-edge') ||
+      salespersonText.includes('advanced') || salespersonText.includes('premium') || salespersonText.includes('professional') ||
+      salespersonText.includes('enterprise') || salespersonText.includes('standard') || salespersonText.includes('basic') ||
+      salespersonText.includes('customized') || salespersonText.includes('personalized') || salespersonText.includes('tailored') ||
+      salespersonText.includes('flexible') || salespersonText.includes('adaptable') || salespersonText.includes('scalable') ||
+      salespersonText.includes('reliable') || salespersonText.includes('dependable') || salespersonText.includes('stable') ||
+      salespersonText.includes('secure') || salespersonText.includes('safe') || salespersonText.includes('protected') ||
+      salespersonText.includes('fast') || salespersonText.includes('quick') || salespersonText.includes('rapid') ||
+      salespersonText.includes('efficient') || salespersonText.includes('effective') || salespersonText.includes('optimized') ||
+      salespersonText.includes('affordable') || salespersonText.includes('inexpensive') || salespersonText.includes('budget-friendly') ||
+      salespersonText.includes('cost-effective') || salespersonText.includes('economical') || salespersonText.includes('competitive') ||
+      salespersonText.includes('exclusive') || salespersonText.includes('unique') || salespersonText.includes('special') ||
+      salespersonText.includes('limited') || salespersonText.includes('promotional') || salespersonText.includes('introductory') ||
+      salespersonText.includes('discounted') || salespersonText.includes('reduced') || salespersonText.includes('marked down') ||
+      salespersonText.includes('free') || salespersonText.includes('complimentary') || salespersonText.includes('included') ||
+      salespersonText.includes('bonus') || salespersonText.includes('extra') || salespersonText.includes('additional') ||
+      salespersonText.includes('upgrade') || salespersonText.includes('enhancement') || salespersonText.includes('improvement') ||
+      salespersonText.includes('solution') || salespersonText.includes('answer') || salespersonText.includes('fix') ||
+      salespersonText.includes('resolve') || salespersonText.includes('address') || salespersonText.includes('tackle') ||
+      salespersonText.includes('overcome') || salespersonText.includes('eliminate') || salespersonText.includes('remove') ||
+      salespersonText.includes('boost') || salespersonText.includes('maximize') || salespersonText.includes('amplify') ||
+      salespersonText.includes('streamline') || salespersonText.includes('simplify') || salespersonText.includes('facilitate') ||
+      salespersonText.includes('enable') || salespersonText.includes('allow') || salespersonText.includes('permit') ||
+      salespersonText.includes('connect') || salespersonText.includes('integrate') || salespersonText.includes('sync') ||
+      salespersonText.includes('link') || salespersonText.includes('bridge') || salespersonText.includes('unite') ||
+      salespersonText.includes('collaborate') || salespersonText.includes('partner') || salespersonText.includes('cooperate') ||
+      salespersonText.includes('relationship') || salespersonText.includes('partnership') || salespersonText.includes('alliance') ||
+      salespersonText.includes('expertise') || salespersonText.includes('knowledge') || salespersonText.includes('experience') ||
+      salespersonText.includes('skill') || salespersonText.includes('talent') || salespersonText.includes('capability') ||
+      salespersonText.includes('proven') || salespersonText.includes('tested') || salespersonText.includes('validated') ||
+      salespersonText.includes('established') || salespersonText.includes('mature') || salespersonText.includes('seasoned') ||
+      salespersonText.includes('leading') || salespersonText.includes('top-rated') || salespersonText.includes('award-winning') ||
+      salespersonText.includes('recommended') || salespersonText.includes('endorsed') || salespersonText.includes('approved') ||
+      salespersonText.includes('trusted') || salespersonText.includes('reputable') || salespersonText.includes('credible') ||
+      salespersonText.includes('successful') || salespersonText.includes('accomplished') || salespersonText.includes('achieved') ||
+      salespersonText.includes('delivered') || salespersonText.includes('provided') || salespersonText.includes('offered') ||
+      salespersonText.includes('supplied') || salespersonText.includes('furnished') || salespersonText.includes('equipped') ||
+      salespersonText.includes('installed') || salespersonText.includes('configured') || salespersonText.includes('customized') ||
+      salespersonText.includes('maintained') || salespersonText.includes('serviced') || salespersonText.includes('managed') ||
+      salespersonText.includes('monitored') || salespersonText.includes('tracked') || salespersonText.includes('measured') ||
+      salespersonText.includes('analyzed') || salespersonText.includes('evaluated') || salespersonText.includes('assessed') ||
+      salespersonText.includes('reported') || salespersonText.includes('documented') || salespersonText.includes('recorded') ||
+      salespersonText.includes('backup') || salespersonText.includes('recovery') || salespersonText.includes('protection') ||
+      salespersonText.includes('security') || salespersonText.includes('privacy') || salespersonText.includes('confidentiality') ||
+      salespersonText.includes('compliance') || salespersonText.includes('regulation') || salespersonText.includes('standard') ||
+      salespersonText.includes('certification') || salespersonText.includes('accreditation') || salespersonText.includes('approval') ||
+      salespersonText.includes('warranty') || salespersonText.includes('assurance') || salespersonText.includes('guarantee') ||
+      salespersonText.includes('refund') || salespersonText.includes('return') || salespersonText.includes('exchange') ||
+      salespersonText.includes('trial') || salespersonText.includes('demo') || salespersonText.includes('pilot') ||
+      salespersonText.includes('test') || salespersonText.includes('sample') || salespersonText.includes('preview') ||
+      salespersonText.includes('showcase') || salespersonText.includes('exhibition') || salespersonText.includes('demonstration') ||
+      salespersonText.includes('presentation') || salespersonText.includes('overview') || salespersonText.includes('summary') ||
+      salespersonText.includes('details') || salespersonText.includes('specifications') || salespersonText.includes('requirements') ||
+      salespersonText.includes('options') || salespersonText.includes('choices') || salespersonText.includes('alternatives') ||
+      salespersonText.includes('variants') || salespersonText.includes('versions') || salespersonText.includes('editions') ||
+      salespersonText.includes('plans') || salespersonText.includes('packages') || salespersonText.includes('bundles') ||
+      salespersonText.includes('combinations') || salespersonText.includes('sets') || salespersonText.includes('collections') ||
+      salespersonText.includes('suites') || salespersonText.includes('platforms') || salespersonText.includes('ecosystems') ||
+      salespersonText.includes('networks') || salespersonText.includes('communities') || salespersonText.includes('groups') ||
+      salespersonText.includes('associations') || salespersonText.includes('organizations') || salespersonText.includes('institutions') ||
+      salespersonText.includes('agencies') || salespersonText.includes('firms') || salespersonText.includes('corporations') ||
+      salespersonText.includes('companies') || salespersonText.includes('businesses') || salespersonText.includes('enterprises') ||
+      salespersonText.includes('industries') || salespersonText.includes('sectors') || salespersonText.includes('markets') ||
+      salespersonText.includes('niches') || salespersonText.includes('segments') || salespersonText.includes('categories') ||
+      salespersonText.includes('types') || salespersonText.includes('kinds') || salespersonText.includes('forms') ||
+      salespersonText.includes('styles') || salespersonText.includes('models') || salespersonText.includes('designs') ||
+      salespersonText.includes('configurations') || salespersonText.includes('arrangements') || salespersonText.includes('setups')) {
     phases.productPresentation = true;
   }
 
@@ -1476,36 +1567,295 @@ const analyzeConversationPhases = (messages) => {
   const clientMessages = messages.filter(msg => msg.role === 'assistant');
   const clientText = clientMessages.map(msg => msg.content).join(' ').toLowerCase();
   
-  // Check if client raised objections
+  // Check if client raised objections - simple, broad detection
   const hasObjection = clientText.includes('but') || clientText.includes('however') ||
       clientText.includes('not interested') || clientText.includes('don\'t need') ||
-      clientText.includes('too expensive') || clientText.includes('think about it') ||
-      clientText.includes('concern') || clientText.includes('worry') ||
-      clientText.includes('objection') || clientText.includes('hesitant') ||
-      clientText.includes('particular') || clientText.includes('decisions') ||
-      clientText.includes('busy') || clientText.includes('not right now');
+      clientText.includes('expensive') || clientText.includes('cost') || clientText.includes('price') ||
+      clientText.includes('think about') || clientText.includes('consider') || clientText.includes('evaluate') ||
+      clientText.includes('not sure') || clientText.includes('hesitate') || clientText.includes('concern') ||
+      clientText.includes('worry') || clientText.includes('busy') || clientText.includes('not right now') ||
+      clientText.includes('later') || clientText.includes('timing') || clientText.includes('not ready') ||
+      clientText.includes('happy with') || clientText.includes('satisfied') || clientText.includes('current') ||
+      clientText.includes('existing') || clientText.includes('already have') || clientText.includes('competitor') ||
+      clientText.includes('other company') || clientText.includes('alternative') || clientText.includes('compare') ||
+      clientText.includes('shop around') || clientText.includes('other options') || clientText.includes('budget') ||
+      clientText.includes('money') || clientText.includes('afford') || clientText.includes('decision') ||
+      clientText.includes('discuss') || clientText.includes('family') || clientText.includes('team') ||
+      clientText.includes('boss') || clientText.includes('manager') || clientText.includes('approval') ||
+      clientText.includes('contract') || clientText.includes('terms') || clientText.includes('agreement') ||
+      clientText.includes('complex') || clientText.includes('complicated') || clientText.includes('difficult') ||
+      clientText.includes('trust') || clientText.includes('reputation') || clientText.includes('reliable') ||
+      clientText.includes('implementation') || clientText.includes('setup') || clientText.includes('training') ||
+      clientText.includes('support') || clientText.includes('maintenance') || clientText.includes('security') ||
+      clientText.includes('performance') || clientText.includes('features') || clientText.includes('functionality') ||
+      clientText.includes('warranty') || clientText.includes('guarantee') || clientText.includes('trial') ||
+      clientText.includes('demo') || clientText.includes('test') || clientText.includes('references') ||
+      clientText.includes('reviews') || clientText.includes('roi') || clientText.includes('value') ||
+      clientText.includes('benefit') || clientText.includes('priority') || clientText.includes('important') ||
+      clientText.includes('necessary') || clientText.includes('required') || clientText.includes('optional') ||
+      clientText.includes('too much') || clientText.includes('not enough') || clientText.includes('different') ||
+      clientText.includes('new') || clientText.includes('proven') || clientText.includes('established') ||
+      // Additional comprehensive objection terms
+      clientText.includes('costly') || clientText.includes('pricey') || clientText.includes('overpriced') ||
+      clientText.includes('financial') || clientText.includes('monetary') || clientText.includes('economic') ||
+      clientText.includes('funds') || clientText.includes('capital') || clientText.includes('investment') ||
+      clientText.includes('spending') || clientText.includes('expenditure') || clientText.includes('outlay') ||
+      clientText.includes('hesitant') || clientText.includes('uncertain') || clientText.includes('doubtful') ||
+      clientText.includes('skeptical') || clientText.includes('suspicious') || clientText.includes('wary') ||
+      clientText.includes('cautious') || clientText.includes('careful') || clientText.includes('prudent') ||
+      clientText.includes('worried') || clientText.includes('concerned') || clientText.includes('anxious') ||
+      clientText.includes('nervous') || clientText.includes('uneasy') || clientText.includes('uncomfortable') ||
+      clientText.includes('occupied') || clientText.includes('engaged') || clientText.includes('preoccupied') ||
+      clientText.includes('unavailable') || clientText.includes('inaccessible') || clientText.includes('unreachable') ||
+      clientText.includes('postpone') || clientText.includes('delay') || clientText.includes('defer') ||
+      clientText.includes('wait') || clientText.includes('hold off') || clientText.includes('put off') ||
+      clientText.includes('unprepared') || clientText.includes('not ready') || clientText.includes('ill-prepared') ||
+      clientText.includes('disinterested') || clientText.includes('uninterested') || clientText.includes('apathetic') ||
+      clientText.includes('indifferent') || clientText.includes('neutral') || clientText.includes('unconcerned') ||
+      clientText.includes('unnecessary') || clientText.includes('redundant') || clientText.includes('superfluous') ||
+      clientText.includes('unneeded') || clientText.includes('unwanted') || clientText.includes('unrequired') ||
+      clientText.includes('content') || clientText.includes('satisfied') || clientText.includes('pleased') ||
+      clientText.includes('delighted') || clientText.includes('thrilled') || clientText.includes('ecstatic') ||
+      clientText.includes('fulfilled') || clientText.includes('gratified') || clientText.includes('contented') ||
+      clientText.includes('operational') || clientText.includes('functional') || clientText.includes('working') ||
+      clientText.includes('effective') || clientText.includes('efficient') || clientText.includes('productive') ||
+      clientText.includes('established') || clientText.includes('current') || clientText.includes('existing') ||
+      clientText.includes('present') || clientText.includes('ongoing') || clientText.includes('continuing') ||
+      clientText.includes('rival') || clientText.includes('competition') || clientText.includes('opposition') ||
+      clientText.includes('adversary') || clientText.includes('opponent') || clientText.includes('challenger') ||
+      clientText.includes('substitute') || clientText.includes('replacement') || clientText.includes('alternative') ||
+      clientText.includes('option') || clientText.includes('choice') || clientText.includes('selection') ||
+      clientText.includes('substitute') || clientText.includes('replacement') || clientText.includes('backup') ||
+      clientText.includes('anxiety') || clientText.includes('apprehension') || clientText.includes('fear') ||
+      clientText.includes('worry') || clientText.includes('concern') || clientText.includes('trouble') ||
+      clientText.includes('doubt') || clientText.includes('skepticism') || clientText.includes('suspicion') ||
+      clientText.includes('uncertainty') || clientText.includes('hesitation') || clientText.includes('reluctance') ||
+      clientText.includes('risk') || clientText.includes('danger') || clientText.includes('threat') ||
+      clientText.includes('hazard') || clientText.includes('peril') || clientText.includes('jeopardy') ||
+      clientText.includes('confidence') || clientText.includes('faith') || clientText.includes('belief') ||
+      clientText.includes('reliance') || clientText.includes('dependence') || clientText.includes('trust') ||
+      clientText.includes('reputation') || clientText.includes('standing') || clientText.includes('status') ||
+      clientText.includes('image') || clientText.includes('brand') || clientText.includes('identity') ||
+      clientText.includes('reliable') || clientText.includes('dependable') || clientText.includes('trustworthy') ||
+      clientText.includes('intricate') || clientText.includes('sophisticated') || clientText.includes('advanced') ||
+      clientText.includes('complicated') || clientText.includes('complex') || clientText.includes('elaborate') ||
+      clientText.includes('confusing') || clientText.includes('perplexing') || clientText.includes('puzzling') ||
+      clientText.includes('challenging') || clientText.includes('demanding') || clientText.includes('taxing') ||
+      clientText.includes('strenuous') || clientText.includes('arduous') || clientText.includes('difficult') ||
+      clientText.includes('schedule') || clientText.includes('calendar') || clientText.includes('agenda') ||
+      clientText.includes('timetable') || clientText.includes('program') || clientText.includes('plan') ||
+      clientText.includes('itinerary') || clientText.includes('roster') || clientText.includes('docket') ||
+      clientText.includes('authorization') || clientText.includes('permission') || clientText.includes('consent') ||
+      clientText.includes('sanction') || clientText.includes('endorsement') || clientText.includes('approval') ||
+      clientText.includes('supervisor') || clientText.includes('director') || clientText.includes('executive') ||
+      clientText.includes('manager') || clientText.includes('boss') || clientText.includes('chief') ||
+      clientText.includes('leader') || clientText.includes('head') || clientText.includes('superior') ||
+      clientText.includes('staff') || clientText.includes('personnel') || clientText.includes('employees') ||
+      clientText.includes('workers') || clientText.includes('associates') || clientText.includes('colleagues') ||
+      clientText.includes('coworkers') || clientText.includes('fellows') || clientText.includes('peers') ||
+      clientText.includes('committee') || clientText.includes('board') || clientText.includes('panel') ||
+      clientText.includes('group') || clientText.includes('team') || clientText.includes('crew') ||
+      clientText.includes('choice') || clientText.includes('selection') || clientText.includes('option') ||
+      clientText.includes('preference') || clientText.includes('favorite') || clientText.includes('pick') ||
+      clientText.includes('determination') || clientText.includes('resolution') || clientText.includes('verdict') ||
+      clientText.includes('judgment') || clientText.includes('conclusion') || clientText.includes('outcome') ||
+      clientText.includes('settlement') || clientText.includes('accord') || clientText.includes('pact') ||
+      clientText.includes('treaty') || clientText.includes('agreement') || clientText.includes('contract') ||
+      clientText.includes('terms') || clientText.includes('conditions') || clientText.includes('provisions') ||
+      clientText.includes('clauses') || clientText.includes('stipulations') || clientText.includes('requirements') ||
+      clientText.includes('specifications') || clientText.includes('criteria') || clientText.includes('standards') ||
+      clientText.includes('deployment') || clientText.includes('rollout') || clientText.includes('launch') ||
+      clientText.includes('introduction') || clientText.includes('initiation') || clientText.includes('startup') ||
+      clientText.includes('establishment') || clientText.includes('installation') || clientText.includes('setup') ||
+      clientText.includes('education') || clientText.includes('instruction') || clientText.includes('teaching') ||
+      clientText.includes('coaching') || clientText.includes('mentoring') || clientText.includes('guidance') ||
+      clientText.includes('assistance') || clientText.includes('help') || clientText.includes('aid') ||
+      clientText.includes('support') || clientText.includes('backup') || clientText.includes('reinforcement') ||
+      clientText.includes('maintenance') || clientText.includes('upkeep') || clientText.includes('care') ||
+      clientText.includes('service') || clientText.includes('repair') || clientText.includes('fix') ||
+      clientText.includes('updates') || clientText.includes('upgrades') || clientText.includes('improvements') ||
+      clientText.includes('enhancements') || clientText.includes('modifications') || clientText.includes('changes') ||
+      clientText.includes('compatibility') || clientText.includes('integration') || clientText.includes('connection') ||
+      clientText.includes('interoperability') || clientText.includes('harmonization') || clientText.includes('synchronization') ||
+      clientText.includes('migration') || clientText.includes('transition') || clientText.includes('transfer') ||
+      clientText.includes('conversion') || clientText.includes('transformation') || clientText.includes('changeover') ||
+      clientText.includes('privacy') || clientText.includes('confidentiality') || clientText.includes('secrecy') ||
+      clientText.includes('protection') || clientText.includes('safety') || clientText.includes('security') ||
+      clientText.includes('safeguard') || clientText.includes('defense') || clientText.includes('shield') ||
+      clientText.includes('performance') || clientText.includes('efficiency') || clientText.includes('effectiveness') ||
+      clientText.includes('speed') || clientText.includes('velocity') || clientText.includes('rapidity') ||
+      clientText.includes('swiftness') || clientText.includes('quickness') || clientText.includes('promptness') ||
+      clientText.includes('capabilities') || clientText.includes('functionality') || clientText.includes('features') ||
+      clientText.includes('abilities') || clientText.includes('skills') || clientText.includes('talents') ||
+      clientText.includes('competencies') || clientText.includes('proficiencies') || clientText.includes('expertise') ||
+      clientText.includes('customization') || clientText.includes('personalization') || clientText.includes('individualization') ||
+      clientText.includes('adaptation') || clientText.includes('modification') || clientText.includes('adjustment') ||
+      clientText.includes('flexibility') || clientText.includes('versatility') || clientText.includes('adaptability') ||
+      clientText.includes('scalability') || clientText.includes('expandability') || clientText.includes('growth') ||
+      clientText.includes('expansion') || clientText.includes('development') || clientText.includes('progress') ||
+      clientText.includes('assurance') || clientText.includes('guarantee') || clientText.includes('promise') ||
+      clientText.includes('commitment') || clientText.includes('pledge') || clientText.includes('vow') ||
+      clientText.includes('warranty') || clientText.includes('protection') || clientText.includes('coverage') ||
+      clientText.includes('insurance') || clientText.includes('safeguard') || clientText.includes('security') ||
+      clientText.includes('reimbursement') || clientText.includes('compensation') || clientText.includes('payment') ||
+      clientText.includes('refund') || clientText.includes('return') || clientText.includes('repayment') ||
+      clientText.includes('exchange') || clientText.includes('substitution') || clientText.includes('replacement') ||
+      clientText.includes('demonstration') || clientText.includes('presentation') || clientText.includes('showcase') ||
+      clientText.includes('exhibition') || clientText.includes('display') || clientText.includes('exposition') ||
+      clientText.includes('pilot') || clientText.includes('trial') || clientText.includes('test') ||
+      clientText.includes('experiment') || clientText.includes('sample') || clientText.includes('preview') ||
+      clientText.includes('testimonial') || clientText.includes('reference') || clientText.includes('recommendation') ||
+      clientText.includes('endorsement') || clientText.includes('approval') || clientText.includes('acclaim') ||
+      clientText.includes('review') || clientText.includes('evaluation') || clientText.includes('assessment') ||
+      clientText.includes('rating') || clientText.includes('score') || clientText.includes('grade') ||
+      clientText.includes('critique') || clientText.includes('analysis') || clientText.includes('examination') ||
+      clientText.includes('case study') || clientText.includes('example') || clientText.includes('instance') ||
+      clientText.includes('illustration') || clientText.includes('demonstration') || clientText.includes('proof') ||
+      clientText.includes('evidence') || clientText.includes('confirmation') || clientText.includes('validation') ||
+      clientText.includes('return on investment') || clientText.includes('roi') || clientText.includes('profitability') ||
+      clientText.includes('yield') || clientText.includes('gain') || clientText.includes('benefit') ||
+      clientText.includes('advantage') || clientText.includes('merit') || clientText.includes('worth') ||
+      clientText.includes('value') || clientText.includes('importance') || clientText.includes('significance') ||
+      clientText.includes('benefit') || clientText.includes('advantage') || clientText.includes('profit') ||
+      clientText.includes('gain') || clientText.includes('return') || clientText.includes('reward') ||
+      clientText.includes('importance') || clientText.includes('significance') || clientText.includes('relevance') ||
+      clientText.includes('priority') || clientText.includes('focus') || clientText.includes('emphasis') ||
+      clientText.includes('precedence') || clientText.includes('preference') || clientText.includes('priority') ||
+      clientText.includes('urgent') || clientText.includes('critical') || clientText.includes('essential') ||
+      clientText.includes('vital') || clientText.includes('crucial') || clientText.includes('imperative') ||
+      clientText.includes('required') || clientText.includes('mandatory') || clientText.includes('compulsory') ||
+      clientText.includes('obligatory') || clientText.includes('binding') || clientText.includes('enforced') ||
+      clientText.includes('optional') || clientText.includes('voluntary') || clientText.includes('elective') ||
+      clientText.includes('discretionary') || clientText.includes('non-essential') || clientText.includes('supplementary') ||
+      clientText.includes('luxury') || clientText.includes('premium') || clientText.includes('high-end') ||
+      clientText.includes('extravagant') || clientText.includes('lavish') || clientText.includes('opulent') ||
+      clientText.includes('excessive') || clientText.includes('extreme') || clientText.includes('overwhelming') ||
+      clientText.includes('overabundant') || clientText.includes('superfluous') || clientText.includes('redundant') ||
+      clientText.includes('inadequate') || clientText.includes('insufficient') || clientText.includes('deficient') ||
+      clientText.includes('scarce') || clientText.includes('limited') || clientText.includes('restricted') ||
+      clientText.includes('shortage') || clientText.includes('deficit') || clientText.includes('shortfall') ||
+      clientText.includes('missing') || clientText.includes('absent') || clientText.includes('lacking') ||
+      clientText.includes('unusual') || clientText.includes('uncommon') || clientText.includes('rare') ||
+      clientText.includes('unique') || clientText.includes('distinctive') || clientText.includes('special') ||
+      clientText.includes('different') || clientText.includes('distinct') || clientText.includes('separate') ||
+      clientText.includes('alternative') || clientText.includes('unconventional') || clientText.includes('non-standard') ||
+      clientText.includes('traditional') || clientText.includes('conventional') || clientText.includes('standard') ||
+      clientText.includes('classic') || clientText.includes('typical') || clientText.includes('normal') ||
+      clientText.includes('regular') || clientText.includes('ordinary') || clientText.includes('common') ||
+      clientText.includes('established') || clientText.includes('accepted') || clientText.includes('recognized') ||
+      clientText.includes('approved') || clientText.includes('endorsed') || clientText.includes('validated') ||
+      clientText.includes('untested') || clientText.includes('unproven') || clientText.includes('experimental') ||
+      clientText.includes('trial') || clientText.includes('pilot') || clientText.includes('beta') ||
+      clientText.includes('preliminary') || clientText.includes('initial') || clientText.includes('early') ||
+      clientText.includes('mature') || clientText.includes('seasoned') || clientText.includes('experienced') ||
+      clientText.includes('developed') || clientText.includes('advanced') || clientText.includes('sophisticated') ||
+      clientText.includes('refined') || clientText.includes('polished') || clientText.includes('perfected') ||
+      clientText.includes('vendor') || clientText.includes('supplier') || clientText.includes('provider') ||
+      clientText.includes('distributor') || clientText.includes('dealer') || clientText.includes('retailer') ||
+      clientText.includes('manufacturer') || clientText.includes('producer') || clientText.includes('maker') ||
+      clientText.includes('partner') || clientText.includes('associate') || clientText.includes('collaborator') ||
+      clientText.includes('ally') || clientText.includes('supporter') || clientText.includes('advocate') ||
+      clientText.includes('relationship') || clientText.includes('connection') || clientText.includes('association') ||
+      clientText.includes('partnership') || clientText.includes('alliance') || clientText.includes('coalition') ||
+      clientText.includes('collaboration') || clientText.includes('cooperation') || clientText.includes('teamwork') ||
+      clientText.includes('joint venture') || clientText.includes('merger') || clientText.includes('acquisition'));
   
-  // Check if salesperson responded to objections
-  const hasResponse = salespersonText.includes('i understand') || salespersonText.includes('i hear you') ||
-      salespersonText.includes('let me address') || salespersonText.includes('that\'s a valid') ||
-      salespersonText.includes('i can see why') || salespersonText.includes('many people feel') ||
+  // Check if salesperson responded to objections - simple, broad detection
+  const hasResponse = salespersonText.includes('understand') || salespersonText.includes('hear you') ||
+      salespersonText.includes('let me') || salespersonText.includes('that\'s a valid') ||
+      salespersonText.includes('i can see') || salespersonText.includes('many people') ||
       salespersonText.includes('however') || salespersonText.includes('but consider') ||
-      salespersonText.includes('what if') || salespersonText.includes('let me explain');
+      salespersonText.includes('what if') || salespersonText.includes('let me explain') ||
+      salespersonText.includes('totally') || salespersonText.includes('completely') ||
+      salespersonText.includes('i get') || salespersonText.includes('i see') ||
+      salespersonText.includes('that makes sense') || salespersonText.includes('i appreciate') ||
+      salespersonText.includes('good luck') || salespersonText.includes('contact you') ||
+      salespersonText.includes('follow up') || salespersonText.includes('end of') ||
+      salespersonText.includes('you\'re right') || salespersonText.includes('fair enough') ||
+      salespersonText.includes('good point') || salespersonText.includes('let me clarify') ||
+      salespersonText.includes('let me show') || salespersonText.includes('how about') ||
+      salespersonText.includes('consider this') || salespersonText.includes('think about') ||
+      salespersonText.includes('here\'s the thing') || salespersonText.includes('the reality is') ||
+      salespersonText.includes('actually') || salespersonText.includes('on the other hand') ||
+      salespersonText.includes('many customers') || salespersonText.includes('most clients') ||
+      salespersonText.includes('other companies') || salespersonText.includes('we can work') ||
+      salespersonText.includes('we can adjust') || salespersonText.includes('we can customize') ||
+      salespersonText.includes('flexible') || salespersonText.includes('negotiable') ||
+      salespersonText.includes('guarantee') || salespersonText.includes('assure') ||
+      salespersonText.includes('risk-free') || salespersonText.includes('no obligation') ||
+      salespersonText.includes('trial') || salespersonText.includes('demo') ||
+      salespersonText.includes('references') || salespersonText.includes('testimonials') ||
+      salespersonText.includes('proven') || salespersonText.includes('established') ||
+      salespersonText.includes('roi') || salespersonText.includes('return') ||
+      salespersonText.includes('value') || salespersonText.includes('benefit') ||
+      salespersonText.includes('cost-effective') || salespersonText.includes('affordable') ||
+      salespersonText.includes('discount') || salespersonText.includes('deal') ||
+      salespersonText.includes('special') || salespersonText.includes('limited time') ||
+      salespersonText.includes('implementation') || salespersonText.includes('setup') ||
+      salespersonText.includes('support') || salespersonText.includes('maintenance') ||
+      salespersonText.includes('security') || salespersonText.includes('performance') ||
+      salespersonText.includes('features') || salespersonText.includes('capabilities') ||
+      salespersonText.includes('warranty') || salespersonText.includes('priority') ||
+      salespersonText.includes('important') || salespersonText.includes('necessary') ||
+      salespersonText.includes('solution') || salespersonText.includes('improve') ||
+      salespersonText.includes('enhance') || salespersonText.includes('increase') ||
+      salespersonText.includes('reduce') || salespersonText.includes('save') ||
+      salespersonText.includes('automate') || salespersonText.includes('streamline') ||
+      salespersonText.includes('connect') || salespersonText.includes('integrate') ||
+      salespersonText.includes('trust') || salespersonText.includes('confidence') ||
+      salespersonText.includes('experience') || salespersonText.includes('expertise') ||
+      salespersonText.includes('results') || salespersonText.includes('outcomes') ||
+      salespersonText.includes('success') || salespersonText.includes('growth') ||
+      salespersonText.includes('next steps') || salespersonText.includes('moving forward') ||
+      salespersonText.includes('schedule') || salespersonText.includes('meeting') ||
+      salespersonText.includes('proposal') || salespersonText.includes('contract') ||
+      salespersonText.includes('get started') || salespersonText.includes('begin') ||
+      salespersonText.includes('when can we') || salespersonText.includes('would you like') ||
+      salespersonText.includes('are you ready') || salespersonText.includes('can we') ||
+      salespersonText.includes('let\'s');
   
   if (hasObjection && hasResponse) {
     phases.objectionHandling = true;
   }
 
-  // Check for close phase indicators (must be salesperson attempting to close)
+  // Check for close phase indicators (must be salesperson attempting to close) - simple, broad detection
   if (salespersonText.includes('next step') || salespersonText.includes('schedule') ||
       salespersonText.includes('follow up') || salespersonText.includes('meeting') ||
       salespersonText.includes('call back') || salespersonText.includes('send information') ||
       salespersonText.includes('proposal') || salespersonText.includes('contract') ||
       salespersonText.includes('sign up') || salespersonText.includes('get started') ||
-      salespersonText.includes('when can we') || salespersonText.includes('would you like to') ||
+      salespersonText.includes('when can we') || salespersonText.includes('would you like') ||
       salespersonText.includes('shall we') || salespersonText.includes('let\'s set up') ||
       salespersonText.includes('are you ready') || salespersonText.includes('shall we proceed') ||
-      salespersonText.includes('would you be interested') || salespersonText.includes('can we move forward')) {
+      salespersonText.includes('would you be interested') || salespersonText.includes('can we move forward') ||
+      salespersonText.includes('contact you') || salespersonText.includes('end of') ||
+      salespersonText.includes('good luck') || salespersonText.includes('look forward') ||
+      salespersonText.includes('hear from you') || salespersonText.includes('discuss') ||
+      salespersonText.includes('meanwhile') || salespersonText.includes('set up') ||
+      salespersonText.includes('get back to you') || salespersonText.includes('follow up with') ||
+      salespersonText.includes('agreement') || salespersonText.includes('deal') ||
+      salespersonText.includes('order') || salespersonText.includes('purchase') ||
+      salespersonText.includes('buy') || salespersonText.includes('commit') ||
+      salespersonText.includes('decision') || salespersonText.includes('choose') ||
+      salespersonText.includes('select') || salespersonText.includes('proceed') ||
+      salespersonText.includes('move forward') || salespersonText.includes('begin') ||
+      salespersonText.includes('start') || salespersonText.includes('launch') ||
+      salespersonText.includes('implement') || salespersonText.includes('setup') ||
+      salespersonText.includes('install') || salespersonText.includes('activate') ||
+      salespersonText.includes('enroll') || salespersonText.includes('register') ||
+      salespersonText.includes('subscribe') || salespersonText.includes('join') ||
+      salespersonText.includes('today') || salespersonText.includes('tomorrow') ||
+      salespersonText.includes('this week') || salespersonText.includes('next week') ||
+      salespersonText.includes('when would') || salespersonText.includes('what time') ||
+      salespersonText.includes('where would') || salespersonText.includes('how would') ||
+      salespersonText.includes('can we schedule') || salespersonText.includes('should we') ||
+      salespersonText.includes('are you ready to') || salespersonText.includes('do you want to') ||
+      salespersonText.includes('would you like to') || salespersonText.includes('shall we') ||
+      salespersonText.includes('let\'s') || salespersonText.includes('ready to') ||
+      salespersonText.includes('interested in') || salespersonText.includes('sounds good') ||
+      salespersonText.includes('perfect') || salespersonText.includes('great') ||
+      salespersonText.includes('excellent') || salespersonText.includes('wonderful') ||
+      salespersonText.includes('fantastic') || salespersonText.includes('amazing')) {
     phases.close = true;
   }
 
@@ -1530,7 +1880,7 @@ const createRatingPrompt = (messages) => {
      conversationText.toLowerCase().includes('hang up') ? 'Client hung up' :
      'Conversation ended abruptly') : null;
 
-  let prompt = `You are an expert sales trainer analyzing a sales conversation. Be fair and constructive in your evaluation.
+  let prompt = `You are an expert sales trainer analyzing a sales conversation. Be extremely thorough and detect EVERY SINGLE POINT that should be awarded in each category. Be fair and constructive in your evaluation.
 
 CONVERSATION:
 ${conversationText}
@@ -1547,34 +1897,84 @@ PHASES THAT OCCURRED:
 - Objection Handling: ${occurredPhases.objectionHandling ? 'YES' : 'NO'}
 - Close: ${occurredPhases.close ? 'YES' : 'NO'}
 
-RATING GUIDELINES:
-- 1-3: Poor execution, major issues, unprofessional
-- 4-6: Average execution, room for improvement, basic competency
-- 7-8: Good execution, minor improvements needed, professional
-- 9-10: Excellent execution, professional quality, exceptional
+COMPREHENSIVE POINT-BY-POINT EVALUATION CRITERIA:
 
-STRICT EVALUATION CRITERIA:
-- Introduction (1-10): Did salesperson properly introduce themselves and company?
-- Mapping (1-10): Did salesperson ask discovery questions to understand client needs?
-- Product Presentation (1-10): Did salesperson clearly present product/service benefits?
-- Objection Handling (1-10): Did salesperson address client concerns professionally?
-- Close (1-10): Did salesperson attempt to move toward next steps or closing?
+INTRODUCTION (Opening) - Award points for each element present:
+- 1 point: Basic greeting (hello, hi, good morning/afternoon)
+- 1 point: Salesperson introduces themselves by name
+- 1 point: Mentions company name
+- 1 point: States purpose of call professionally
+- 1 point: Asks permission to continue ("Do you have a moment?")
+- 1 point: Uses client's name if available
+- 1 point: Shows respect for client's time
+- 1 point: Professional tone and energy
+- 1 point: Clear and confident delivery
+- 1 point: Sets positive tone for conversation
 
-INSTRUCTIONS:
-1. Rate ONLY the phases that actually occurred in the conversation (1-10 scale)
-2. Give a rating of 0 for phases that did NOT occur
-3. Be strict and realistic - don't give high scores for minimal effort
-4. A phase must show actual sales skill, not just basic conversation
-5. Consider industry standards for professional sales conversations
+MAPPING (Discovery) - Award points for each element present:
+- 1 point: Asks about client's current situation
+- 1 point: Asks about challenges or pain points
+- 1 point: Asks about goals or objectives
+- 1 point: Asks about decision-making process
+- 1 point: Asks about timeline or urgency
+- 1 point: Asks about budget or resources
+- 1 point: Asks about previous experience
+- 1 point: Asks about specific needs or requirements
+- 1 point: Listens actively to responses
+- 1 point: Asks follow-up questions based on responses
+
+PRODUCT PRESENTATION - Award points for each element present:
+- 1 point: Clearly explains what the product/service does
+- 1 point: Highlights key features and benefits
+- 1 point: Connects benefits to client's specific needs
+- 1 point: Uses examples or case studies
+- 1 point: Addresses value proposition clearly
+- 1 point: Explains pricing or cost structure
+- 1 point: Mentions guarantees or warranties
+- 1 point: Compares to competitors (if relevant)
+- 1 point: Uses visual aids or demonstrations (if applicable)
+- 1 point: Checks for understanding
+
+OBJECTION HANDLING - Award points for each element present:
+- 1 point: Acknowledges the objection respectfully
+- 1 point: Asks clarifying questions about the objection
+- 1 point: Provides relevant information to address concern
+- 1 point: Uses examples or proof points
+- 1 point: Offers alternatives or solutions
+- 1 point: Asks if concern is resolved
+- 1 point: Maintains positive attitude throughout
+- 1 point: Doesn't argue or become defensive
+- 1 point: Shows empathy and understanding
+- 1 point: Moves conversation forward after handling
+
+CLOSING - Award points for each element present:
+- 1 point: Summarizes key benefits discussed
+- 1 point: Asks for the sale or next step
+- 1 point: Creates urgency or scarcity (if appropriate)
+- 1 point: Addresses final concerns
+- 1 point: Proposes specific next steps
+- 1 point: Suggests timeline for implementation
+- 1 point: Asks for commitment or decision
+- 1 point: Offers to send information or materials
+- 1 point: Schedules follow-up meeting
+- 1 point: Confirms next steps clearly
+
+SCORING INSTRUCTIONS:
+1. For each phase that occurred, award 1 point for each criterion met (maximum 10 points per phase)
+2. For phases that did NOT occur, give 0 points
+3. Be generous but fair - if a criterion is partially met, award the point
+4. Look for subtle indicators of good sales practices
+5. Consider the context and conversation flow
+6. Award points for professional behavior even in difficult situations
 
 Respond in this exact JSON format:
 {
-  "introduction": ${occurredPhases.introduction ? '[number 1-10]' : '0'},
-  "mapping": ${occurredPhases.mapping ? '[number 1-10]' : '0'},
-  "productPresentation": ${occurredPhases.productPresentation ? '[number 1-10]' : '0'},
-  "objectionHandling": ${occurredPhases.objectionHandling ? '[number 1-10]' : '0'},
-  "close": ${occurredPhases.close ? '[number 1-10]' : '0'},
-  "feedback": "[Provide constructive feedback highlighting what was done well and specific suggestions for improvement. Be encouraging while being honest about areas for growth. Use 'you' instead of 'the salesperson' throughout the feedback.]"
+  "introduction": ${occurredPhases.introduction ? '[number 0-10 based on criteria above]' : '0'},
+  "mapping": ${occurredPhases.mapping ? '[number 0-10 based on criteria above]' : '0'},
+  "productPresentation": ${occurredPhases.productPresentation ? '[number 0-10 based on criteria above]' : '0'},
+  "objectionHandling": ${occurredPhases.objectionHandling ? '[number 0-10 based on criteria above]' : '0'},
+  "close": ${occurredPhases.close ? '[number 0-10 based on criteria above]' : '0'},
+  "feedback": "[Provide detailed feedback highlighting specific strengths and areas for improvement. Be encouraging while being honest about areas for growth. Use 'you' instead of 'the salesperson' throughout the feedback.]"
 }`;
 
   return prompt;

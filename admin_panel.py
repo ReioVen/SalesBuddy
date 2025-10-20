@@ -396,16 +396,18 @@ class SalesBuddyAdmin:
         tk.Button(filter_frame, text="Refresh", command=self.methods.load_all_summaries, 
                  bg='#2196F3', fg='white').pack(side='left', padx=5)
         
-        # Summaries treeview
-        columns = ('User ID', 'Name', 'Summary #', 'AI Analysis Preview', 'Total Duration', 'Conv Count', 'Last Activity', 'Overall Rating')
+        # Enhanced AI Ratings treeview with comprehensive scoring
+        columns = ('Conversation ID', 'User', 'Total Score', 'Opening', 'Discovery', 'Presentation', 'Objections', 'Closing', 'Date')
         self.summaries_tree = ttk.Treeview(summaries_frame, columns=columns, show='headings', height=15)
         
         for col in columns:
             self.summaries_tree.heading(col, text=col)
-            if col == 'AI Analysis Preview':
-                self.summaries_tree.column(col, width=300)
-            elif col == 'Summary #':
+            if col == 'Total Score':
+                self.summaries_tree.column(col, width=150)
+            elif col in ['Opening', 'Discovery', 'Presentation', 'Objections', 'Closing']:
                 self.summaries_tree.column(col, width=100)
+            elif col == 'Conversation ID':
+                self.summaries_tree.column(col, width=120)
             else:
                 self.summaries_tree.column(col, width=120)
         

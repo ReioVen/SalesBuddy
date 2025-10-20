@@ -2110,25 +2110,27 @@ Updated: {conversation.get('updatedAt', 'Unknown')}
                     except:
                         pass
                 
-                # Calculate total score
-                total_score = sum([
-                    ratings.get('introduction', 0),
-                    ratings.get('mapping', 0),
-                    ratings.get('productPresentation', 0),
-                    ratings.get('objectionHandling', 0),
-                    ratings.get('close', 0)
-                ])
+                # Calculate comprehensive scoring
+                intro_score = ratings.get('introduction', 0)
+                mapping_score = ratings.get('mapping', 0)
+                presentation_score = ratings.get('productPresentation', 0)
+                objection_score = ratings.get('objectionHandling', 0)
+                close_score = ratings.get('close', 0)
                 
-                # Insert into tree
+                total_score = intro_score + mapping_score + presentation_score + objection_score + close_score
+                max_possible = ratings.get('maxPossibleScore', 50)
+                percentage = round((total_score / max_possible * 100), 1) if max_possible > 0 else 0
+                
+                # Insert into tree with enhanced scoring display
                 self.admin.ratings_tree.insert('', 'end', values=(
                     str(conv['_id'])[:8] + '...',
                     user_name,
-                    f"{total_score}/50",
-                    ratings.get('introduction', 0),
-                    ratings.get('mapping', 0),
-                    ratings.get('productPresentation', 0),
-                    ratings.get('objectionHandling', 0),
-                    ratings.get('close', 0),
+                    f"{total_score}/{max_possible} ({percentage}%)",
+                    f"{intro_score}/10",
+                    f"{mapping_score}/10",
+                    f"{presentation_score}/10",
+                    f"{objection_score}/10",
+                    f"{close_score}/10",
                     conv.get('createdAt', '').strftime('%Y-%m-%d') if conv.get('createdAt') else ''
                 ))
             
@@ -2209,23 +2211,102 @@ Updated: {conversation.get('updatedAt', 'Unknown')}
             ratings = conversation.get('aiRatings', {})
             feedback = conversation.get('aiRatingFeedback', '')
             
+            # Calculate detailed scoring breakdown
+            intro_score = ratings.get('introduction', 0)
+            mapping_score = ratings.get('mapping', 0)
+            presentation_score = ratings.get('productPresentation', 0)
+            objection_score = ratings.get('objectionHandling', 0)
+            close_score = ratings.get('close', 0)
+            
+            total_score = intro_score + mapping_score + presentation_score + objection_score + close_score
+            max_possible = ratings.get('maxPossibleScore', 50)
+            percentage = round((total_score / max_possible * 100), 1) if max_possible > 0 else 0
+            
             details_content = f"""
+CONVERSATION RATING ANALYSIS
+============================
 Conversation ID: {conversation_id}
 User: {values[1]}
 Date: {values[8]}
 
-RATING BREAKDOWN:
-- Opening: {ratings.get('introduction', 0)}/10
-- Discovery: {ratings.get('mapping', 0)}/10
-- Presentation: {ratings.get('productPresentation', 0)}/10
-- Objection Handling: {ratings.get('objectionHandling', 0)}/10
-- Closing: {ratings.get('close', 0)}/10
-Total Score: {values[2]}
+COMPREHENSIVE RATING BREAKDOWN:
+===============================
+Opening (Introduction): {intro_score}/10
+Discovery (Mapping): {mapping_score}/10  
+Presentation: {presentation_score}/10
+Objection Handling: {objection_score}/10
+Closing: {close_score}/10
+
+TOTAL SCORE: {total_score}/{max_possible} ({percentage}%)
+
+DETAILED SCORING CRITERIA:
+==========================
+INTRODUCTION (Opening) - Points Awarded:
+- Basic greeting: {'✓' if intro_score >= 1 else '✗'}
+- Self-introduction: {'✓' if intro_score >= 2 else '✗'}
+- Company mention: {'✓' if intro_score >= 3 else '✗'}
+- Purpose statement: {'✓' if intro_score >= 4 else '✗'}
+- Permission to continue: {'✓' if intro_score >= 5 else '✗'}
+- Client name usage: {'✓' if intro_score >= 6 else '✗'}
+- Time respect: {'✓' if intro_score >= 7 else '✗'}
+- Professional tone: {'✓' if intro_score >= 8 else '✗'}
+- Clear delivery: {'✓' if intro_score >= 9 else '✗'}
+- Positive tone: {'✓' if intro_score >= 10 else '✗'}
+
+DISCOVERY (Mapping) - Points Awarded:
+- Current situation: {'✓' if mapping_score >= 1 else '✗'}
+- Pain points: {'✓' if mapping_score >= 2 else '✗'}
+- Goals/objectives: {'✓' if mapping_score >= 3 else '✗'}
+- Decision process: {'✓' if mapping_score >= 4 else '✗'}
+- Timeline/urgency: {'✓' if mapping_score >= 5 else '✗'}
+- Budget/resources: {'✓' if mapping_score >= 6 else '✗'}
+- Previous experience: {'✓' if mapping_score >= 7 else '✗'}
+- Specific needs: {'✓' if mapping_score >= 8 else '✗'}
+- Active listening: {'✓' if mapping_score >= 9 else '✗'}
+- Follow-up questions: {'✓' if mapping_score >= 10 else '✗'}
+
+PRODUCT PRESENTATION - Points Awarded:
+- Clear explanation: {'✓' if presentation_score >= 1 else '✗'}
+- Key features/benefits: {'✓' if presentation_score >= 2 else '✗'}
+- Need connection: {'✓' if presentation_score >= 3 else '✗'}
+- Examples/case studies: {'✓' if presentation_score >= 4 else '✗'}
+- Value proposition: {'✓' if presentation_score >= 5 else '✗'}
+- Pricing structure: {'✓' if presentation_score >= 6 else '✗'}
+- Guarantees: {'✓' if presentation_score >= 7 else '✗'}
+- Competitor comparison: {'✓' if presentation_score >= 8 else '✗'}
+- Visual aids: {'✓' if presentation_score >= 9 else '✗'}
+- Understanding check: {'✓' if presentation_score >= 10 else '✗'}
+
+OBJECTION HANDLING - Points Awarded:
+- Respectful acknowledgment: {'✓' if objection_score >= 1 else '✗'}
+- Clarifying questions: {'✓' if objection_score >= 2 else '✗'}
+- Relevant information: {'✓' if objection_score >= 3 else '✗'}
+- Examples/proof: {'✓' if objection_score >= 4 else '✗'}
+- Alternative solutions: {'✓' if objection_score >= 5 else '✗'}
+- Resolution check: {'✓' if objection_score >= 6 else '✗'}
+- Positive attitude: {'✓' if objection_score >= 7 else '✗'}
+- Non-defensive: {'✓' if objection_score >= 8 else '✗'}
+- Empathy: {'✓' if objection_score >= 9 else '✗'}
+- Forward movement: {'✓' if objection_score >= 10 else '✗'}
+
+CLOSING - Points Awarded:
+- Benefit summary: {'✓' if close_score >= 1 else '✗'}
+- Sale request: {'✓' if close_score >= 2 else '✗'}
+- Urgency creation: {'✓' if close_score >= 3 else '✗'}
+- Final concerns: {'✓' if close_score >= 4 else '✗'}
+- Next steps: {'✓' if close_score >= 5 else '✗'}
+- Timeline suggestion: {'✓' if close_score >= 6 else '✗'}
+- Commitment request: {'✓' if close_score >= 7 else '✗'}
+- Information offer: {'✓' if close_score >= 8 else '✗'}
+- Follow-up scheduling: {'✓' if close_score >= 9 else '✗'}
+- Step confirmation: {'✓' if close_score >= 10 else '✗'}
 
 AI FEEDBACK:
+============
 {feedback}
 
 CONVERSATION SUMMARY:
+====================
 Title: {conversation.get('title', 'N/A')}
 Scenario: {conversation.get('scenario', 'N/A')}
 Duration: {conversation.get('duration', 0)} seconds
@@ -2254,8 +2335,8 @@ Messages: {len(conversation.get('messages', []))}
                 messagebox.showinfo("Info", "No ratings data found to export")
                 return
             
-            # Create CSV content
-            csv_content = "Conversation ID,User,Total Score,Opening,Discovery,Presentation,Objections,Closing,Date,Feedback\n"
+            # Create comprehensive CSV content with detailed scoring
+            csv_content = "Conversation ID,User,Total Score,Max Possible,Percentage,Opening,Discovery,Presentation,Objections,Closing,Date,Feedback\n"
             
             for conv in conversations:
                 ratings = conv.get('aiRatings', {})
@@ -2267,15 +2348,18 @@ Messages: {len(conversation.get('messages', []))}
                 if isinstance(user_info, dict):
                     user_name = f"{user_info.get('firstName', '')} {user_info.get('lastName', '')}".strip()
                 
-                total_score = sum([
-                    ratings.get('introduction', 0),
-                    ratings.get('mapping', 0),
-                    ratings.get('productPresentation', 0),
-                    ratings.get('objectionHandling', 0),
-                    ratings.get('close', 0)
-                ])
+                # Calculate scores
+                intro_score = ratings.get('introduction', 0)
+                mapping_score = ratings.get('mapping', 0)
+                presentation_score = ratings.get('productPresentation', 0)
+                objection_score = ratings.get('objectionHandling', 0)
+                close_score = ratings.get('close', 0)
                 
-                csv_content += f'"{str(conv["_id"])}","{user_name}",{total_score},{ratings.get("introduction", 0)},{ratings.get("mapping", 0)},{ratings.get("productPresentation", 0)},{ratings.get("objectionHandling", 0)},{ratings.get("close", 0)},"{conv.get("createdAt", "").strftime("%Y-%m-%d") if conv.get("createdAt") else ""}","{feedback}"\n'
+                total_score = intro_score + mapping_score + presentation_score + objection_score + close_score
+                max_possible = ratings.get('maxPossibleScore', 50)
+                percentage = round((total_score / max_possible * 100), 1) if max_possible > 0 else 0
+                
+                csv_content += f'"{str(conv["_id"])}","{user_name}",{total_score},{max_possible},{percentage}%,{intro_score},{mapping_score},{presentation_score},{objection_score},{close_score},"{conv.get("createdAt", "").strftime("%Y-%m-%d") if conv.get("createdAt") else ""}","{feedback}"\n'
             
             # Save to file
             filename = f"ai_ratings_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
