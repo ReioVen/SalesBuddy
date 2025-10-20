@@ -252,6 +252,12 @@ try {
   });
   console.log('✅ [ROUTES] Test route added');
   
+  // Simple ping route for testing
+  app.get('/ping', (req, res) => {
+    res.json({ message: 'pong', timestamp: new Date().toISOString() });
+  });
+  console.log('✅ [ROUTES] Ping route added');
+  
   // List all registered routes for debugging
   console.log('🔍 [ROUTES] Registered feedback routes:');
   if (feedbackRoutes.stack) {
@@ -300,19 +306,23 @@ app.get('/', (req, res) => {
 
 // Health check endpoint (for Railway health checks)
 app.get('/health', (req, res) => {
+  console.log('🔍 [HEALTH] Health check requested');
   try {
     const healthStatus = {
       status: 'OK',
       timestamp: new Date().toISOString(),
       uptime: process.uptime(),
       memory: process.memoryUsage(),
-      database: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected'
+      database: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected',
+      port: PORT,
+      environment: process.env.NODE_ENV || 'development'
     };
     
+    console.log('✅ [HEALTH] Health check response:', healthStatus);
     // Return 200 if server is running, even if DB is not connected yet
-    res.json(healthStatus);
+    res.status(200).json(healthStatus);
   } catch (error) {
-    console.error('Health check error:', error);
+    console.error('❌ [HEALTH] Health check error:', error);
     res.status(500).json({ 
       status: 'ERROR', 
       error: error.message,
@@ -425,6 +435,7 @@ const server = app.listen(PORT, () => {
   console.log(`🌐 API health check available at: http://localhost:${PORT}/api/health`);
   console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`🗄️ Database: ${mongoose.connection.readyState === 1 ? 'connected' : 'connecting...'}`);
+  console.log(`🔍 [SERVER] Server startup completed successfully`);
   
   // Daily refresh service is no longer needed - enterprise users now use monthly limits
   try {
@@ -437,6 +448,7 @@ const server = app.listen(PORT, () => {
 
 // Handle server startup errors
 server.on('error', (err) => {
+  console.error('❌ [SERVER] Server error occurred:', err);
   if (err.code === 'EADDRINUSE') {
     console.error(`❌ Port ${PORT} is already in use. Please:`);
     console.error(`   1. Kill the process using port ${PORT}`);
@@ -446,8 +458,22 @@ server.on('error', (err) => {
     console.error(`   netstat -ano | findstr :${PORT}`);
     console.error(`   taskkill /PID <PID> /F`);
   } else {
-    console.error('Server startup error:', err);
+    console.error('❌ [SERVER] Server startup error:', err);
+    console.error('❌ [SERVER] Error details:', err.stack);
   }
+  process.exit(1);
+});
+
+// Handle uncaught exceptions
+process.on('uncaughtException', (err) => {
+  console.error('❌ [SERVER] Uncaught Exception:', err);
+  console.error('❌ [SERVER] Error details:', err.stack);
+  process.exit(1);
+});
+
+// Handle unhandled promise rejections
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('❌ [SERVER] Unhandled Rejection at:', promise, 'reason:', reason);
   process.exit(1);
 });
 
