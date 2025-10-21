@@ -812,11 +812,17 @@ const Conversations: React.FC = () => {
 
   const translateStageName = (stage: string) => {
     const stageTranslations = {
+      // New field names
       'opening': t('opening'),
       'discovery': t('discovery'),
       'presentation': t('presentation'),
       'objectionHandling': t('objectionHandling'),
-      'closing': t('closing')
+      'closing': t('closing'),
+      // Old field names (for backward compatibility)
+      'introduction': t('opening'),
+      'mapping': t('discovery'),
+      'productPresentation': t('presentation'),
+      'close': t('closing')
     };
     return stageTranslations[stage as keyof typeof stageTranslations] || stage;
   };
@@ -2087,7 +2093,9 @@ const Conversations: React.FC = () => {
                           const entries = Object.entries(conversation.aiRatings);
                           console.log('🔍 [FRONTEND] All entries:', entries);
                           const filtered = entries.filter(([phase, rating]) => {
-                            const validPhases = ['opening', 'discovery', 'presentation', 'objectionHandling', 'closing'];
+                            // Support both old and new field names
+                            const validPhases = ['opening', 'discovery', 'presentation', 'objectionHandling', 'closing', 
+                                               'introduction', 'mapping', 'productPresentation', 'close'];
                             const isValid = validPhases.includes(phase) && typeof rating === 'number';
                             console.log(`🔍 [FRONTEND] Phase: ${phase}, Rating: ${rating}, Valid: ${isValid}`);
                             return isValid;
@@ -2239,7 +2247,9 @@ const Conversations: React.FC = () => {
                           const entries = Object.entries(selectedConversation.aiRatings);
                           console.log('🔍 [FRONTEND DETAILED] All entries:', entries);
                           const filtered = entries.filter(([phase, rating]) => {
-                            const validPhases = ['opening', 'discovery', 'presentation', 'objectionHandling', 'closing'];
+                            // Support both old and new field names
+                            const validPhases = ['opening', 'discovery', 'presentation', 'objectionHandling', 'closing',
+                                               'introduction', 'mapping', 'productPresentation', 'close'];
                             const isValid = validPhases.includes(phase) && typeof rating === 'number';
                             console.log(`🔍 [FRONTEND DETAILED] Phase: ${phase}, Rating: ${rating}, Valid: ${isValid}`);
                             return isValid;
