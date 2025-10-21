@@ -2720,6 +2720,7 @@ router.post('/conversation/:id/end', authenticateToken, async (req, res) => {
         
         try {
           const ratings = JSON.parse(ratingResponse);
+          console.log('🔍 [AI RATING] Parsed ratings:', ratings);
           
           // Use the new AI-based rating system
           // The AI now provides totalScore and maxPossibleScore directly
@@ -2738,6 +2739,7 @@ router.post('/conversation/:id/end', authenticateToken, async (req, res) => {
           };
           conversation.aiRatingFeedback = ratings.feedback;
           
+          console.log('🔍 [AI RATING] Final aiRatings object:', conversation.aiRatings);
           await conversation.save();
         } catch (parseError) {
           console.error('Failed to parse AI rating response:', parseError);
