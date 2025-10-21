@@ -1469,14 +1469,14 @@ const Conversations: React.FC = () => {
                   <User className="w-12 h-12 text-white" />
                 </div>
                 <h2 className="text-2xl font-bold mb-2">
-                  {currentConversation.clientCustomization.name || t('client')}
+                  {currentConversation.clientCustomization?.name || t('client')}
                 </h2>
                 <div className="flex items-center justify-center gap-2 mb-3">
                   <span className="px-3 py-1 bg-white bg-opacity-20 rounded-full text-sm backdrop-blur-sm">
-                    {currentConversation.clientCustomization.industry || t('client')}
+                    {currentConversation.clientCustomization?.industry || t('client')}
                   </span>
                   <span className="px-3 py-1 bg-white bg-opacity-20 rounded-full text-sm backdrop-blur-sm">
-                    {getDifficultyIcon(currentConversation.clientCustomization.difficulty)} {t(currentConversation.clientCustomization.difficulty)}
+                    {getDifficultyIcon(currentConversation.clientCustomization?.difficulty)} {t(currentConversation.clientCustomization?.difficulty)}
                   </span>
                 </div>
                 <div className="flex items-center justify-center gap-2 text-sm">
@@ -1514,16 +1514,16 @@ const Conversations: React.FC = () => {
                   </div>
                   <div>
                     <h3 className="font-semibold text-gray-900 dark:text-white">
-                      {t('chatWith')} {currentConversation.clientCustomization.name || t('client')}
+                      {t('chatWith')} {currentConversation.clientCustomization?.name || t('client')}
                     </h3>
                     <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${getDifficultyColor(currentConversation.clientCustomization.difficulty)}`}>
-                        {getDifficultyIcon(currentConversation.clientCustomization.difficulty)} {t(currentConversation.clientCustomization.difficulty)}
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${getDifficultyColor(currentConversation.clientCustomization?.difficulty)}`}>
+                        {getDifficultyIcon(currentConversation.clientCustomization?.difficulty)} {t(currentConversation.clientCustomization?.difficulty)}
                       </span>
-                      {currentConversation.clientCustomization.industry && (
+                      {currentConversation.clientCustomization?.industry && (
                         <span>• {t(currentConversation.clientCustomization.industry) || currentConversation.clientCustomization.industry}</span>
                       )}
-                      {currentConversation.clientCustomization.role && (
+                      {currentConversation.clientCustomization?.role && (
                         <span>• {t(currentConversation.clientCustomization.role) || currentConversation.clientCustomization.role}</span>
                       )}
                     </div>
@@ -1560,25 +1560,25 @@ const Conversations: React.FC = () => {
               <div className="px-4 py-3 bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
               {/* Basic Info Row */}
               <div className="flex flex-wrap gap-3 text-sm mb-3">
-                {currentConversation.clientCustomization.familySize && (
+                {currentConversation.clientCustomization?.familySize && (
                   <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full">
                     👨‍👩‍👧‍👦 {currentConversation.clientCustomization.familySize} {t('familyMembers')}
                   </span>
                 )}
-                {currentConversation.clientCustomization.incomeRange && (
+                {currentConversation.clientCustomization?.incomeRange && (
                   <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full">
                     💰 {currentConversation.clientCustomization.incomeRange}
                   </span>
                 )}
-                {currentConversation.clientCustomization.priceSensitivity && (
+                {currentConversation.clientCustomization?.priceSensitivity && (
                   <span className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full">
                     💸 {getPriceSensitivityTranslation(currentConversation.clientCustomization.priceSensitivity)} {t('priceSensitivity')}
                   </span>
                 )}
-                {currentConversation.clientCustomization.difficultyPhase && (
+                {currentConversation.clientCustomization?.difficultyPhase && (
                   <span className={`px-2 py-1 rounded-full ${getDifficultyPhaseColor(currentConversation.clientCustomization.difficultyPhase)}`}>
                     ⚠️ {getDifficultyPhaseTranslation(currentConversation.clientCustomization.difficultyPhase)}
-                    {currentConversation.clientCustomization.challengingPhase && currentConversation.clientCustomization.difficultyPhase === 'challenging_moments' && (
+                    {currentConversation.clientCustomization?.challengingPhase && currentConversation.clientCustomization.difficultyPhase === 'challenging_moments' && (
                       <span className="ml-1">({getChallengingPhaseTranslation(currentConversation.clientCustomization.challengingPhase)})</span>
                     )}
                   </span>
@@ -1614,16 +1614,16 @@ const Conversations: React.FC = () => {
                   <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">😊 Current State</h4>
                   <div className="flex flex-wrap gap-2 text-xs">
                     <span className="px-2 py-1 bg-indigo-100 text-indigo-800 rounded-full">
-                      {currentConversation.clientCustomization.emotionalState.current}
+                      {currentConversation.clientCustomization.emotionalState?.current || 'Unknown'}
                     </span>
                     <span className="px-2 py-1 bg-teal-100 text-teal-800 rounded-full">
-                      Trust: {(currentConversation.clientCustomization.emotionalState.trustLevel * 100).toFixed(0)}%
+                      Trust: {((currentConversation.clientCustomization.emotionalState?.trustLevel || 0) * 100).toFixed(0)}%
                     </span>
                     <span className="px-2 py-1 bg-cyan-100 text-cyan-800 rounded-full">
-                      Urgency: {(currentConversation.clientCustomization.emotionalState.buyingUrgency * 100).toFixed(0)}%
+                      Urgency: {((currentConversation.clientCustomization.emotionalState?.buyingUrgency || 0) * 100).toFixed(0)}%
                     </span>
                     <span className="px-2 py-1 bg-emerald-100 text-emerald-800 rounded-full">
-                      Responsive: {(currentConversation.clientCustomization.emotionalState.responsiveness * 100).toFixed(0)}%
+                      Responsive: {((currentConversation.clientCustomization.emotionalState?.responsiveness || 0) * 100).toFixed(0)}%
                     </span>
                   </div>
                 </div>
@@ -1645,7 +1645,7 @@ const Conversations: React.FC = () => {
                           <div className="w-full bg-gray-200 rounded-full h-2">
                             <div 
                               className="bg-green-500 h-2 rounded-full" 
-                              style={{width: `${currentConversation.clientCustomization.buyingProgression.interest * 100}%`}}
+                              style={{width: `${(currentConversation.clientCustomization.buyingProgression?.interest || 0) * 100}%`}}
                             ></div>
                           </div>
                         </div>
@@ -1654,7 +1654,7 @@ const Conversations: React.FC = () => {
                           <div className="w-full bg-gray-200 rounded-full h-2">
                             <div 
                               className="bg-red-500 h-2 rounded-full" 
-                              style={{width: `${currentConversation.clientCustomization.buyingProgression.resistance * 100}%`}}
+                              style={{width: `${(currentConversation.clientCustomization.buyingProgression?.resistance || 0) * 100}%`}}
                             ></div>
                           </div>
                         </div>
