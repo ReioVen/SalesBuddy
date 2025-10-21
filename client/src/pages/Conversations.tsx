@@ -2095,14 +2095,11 @@ const Conversations: React.FC = () => {
                                                'introduction', 'mapping', 'productPresentation', 'close'];
                             return validPhases.includes(phase) && typeof rating === 'number';
                           })
-                          .map(([phase, rating]) => {
-                            console.log(`🔍 [RENDER] Rendering phase: ${phase}, rating: ${rating}, translated: ${translateStageName(phase)}`);
-                            return (
-                              <span key={phase} className={`px-2 py-1 rounded text-xs font-medium ${getRatingColor(rating)}`}>
-                                {translateStageName(phase)}: {rating}/10
-                              </span>
-                            );
-                          })}
+                          .map(([phase, rating]) => (
+                            <span key={phase} className={`px-2 py-1 rounded text-xs font-medium ${getRatingColor(rating)}`}>
+                              {translateStageName(phase)}: {rating}/10
+                            </span>
+                          ))}
                           </div>
                         </div>
                         {conversation.aiRatingFeedback && (
@@ -2245,15 +2242,12 @@ const Conversations: React.FC = () => {
                                                'introduction', 'mapping', 'productPresentation', 'close'];
                             return validPhases.includes(phase) && typeof rating === 'number';
                           })
-                          .map(([phase, rating]) => {
-                            console.log(`🔍 [RENDER DETAILED] Rendering phase: ${phase}, rating: ${rating}, translated: ${translateStageName(phase)}`);
-                            return (
-                              <div key={phase} className="flex items-center justify-between">
-                                <span className="font-medium text-gray-700 dark:text-gray-300">{translateStageName(phase)}:</span>
-                                <span className={`text-lg font-semibold ${getRatingColor(rating)}`}>{rating}/10</span>
-                              </div>
-                            );
-                          })}
+                          .map(([phase, rating]) => (
+                            <div key={phase} className="flex items-center justify-between">
+                              <span className="font-medium text-gray-700 dark:text-gray-300">{translateStageName(phase)}:</span>
+                              <span className={`text-lg font-semibold ${getRatingColor(rating)}`}>{rating}/10</span>
+                            </div>
+                          ))}
                       </div>
                       {selectedConversation.aiRatingFeedback && (
                         <div className="mt-4 p-3 bg-gray-50 dark:bg-dark-700 rounded-lg">
