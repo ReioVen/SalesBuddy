@@ -2088,18 +2088,26 @@ const Conversations: React.FC = () => {
                             {t('totalScore')}: <span className="text-lg font-bold text-blue-600 dark:text-blue-300">{calculateTotalPoints(conversation.aiRatings)}/50</span>
                           </span>
                           <div className="flex gap-2">
-                        {conversation.aiRatings && Object.entries(conversation.aiRatings)
-                          .filter(([phase, rating]) => {
-                            // Support both old and new field names
-                            const validPhases = ['opening', 'discovery', 'presentation', 'objectionHandling', 'closing', 
-                                               'introduction', 'mapping', 'productPresentation', 'close'];
-                            return validPhases.includes(phase) && typeof rating === 'number';
-                          })
-                          .map(([phase, rating]) => (
-                            <span key={phase} className={`px-2 py-1 rounded text-xs font-medium ${getRatingColor(rating)}`}>
-                              {translateStageName(phase)}: {rating}/10
-                            </span>
-                          ))}
+                        {conversation.aiRatings && (() => {
+                          console.log('🔍 [FRONTEND DEBUG] Conversation ID:', conversation.id);
+                          console.log('🔍 [FRONTEND DEBUG] Full aiRatings object:', conversation.aiRatings);
+                          console.log('🔍 [FRONTEND DEBUG] All entries:', Object.entries(conversation.aiRatings));
+                          
+                          return Object.entries(conversation.aiRatings)
+                            .filter(([phase, rating]) => {
+                              // Support both old and new field names
+                              const validPhases = ['opening', 'discovery', 'presentation', 'objectionHandling', 'closing', 
+                                                 'introduction', 'mapping', 'productPresentation', 'close'];
+                              const isValid = validPhases.includes(phase) && typeof rating === 'number';
+                              console.log(`🔍 [FRONTEND DEBUG] Phase: ${phase}, Rating: ${rating}, Valid: ${isValid}`);
+                              return isValid;
+                            })
+                            .map(([phase, rating]) => (
+                              <span key={phase} className={`px-2 py-1 rounded text-xs font-medium ${getRatingColor(rating)}`}>
+                                {translateStageName(phase)}: {rating}/10
+                              </span>
+                            ));
+                        })()}
                           </div>
                         </div>
                         {conversation.aiRatingFeedback && (
