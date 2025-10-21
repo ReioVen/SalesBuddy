@@ -2088,25 +2088,18 @@ const Conversations: React.FC = () => {
                             {t('totalScore')}: <span className="text-lg font-bold text-blue-600 dark:text-blue-300">{calculateTotalPoints(conversation.aiRatings)}/50</span>
                           </span>
                           <div className="flex gap-2">
-                        {conversation.aiRatings && (() => {
-                          console.log('🔍 [FRONTEND] aiRatings object:', conversation.aiRatings);
-                          const entries = Object.entries(conversation.aiRatings);
-                          console.log('🔍 [FRONTEND] All entries:', entries);
-                          const filtered = entries.filter(([phase, rating]) => {
+                        {conversation.aiRatings && Object.entries(conversation.aiRatings)
+                          .filter(([phase, rating]) => {
                             // Support both old and new field names
                             const validPhases = ['opening', 'discovery', 'presentation', 'objectionHandling', 'closing', 
                                                'introduction', 'mapping', 'productPresentation', 'close'];
-                            const isValid = validPhases.includes(phase) && typeof rating === 'number';
-                            console.log(`🔍 [FRONTEND] Phase: ${phase}, Rating: ${rating}, Valid: ${isValid}`);
-                            return isValid;
-                          });
-                          console.log('🔍 [FRONTEND] Filtered entries:', filtered);
-                          return filtered.map(([phase, rating]) => (
+                            return validPhases.includes(phase) && typeof rating === 'number';
+                          })
+                          .map(([phase, rating]) => (
                             <span key={phase} className={`px-2 py-1 rounded text-xs font-medium ${getRatingColor(rating)}`}>
                               {translateStageName(phase)}: {rating}/10
                             </span>
-                          ));
-                        })()}
+                          ))}
                           </div>
                         </div>
                         {conversation.aiRatingFeedback && (
@@ -2242,26 +2235,19 @@ const Conversations: React.FC = () => {
                         <span className="ml-2 text-2xl font-bold text-blue-600 dark:text-blue-300">{calculateTotalPoints(selectedConversation.aiRatings)}/50</span>
                       </div>
                       <div className="space-y-2">
-                        {selectedConversation.aiRatings && (() => {
-                          console.log('🔍 [FRONTEND DETAILED] aiRatings object:', selectedConversation.aiRatings);
-                          const entries = Object.entries(selectedConversation.aiRatings);
-                          console.log('🔍 [FRONTEND DETAILED] All entries:', entries);
-                          const filtered = entries.filter(([phase, rating]) => {
+                        {selectedConversation.aiRatings && Object.entries(selectedConversation.aiRatings)
+                          .filter(([phase, rating]) => {
                             // Support both old and new field names
                             const validPhases = ['opening', 'discovery', 'presentation', 'objectionHandling', 'closing',
                                                'introduction', 'mapping', 'productPresentation', 'close'];
-                            const isValid = validPhases.includes(phase) && typeof rating === 'number';
-                            console.log(`🔍 [FRONTEND DETAILED] Phase: ${phase}, Rating: ${rating}, Valid: ${isValid}`);
-                            return isValid;
-                          });
-                          console.log('🔍 [FRONTEND DETAILED] Filtered entries:', filtered);
-                          return filtered.map(([phase, rating]) => (
+                            return validPhases.includes(phase) && typeof rating === 'number';
+                          })
+                          .map(([phase, rating]) => (
                             <div key={phase} className="flex items-center justify-between">
                               <span className="font-medium text-gray-700 dark:text-gray-300">{translateStageName(phase)}:</span>
                               <span className={`text-lg font-semibold ${getRatingColor(rating)}`}>{rating}/10</span>
                             </div>
-                          ));
-                        })()}
+                          ))}
                       </div>
                       {selectedConversation.aiRatingFeedback && (
                         <div className="mt-4 p-3 bg-gray-50 dark:bg-dark-700 rounded-lg">
