@@ -114,11 +114,13 @@ interface Conversation {
   rating?: number;
   feedback?: string;
   aiRatings?: {
-    introduction: number;
-    mapping: number;
-    productPresentation: number;
+    opening: number;
+    discovery: number;
+    presentation: number;
     objectionHandling: number;
-    close: number;
+    closing: number;
+    totalScore: number;
+    maxPossibleScore: number;
   };
   aiRatingFeedback?: string;
   createdAt?: string;
@@ -755,11 +757,8 @@ const Conversations: React.FC = () => {
   const calculateTotalPoints = (aiRatings: Conversation['aiRatings']) => {
     if (!aiRatings || typeof aiRatings !== 'object') return 0;
     try {
-      // Only include the actual phase ratings, exclude metadata fields
-      const validPhases = ['introduction', 'mapping', 'productPresentation', 'objectionHandling', 'close'];
-      return Object.entries(aiRatings)
-        .filter(([phase, rating]) => validPhases.includes(phase) && typeof rating === 'number')
-        .reduce((sum, [phase, rating]) => sum + rating, 0);
+      // Use the new AI-based rating system
+      return aiRatings.totalScore || 0;
     } catch (error) {
       console.error('Error calculating total points:', error);
       return 0;
@@ -813,11 +812,11 @@ const Conversations: React.FC = () => {
 
   const translateStageName = (stage: string) => {
     const stageTranslations = {
-      'introduction': t('opening'),
-      'mapping': t('discovery'),
-      'productPresentation': t('presentation'),
+      'opening': t('opening'),
+      'discovery': t('discovery'),
+      'presentation': t('presentation'),
       'objectionHandling': t('objectionHandling'),
-      'close': t('closing')
+      'closing': t('closing')
     };
     return stageTranslations[stage as keyof typeof stageTranslations] || stage;
   };
@@ -2085,7 +2084,7 @@ const Conversations: React.FC = () => {
                           <div className="flex gap-2">
                         {conversation.aiRatings && Object.entries(conversation.aiRatings)
                           .filter(([phase, rating]) => {
-                            const validPhases = ['introduction', 'mapping', 'productPresentation', 'objectionHandling', 'close'];
+                            const validPhases = ['opening', 'discovery', 'presentation', 'objectionHandling', 'closing'];
                             return validPhases.includes(phase) && typeof rating === 'number';
                           })
                           .map(([phase, rating]) => (
@@ -2230,7 +2229,7 @@ const Conversations: React.FC = () => {
                       <div className="space-y-2">
                         {selectedConversation.aiRatings && Object.entries(selectedConversation.aiRatings)
                           .filter(([phase, rating]) => {
-                            const validPhases = ['introduction', 'mapping', 'productPresentation', 'objectionHandling', 'close'];
+                            const validPhases = ['opening', 'discovery', 'presentation', 'objectionHandling', 'closing'];
                             return validPhases.includes(phase) && typeof rating === 'number';
                           })
                           .map(([phase, rating]) => (

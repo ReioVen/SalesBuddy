@@ -1548,113 +1548,101 @@ const createRatingPrompt = (messages) => {
     `${msg.role === 'user' ? 'SALESPERSON' : 'CLIENT'}: ${msg.content}`
   ).join('\n');
 
-  // Analyze which phases actually occurred
-  const occurredPhases = analyzeConversationPhases(messages);
   const totalMessages = messages.length;
   
   // Determine if conversation ended too early
-  const endedEarly = totalMessages < 4; // Less than 2 exchanges (4 messages total)
+  const endedEarly = totalMessages < 4;
   const earlyTerminationReason = endedEarly ? 
     (conversationText.toLowerCase().includes('not interested') ? 'Client declined early' :
      conversationText.toLowerCase().includes('busy') ? 'Client was too busy' :
      conversationText.toLowerCase().includes('hang up') ? 'Client hung up' :
      'Conversation ended abruptly') : null;
 
-  let prompt = `You are an expert sales trainer analyzing a sales conversation. Be extremely thorough and detect EVERY SINGLE POINT that should be awarded in each category. Be fair and constructive in your evaluation.
+  let prompt = `You are an expert sales trainer and performance evaluator with 20+ years of experience in sales training and coaching. You are analyzing a sales conversation to provide a comprehensive evaluation based on modern sales methodologies and best practices.
 
-CONVERSATION:
+CONVERSATION TO ANALYZE:
 ${conversationText}
 
-CONVERSATION ANALYSIS:
+CONVERSATION CONTEXT:
 - Total messages: ${totalMessages}
 - Conversation ended early: ${endedEarly ? 'YES' : 'NO'}
 ${earlyTerminationReason ? `- Early termination reason: ${earlyTerminationReason}` : ''}
 
-PHASES THAT OCCURRED:
-- Introduction: ${occurredPhases.introduction ? 'YES' : 'NO'}
-- Mapping: ${occurredPhases.mapping ? 'YES' : 'NO'}
-- Product Presentation: ${occurredPhases.productPresentation ? 'YES' : 'NO'}
-- Objection Handling: ${occurredPhases.objectionHandling ? 'YES' : 'NO'}
-- Close: ${occurredPhases.close ? 'YES' : 'NO'}
+EVALUATION CRITERIA - Rate each category from 0-10 based on sales effectiveness:
 
-COMPREHENSIVE POINT-BY-POINT EVALUATION CRITERIA:
+1. OPENING (0-10 points):
+Evaluate the salesperson's opening based on:
+- Professional greeting and introduction
+- Clear purpose statement
+- Permission-based approach (asking for time)
+- Rapport building
+- Energy and confidence
+- Value proposition teaser
+- Setting expectations
 
-INTRODUCTION (Opening) - Award points for each element present:
-- 1 point: Basic greeting (hello, hi, good morning/afternoon)
-- 1 point: Salesperson introduces themselves by name
-- 1 point: Mentions company name
-- 1 point: States purpose of call professionally
-- 1 point: Asks permission to continue ("Do you have a moment?")
-- 1 point: Uses client's name if available
-- 1 point: Shows respect for client's time
-- 1 point: Professional tone and energy
-- 1 point: Clear and confident delivery
-- 1 point: Sets positive tone for conversation
+2. DISCOVERY (0-10 points):
+Evaluate the salesperson's discovery skills based on:
+- Quality of questions asked (open-ended vs closed)
+- Depth of needs assessment
+- Understanding client's pain points
+- Identifying decision-making process
+- Budget and timeline discovery
+- Competitive landscape awareness
+- Active listening and follow-up questions
+- Building trust and credibility
 
-MAPPING (Discovery) - Award points for each element present:
-- 1 point: Asks about client's current situation
-- 1 point: Asks about challenges or pain points
-- 1 point: Asks about goals or objectives
-- 1 point: Asks about decision-making process
-- 1 point: Asks about timeline or urgency
-- 1 point: Asks about budget or resources
-- 1 point: Asks about previous experience
-- 1 point: Asks about specific needs or requirements
-- 1 point: Listens actively to responses
-- 1 point: Asks follow-up questions based on responses
+3. PRESENTATION (0-10 points):
+Evaluate the salesperson's presentation skills based on:
+- Relevance to client's specific needs
+- Clear value proposition
+- Benefit-focused messaging
+- Use of examples and stories
+- Handling of features vs benefits
+- Addressing client concerns
+- Professional delivery
+- Engagement techniques
 
-PRODUCT PRESENTATION - Award points for each element present:
-- 1 point: Clearly explains what the product/service does
-- 1 point: Highlights key features and benefits
-- 1 point: Connects benefits to client's specific needs
-- 1 point: Uses examples or case studies
-- 1 point: Addresses value proposition clearly
-- 1 point: Explains pricing or cost structure
-- 1 point: Mentions guarantees or warranties
-- 1 point: Compares to competitors (if relevant)
-- 1 point: Uses visual aids or demonstrations (if applicable)
-- 1 point: Checks for understanding
+4. OBJECTION HANDLING (0-10 points):
+Evaluate the salesperson's objection handling based on:
+- Acknowledgment of concerns
+- Probing for root causes
+- Providing relevant solutions
+- Using proof points and testimonials
+- Maintaining positive attitude
+- Not being defensive
+- Turning objections into opportunities
+- Building consensus
 
-OBJECTION HANDLING - Award points for each element present:
-- 1 point: Acknowledges the objection respectfully
-- 1 point: Asks clarifying questions about the objection
-- 1 point: Provides relevant information to address concern
-- 1 point: Uses examples or proof points
-- 1 point: Offers alternatives or solutions
-- 1 point: Asks if concern is resolved
-- 1 point: Maintains positive attitude throughout
-- 1 point: Doesn't argue or become defensive
-- 1 point: Shows empathy and understanding
-- 1 point: Moves conversation forward after handling
+5. CLOSING (0-10 points):
+Evaluate the salesperson's closing skills based on:
+- Identifying buying signals
+- Asking for the business
+- Creating appropriate urgency
+- Summarizing value
+- Handling final concerns
+- Securing next steps
+- Professional persistence
+- Clear call-to-action
 
-CLOSING - Award points for each element present:
-- 1 point: Summarizes key benefits discussed
-- 1 point: Asks for the sale or next step
-- 1 point: Creates urgency or scarcity (if appropriate)
-- 1 point: Addresses final concerns
-- 1 point: Proposes specific next steps
-- 1 point: Suggests timeline for implementation
-- 1 point: Asks for commitment or decision
-- 1 point: Offers to send information or materials
-- 1 point: Schedules follow-up meeting
-- 1 point: Confirms next steps clearly
+SCORING GUIDELINES:
+- 9-10: Exceptional performance, exceeds expectations
+- 7-8: Good performance, meets most expectations
+- 5-6: Average performance, room for improvement
+- 3-4: Below average, significant improvement needed
+- 0-2: Poor performance, major issues to address
 
-SCORING INSTRUCTIONS:
-1. For each phase that occurred, award 1 point for each criterion met (maximum 10 points per phase)
-2. For phases that did NOT occur, give 0 points
-3. Be generous but fair - if a criterion is partially met, award the point
-4. Look for subtle indicators of good sales practices
-5. Consider the context and conversation flow
-6. Award points for professional behavior even in difficult situations
+Consider the conversation flow, client engagement, and overall sales effectiveness. Be fair but honest in your evaluation.
 
-Respond in this exact JSON format:
+Return your evaluation as a JSON object with this exact format:
 {
-  "introduction": ${occurredPhases.introduction ? '[number 0-10 based on criteria above]' : '0'},
-  "mapping": ${occurredPhases.mapping ? '[number 0-10 based on criteria above]' : '0'},
-  "productPresentation": ${occurredPhases.productPresentation ? '[number 0-10 based on criteria above]' : '0'},
-  "objectionHandling": ${occurredPhases.objectionHandling ? '[number 0-10 based on criteria above]' : '0'},
-  "close": ${occurredPhases.close ? '[number 0-10 based on criteria above]' : '0'},
-  "feedback": "[Provide detailed feedback highlighting specific strengths and areas for improvement. Be encouraging while being honest about areas for growth. Use 'you' instead of 'the salesperson' throughout the feedback.]"
+  "opening": [number 0-10],
+  "discovery": [number 0-10],
+  "presentation": [number 0-10],
+  "objectionHandling": [number 0-10],
+  "closing": [number 0-10],
+  "totalScore": [sum of all scores],
+  "maxPossibleScore": 50,
+  "feedback": "[Provide detailed, constructive feedback highlighting specific strengths and areas for improvement. Be encouraging while being honest about areas for growth. Use 'you' instead of 'the salesperson' throughout the feedback. Focus on actionable advice.]"
 }`;
 
   return prompt;
@@ -2733,42 +2721,20 @@ router.post('/conversation/:id/end', authenticateToken, async (req, res) => {
         try {
           const ratings = JSON.parse(ratingResponse);
           
-          // Calculate total score (only count phases that actually occurred)
-          const occurredPhases = analyzeConversationPhases(conversation.messages);
-          let totalScore = 0;
-          let maxPossibleScore = 0;
+          // Use the new AI-based rating system
+          // The AI now provides totalScore and maxPossibleScore directly
+          const totalScore = ratings.totalScore || 0;
+          const maxPossibleScore = ratings.maxPossibleScore || 50;
           
-          if (occurredPhases.introduction) {
-            totalScore += ratings.introduction || 0;
-            maxPossibleScore += 10;
-          }
-          if (occurredPhases.mapping) {
-            totalScore += ratings.mapping || 0;
-            maxPossibleScore += 10;
-          }
-          if (occurredPhases.productPresentation) {
-            totalScore += ratings.productPresentation || 0;
-            maxPossibleScore += 10;
-          }
-          if (occurredPhases.objectionHandling) {
-            totalScore += ratings.objectionHandling || 0;
-            maxPossibleScore += 10;
-          }
-          if (occurredPhases.close) {
-            totalScore += ratings.close || 0;
-            maxPossibleScore += 10;
-          }
-          
-          // Update conversation with AI ratings
+          // Update conversation with AI ratings using new format
           conversation.aiRatings = {
-            introduction: ratings.introduction || 0,
-            mapping: ratings.mapping || 0,
-            productPresentation: ratings.productPresentation || 0,
+            opening: ratings.opening || 0,
+            discovery: ratings.discovery || 0,
+            presentation: ratings.presentation || 0,
             objectionHandling: ratings.objectionHandling || 0,
-            close: ratings.close || 0,
+            closing: ratings.closing || 0,
             totalScore: totalScore,
-            maxPossibleScore: maxPossibleScore,
-            occurredPhases: occurredPhases
+            maxPossibleScore: maxPossibleScore
           };
           conversation.aiRatingFeedback = ratings.feedback;
           
