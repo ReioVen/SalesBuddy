@@ -187,6 +187,9 @@ const Conversations: React.FC = () => {
   const reconstructVoice = useCallback((savedVoice: any) => {
     if (!savedVoice || !voices || !Array.isArray(voices) || voices.length === 0) return null;
     
+    // Check if savedVoice has the required properties
+    if (!savedVoice.name || !savedVoice.lang) return null;
+    
     // Find the voice by name and language
     const voice = voices.find(v => 
       v && v.name === savedVoice.name && 
@@ -1588,19 +1591,19 @@ const Conversations: React.FC = () => {
                   <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">🧠 Emotional Profile</h4>
                   <div className="flex flex-wrap gap-2 text-xs">
                     <span className="px-2 py-1 bg-purple-100 text-purple-800 rounded-full">
-                      {currentConversation.clientCustomization.emotionalProfile.name}
+                      {currentConversation.clientCustomization.emotionalProfile?.name || 'Unknown'}
                     </span>
                     <span className="px-2 py-1 bg-orange-100 text-orange-800 rounded-full">
-                      {currentConversation.clientCustomization.emotionalProfile.buyingMotivation.replace('_', ' ')}
+                      {currentConversation.clientCustomization.emotionalProfile?.buyingMotivation?.replace('_', ' ') || 'Unknown'}
                     </span>
                     <span className="px-2 py-1 bg-red-100 text-red-800 rounded-full">
-                      {currentConversation.clientCustomization.emotionalProfile.resistanceLevel} resistance
+                      {currentConversation.clientCustomization.emotionalProfile?.resistanceLevel || 'Unknown'} resistance
                     </span>
                   </div>
                   <div className="mt-2 text-xs text-gray-600 dark:text-gray-400">
-                    <div><strong>Primary Needs:</strong> {currentConversation.clientCustomization.emotionalProfile.primaryNeeds.join(', ')}</div>
-                    <div><strong>Pain Points:</strong> {currentConversation.clientCustomization.emotionalProfile.painPoints.join(', ')}</div>
-                    <div><strong>Emotional Triggers:</strong> {currentConversation.clientCustomization.emotionalProfile.emotionalTriggers.join(', ')}</div>
+                    <div><strong>Primary Needs:</strong> {currentConversation.clientCustomization.emotionalProfile?.primaryNeeds?.join(', ') || 'Unknown'}</div>
+                    <div><strong>Pain Points:</strong> {currentConversation.clientCustomization.emotionalProfile?.painPoints?.join(', ') || 'Unknown'}</div>
+                    <div><strong>Emotional Triggers:</strong> {currentConversation.clientCustomization.emotionalProfile?.emotionalTriggers?.join(', ') || 'Unknown'}</div>
                   </div>
                 </div>
               )}
@@ -1632,7 +1635,7 @@ const Conversations: React.FC = () => {
                   <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">📈 Buying Stage</h4>
                   <div className="flex items-center gap-3">
                     <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">
-                      {currentConversation.clientCustomization.buyingProgression.name.toUpperCase()}
+                      {currentConversation.clientCustomization.buyingProgression?.name?.toUpperCase() || 'UNKNOWN'}
                     </span>
                     <div className="flex-1">
                       <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">Interest vs Resistance</div>
