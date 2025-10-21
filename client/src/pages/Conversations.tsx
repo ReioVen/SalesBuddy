@@ -521,6 +521,7 @@ const Conversations: React.FC = () => {
     setCurrentConversation(updatedConversation);
 
     try {
+      console.log('📤 [FRONTEND] Sending message to conversation:', currentConversation.id);
       const response = await axios.post(`${API_BASE_URL}/api/ai/message`, {
         conversationId: currentConversation.id,
         message: messageToSend,
@@ -528,6 +529,8 @@ const Conversations: React.FC = () => {
       }, {
         withCredentials: true
       });
+
+      console.log('✅ [FRONTEND] Message sent successfully, response:', response.data);
 
       // Add AI response to conversation
       const aiResponse = response.data.response;
