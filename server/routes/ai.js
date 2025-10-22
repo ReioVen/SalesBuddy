@@ -2724,28 +2724,62 @@ router.post('/conversation/:id/end', authenticateToken, async (req, res) => {
           console.log('🔍 [AI RATING DEBUG] Parsed ratings object:', ratings);
           console.log('🔍 [AI RATING DEBUG] Available fields:', Object.keys(ratings));
           
+          // Validate that all required fields are present
+          const requiredFields = ['opening', 'discovery', 'presentation', 'objectionHandling', 'closing'];
+          const missingFields = requiredFields.filter(field => !(field in ratings));
+          
+          if (missingFields.length > 0) {
+            console.error('❌ [AI RATING ERROR] Missing required fields:', missingFields);
+            console.log('Available fields in AI response:', Object.keys(ratings));
+          }
+          
           // Use the new AI-based rating system
           // The AI now provides totalScore and maxPossibleScore directly
           const totalScore = ratings.totalScore || 0;
           const maxPossibleScore = ratings.maxPossibleScore || 50;
           
-          // Update conversation with AI ratings using new format
+          // Update conversation with AI ratings using database schema field names
+          // Add fallback values for missing fields
           conversation.aiRatings = {
-            opening: ratings.opening || 0,
-            discovery: ratings.discovery || 0,
-            presentation: ratings.presentation || 0,
+            introduction: ratings.opening || 0,
+            mapping: ratings.discovery || 0,
+            productPresentation: ratings.presentation || 0,
             objectionHandling: ratings.objectionHandling || 0,
-            closing: ratings.closing || 0,
+            close: ratings.closing || 0,
             totalScore: totalScore,
             maxPossibleScore: maxPossibleScore
           };
-          conversation.aiRatingFeedback = ratings.feedback;
+          conversation.aiRatingFeedback = ratings.feedback || '';
           
           console.log('🔍 [AI RATING DEBUG] Final aiRatings to save:', conversation.aiRatings);
+          console.log('🔍 [AI RATING DEBUG] All fields present:', {
+            introduction: conversation.aiRatings.introduction,
+            mapping: conversation.aiRatings.mapping,
+            productPresentation: conversation.aiRatings.productPresentation,
+            objectionHandling: conversation.aiRatings.objectionHandling,
+            close: conversation.aiRatings.close,
+            totalScore: conversation.aiRatings.totalScore,
+            maxPossibleScore: conversation.aiRatings.maxPossibleScore
+          });
+          
           await conversation.save();
+          console.log('✅ [AI RATING DEBUG] Successfully saved aiRatings to database');
         } catch (parseError) {
-          console.error('Failed to parse AI rating response:', parseError);
+          console.error('❌ [AI RATING ERROR] Failed to parse AI rating response:', parseError);
           console.log('Raw response:', ratingResponse);
+          
+          // Set default values if parsing fails
+          conversation.aiRatings = {
+            introduction: 0,
+            mapping: 0,
+            productPresentation: 0,
+            objectionHandling: 0,
+            close: 0,
+            totalScore: 0,
+            maxPossibleScore: 50
+          };
+          conversation.aiRatingFeedback = 'AI rating generation failed';
+          await conversation.save();
         }
       } catch (openaiError) {
         console.error('OpenAI rating error:', openaiError);

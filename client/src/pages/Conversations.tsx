@@ -812,17 +812,17 @@ const Conversations: React.FC = () => {
 
   const translateStageName = (stage: string) => {
     const stageTranslations = {
-      // New field names
-      'opening': t('opening'),
-      'discovery': t('discovery'),
-      'presentation': t('presentation'),
-      'objectionHandling': t('objectionHandling'),
-      'closing': t('closing'),
-      // Old field names (for backward compatibility)
+      // Database field names (primary)
       'introduction': t('opening'),
       'mapping': t('discovery'),
       'productPresentation': t('presentation'),
-      'close': t('closing')
+      'objectionHandling': t('objectionHandling'),
+      'close': t('closing'),
+      // New field names (for backward compatibility)
+      'opening': t('opening'),
+      'discovery': t('discovery'),
+      'presentation': t('presentation'),
+      'closing': t('closing')
     };
     return stageTranslations[stage as keyof typeof stageTranslations] || stage;
   };
@@ -2095,9 +2095,9 @@ const Conversations: React.FC = () => {
                           
                           return Object.entries(conversation.aiRatings)
                             .filter(([phase, rating]) => {
-                              // Support both old and new field names
-                              const validPhases = ['opening', 'discovery', 'presentation', 'objectionHandling', 'closing', 
-                                                 'introduction', 'mapping', 'productPresentation', 'close'];
+                              // Support database field names (prioritize these) and new field names
+                              const validPhases = ['introduction', 'mapping', 'productPresentation', 'objectionHandling', 'close',
+                                                 'opening', 'discovery', 'presentation', 'closing'];
                               const isValid = validPhases.includes(phase) && typeof rating === 'number';
                               console.log(`🔍 [FRONTEND DEBUG] Phase: ${phase}, Rating: ${rating}, Valid: ${isValid}`);
                               return isValid;

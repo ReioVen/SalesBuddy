@@ -3323,6 +3323,7 @@ CONVERSATION DETAILS:
             )
             messagebox.showerror("Error", f"Failed to load user summaries: {str(e)}")
     
+
     def search_summaries(self, event=None):
         """Search conversation summaries by user ID"""
         try:
