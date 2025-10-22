@@ -1775,6 +1775,23 @@ router.post('/conversation', authenticateToken, [
 
     await conversation.save();
 
+    // Update title with client name if it was provided but not used in initial title
+    if (clientName && !title.includes(clientName)) {
+      let updatedTitle;
+      if (language === 'et') {
+        updatedTitle = `Harjutus koos ${clientName}`;
+      } else if (language === 'es') {
+        updatedTitle = `Práctica con ${clientName}`;
+      } else if (language === 'ru') {
+        updatedTitle = `Практика с ${clientName}`;
+      } else {
+        updatedTitle = `Practice with ${clientName}`;
+      }
+      
+      conversation.title = updatedTitle;
+      await conversation.save();
+    }
+
     res.json({
       message: 'Conversation started successfully',
       conversation: {
@@ -2459,6 +2476,25 @@ router.post('/message', authenticateToken, [
       console.log('🔍 [AI MESSAGE] Saving AI response to conversation...');
       await conversation.addMessageAndSave('assistant', aiResponse, tokensUsed);
       console.log('✅ [AI MESSAGE] AI response saved to conversation');
+      
+      // Update conversation title with client name if it's available and title doesn't include it
+      if (conversation.clientCustomization && conversation.clientCustomization.name && 
+          !conversation.title.includes(conversation.clientCustomization.name)) {
+        let updatedTitle;
+        if (conversation.language === 'et') {
+          updatedTitle = `Harjutus koos ${conversation.clientCustomization.name}`;
+        } else if (conversation.language === 'es') {
+          updatedTitle = `Práctica con ${conversation.clientCustomization.name}`;
+        } else if (conversation.language === 'ru') {
+          updatedTitle = `Практика с ${conversation.clientCustomization.name}`;
+        } else {
+          updatedTitle = `Practice with ${conversation.clientCustomization.name}`;
+        }
+        
+        conversation.title = updatedTitle;
+        await conversation.save();
+        console.log('✅ [AI MESSAGE] Updated conversation title with client name:', updatedTitle);
+      }
 
       // Note: Usage is only incremented when starting a conversation, not for each message
       console.log('✅ [AI MESSAGE] Sending response to client...');
